@@ -4713,16 +4713,8 @@ static void set_array_offsets
 		input_format = array_conduit->input->fd->format;
 		input_var = FF_VARIABLE(FFV_FIRST_VARIABLE(input_format));
 
-		if (array_conduit->input->connect.id & NDARRS_FILE)
-		{
-			array_conduit->input->connect.file_info.first_array_offset = input_var->start_pos - 1;
-			array_conduit->input->connect.file_info.current_array_offset = input_var->start_pos - 1;
-		}
-		else
-		{
-			array_conduit->input->connect.file_info.first_array_offset = 0;
-			array_conduit->input->connect.file_info.current_array_offset = 0;
-		}
+		array_conduit->input->connect.file_info.first_array_offset = input_var->start_pos - 1;
+		array_conduit->input->connect.file_info.current_array_offset = input_var->start_pos - 1;
 
 		input_var->end_pos = FF_VAR_LENGTH(input_var);
 		input_var->start_pos = 1;
@@ -4733,16 +4725,8 @@ static void set_array_offsets
 		output_format = array_conduit->output->fd->format;
 		output_var = FF_VARIABLE(FFV_FIRST_VARIABLE(output_format));
 
-		if (array_conduit->output->connect.id & NDARRS_FILE)
-		{
-			array_conduit->output->connect.file_info.first_array_offset = output_var->start_pos - 1;
-			array_conduit->output->connect.file_info.current_array_offset = output_var->start_pos - 1;
-		}
-		else
-		{
-			array_conduit->output->connect.file_info.first_array_offset = 0;
-			array_conduit->output->connect.file_info.current_array_offset = 0;
-		}
+		array_conduit->output->connect.file_info.first_array_offset = output_var->start_pos - 1;
+		array_conduit->output->connect.file_info.current_array_offset = output_var->start_pos - 1;
 
 		output_var->end_pos = FF_VAR_LENGTH(output_var);
 		output_var->start_pos = 1;
@@ -4873,8 +4857,8 @@ static int create_array_pole
 			(*pole_h)->connect.locus.filename = memStrdup(filename, "filename");
 			if (!(*pole_h)->connect.locus.filename)
 			{
-				memFree(*pole_h, "*pole_h");
 				memFree((*pole_h)->name, "(*pole_h)->name");
+				memFree(*pole_h, "*pole_h");
 				*pole_h = NULL;
 				return(err_push(ERR_MEM_LACK, NULL));
 			}
@@ -4883,6 +4867,22 @@ static int create_array_pole
 			(*pole_h)->connect.locus.bufsize = bufsize;/* resurrect fd_graft_bufsize? */
 		else if (!(id & (NDARRS_BUFFER | NDARRS_FILE)))
 			return(err_push(ERR_API, "Calling create_array_pole with with incorrect ID"));
+
+		(*pole_h)->bad_data = NULL;
+		if (IS_OUTPUT(format_data->format))
+		{
+			(*pole_h)->bad_data = ff_create_bufsize(1 + format_data->format->num_vars / 8);
+			if (!(*pole_h)->bad_data)
+			{
+				if ((id & NDARRS_FILE) && filename)
+					memFree((*pole_h)->connect.locus.filename, "filename");
+
+				memFree((*pole_h)->name, "(*pole_h)->name");
+				memFree(*pole_h, "*pole_h");
+				*pole_h = NULL;
+				return(err_push(ERR_MEM_LACK, NULL));
+			}
+		}
 
 		(*pole_h)->connect.array_done = 0;
 		(*pole_h)->connect.bytes_left = 0;
