@@ -205,7 +205,6 @@ static void make_contiguous_format(FORMAT_PTR format)
 	FF_NDX_t new_end_pos = 0;
 	FF_NDX_t old_end_pos = 0;
 	unsigned short i = 0;
-	unsigned short buffer_char = 0;
 
 	FF_VALIDATE(format);
   
@@ -2425,7 +2424,6 @@ static int make_format_data
 	 FORMAT_DATA_HANDLE hformat_data
 	)
 {
-	int error = 0;
 	FORMAT_PTR format = NULL;
 
 	if (title_specified)
@@ -2639,7 +2637,7 @@ static int dbset_cache_size
 			                       );
 
 			if (PINFO_IS_BUFFER(pinfo))
-				cache_size = max(cache_size, PINFO_BYTES_LEFT(pinfo));
+				cache_size = max(cache_size, PINFO_LOCUS_FILLED(pinfo));
 			else
 				cache_size = max(orig_cache_size, max_record_length);
 
@@ -4835,8 +4833,6 @@ static int create_array_pole
 	 FF_ARRAY_DIPOLE_HANDLE pole_h
 	)
 {
-	int error = 0;
-
 	FF_VALIDATE(format_data);
 	FF_VALIDATE(format_data->format);
 	FF_VALIDATE(format_data->data);
@@ -4891,7 +4887,7 @@ static int create_array_pole
 			}
 		}
 		else if ((id & NDARRS_BUFFER) && bufsize)
-			(*pole_h)->connect.locus.bufsize = bufsize;
+			(*pole_h)->connect.locus.bufsize = bufsize;// fd_graft_bufsize?
 		else if (!(id & (NDARRS_BUFFER | NDARRS_FILE)))
 			return(err_push(ERR_API, "Calling create_array_pole with with incorrect ID"));
 
@@ -6092,100 +6088,6 @@ static int make_inputs_sub_desc_str
 	return error;
 }
 
-static int normalize_subscripts
-	(
-	 DATA_BIN_PTR dbin,
-	 ARRAY_DESCRIPTOR_PTR array
-	)
-{
-	int i = 0;
-	int error = 0;
-
-	FF_VALIDATE(dbin);
-
-	return 0;
-
-	for (i = 0; i < array->num_dim; i++)
-	{
-		double gran = 0;
-		double grp = 0;
-		double start = 0;
-		double end = 0;
-
-		char grid_cell_registration[32];
-		char data_type[32];
-
-		gran = array->granularity[i];
-		grp = array->grouping[i];
-		start = array->start_index[i];
-		end = array->end_index[i];
-
-		/* Do we want to normalize subscripts, etc.? */
-		if (fabs(gran) < 1)
-		{
-			start /= fabs(gran);
-			end /= fabs(gran);
-
-			start = (long)ROUND(start);
-			end = (long)ROUND(end);
-
-			grp /= fabs(gran);
-
-			grp = (long)ROUND(grp);
-
-			gran = 1;
-
-			/* This code parallels that in make_inputs_sub_desc_str and make_outputs_super_desc_str */
-
-			error = nt_ask(dbin, NT_INPUT, "data_type", FFV_TEXT, data_type);
-			if (error && error != ERR_NT_KEYNOTDEF)
-				error = err_push(ERR_PARAM_VALUE, "for data_type (%s)", data_type);
-			else if (!error)
-			{
-				if (!os_strcmpi(data_type, "image") || !os_strcmpi(data_type, "raster"))
-				{
-					error = nt_ask(dbin, NT_INPUT, "grid_cell_registration", FFV_TEXT, grid_cell_registration);
-					if (error && error != ERR_NT_KEYNOTDEF)
-						error = err_push(ERR_PARAM_VALUE, "for grid_cell_registration (%s)", grid_cell_registration);
-					else if (!error)
-					{
-						if (!os_strncmpi(grid_cell_registration, "center", 6))
-						{
-							if (start < end)
-								end -= 1;
-							else
-								start -= 1;
-						}
-					}
-					else if (error == ERR_NT_KEYNOTDEF)
-						error = 0;
-				}
-			}
-			else if (error == ERR_NT_KEYNOTDEF)
-				error = 0;
-		}
-
-		if (ndarr_set(array, NDARR_DIM_NUMBER, (int)i,
-				NDARR_DIM_START_INDEX, (long)start,
-				NDARR_DIM_END_INDEX, (long)end,
-				NDARR_DIM_GRANULARITY, (long)gran,
-				NDARR_DIM_GROUPING, (long)grp, 
-				NDARR_END_ARGS))
-		{
-			error = err_push(ERR_NDARRAY, "Unable to set dimension attributes");
-		}
-	}
-	
-	if (!error && ndarr_do_calculations(array))
-	{
-		error = err_push(ERR_NDARRAY, "Unable to calculate array attributes");
-	}
-
-
-	return error;
-}
-
-
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "make_input_array_mapping"
 
@@ -6264,14 +6166,6 @@ static int make_input_array_mapping
 	}
 			
 	memFree(sub_desc_str, "sub_desc_str");
-
-	error = normalize_subscripts(dbin, sub_desc);
-	if (error)
-		return error;
-
-	error = normalize_subscripts(dbin, super_desc);
-	if (error)
-		return error;
 
 	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
 	if (!PINFO_ARRAY_MAP(pinfo))
@@ -6436,14 +6330,6 @@ static int make_output_array_mapping
 	}
 			
 	memFree(super_desc_str, "super_desc_str");
-
-	error = normalize_subscripts(dbin, sub_desc);
-	if (error)
-		return error;
-
-	error = normalize_subscripts(dbin, super_desc);
-	if (error)
-		return error;
 
 	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
 	if (!PINFO_ARRAY_MAP(pinfo))
@@ -6635,9 +6521,9 @@ static int set_array_mappings
  * ERRORS:
  ****************************************************************************/
 
-static long length_in_file(PROCESS_INFO_PTR pinfo)
+static long pinfo_length(PROCESS_INFO_PTR pinfo)
 {
-	if (pinfo && PINFO_IS_FILE(pinfo))
+	if (pinfo)
 	{
 		if (IS_HEADER(PINFO_FORMAT(pinfo)))
 			return(PINFO_RECL(pinfo));
@@ -6657,42 +6543,33 @@ int update_following_offsets_or_size
 	 long adjustment
 	)
 {
-	int error = 0;
+	char *file_name = NULL;
 
-	if (PINFO_IS_FILE(updater))
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	file_name = PINFO_FNAME(updater);
+
+	updater_list = dll_next(updater_list); /* set sub_list to next node in super_list */
+	pinfo        = FF_PI(updater_list);
+	while (pinfo)
 	{
-		char *file_name = NULL;
-
-		PROCESS_INFO_PTR pinfo = NULL;
-
-		file_name = PINFO_FNAME(updater);
-
-		updater_list = dll_next(updater_list); /* set sub_list to next node in super_list */
-		pinfo        = FF_PI(updater_list);
-		while (pinfo)
+		if ((PINFO_TYPE(updater) & FFF_IO) == (PINFO_TYPE(pinfo) & FFF_IO))
 		{
-			if ((PINFO_TYPE(updater) & FFF_IO) == (PINFO_TYPE(pinfo) & FFF_IO))
+			if (PINFO_IS_FILE(pinfo) && file_name)
 			{
-				if (PINFO_IS_FILE(pinfo) && file_name)
-				{
-					if (!strcmp(file_name, PINFO_FNAME(pinfo)))
-						PINFO_CURRENT_ARRAY_OFFSET(pinfo) += adjustment;
-				}
-				else
-				{
-					/* else what? */
-				}
+				if (!strcmp(file_name, PINFO_FNAME(pinfo)))
+					PINFO_CURRENT_ARRAY_OFFSET(pinfo) += adjustment;
 			}
+			else if (PINFO_IS_BUFFER(updater) && PINFO_IS_BUFFER(pinfo))
+				PINFO_CURRENT_ARRAY_OFFSET(pinfo) += adjustment;
+			else
+				assert(0 && "File buffer mismatch");
+		}
 
-			updater_list = dll_next(updater_list);
-			pinfo        = FF_PI(updater_list);
-		} /* while array_conduit -- in updater_list list */
-	} /* if PINFO_IS_FILE(pinfo) */
-	else
-	{
-		/* else what? */
-	}
-	
+		updater_list = dll_next(updater_list);
+		pinfo        = FF_PI(updater_list);
+	} /* while array_conduit -- in updater_list list */
+
 	return(0);
 }
 
@@ -6736,7 +6613,7 @@ static int dbset_init_conduits
 
 			if (!IS_ARRAY(PINFO_FORMAT(pinfo)))
 			{
-				error = update_following_offsets_or_size(pinfo, pinfo_list, length_in_file(pinfo));
+				error = update_following_offsets_or_size(pinfo, pinfo_list, pinfo_length(pinfo));
 				if (error)
 					break;
 			}

@@ -278,7 +278,6 @@ static int calculate_input(PROCESS_INFO_PTR pinfo)
 		{
 			for (rec = PINFO_BYTES_USED(pinfo) / PINFO_RECL(pinfo); rec; rec--)
 			{
-				FF_NDX_t bytes_per_pixel = 0;
 				double d = 0;
 
 				error = calculate_variable(var, PINFO_FORMAT(pinfo), PINFO_BUFFER(pinfo) + (rec - 1) * PINFO_RECL(pinfo), &d);
@@ -599,7 +598,6 @@ static int write_formats
 {
 	unsigned long bytes_to_write = 0;
 	unsigned long bytes_written = 0;
-	unsigned output_length = 0;
 
 	int error = 0;
 
@@ -639,7 +637,7 @@ static int write_formats
 			                               buffer,
 			                               bytes_to_write,
 			                               PINFO_ID(output_pinfo),
-			                               PINFO_IS_FILE(output_pinfo) ? PINFO_FNAME(output_pinfo) : PINFO_LOCUS_BUFFER(output_pinfo),
+			                               PINFO_IS_FILE(output_pinfo) ? PINFO_FNAME(output_pinfo) : PINFO_LOCUS_BUFFER(output_pinfo) + PINFO_CURRENT_ARRAY_OFFSET(output_pinfo),
 			                               PINFO_IS_FILE(output_pinfo) ? PINFO_CURRENT_ARRAY_OFFSET(output_pinfo) : PINFO_LOCUS_SIZE(output_pinfo),
 			                               &PINFO_ARRAY_DONE(output_pinfo)
 			                              );
@@ -651,7 +649,7 @@ static int write_formats
 		if ((long)bytes_written == -1 || bytes_written < bytes_to_write)
 			error = err_push(ERR_WRITE_FILE, "Writing to \"%s\" (processing \"%s\")", PINFO_IS_FILE(output_pinfo) ? PINFO_FNAME(output_pinfo) : "buffer", PINFO_NAME(output_pinfo));
 		else if (!PINFO_IS_FILE(output_pinfo) && PINFO_LOCUS_BUFSIZE(output_pinfo))
-			PINFO_LOCUS_FILLED(output_pinfo) = min(bytes_written, bytes_to_write);
+			PINFO_LOCUS_FILLED(output_pinfo) += min(bytes_written, bytes_to_write);
 
 		ff_unlock(output_pinfo, &buffer);
 
@@ -678,12 +676,12 @@ static int write_formats
 					}
 					else
 					{
-						if (PINFO_IS_FILE(rech_pinfo))
+						if (1 || PINFO_IS_FILE(rech_pinfo))
 							PINFO_CURRENT_ARRAY_OFFSET(rech_pinfo) += PINFO_SUB_ARRAY_BYTES(output_pinfo);
 						else
 							assert(PINFO_IS_FILE(rech_pinfo));
 
-						if (PINFO_IS_FILE(output_pinfo))
+						if (1 || PINFO_IS_FILE(output_pinfo))
 							PINFO_CURRENT_ARRAY_OFFSET(output_pinfo) = PINFO_CURRENT_ARRAY_OFFSET(rech_pinfo) + PINFO_RECL(rech_pinfo);
 						else
 							assert(PINFO_IS_FILE(output_pinfo));
@@ -691,11 +689,11 @@ static int write_formats
 				}
 				else if (output_pinfo)
 				{
-					if (PINFO_IS_FILE(output_pinfo))
+					if (1 || PINFO_IS_FILE(output_pinfo))
 						PINFO_CURRENT_ARRAY_OFFSET(output_pinfo) += PINFO_SUB_ARRAY_BYTES(output_pinfo);
 					else
 					{
-						/*assert(PINFO_IS_FILE(output_pinfo));*/
+						assert(PINFO_IS_FILE(output_pinfo));
 					}
 				}
 
@@ -704,7 +702,7 @@ static int write_formats
 		} /* if IS_DATA(PINFO_FORMAT(output_pinfo)) && PINFO_ARRAY_DONE(output_pinfo) && !IS_ARRAY(PINFO_FORMAT(output_pinfo)) */
 		else if (IS_REC(PINFO_FORMAT(output_pinfo))) /* This can be done better -- maybe focus on record headers instead of data */
 		{
-			if (PINFO_IS_FILE(output_pinfo))
+			if (1 || PINFO_IS_FILE(output_pinfo))
 				PINFO_CURRENT_ARRAY_OFFSET(output_pinfo) += PINFO_RECL(output_pinfo);
 		}
 
@@ -1151,9 +1149,12 @@ static int read_formats
 				buffer = PINFO_BUFFER(pinfo);
 			}
 
+			if (PINFO_IS_BUFFER(pinfo))
+				assert(0 == PINFO_CURRENT_ARRAY_OFFSET(pinfo));
+
 			bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
 			                            PINFO_ID(pinfo),
-			                            PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo), /* dangerous -- assumes PINFO_LOCUS_BUFSIZE */
+			                            PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo) + PINFO_CURRENT_ARRAY_OFFSET(pinfo), /* dangerous -- assumes PINFO_LOCUS_BUFSIZE */
 			                            PINFO_IS_FILE(pinfo) ? PINFO_CURRENT_ARRAY_OFFSET(pinfo) : bytes_to_read,
 			                            NDARRS_BUFFER,
 			                            buffer,
@@ -1211,16 +1212,22 @@ static int read_formats
 			if (PINFO_MATE(pinfo))
 				assert(PINFO_MATE_BYTES_LEFT(pinfo) == PINFO_MATE_RECL(pinfo));
 
-			bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
-			                            PINFO_ID(pinfo),
-			                            PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo),
-			                            PINFO_IS_FILE(pinfo) ? PINFO_CURRENT_ARRAY_OFFSET(pinfo) : bytes_to_read,
-			                            NDARRS_BUFFER,
-			                            buffer,
-			                            bytes_to_read,
-			                            &PINFO_ARRAY_DONE(pinfo)
-			                           );
-			if (bytes_read != bytes_to_read)
+			if (PINFO_IS_FILE(pinfo) || PINFO_CURRENT_ARRAY_OFFSET(pinfo) < PINFO_LOCUS_FILLED(pinfo))
+			{
+				bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
+				                            PINFO_ID(pinfo),
+				                            PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo) + PINFO_CURRENT_ARRAY_OFFSET(pinfo),
+				                            PINFO_IS_FILE(pinfo) ? PINFO_CURRENT_ARRAY_OFFSET(pinfo) : bytes_to_read,
+					                        NDARRS_BUFFER,
+				                            buffer,
+				                            bytes_to_read,
+				                            &PINFO_ARRAY_DONE(pinfo)
+				                           );
+			}
+			else
+				bytes_read = 0;
+
+			if ((bytes_read != bytes_to_read) || (PINFO_IS_BUFFER(pinfo) && PINFO_CURRENT_ARRAY_OFFSET(pinfo) >= PINFO_LOCUS_FILLED(pinfo)))
 			{
 				if (bytes_read)
 					error = err_push(ERR_READ_FILE, "Reading record header");
@@ -1356,7 +1363,7 @@ static int read_formats
 						/* set file offset for data format's next read based on file offset of last read
 							record header and its length
 						*/
-						if (PINFO_IS_FILE(pinfo) && PINFO_IS_FILE(rech_pinfo))
+						if (1 || (PINFO_IS_FILE(pinfo) && PINFO_IS_FILE(rech_pinfo)))
 							PINFO_CURRENT_ARRAY_OFFSET(pinfo) = PINFO_CURRENT_ARRAY_OFFSET(rech_pinfo) + pinfo_file_recl(rech_pinfo);
 						else
 							assert(PINFO_IS_FILE(pinfo) && PINFO_IS_FILE(rech_pinfo));
@@ -1364,7 +1371,7 @@ static int read_formats
 						/* set file offset for record header's next read based on its old
 							file offset, its record length, and the data block length
 						*/
-						if (PINFO_IS_FILE(rech_pinfo))
+						if (1 || PINFO_IS_FILE(rech_pinfo))
 							PINFO_CURRENT_ARRAY_OFFSET(rech_pinfo) += pinfo_file_recl(rech_pinfo) + PINFO_BYTES_LEFT(pinfo);
 						else
 							assert(PINFO_IS_FILE(rech_pinfo));
@@ -1388,7 +1395,7 @@ static int read_formats
 
 			bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
 			                            PINFO_ID(pinfo),
-			                            PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo),
+			                            PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo) + PINFO_CURRENT_ARRAY_OFFSET(pinfo),
 			                            PINFO_IS_FILE(pinfo) ? PINFO_CURRENT_ARRAY_OFFSET(pinfo) : bytes_to_read,
 			                            NDARRS_BUFFER,
 			                            buffer,
