@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.7 1998/11/13 05:44:53 jimg Exp $
+# $Id: Makefile.in,v 1.8 1998/12/30 22:56:04 jimg Exp $
 
 @SET_MAKE@
 
@@ -14,7 +14,7 @@ DEFS = @DEFS@
 # Defines that the FreeForm library responds to. 4/16/98 jhrg
 # -DDEBUG -DDLL_CHK -DDEBUG_MSG -DMEMTRACK=1 -DMEMTRACK_B -DFF_CHK_ADDR
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
-CFLAGS = @CFLAGS@ -Wall
+CFLAGS = @CFLAGS@ -Wall -Wno-char-subscripts
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
