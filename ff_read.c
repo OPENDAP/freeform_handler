@@ -7,6 +7,9 @@
 
 /*
  * $Log: ff_read.c,v $
+ * Revision 1.10  1998/11/13 05:43:41  jimg
+ * Fixed up the TEST_LOGGING stuff.
+ *
  * Revision 1.9  1998/11/12 05:42:40  jimg
  * Changed defines so that you can build the test code separately from the
  * error logging code. I don't really understand the latter.
@@ -37,7 +40,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.9 1998/11/12 05:42:40 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.10 1998/11/13 05:43:41 jimg Exp $"};
 
 #include <freeform.h>
 
@@ -118,7 +121,7 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
   
     if (std_args->user.is_stdin_redirected)
 	ff_destroy_bufsize(std_args->input_bufsize);
-#endif //TEST  
+#endif /* TEST_LOGGING */
 
     ff_destroy_bufsize(newform_log);
 
@@ -171,6 +174,7 @@ int main(int argc, char *argv[])
     printf("Bytes read: %ld\n", bytes_in);
     if (bytes_in > 0)
         fwrite(data, 1, bytes_in, stdout);
+
     exit(0);
 }
 
