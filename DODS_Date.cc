@@ -9,6 +9,12 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.8  1999/07/22 21:28:08  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.7.2.1  1999/06/01 15:38:05  jimg
+// Added code to parse and return floating point dates.
+//
 // Revision 1.7  1999/05/27 17:02:21  jimg
 // Merge with alpha-3-0-0
 //
@@ -41,7 +47,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.7 1999/05/27 17:02:21 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.8 1999/07/22 21:28:08 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -87,6 +93,12 @@ extract_argument(BaseType *arg)
 #else
     return "";
 #endif
+}
+
+static inline double
+days_in_year(int year) 
+{
+    return (year % 4) && !(year % 100) && (year % 400) ? 366 : 365;
 }
 
 bool
@@ -136,7 +148,7 @@ DODS_Date::set(BaseType *arg)
 // separators, etc. would improve error detection.
 
 void
-DODS_Date::set(string date) 
+DODS_Date::parse_integer_time(string date)
 {
     // Parse the date_str.
     istrstream iss(date.c_str());
@@ -163,6 +175,93 @@ DODS_Date::set(string date)
 	days_to_month_day(_year, _day_number, &_month, &_day);
 	_julian_day = ::julian_day(_year, _month, _day);
     }
+}
+
+// This parser was originally used to build both DODS_Date and DODS_Time
+// objects in Dan's DODS_Decimal_Year class. I've left in the code that does
+// stuff for time because the fractional part of the seconds might bump the
+// day count (and because it was easy to use the code without changing it
+// :-). 5/29/99 jhrg
+
+void
+DODS_Date::parse_fractional_time(string dec_year)
+{
+    double secs_in_year;
+    double d_year_day,  d_hr_day, d_min_day, d_sec_day;
+    int i_year, i_year_day, i_hr_day, i_min_day, i_sec_day;
+    
+    // The format for the decimal-year string is <year part>.<fraction part>.
+
+    double d_year = strtod(dec_year.c_str(), 0);
+
+    i_year = (int)d_year;
+    double year_fraction = d_year - i_year;
+
+    secs_in_year = days_in_year(_year) * seconds_per_day;
+
+    //
+    // Recreate the 'day' in the year.
+    //
+    d_year_day = (secs_in_year * year_fraction)/seconds_per_day + 1;
+    i_year_day = (int)d_year_day;
+
+    //
+    // Recreate the 'hour' in the day.
+    //
+    d_hr_day = ((d_year_day - i_year_day)*seconds_per_day) / seconds_per_hour;
+    i_hr_day = (int)d_hr_day;
+
+    //
+    // Recreate the 'minute' in the hour.
+    //
+    d_min_day = ((d_hr_day - i_hr_day)*seconds_per_hour) / seconds_per_minute;
+    i_min_day = (int)d_min_day;
+
+    //
+    // Recreate the 'second' in the minute.
+    //
+    d_sec_day = (d_min_day - i_min_day)*seconds_per_minute;
+    i_sec_day = (int)d_sec_day;
+
+    //
+    // Round-off second to nearest value, handle condition
+    // where seconds/minutes roll over modulo values.
+    //
+    if ((d_sec_day - i_sec_day) >= .5) i_sec_day++;
+
+    if ( i_sec_day == 60 ) {
+	i_sec_day = 0;
+	i_min_day++;
+	if ( i_min_day == 60 ) {
+	    i_min_day = 0;
+	    i_hr_day++;
+	    if ( i_hr_day == 24 ) {
+		i_hr_day = 0;
+		i_year_day++;
+		if ( i_year_day == (days_in_year(_year) + 1)) {
+		    i_year_day = 1;
+		    i_year++;
+		}
+	    }
+	}
+    }
+
+    set(i_year, i_year_day);
+
+    assert(OK());
+}
+
+void
+DODS_Date::set(string date) 
+{
+    // Check for fractional date/time strings. 
+    if (date.find(".") != string::npos) {
+	parse_fractional_time(date);
+    } else if (date.find("/") != string::npos) {
+	parse_integer_time(date);
+    }
+    else 
+	throw Error(malformed_expr, "Could not recognize date format");
 
     assert(OK());
 }
@@ -256,6 +355,14 @@ DODS_Date::julian_day() const
     return _julian_day;
 }
 
+// Return the fractional part of the date. A private function.
+
+double
+DODS_Date::fraction() const
+{
+    return _year + (_day_number-1)/days_in_year(_year);
+}
+
 string 
 DODS_Date::get(date_format format) const
 {
@@ -268,6 +375,10 @@ DODS_Date::get(date_format format) const
       case ymd:
 	oss << _year << "/" << _month << "/" << _day << ends;
 	break;
+      case decimal: {
+	oss.precision(14);
+	oss << fraction() << ends;
+      }
       default:
 #ifndef TEST
 	throw Error(unknown_error, "Invalid date format");

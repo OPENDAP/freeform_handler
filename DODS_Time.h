@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Time.h,v $
+// Revision 1.5  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.4.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
 // Revision 1.4  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -66,6 +72,8 @@ private:
     bool _gmt;
 
     static double _eps;		// defined as 1.0e-6 in DODS_Time.cc
+
+protected:
 
 public:
     /** @name Constructors */
@@ -165,6 +173,11 @@ public:
     /** Get the number of seconds since midnight.
 	@return The number of seconds since midnight. */
     double seconds_since_midnight() const;
+
+    /** Get the time as a fraction of a day.
+
+	@return The daytime as a fraction. */
+    double fraction() const;
     //@}
 
     /** @name Relational operators */

@@ -9,6 +9,12 @@
 // Implementation of the DODS Decimal_Year class
 
 // $Log: DODS_Decimal_Year.cc,v $
+// Revision 1.2  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.1.4.1  1999/06/07 17:33:06  edavis
+// Changed 'data()' to 'c_str()'.
+//
 // Revision 1.1  1999/05/25 13:50:12  dan
 // Modified for dap-3.0.0a changes.
 //
@@ -21,7 +27,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.1 1999/05/25 13:50:12 dan Exp $";
+static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.2 1999/07/22 21:28:09 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -131,7 +137,7 @@ DODS_Decimal_Year::set(string dec_year)
     
     // The format for the decimal-year string is <year part>.<fraction part>.
 
-    double d_year = strtod(dec_year.data(), 0);
+    double d_year = strtod(dec_year.c_str(), 0);
 
     i_year = d_year * 1;
     double year_fraction = d_year - i_year;

@@ -8,6 +8,13 @@
 // Implementation of the DODS_Time_Factory class
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.5  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.4.2.1  1999/06/04 15:01:35  dan
+// Fixed problem caused by testing '_hours', prior to setting '_hours'
+// with an assignment to dds.var(). Same for '_minutes', '_seconds'.
+//
 // Revision 1.4  1999/05/25 18:37:50  dan
 // Check for empty hour/minute/second variables in a DODS_Time
 // variable, if these variables do not exist set a default value
@@ -30,7 +37,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.4 1999/05/25 18:37:50 dan Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.5 1999/07/22 21:28:09 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -69,20 +76,20 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     // Now check that these variables actually exist and that they have
     // sensible types.
 
+    _hours = dds.var(_hours_name);
     if ( _hours ) {
-      _hours = dds.var(_hours_name);
       if (_hours->type() != dods_int32_c)
 	throw Error(unknown_error, "DODS_Time_Factory: The variable used for hours must be an integer.");
     }
 
+    _minutes = dds.var(_mins_name);
     if ( _minutes ) {
-      _minutes = dds.var(_mins_name);
       if (_minutes->type() != dods_int32_c)
 	throw Error(unknown_error, "DODS_Time_Factory: The variable used for minutes must be an integer.");
     }
 
+    _seconds = dds.var(_secs_name);
     if ( _seconds ) {
-      _seconds = dds.var(_secs_name);
       if (_seconds->type() != dods_int32_c)
 	throw Error(unknown_error, "DODS_Time_Factory: The variable used for seconds must be an integer.");
     }
@@ -114,3 +121,6 @@ DODS_Time_Factory::get()
 
     return DODS_Time(hour, min, sec, _gmt);
 }
+
+
+

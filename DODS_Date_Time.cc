@@ -9,6 +9,12 @@
 // Implementation of the DODS Date/Time class
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.4  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.3.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
 // Revision 1.3  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -26,7 +32,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.3 1999/05/04 02:55:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.4 1999/07/22 21:28:09 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -66,6 +72,12 @@ extract_argument(BaseType *arg)
 #else
     return "";
 #endif
+}
+
+static inline double
+days_in_year(int year) 
+{
+    return (year % 4) && !(year % 100) && (year % 400) ? 366 : 365;
 }
 
 // Public mfuncs
@@ -116,16 +128,95 @@ DODS_Date_Time::set(DODS_Date d, DODS_Time t)
     assert(OK());
 }
 
+// Ripped off from Dan's DODS_Decimal_Year code. 5/29/99 jhrg
+
+void
+DODS_Date_Time::parse_fractional_time(string dec_year)
+{
+    double secs_in_year;
+    double d_year_day,  d_hr_day, d_min_day, d_sec_day;
+    int i_year, i_year_day, i_hr_day, i_min_day, i_sec_day;
+    
+    // The format for the decimal-year string is <year part>.<fraction part>.
+
+    double d_year = strtod(dec_year.c_str(), 0);
+
+    i_year = (int)d_year;
+    double year_fraction = d_year - i_year;
+
+    secs_in_year = days_in_year(i_year) * seconds_per_day;
+
+    //
+    // Recreate the 'day' in the year.
+    //
+    d_year_day = (secs_in_year * year_fraction)/seconds_per_day + 1;
+    i_year_day = (int)d_year_day;
+
+    //
+    // Recreate the 'hour' in the day.
+    //
+    d_hr_day = ((d_year_day - i_year_day)*seconds_per_day) / seconds_per_hour;
+    i_hr_day = (int)d_hr_day;
+
+    //
+    // Recreate the 'minute' in the hour.
+    //
+    d_min_day = ((d_hr_day - i_hr_day)*seconds_per_hour) / seconds_per_minute;
+    i_min_day = (int)d_min_day;
+
+    //
+    // Recreate the 'second' in the minute.
+    //
+    d_sec_day = (d_min_day - i_min_day)*seconds_per_minute;
+    i_sec_day = (int)d_sec_day;
+
+    //
+    // Round-off second to nearest value, handle condition
+    // where seconds/minutes roll over modulo values.
+    //
+    if ((d_sec_day - i_sec_day) >= .5) i_sec_day++;
+
+    if ( i_sec_day == 60 ) {
+	i_sec_day = 0;
+	i_min_day++;
+	if ( i_min_day == 60 ) {
+	    i_min_day = 0;
+	    i_hr_day++;
+	    if ( i_hr_day == 24 ) {
+		i_hr_day = 0;
+		i_year_day++;
+		if ( i_year_day == (days_in_year(i_year) + 1)) {
+		    i_year_day = 1;
+		    i_year++;
+		}
+	    }
+	}
+    }
+
+    _date.set((int)i_year, (int)i_year_day);
+    _time.set((int)i_hr_day, (int)i_min_day, (double)i_sec_day);
+
+    assert(OK());
+}
+
+
+
 void
 DODS_Date_Time::set(string date_time)
 {
-    // The format for the date-time string is <date part>:<time part>.
-    size_t i = date_time.find(":");
-    string date_part = date_time.substr(0, i); 
-    string time_part = date_time.substr(i+1, date_time.size());
+    // Check for a fractional-date string and parse it if needed.
+    if (date_time.find(".") != string::npos) {
+	parse_fractional_time(date_time);
+    }
+    else {
+	// The format for the date-time string is <date part>:<time part>.
+	size_t i = date_time.find(":");
+	string date_part = date_time.substr(0, i); 
+	string time_part = date_time.substr(i+1, date_time.size());
     
-    _date.set(date_part);
-    _time.set(time_part);
+	_date.set(date_part);
+	_time.set(time_part);
+    }
 
     assert(OK());
 }
@@ -210,6 +301,19 @@ DODS_Date_Time::get(date_format format, bool gmt) const
 	return _date.get() + ":" + _time.get(gmt);
       case yd:
 	return _date.get(yd) + ":" + _time.get(gmt);
+      case decimal: {
+	  ostrstream oss;
+	  oss.precision(14);
+
+	  double decday = (_date.fraction() 
+			   + _time.fraction()/days_in_year(_date.year()));
+
+	  oss << decday << ends;
+
+	  string yd = oss.str();
+	  oss.freeze(0);
+	  return yd;
+      }
       default:
 #ifndef TEST
 	throw Error(unknown_error, "Invalid date format");

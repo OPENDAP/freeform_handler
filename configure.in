@@ -2,7 +2,7 @@
 dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.6 1999/05/05 01:48:25 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.7 1999/07/22 21:28:10 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
@@ -14,11 +14,6 @@ fulldir=`pwd`
 
 DODS_GET_DODS_ROOT
 DODS_DIRECTORY_VERSION
-
-dnl Find where perl lives on the users system
-
-PERL=`which perl`
-AC_SUBST(PERL)
 
 dnl the command to use to generate dependencies for makefiles
 
@@ -43,6 +38,8 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 
+DODS_PROG_PERL
+DODS_PROG_GTAR
 DODS_PROG_LEX
 DODS_PROG_BISON
 DODS_GCC

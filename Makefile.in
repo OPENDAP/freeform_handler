@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.21 1999/05/27 17:02:23 jimg Exp $
+# $Id: Makefile.in,v 1.22 1999/07/22 21:28:09 jimg Exp $
 
 @SET_MAKE@
 
@@ -43,6 +43,7 @@ SHELL = /bin/sh
 srcdir = @srcdir@
 version = @VERSION@
 dir = ff-dods-@VERSION@
+host = @host@
 
 COMPONENT_NAME = DODS FreeForm Server
 
@@ -55,6 +56,8 @@ RUNTESTFLAGS = #--all --verbose
 LN_S = @LN_S@
 CP = cp
 AWK = @AWK@
+TAR = @TAR@
+PERL = @PERL@
 CC = @CC@
 CXX = @CXX@
 YACC = @YACC@
@@ -197,10 +200,28 @@ collect-coverage-data:
 tar:
 	-rm -f config.cache config.status config.log
 	cd $(DODS_ROOT)/.. && \
-	tar --exclude '*/old' --exclude '*/.#*' --exclude '*/CVS' \
+	$(TAR) --exclude '*/old' --exclude '*/.#*' --exclude '*/CVS' \
 	    --gzip --create --dereference --file DODS-$(dir).tar.gz \
 	    DODS/src/$(dir)
 
+# Creates tar files for binary distributions.
+#
+.PHONY: binary-tar
+binary-tar:
+	cd $(DODS_ROOT)/.. && \
+	$(TAR) --gzip --create --dereference \
+	    --file DODS-$(host)-ff-server-$(version).tar.gz \
+	    DODS/etc/nph-ff \
+	    DODS/etc/ff_das \
+	    DODS/etc/ff_dds \
+	    DODS/etc/ff_dods \
+	    DODS/bin/chkform \
+	    DODS/bin/newform \
+	    DODS/bin/bufform \
+	    DODS/bin/readfile
+
+#
+#
 .PHONY: update-version
 update-version: check-version
 	@echo "Version is: `cat version.h`"

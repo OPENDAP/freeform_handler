@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Date_Time.h,v $
+// Revision 1.3  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.2.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
 // Revision 1.2  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -40,6 +46,7 @@ class DODS_Date_Time {
     DODS_Date _date;
     DODS_Time _time;
 
+    void parse_fractional_time(string date_time);
  public:
     /** @name Constructors */
     //@{

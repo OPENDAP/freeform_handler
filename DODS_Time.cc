@@ -9,6 +9,15 @@
 // Implementation of the DODS Time class
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.6  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.5.2.2  1999/06/07 17:33:06  edavis
+// Changed 'data()' to 'c_str()'.
+//
+// Revision 1.5.2.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
 // Revision 1.5  1999/05/27 17:02:22  jimg
 // Merge with alpha-3-0-0
 //
@@ -36,7 +45,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.5 1999/05/27 17:02:22 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.6 1999/07/22 21:28:09 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -95,6 +104,12 @@ DODS_Time::OK() const
     return _hours >= 0 && _hours <= 23
 	&& _minutes >= 0 && _minutes <= 59
 	&& _seconds >= 0.0 && _seconds < 60.0;
+}
+
+double
+DODS_Time::fraction() const
+{
+    return ((_hours + ((_minutes + (_seconds / 60.0)) / 60.0)) / 24.0);
 }
 
 // Public mfincs.
@@ -160,8 +175,8 @@ DODS_Time::set(string time)
 
     string gmt;
     iss >> gmt;
-    if (gmt.data() == "GMT" || gmt.data() == "gmt" || gmt.data() == "UTC" 
-	|| gmt.data() == "utc")
+    if (gmt.c_str() == "GMT" || gmt.c_str() == "gmt" || gmt.c_str() == "UTC" 
+	|| gmt.c_str() == "utc")
 	_gmt = true;
     else
 	_gmt = false;

@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Date.h,v $
+// Revision 1.6  1999/07/22 21:28:08  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.5.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
 // Revision 1.5  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -44,13 +50,20 @@
 #include "BaseType.h"
 #include "date_proc.h"
 
+/** Useful constant values. */
+
+const double seconds_per_day = 86400.0;
+const double seconds_per_hour = 3600.0;
+const double seconds_per_minute = 60.0;
+
 /** Constants used to denote different supported date formats. #ymd# is a
     year---month---day format, #yd# is a year---year-day format. */
 
 enum date_format {
     unknown_format,
     ymd,
-    yd
+    yd,
+    decimal
 };
 
 /** The DODS Date object. This provides a way to translate between local
@@ -68,6 +81,9 @@ private:
     int _month;
     int _day;
     int _day_number;
+
+    void parse_fractional_time(string date);
+    void parse_integer_time(string date);
 
 public:
     /** @name Constructors */
@@ -170,6 +186,12 @@ public:
 	@see time.h
  	@see mktime(3) */
     time_t unix_time() const;
+
+    /* Get the date as a real number. The year is the whole number and days
+       are as fractions of a year. E.G.: 1998.5 is approximately June, 1998.
+
+       @return The date (year, month and day) as a real number. */
+    double fraction() const;
     //@}
 
     /** @name Relational operators */

@@ -11,6 +11,12 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.10  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.9.6.1  1999/06/07 17:32:18  edavis
+// Changed 'data()' to 'c_str()'.
+//
 // Revision 1.9  1999/05/04 02:55:36  jimg
 // Merge with no-gnu
 //
@@ -43,7 +49,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.9 1999/05/04 02:55:36 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.10 1999/07/22 21:28:09 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -109,7 +115,7 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 	    return -1;
 	
 	dim_nms[id] = dimname;
-	//	(void) strcpy(dim_nms[id], dimname.data());
+	//	(void) strcpy(dim_nms[id], dimname.c_str());
 	
 	cor[id] = start;
 	step[id] = stride;
@@ -257,7 +263,7 @@ FFArray::read(const string &dataset, int &error)
 
     // make char * variables to hold string data for read_ff
     char *ds = new char[dataset.size() + 1];
-    strcpy(ds, dataset.data());
+    strcpy(ds, dataset.c_str());
 
     // This was used for original Sequence to Array translation 
     // string output_format = make_output_format(name(), var()->type_name(), 

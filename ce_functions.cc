@@ -9,6 +9,9 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.12  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
 // Revision 1.11  1999/07/22 20:50:40  jimg
 // Resolved conflicts from merge. I've kept the old (I think) versions of the
 // decimal year functions but wrapped them in #if 0 #endif.
@@ -98,8 +101,10 @@
 #include "DODS_Time_Factory.h"
 #include "DODS_Date_Time.h"
 #include "DODS_Date_Time_Factory.h"
+#if 0
 #include "DODS_Decimal_Year.h"
 #include "DODS_Decimal_Year_Factory.h"
+#endif
 
 /** Read an instance of T using a Factory for objects of type T. The Factory
     class for T must read configuration information from the DAS.
@@ -227,11 +232,13 @@ func_date_time(int argc, BaseType *argv[], DDS &dds)
     return comparison<DODS_Date_Time, DODS_Date_Time_Factory>(argc, argv, dds);
 }
 
+#if 0
 bool
 func_decimal_year(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Decimal_Year, DODS_Decimal_Year_Factory>(argc, argv, dds);
 }
+#endif
 
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 

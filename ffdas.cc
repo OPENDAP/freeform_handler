@@ -13,6 +13,16 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.11  1999/07/22 21:28:10  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.10.2.1  1999/07/21 20:27:08  dan
+// Added Attribute handling for FreeForm File_Headers.  FreeForm
+// header variables defined in the format-descriptor file will be
+// added the the FF_GLOBAL DAS container.  File_Headers are commonly
+// used by FreeForm to provide metadata concerning the data contained
+// in the dataset.
+//
 // Revision 1.10  1999/05/27 17:02:23  jimg
 // Merge with alpha-3-0-0
 //
@@ -53,7 +63,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.10 1999/05/27 17:02:23 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.11 1999/07/22 21:28:10 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,6 +80,7 @@ static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.10 1999/05/27 17:02:23 jimg E
 #define _BOOLEAN_DEFINED	
 #include "FreeForm.h"
 #include "util_ff.h"
+#include "freeform.h"
 
 int StrLens[MaxStr]; // List of string lengths
 
@@ -144,6 +155,129 @@ read_attributes(string filename, AttrTable *at, string *err_msg)
     fmt_info = "\"" + fmt_info + "\"";
     at->append_attr("Native_file", "STRING", fmt_info);
 
+    PROCESS_INFO_LIST pinfo_list = NULL;
+    PROCESS_INFO_PTR hd_pinfo = NULL;
+
+    char text[256];
+
+    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
+    if (error) {
+	sprintf(Msgt, "ff_das: db_ask can not get Format Summary");
+	ErrMsgT(Msgt);  
+	*err_msg = "\"" + (string)Msgt + " \"";
+	return false;
+    }
+
+    pinfo_list = dll_first(pinfo_list);
+    hd_pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
+    if (hd_pinfo) {
+      
+      VARIABLE_LIST vlist = NULL;
+      VARIABLE_PTR var = NULL;
+      
+      vlist = FFV_FIRST_VARIABLE(PINFO_FORMAT(hd_pinfo));
+      var = ((VARIABLE_PTR)(vlist)->data.u.var);
+
+      while (var) {
+	if (IS_EOL(var)) {
+	  vlist = (vlist)->next;
+	  var = ((VARIABLE_PTR)(vlist)->data.u.var);
+		
+	  continue;
+	}
+
+	switch (FFV_DATA_TYPE(var)) {
+
+          case FFV_TEXT:
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_TEXT, text);
+	    at->append_attr(var->name, "STRING", text);
+	    break;
+
+	  case FFV_INT8:
+	    unsigned char int8;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT8, &int8);
+	    sprintf(text,"%d",int8);
+	    at->append_attr(var->name, "BYTE", text);
+	    break;
+
+	  case FFV_INT16:
+	    short int16;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT16, &int16);
+	    sprintf(text,"%d",int16);
+	    at->append_attr(var->name, "INT16", text);
+	    break;
+
+	  case FFV_INT32:
+	    int int32;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT32, &int32);
+	    sprintf(text,"%d",int32);
+	    at->append_attr(var->name, "INT32", text);
+	    break;
+
+	  case FFV_INT64:
+	    long int64;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT64, &int64);
+	    sprintf(text,"%ld",int64);
+	    at->append_attr(var->name, "INT32", text);
+	    break;
+
+	  case FFV_UINT8:
+	    unsigned char uint8;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT8, &uint8);
+	    sprintf(text,"%d",uint8);
+	    at->append_attr(var->name, "BYTE", text);
+	    break;
+
+	  case FFV_UINT16:
+	    unsigned short uint16;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT16, &uint16);
+	    sprintf(text,"%d",uint16);
+	    at->append_attr(var->name, "UINT16", text);
+	    break;
+
+	  case FFV_UINT32:
+	    unsigned int uint32;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT32, &uint32);
+	    sprintf(text,"%u",uint32);
+	    at->append_attr(var->name, "UINT32", text);
+	    break;
+
+	  case FFV_UINT64:
+	    unsigned long uint64;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT64, &uint64);
+	    sprintf(text,"%lu",uint64);
+	    at->append_attr(var->name, "UINT32", text);
+	    break;
+
+	  case FFV_FLOAT32:
+	    float float32;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_FLOAT32, &float32);
+	    sprintf(text,"%f",float32);
+	    at->append_attr(var->name, "FLOAT32", text);
+	    break;
+
+	  case FFV_FLOAT64:
+	    double float64;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_FLOAT64, &float64);
+	    sprintf(text,"%f",float64);
+	    at->append_attr(var->name, "FLOAT64", text);
+	    break;
+
+	  case FFV_ENOTE:
+	    double enote;
+	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_ENOTE, &enote);
+	    sprintf(text,"%e",enote);
+	    at->append_attr(var->name, "FLOAT64", text);
+	    break;
+
+          default:
+            assert("Unknown FreeForm type!" && false);
+            break;
+        }           
+	vlist = (vlist)->next;
+	var = ((VARIABLE_PTR)(vlist)->data.u.var);
+      }
+    }
     return true;
 }
 
