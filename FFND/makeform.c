@@ -29,7 +29,6 @@
  */
 #define WANT_FF_TYPES
 #include <freeform.h>
-#include <name_tab.h>
 
 FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES] = {
 	{"text",        FFV_TEXT},
@@ -65,131 +64,148 @@ FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES] = {
 /* Define the composite Format types */
 #define FFF_BINARY_DATA         (FFF_BINARY | FFF_DATA)
 #define FFF_ASCII_DATA          (FFF_ASCII  | FFF_DATA)
-#define FFF_DBASE_DATA          (FFF_DBASE  | FFF_DATA)
+#define FFF_FLAT_DATA          (FFF_FLAT  | FFF_DATA)
 
 #define FFF_BINARY_INPUT_DATA   (FFF_BINARY | FFF_DATA | FFF_INPUT)
 #define FFF_ASCII_INPUT_DATA    (FFF_ASCII  | FFF_DATA | FFF_INPUT)
-#define FFF_DBASE_INPUT_DATA    (FFF_DBASE  | FFF_DATA | FFF_INPUT)
+#define FFF_FLAT_INPUT_DATA    (FFF_FLAT  | FFF_DATA | FFF_INPUT)
 
 #define FFF_BINARY_OUTPUT_DATA  (FFF_BINARY | FFF_DATA | FFF_OUTPUT)    
 #define FFF_ASCII_OUTPUT_DATA   (FFF_ASCII  | FFF_DATA | FFF_OUTPUT)    
-#define FFF_DBASE_OUTPUT_DATA   (FFF_DBASE  | FFF_DATA | FFF_OUTPUT)    
+#define FFF_FLAT_OUTPUT_DATA   (FFF_FLAT  | FFF_DATA | FFF_OUTPUT)    
 
 #define FFF_BINARY_FILE_HEADER              (FFF_BINARY | FFF_FILE | FFF_HEADER)
 #define FFF_ASCII_FILE_HEADER               (FFF_ASCII  | FFF_FILE | FFF_HEADER)
-#define FFF_DBASE_FILE_HEADER               (FFF_DBASE  | FFF_FILE | FFF_HEADER)
+#define FFF_FLAT_FILE_HEADER               (FFF_FLAT  | FFF_FILE | FFF_HEADER)
 
 #define FFF_INPUT_BINARY_FILE_HEADER        (FFF_INPUT | FFF_BINARY | FFF_FILE | FFF_HEADER)
 #define FFF_INPUT_ASCII_FILE_HEADER (FFF_INPUT | FFF_ASCII  | FFF_FILE | FFF_HEADER)
-#define FFF_INPUT_DBASE_FILE_HEADER (FFF_INPUT | FFF_DBASE  | FFF_FILE | FFF_HEADER)
+#define FFF_INPUT_FLAT_FILE_HEADER (FFF_INPUT | FFF_FLAT  | FFF_FILE | FFF_HEADER)
 
 #define FFF_OUTPUT_BINARY_FILE_HEADER       (FFF_OUTPUT | FFF_BINARY | FFF_FILE | FFF_HEADER)
 #define FFF_OUTPUT_ASCII_FILE_HEADER        (FFF_OUTPUT | FFF_ASCII  | FFF_FILE | FFF_HEADER)
-#define FFF_OUTPUT_DBASE_FILE_HEADER        (FFF_OUTPUT | FFF_DBASE  | FFF_FILE | FFF_HEADER)
+#define FFF_OUTPUT_FLAT_FILE_HEADER        (FFF_OUTPUT | FFF_FLAT  | FFF_FILE | FFF_HEADER)
 
 #define FFF_BINARY_FILE_HEADER_SEP  (FFF_BINARY | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
 #define FFF_ASCII_FILE_HEADER_SEP   (FFF_ASCII  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
-#define FFF_DBASE_FILE_HEADER_SEP   (FFF_DBASE  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
+#define FFF_FLAT_FILE_HEADER_SEP   (FFF_FLAT  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
 
 #define FFF_INPUT_BINARY_FILE_HEADER_SEP    (FFF_INPUT | FFF_BINARY | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
 #define FFF_INPUT_ASCII_FILE_HEADER_SEP             (FFF_INPUT | FFF_ASCII  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
-#define FFF_INPUT_DBASE_FILE_HEADER_SEP             (FFF_INPUT | FFF_DBASE  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
+#define FFF_INPUT_FLAT_FILE_HEADER_SEP             (FFF_INPUT | FFF_FLAT  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
 
 #define FFF_INPUT_ASCII_FILE_HEADER_SEP_VAR  (FFF_INPUT | FFF_ASCII  | FFF_SEPARATE | FFF_FILE | FFF_HEADER | FFF_VARIED)
-#define FFF_INPUT_DBASE_FILE_HEADER_SEP_VAR  (FFF_INPUT | FFF_DBASE  | FFF_SEPARATE | FFF_FILE | FFF_HEADER | FFF_VARIED)
+#define FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR  (FFF_INPUT | FFF_FLAT  | FFF_SEPARATE | FFF_FILE | FFF_HEADER | FFF_VARIED)
 
 #define FFF_OUTPUT_BINARY_FILE_HEADER_SEP   (FFF_OUTPUT | FFF_BINARY | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
 #define FFF_OUTPUT_ASCII_FILE_HEADER_SEP    (FFF_OUTPUT | FFF_ASCII  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
-#define FFF_OUTPUT_DBASE_FILE_HEADER_SEP    (FFF_OUTPUT | FFF_DBASE  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
+#define FFF_OUTPUT_FLAT_FILE_HEADER_SEP    (FFF_OUTPUT | FFF_FLAT  | FFF_SEPARATE | FFF_FILE | FFF_HEADER)
+
+#define FFF_OUTPUT_ASCII_FILE_HEADER_SEP_VAR    (FFF_OUTPUT | FFF_ASCII  | FFF_SEPARATE | FFF_FILE | FFF_HEADER | FFF_VARIED)
+#define FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR    (FFF_OUTPUT | FFF_FLAT  | FFF_SEPARATE | FFF_FILE | FFF_HEADER | FFF_VARIED)
 
 #define FFF_BINARY_REC_HEADER                       (FFF_BINARY | FFF_REC | FFF_HEADER)
 #define FFF_ASCII_REC_HEADER                        (FFF_ASCII  | FFF_REC | FFF_HEADER)
-#define FFF_DBASE_REC_HEADER                (FFF_DBASE  | FFF_REC | FFF_HEADER)
+#define FFF_FLAT_REC_HEADER                (FFF_FLAT  | FFF_REC | FFF_HEADER)
 
 #define FFF_INPUT_BINARY_REC_HEADER  (FFF_INPUT | FFF_BINARY | FFF_REC | FFF_HEADER)
 #define FFF_INPUT_ASCII_REC_HEADER  (FFF_INPUT | FFF_ASCII  | FFF_REC | FFF_HEADER)
-#define FFF_INPUT_DBASE_REC_HEADER  (FFF_INPUT | FFF_DBASE  | FFF_REC | FFF_HEADER)
+#define FFF_INPUT_FLAT_REC_HEADER  (FFF_INPUT | FFF_FLAT  | FFF_REC | FFF_HEADER)
 
 #define FFF_OUTPUT_BINARY_REC_HEADER (FFF_OUTPUT | FFF_BINARY | FFF_REC | FFF_HEADER)
 #define FFF_OUTPUT_ASCII_REC_HEADER (FFF_OUTPUT | FFF_ASCII  | FFF_REC | FFF_HEADER)
-#define FFF_OUTPUT_DBASE_REC_HEADER (FFF_OUTPUT | FFF_DBASE  | FFF_REC | FFF_HEADER)
+#define FFF_OUTPUT_FLAT_REC_HEADER (FFF_OUTPUT | FFF_FLAT  | FFF_REC | FFF_HEADER)
 
 #define FFF_BINARY_REC_HEADER_SEP   (FFF_BINARY | FFF_SEPARATE | FFF_REC | FFF_HEADER)
 #define FFF_ASCII_REC_HEADER_SEP    (FFF_ASCII  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
-#define FFF_DBASE_REC_HEADER_SEP    (FFF_DBASE  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
+#define FFF_FLAT_REC_HEADER_SEP    (FFF_FLAT  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
 
 #define FFF_INPUT_BINARY_REC_HEADER_SEP     (FFF_INPUT | FFF_BINARY | FFF_SEPARATE | FFF_REC | FFF_HEADER)
 #define FFF_INPUT_ASCII_REC_HEADER_SEP      (FFF_INPUT | FFF_ASCII  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
-#define FFF_INPUT_DBASE_REC_HEADER_SEP      (FFF_INPUT | FFF_DBASE  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
+#define FFF_INPUT_FLAT_REC_HEADER_SEP      (FFF_INPUT | FFF_FLAT  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
 
 #define FFF_OUTPUT_BINARY_REC_HEADER_SEP    (FFF_OUTPUT | FFF_BINARY | FFF_SEPARATE | FFF_REC | FFF_HEADER)
 #define FFF_OUTPUT_ASCII_REC_HEADER_SEP     (FFF_OUTPUT | FFF_ASCII  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
-#define FFF_OUTPUT_DBASE_REC_HEADER_SEP     (FFF_OUTPUT | FFF_DBASE  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
+#define FFF_OUTPUT_FLAT_REC_HEADER_SEP     (FFF_OUTPUT | FFF_FLAT  | FFF_SEPARATE | FFF_REC | FFF_HEADER)
 
 #define FFF_BINARY_RECORD  (FFF_RECORD | FFF_BINARY)
 #define FFF_ASCII_RECORD   (FFF_RECORD | FFF_ASCII)
-#define FFF_DBASE_RECORD   (FFF_RECORD | FFF_DBASE)
+#define FFF_FLAT_RECORD   (FFF_RECORD | FFF_FLAT)
 
 FFF_LOOKUP format_types[NUM_FORMAT_TYPES] = {
 	{"binary_data",        FFF_BINARY_DATA},
-	{"ASCII_data",         FFF_ASCII_DATA},
-	{"dbase_data",         FFF_DBASE_DATA},
 	{"binary_input_data",  FFF_BINARY_INPUT_DATA},
-	{"ASCII_input_data",   FFF_ASCII_INPUT_DATA},
-	
-	{"dbase_input_data",   FFF_DBASE_INPUT_DATA},
 	{"binary_output_data", FFF_BINARY_OUTPUT_DATA},
-	{"ASCII_output_data",  FFF_ASCII_OUTPUT_DATA},
-	{"dbase_output_data",  FFF_DBASE_OUTPUT_DATA},
 	{"binary_file_header",        FFF_BINARY_FILE_HEADER},
-	
-	{"ASCII_file_header",         FFF_ASCII_FILE_HEADER},
-	{"dbase_file_header",         FFF_DBASE_FILE_HEADER},
 	{"binary_input_file_header",  FFF_INPUT_BINARY_FILE_HEADER},
-	{"ASCII_input_file_header",   FFF_INPUT_ASCII_FILE_HEADER},
-	{"dbase_input_file_header",   FFF_INPUT_DBASE_FILE_HEADER},
-	
 	{"binary_output_file_header", FFF_OUTPUT_BINARY_FILE_HEADER},
-	{"ASCII_output_file_header",  FFF_OUTPUT_ASCII_FILE_HEADER},
-	{"dbase_output_file_header",           FFF_OUTPUT_DBASE_FILE_HEADER},
 	{"binary_file_header_separate",        FFF_BINARY_FILE_HEADER_SEP},
-	{"ASCII_file_header_separate",         FFF_ASCII_FILE_HEADER_SEP},
-
-	{"dbase_file_header_separate",         FFF_DBASE_FILE_HEADER_SEP},
 	{"binary_input_file_header_separate",  FFF_INPUT_BINARY_FILE_HEADER_SEP},
-	{"ASCII_input_file_header_separate",   FFF_INPUT_ASCII_FILE_HEADER_SEP},
-	{"dbase_input_file_header_separate",   FFF_INPUT_DBASE_FILE_HEADER_SEP},
-	{"ASCII_input_file_header_separate_varied",   FFF_INPUT_ASCII_FILE_HEADER_SEP_VAR},
-
-	{"dbase_input_file_header_separate_varied",   FFF_INPUT_DBASE_FILE_HEADER_SEP_VAR},
 	{"binary_output_file_header_separate",        FFF_OUTPUT_BINARY_FILE_HEADER_SEP},
-	{"ASCII_output_file_header_separate",         FFF_OUTPUT_ASCII_FILE_HEADER_SEP},
-	{"dbase_output_file_header_separate",         FFF_OUTPUT_DBASE_FILE_HEADER_SEP},
 	{"binary_record_header",                      FFF_BINARY_REC_HEADER},
-
-	{"ASCII_record_header",           FFF_ASCII_REC_HEADER},
-	{"dbase_record_header",           FFF_DBASE_REC_HEADER},
 	{"binary_input_record_header",    FFF_INPUT_BINARY_REC_HEADER},
-	{"ASCII_input_record_header",     FFF_INPUT_ASCII_REC_HEADER},
-	{"dbase_input_record_header",     FFF_INPUT_DBASE_REC_HEADER},
-
 	{"binary_output_record_header",   FFF_OUTPUT_BINARY_REC_HEADER},
-	{"ASCII_output_record_header",    FFF_OUTPUT_ASCII_REC_HEADER},
-	{"dbase_output_record_header",    FFF_OUTPUT_DBASE_REC_HEADER},
 	{"binary_record_header_separate", FFF_BINARY_REC_HEADER_SEP},
-	{"ASCII_record_header_separate",  FFF_ASCII_REC_HEADER_SEP},
-
-	{"dbase_record_header_separate",         FFF_DBASE_REC_HEADER_SEP},
 	{"binary_input_record_header_separate",  FFF_INPUT_BINARY_REC_HEADER_SEP},
-	{"ASCII_input_record_header_separate",   FFF_INPUT_ASCII_REC_HEADER_SEP},
-	{"dbase_input_record_header_separate",   FFF_INPUT_DBASE_REC_HEADER_SEP},
 	{"binary_output_record_header_separate", FFF_OUTPUT_BINARY_REC_HEADER_SEP},
-
-	{"ASCII_output_record_header_separate",  FFF_OUTPUT_ASCII_REC_HEADER_SEP},
-	{"dbase_output_record_header_separate",  FFF_OUTPUT_DBASE_REC_HEADER_SEP},
 	{"binary_RECORD",  FFF_BINARY_RECORD},
+
+	{"flat_data",         FFF_FLAT_DATA},
+	{"flat_input_data",   FFF_FLAT_INPUT_DATA},
+	{"flat_output_data",  FFF_FLAT_OUTPUT_DATA},
+	{"flat_file_header",         FFF_FLAT_FILE_HEADER},
+	{"flat_input_file_header",   FFF_INPUT_FLAT_FILE_HEADER},
+	{"flat_output_file_header",           FFF_OUTPUT_FLAT_FILE_HEADER},
+	{"flat_file_header_separate",         FFF_FLAT_FILE_HEADER_SEP},
+	{"flat_input_file_header_separate",   FFF_INPUT_FLAT_FILE_HEADER_SEP},
+	{"flat_input_file_header_separate_varied",   FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"flat_output_file_header_separate",         FFF_OUTPUT_FLAT_FILE_HEADER_SEP},
+	{"flat_output_file_header_separate_varied",  FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"flat_record_header",           FFF_FLAT_REC_HEADER},
+	{"flat_input_record_header",     FFF_INPUT_FLAT_REC_HEADER},
+	{"flat_output_record_header",    FFF_OUTPUT_FLAT_REC_HEADER},
+	{"flat_record_header_separate",         FFF_FLAT_REC_HEADER_SEP},
+	{"flat_input_record_header_separate",   FFF_INPUT_FLAT_REC_HEADER_SEP},
+	{"flat_output_record_header_separate",  FFF_OUTPUT_FLAT_REC_HEADER_SEP},
+	{"flat_RECORD",   FFF_FLAT_RECORD},
+
+	{"dbase_data",         FFF_FLAT_DATA},
+	{"dbase_input_data",   FFF_FLAT_INPUT_DATA},
+	{"dbase_output_data",  FFF_FLAT_OUTPUT_DATA},
+	{"dbase_file_header",         FFF_FLAT_FILE_HEADER},
+	{"dbase_input_file_header",   FFF_INPUT_FLAT_FILE_HEADER},
+	{"dbase_output_file_header",           FFF_OUTPUT_FLAT_FILE_HEADER},
+	{"dbase_file_header_separate",         FFF_FLAT_FILE_HEADER_SEP},
+	{"dbase_input_file_header_separate",   FFF_INPUT_FLAT_FILE_HEADER_SEP},
+	{"dbase_input_file_header_separate_varied",   FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"dbase_output_file_header_separate",         FFF_OUTPUT_FLAT_FILE_HEADER_SEP},
+	{"dbase_output_file_header_separate_varied",  FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"dbase_record_header",           FFF_FLAT_REC_HEADER},
+	{"dbase_input_record_header",     FFF_INPUT_FLAT_REC_HEADER},
+	{"dbase_output_record_header",    FFF_OUTPUT_FLAT_REC_HEADER},
+	{"dbase_record_header_separate",         FFF_FLAT_REC_HEADER_SEP},
+	{"dbase_input_record_header_separate",   FFF_INPUT_FLAT_REC_HEADER_SEP},
+	{"dbase_output_record_header_separate",  FFF_OUTPUT_FLAT_REC_HEADER_SEP},
+	{"dbase_RECORD",   FFF_FLAT_RECORD},
+
+	{"ASCII_data",         FFF_ASCII_DATA},
+	{"ASCII_input_data",   FFF_ASCII_INPUT_DATA},
+	{"ASCII_output_data",  FFF_ASCII_OUTPUT_DATA},
+	{"ASCII_file_header",         FFF_ASCII_FILE_HEADER},
+	{"ASCII_input_file_header",   FFF_INPUT_ASCII_FILE_HEADER},
+	{"ASCII_output_file_header",  FFF_OUTPUT_ASCII_FILE_HEADER},
+	{"ASCII_file_header_separate",         FFF_ASCII_FILE_HEADER_SEP},
+	{"ASCII_input_file_header_separate",   FFF_INPUT_ASCII_FILE_HEADER_SEP},
+	{"ASCII_input_file_header_separate_varied",   FFF_INPUT_ASCII_FILE_HEADER_SEP_VAR},
+	{"ASCII_output_file_header_separate",         FFF_OUTPUT_ASCII_FILE_HEADER_SEP},
+	{"ASCII_output_file_header_separate_varied",  FFF_OUTPUT_ASCII_FILE_HEADER_SEP_VAR},
+	{"ASCII_record_header",           FFF_ASCII_REC_HEADER},
+	{"ASCII_input_record_header",     FFF_INPUT_ASCII_REC_HEADER},
+	{"ASCII_output_record_header",    FFF_OUTPUT_ASCII_REC_HEADER},
+	{"ASCII_record_header_separate",  FFF_ASCII_REC_HEADER_SEP},
+	{"ASCII_input_record_header_separate",   FFF_INPUT_ASCII_REC_HEADER_SEP},
+	{"ASCII_output_record_header_separate",  FFF_OUTPUT_ASCII_REC_HEADER_SEP},
 	{"ASCII_RECORD",   FFF_ASCII_RECORD},
-	{"dBASE_RECORD",   FFF_DBASE_RECORD},
 
 	{(char *)NULL,                           FFF_NULL},
 };
@@ -300,7 +316,7 @@ static char *get_token
 	*save_char = *token_end;
 	*token_end = STR_END;
 
-	return(token_start);
+	return token_start;
 }
 
 /*****************************************************************************
@@ -595,8 +611,11 @@ static void check_old_style_EOL_var
 	 VARIABLE_PTR var
 	)
 {
-	if (!strcmp("EOL", var->name) && IS_CONSTANT_VAR(var))
-		var->type = FFV_EOL;
+	if (!strcmp("EOL", var->name) && IS_CONSTANT(var))
+	{
+		var->type &= ~FFV_DATA_TYPES;
+		var->type |= FFV_EOL;
+	}
 }
 
 /*****************************************************************************
@@ -632,7 +651,7 @@ static int parse_array_variable
 	)
 {
 	int error = 0;
-	char *token = *array_desc_str;
+	char *token = NULL;
 	char save_char = STR_END;
 	char *endptr = NULL;
 	FF_TYPES_t var_type = FFV_NULL;
@@ -641,15 +660,34 @@ static int parse_array_variable
 
 	FFV_TYPE(var) = FF_ARRAY;
 
-	while (os_strcmpi("OF", token))
-		token = get_token(token, &save_char);
+	token = get_token(*array_desc_str, &save_char);
+	while (strlen(token) && os_strcmpi(token, "OF"))
+		token = get_token(*array_desc_str, &save_char);
+
+	if (!strlen(token))
+	{
+		char *cp = strrchr(*array_desc_str, ']');
+
+		if (!cp || os_strncmpi(cp + 1, "OF", 2))
+			return err_push(ERR_VARIABLE_DESC, "Expecting \"OF\" to end array description");
+
+		*token = save_char;
+
+		token = cp + 1;
+
+		save_char = token[2];
+		token[2] = STR_END;
+	}
 
 	*token++ = STR_END;
-	var->array_desc_str = (char *)memMalloc(strlen(*array_desc_str) + 2 + FF_ARRAY_ELEMENT_SIZE_WIDTH, "var->array_desc_str");
+	var->array_desc_str = (char *)memStrdup(*array_desc_str, "var->array_desc_str");
 	if (!var->array_desc_str)
-		error = err_push(ERR_MEM_LACK, *array_desc_str);
+		return err_push(ERR_MEM_LACK, *array_desc_str);
+	else
+		os_str_trim_whitespace(var->array_desc_str, var->array_desc_str);
 
 	token = get_token(token, &save_char);
+
 	if (FF_STRLEN(token))
 	{
 		var_type = ff_lookup_number(variable_types, token);
@@ -681,22 +719,6 @@ static int parse_array_variable
 	token = get_token(token, &save_char);
 	RESTORE_CHAR(token, save_char);
 
-	if (var->array_desc_str)
-	{
-		int var_length = 0;
-
-		if (IS_RECORD_VAR(var))
-			var_length = 0;
-		else if (IS_TEXT(var))
-			var_length = FF_VAR_LENGTH(var);
-		else
-			var_length = (int)ffv_type_size(var->type);
-
-		sprintf(var->array_desc_str, "%s", *array_desc_str);
-		os_str_trim_whitespace(var->array_desc_str, var->array_desc_str);
-		sprintf(var->array_desc_str + strlen(var->array_desc_str), "%*d", (int)FF_ARRAY_ELEMENT_SIZE_WIDTH, var_length);
-	}
-
 	(*array_desc_str)[strlen(*array_desc_str)] = 'O'; /* The 'O' in "OF" */
 
 	*array_desc_str = token;
@@ -705,7 +727,7 @@ static int parse_array_variable
 }
 
 #define NEED_TO_CHECK_VARIABLE_SIZE(format, var) \
-(IS_BINARY(format) && !IS_TEXT(var) && !IS_CONSTANT_VAR(var) && !IS_INITIAL_VAR(var) && FFV_DATA_TYPE(var) && !IS_RECORD_VAR(var))
+(IS_BINARY(format) && !IS_TEXT(var) && !IS_CONSTANT(var) && !IS_INITIAL(var) && FFV_DATA_TYPE(var) && !IS_RECORD_VAR(var))
 
 /*****************************************************************************
  * NAME: add_to_variable_list
@@ -800,6 +822,14 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 		var = ff_create_variable(token);
 		if (var == NULL)
 			error = ERR_MEM_LACK;
+
+		if (var->name[0] == '"' && var->name[strlen(var->name) - 1] == '"')
+		{
+			var->name[0] = ' ';
+			var->name[strlen(var->name) - 1] = ' ';
+
+			os_str_trim_whitespace(var->name, var->name);
+		}
 	}
 	else
 	{
@@ -869,17 +899,25 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 			else
 			{
 				/* Is this a keyworded variable type?  If so, remember name of keyword in record_title */
-				FFV_TYPE(var) = 0;
-
-				assert(!var->record_title);
-
-				if (var->record_title)
-					memFree(var->record_title, "var->record_title");
-
-				var->record_title = (char *)memStrdup(token, "token");
-				if (!var->record_title)
+				if (IS_KEYWORDED_PARAMETER(token))
 				{
-					error = err_push(ERR_MEM_LACK, "");
+					FFV_TYPE(var) = 0;
+
+					assert(!var->record_title);
+
+					if (var->record_title)
+						memFree(var->record_title, "var->record_title");
+
+					var->record_title = (char *)memStrdup(token, "token");
+					if (!var->record_title)
+					{
+						error = err_push(ERR_MEM_LACK, "");
+						goto add_to_variable_list_exit;
+					}
+				}
+				else
+				{
+					error = err_push(ERR_UNKNOWN_VAR_TYPE, token);
 					goto add_to_variable_list_exit;
 				}
 			}
@@ -959,7 +997,7 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 	check_old_style_EOL_var(var);
 	
 	/* Does length of CONSTANT variable name equal length of variable? */
-	if (IS_CONSTANT_VAR(var) && !IS_EOL_VAR(var))
+	if (IS_CONSTANT(var) && !IS_EOL(var))
 	{
 		if (FF_STRLEN(var->name) > FF_VAR_LENGTH(var))
 		{
@@ -1247,29 +1285,27 @@ static int update_format_list
 	int error;
 	
 	error = make_format(origin, desc_buffer, &format);
-	if (error)
-	{
-		if (format)
-			ff_destroy_format(format);
-	}
-	else
+	if (!error)
 	{
 		if (!*hf_list)
 		{
 			*hf_list = dll_init();
 			if (!*hf_list)
-				return(ERR_MEM_LACK);
+				error = ERR_MEM_LACK;
 		}
+	}
 
-		if (!dll_add(*hf_list))
-		{
-			dll_free_list(*hf_list);
-			return(ERR_MEM_LACK);
-		}
-							
-		dll_assign(format, DLL_FMT, dll_last(*hf_list));
-	} /* (else) if error in parsing format section */
+	if (!error)
+	{
+		if (dll_add(*hf_list))
+			dll_assign(format, DLL_FMT, dll_last(*hf_list));
+		else
+			error = ERR_MEM_LACK;
+	}
 	
+	if (error && format)
+		ff_destroy_format(format);
+
 	return(error);
 }
 

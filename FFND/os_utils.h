@@ -56,11 +56,11 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr);
 #endif
 
 #ifndef max /* maximum macro */
-#define max(a,b) (a > b ? a : b)
+#define max(a,b) ((a) > (b) ? (a) : (b))
 #endif
 
 #ifndef min /* minimum macro */
-#define min(a,b) (a < b ? a : b)
+#define min(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
 #ifndef ROUND
@@ -81,7 +81,6 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr);
 
 #define FF_SUBSTRCMP(a,b) (((a)&&(b))?strncmp(a,b,min(FF_STRLEN(a),FF_STRLEN(b))):1)
 
-#define OS_ESCAPER '\\'
 #define OS_INVERSE_ESCAPE 0
 #define OS_NORMAL_ESCAPE 1
 
@@ -145,8 +144,9 @@ BOOLEAN os_path_prepend_special(char *in_name, char *home_path, char *out_name);
 char *os_str_trim_whitespace(char *dest, char *source);
 char *os_str_trim_linespace(char *line);
 void os_str_replace_unescaped_char1_with_char2(char char1, char char2, char *str);
-void os_str_replace_escaped_char1_with_char2(char char1, char char2, char *str);
+void os_str_replace_escaped_char1_with_char2(const char escape, char char1, char char2, char *str);
 
 char *os_strdup(char *);
+char *os_strrstr(const char *s1, const char *s2);
 #endif /* (NOT) OS_UTILS_H__ */
 

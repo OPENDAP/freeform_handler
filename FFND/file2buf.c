@@ -89,7 +89,7 @@ int ff_file_to_bufsize(char *file_name, FF_BUFSIZE_HANDLE hbufsize)
 	assert(hbufsize);
 	
 	if (!os_file_exist(file_name))
-		return(ERR_OPEN_FILE);
+		return(err_push(ERR_OPEN_FILE, "%s", file_name));
 	
 	if (*hbufsize)
 	{
@@ -116,7 +116,7 @@ int ff_file_to_bufsize(char *file_name, FF_BUFSIZE_HANDLE hbufsize)
 	if ((*hbufsize)->bytes_used)
 		return(0);
 	else
-		return(ERR_READ_FILE);
+		return(err_push(ERR_READ_FILE, "%s", file_name));
 }
 
 static int ff_bufsize_to_textfile(char *file_name, FF_BUFSIZE_PTR bufsize, char *mode)

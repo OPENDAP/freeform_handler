@@ -14,6 +14,8 @@
 /* avoid multiple includes */
 #ifndef EE_ERR_UNKNOWN
 
+#define EE_SCRATCH_EQN_LEN 1024
+
 /* Errors occuring in the ee_ functions */
 #define EE_ERR_UNKNOWN          1
 #define EE_ERR_ODD_NUM_PARENS   2
@@ -31,6 +33,7 @@
 #define EE_ERR_BAD_OP_ON_CHAR	14
 #define EE_ERR_BAD_OP_ON_NUM	15
 #define EE_ERR_UNSUPPORTED		16
+#define EE_ERR_EQN_TOO_LONG   17
 
 /* The variable types that ee_ functions can handle */
 #define EE_VAR_TYPE_UNKNOWN 0

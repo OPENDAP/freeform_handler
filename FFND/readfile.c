@@ -39,7 +39,7 @@ const char *fft_cnv_flags_width[FFNT_ENOTE + 1] =
 "%*lu", /* uint32 */
 "?",    /* int64 */
 "?",    /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%*d",  /* int32 */
 "%*u",  /* uint32 */
 "%*ld", /* int64 */
@@ -61,7 +61,7 @@ const char *fft_cnv_flags_prec[FFNT_ENOTE + 1] =
 "%.*lu", /* uint32 */
 "?",     /* int64 */
 "?",     /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%.*d",  /* int32 */
 "%.*u",  /* uint32 */
 "%.*ld", /* int64 */
@@ -83,7 +83,7 @@ const char *fft_cnv_flags_width_prec[FFNT_ENOTE + 1] =
 "%*.*lu", /* uint32 */
 "?",      /* int64 */
 "?",      /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%*.*d",  /* int32 */
 "%*.*u",  /* uint32 */
 "%*.*ld", /* int64 */
@@ -232,7 +232,6 @@ void main(int argc, char **argv)
 	long ops_file_length = 0;
 	long new_position;
 /*	long long_var; */
-	struct stat stat;
 
 	fprintf(stderr, "%s",
 #ifdef FF_ALPHA
@@ -266,8 +265,18 @@ void main(int argc, char **argv)
 		exit(0);
 	}
 
-	fstat(data_file, &stat);
-	data_file_length = stat.st_size;
+	{
+		FILE *fp = fopen(argv[1], "r");
+		data_file_length = -1;
+
+		if (fp)
+		{
+			if (!fseek(fp, 0, SEEK_END))
+				data_file_length = ftell(fp);
+
+			fclose(fp);
+		}
+	}
 
 	/* Determine if the input is coming from a file, if so read the file in */
 	if (!isatty(fileno(stdin)))

@@ -1,6 +1,5 @@
 #define WANT_NCSA_TYPES
 #include <freeform.h>
-#include <maxmin.h>
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
@@ -31,42 +30,27 @@
  *
  */
 
-MAX_MIN_PTR mm_make(VARIABLE_PTR var, unsigned short type)
+int mm_make(VARIABLE_PTR var)
 {
 	MAX_MIN_PTR max_min;
+
+	FF_VALIDATE(var);
+
+	if (IS_TRANSLATOR(var) || IS_CONVERT(var))
+		return err_push(ERR_API, "Wrong variable type for max/min information");
 	
 	max_min = (MAX_MIN_PTR)memCalloc(1, sizeof(MAX_MIN), "mm_make: max_min");
 	if (!max_min)
-	{
-		err_push(ERR_MEM_LACK, "Calloc maxmin struct");
-		return((MAX_MIN_PTR)NULL);
-	}
-	/* A copy of the variable is made even if the address of an existing
-           var is sent: If this were not done, mm_free could not be called if
-	   the variable still existed in a variable list
-	*/
-	max_min->var = ff_create_variable("");
-	if (!max_min->var)
-		return((MAX_MIN_PTR)NULL);
-	
-	if (!var) 
-		max_min->var->type = type;
-	else
-	{
-		if (ff_copy_variable(var, max_min->var))
-			return(NULL);
-  }
+		return err_push(ERR_MEM_LACK, "Calloc maxmin struct");
+
 	/* Switch on the possible types */
 
-	if (IS_TEXT(max_min->var))
+	if (IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var))
 	{
-		max_min->minimum = (void *)memCalloc(1, (size_t)(FF_VAR_LENGTH(max_min->var) + 1), "max_min->minimum");
-		max_min->maximum = (void *)memCalloc(1, (size_t)(FF_VAR_LENGTH(max_min->var) + 1), "max_min->maximum");
+		max_min->minimum = (void *)memCalloc(1, (size_t)(FF_VAR_LENGTH(var) + 1), "max_min->minimum");
+		max_min->maximum = (void *)memCalloc(1, (size_t)(FF_VAR_LENGTH(var) + 1), "max_min->maximum");
 		if (!max_min->maximum || !max_min->minimum)
-		{
-			err_push(ERR_MEM_LACK, "Setting missing data");
-			return(NULL);
-		}
+			return err_push(ERR_MEM_LACK, "Setting missing data");
 
 		*(char *)max_min->minimum = CHAR_MAX;
 	}
@@ -74,21 +58,22 @@ MAX_MIN_PTR mm_make(VARIABLE_PTR var, unsigned short type)
 	{
 		size_t byte_size;
 		
-		byte_size = ffv_type_size(FFV_DATA_TYPE(max_min->var));
+		if (IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var))
+			byte_size = FF_VAR_LENGTH(var);
+		else
+			byte_size = ffv_type_size(FFV_DATA_TYPE(var));
+
 		if (byte_size)
 		{
 			max_min->minimum = (void *)memCalloc(1, byte_size, "max_min->minimum");
 			max_min->maximum = (void *)memCalloc(1, byte_size, "max_min->maximum");
 			if (!max_min->maximum || !max_min->minimum)
-			{
-				err_push(ERR_MEM_LACK, "Setting missing data");
-				return(NULL);
-			}
+				return err_push(ERR_MEM_LACK, "Setting missing data");
 		}
 		else
 			assert(byte_size);
 	
-		switch (FFV_DATA_TYPE(max_min->var))
+		switch (FFV_DATA_TYPE(var))
 		{
 			case FFV_INT8:
 				*(int8 *)max_min->minimum = FFV_INT8_MAX;
@@ -147,17 +132,18 @@ MAX_MIN_PTR mm_make(VARIABLE_PTR var, unsigned short type)
 
 			default:
 				assert(!ERR_SWITCH_DEFAULT);
-				err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(max_min->var), os_path_return_name(__FILE__), __LINE__);
-				return(NULL);
-		} /* switch on max_min->var type */
-	} /* (else) if max_min->var is a string */
+				return err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(var), os_path_return_name(__FILE__), __LINE__);
+		} /* switch on var type */
+	} /* (else) if var is a string */
 
 	max_min->max_record = max_min->min_record = 0L;
 #ifdef FF_CHK_ADDR
 	max_min->check_address = max_min;
 #endif
 
-	return(max_min);
+	var->misc.mm = max_min;
+
+	return 0;
 }
 
 /*
@@ -196,7 +182,7 @@ MAX_MIN_PTR mm_make(VARIABLE_PTR var, unsigned short type)
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "mm_set"
 
-int mm_set(MAX_MIN_PTR max_min, ...)
+int mm_set(VARIABLE_PTR var, ...)
 {
 	va_list	args;
 
@@ -208,23 +194,28 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 	int attribute;
 	int var_length;
 
-	long record_number;
 	unsigned bytes_to_skip = 0;
 
 	void *max_flag;
 	void *min_flag;
+
+	BOOLEAN *data_flag;
+	MAX_MIN_PTR max_min = NULL;
+
 	
-	assert(max_min);
-	if (!max_min)
+	FF_VALIDATE(var);
+	if (!var)
 	{
 		va_end (args);
 		return (1);
 	}
 
-	FF_VALIDATE(max_min);
-	FF_VALIDATE(max_min);
+	if (IS_TRANSLATOR(var) || IS_CONVERT(var))
+		return err_push(ERR_API, "Wrong variable type for max/min information");
+	
+	max_min = var->misc.mm;
 
-	va_start(args, max_min);
+	va_start(args, var);
 	attribute = va_arg (args, int);
 	switch (attribute)
 	{
@@ -258,41 +249,50 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 	 */
 	case MM_MAX_MIN :	/* Argument: char* */
 		data = va_arg (args, char *);
-		record_number = va_arg(args, long);
+		data_flag = va_arg(args, BOOLEAN *);
 
-		if (!IS_TEXT(max_min->var))
+		*data_flag = FALSE;
+
+		++max_min->cur_record;
+
+		if (!(IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var)))
 		{ /* align data into d_ptr */
 			int error;
 				
-			error = btype_to_btype((void *)data, FFV_DATA_TYPE(max_min->var),
-			                       (void *)d_ptr, FFV_DATA_TYPE(max_min->var));
+			error = btype_to_btype((void *)data, FFV_DATA_TYPE(var),
+			                       (void *)d_ptr, FFV_DATA_TYPE(var));
 			if (error)
 				return(error);
 		}
 			
-		switch (FFV_DATA_TYPE(max_min->var))
+		switch (FFV_DATA_TYPE(var))
 		{
+			case FFV_CONSTANT:
+			case FFV_INITIAL:
 			case FFV_TEXT:
 				/* If missing data flags are set and data value lies outside
 				   the missing data range, then do the max min checking */
-				var_length = FF_VAR_LENGTH(max_min->var);
+				var_length = FF_VAR_LENGTH(var);
 					
 				if (max_min->max_flag &&
 					  strncmp(data, (char *)max_min->min_flag, (size_t)var_length) >= 0 &&
 						strncmp(data, (char *)max_min->max_flag, (size_t)var_length) >= 0
 				   )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (strncmp(data, (char *)max_min->maximum, (size_t)var_length) > 0)
 				{
 					memStrncpy((char *)max_min->maximum, data, (size_t)var_length,NO_TAG);
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 										
 				if (strncmp(data, (char *)max_min->minimum, (size_t)var_length) < 0)
 				{
 					memStrncpy((char *)max_min->minimum, data, (size_t)var_length,NO_TAG);
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -303,18 +303,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(int8 *)d_ptr >= *(int8 *)max_min->min_flag &&
 						*(int8 *)d_ptr <= *(int8 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(int8 *)d_ptr > *(int8 *)max_min->maximum)
 				{
 					*(int8 *)max_min->maximum = *(int8 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(int8 *)d_ptr < *(int8 *)max_min->minimum)
 				{
 					*(int8 *)max_min->minimum = *(int8 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -325,18 +328,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(uint8 *)d_ptr >= *(uint8 *)max_min->min_flag &&
 						*(uint8 *)d_ptr <= *(uint8 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(uint8 *)d_ptr > *(uint8 *)max_min->maximum)
 				{
 					*(uint8 *)max_min->maximum = *(uint8 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(uint8 *)d_ptr < *(uint8 *)max_min->minimum)
 				{
 					*(uint8 *)max_min->minimum = *(uint8 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -347,18 +353,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(int16 *)d_ptr >= *(int16 *)max_min->min_flag &&
 						*(int16 *)d_ptr <= *(int16 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(int16 *)d_ptr > *(int16 *)max_min->maximum)
 				{
 					*(int16 *)max_min->maximum = *(int16 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(int16 *)d_ptr < *(int16 *)max_min->minimum)
 				{
 					*(int16 *)max_min->minimum = *(int16 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -369,18 +378,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(uint16 *)d_ptr >= *(uint16 *)max_min->min_flag &&
 						*(uint16 *)d_ptr <= *(uint16 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(uint16 *)d_ptr > *(uint16 *)max_min->maximum)
 				{
 					*(uint16 *)max_min->maximum = *(uint16 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(uint16 *)d_ptr < *(uint16 *)max_min->minimum)
 				{
 					*(uint16 *)max_min->minimum = *(uint16 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -391,18 +403,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(int32 *)d_ptr >= *(int32 *)max_min->min_flag &&
 						*(int32 *)d_ptr <= *(int32 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(int32 *)d_ptr > *(int32 *)max_min->maximum)
 				{
 					*(int32 *)max_min->maximum = *(int32 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(int32 *)d_ptr < *(int32 *)max_min->minimum)
 				{
 					*(int32 *)max_min->minimum = *(int32 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -413,18 +428,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(uint32 *)d_ptr >= *(uint32 *)max_min->min_flag &&
 						*(uint32 *)d_ptr <= *(uint32 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(uint32 *)d_ptr > *(uint32 *)max_min->maximum)
 				{
 					*(uint32 *)max_min->maximum = *(uint32 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(uint32 *)d_ptr < *(uint32 *)max_min->minimum)
 				{
 					*(uint32 *)max_min->minimum = *(uint32 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -435,18 +453,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(int64 *)d_ptr >= *(int64 *)max_min->min_flag &&
 						*(int64 *)d_ptr <= *(int64 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(int64 *)d_ptr > *(int64 *)max_min->maximum)
 				{
 					*(int64 *)max_min->maximum = *(int64 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(int64 *)d_ptr < *(int64 *)max_min->minimum)
 				{
 					*(int64 *)max_min->minimum = *(int64 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -457,18 +478,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(uint64 *)d_ptr >= *(uint64 *)max_min->min_flag &&
 						*(uint64 *)d_ptr <= *(uint64 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(uint64 *)d_ptr > *(uint64 *)max_min->maximum)
 				{
 					*(uint64 *)max_min->maximum = *(uint64 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(uint64 *)d_ptr < *(uint64 *)max_min->minimum)
 				{
 					*(uint64 *)max_min->minimum = *(uint64 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -479,18 +503,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(float32 *)d_ptr >= *(float32 *)max_min->min_flag &&
 						*(float32 *)d_ptr <= *(float32 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(float32 *)d_ptr > *(float32 *)max_min->maximum)
 				{
 					*(float32 *)max_min->maximum = *(float32 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(float32 *)d_ptr < *(float32 *)max_min->minimum)
 				{
 					*(float32 *)max_min->minimum = *(float32 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -501,18 +528,21 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(float64 *)d_ptr >= *(float64 *)max_min->min_flag &&
 						*(float64 *)d_ptr <= *(float64 *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(float64 *)d_ptr > *(float64 *)max_min->maximum)
 				{
 					*(float64 *)max_min->maximum = *(float64 *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(float64 *)d_ptr < *(float64 *)max_min->minimum)
 				{
 					*(float64 *)max_min->minimum = *(float64 *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
@@ -523,24 +553,27 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					  *(ff_enote *)d_ptr >= *(ff_enote *)max_min->min_flag &&
 						*(ff_enote *)d_ptr <= *(ff_enote *)max_min->max_flag
 					 )
+				{
+					*data_flag = TRUE;
 					break;
+				}
 	
 				if (*(ff_enote *)d_ptr > *(ff_enote *)max_min->maximum)
 				{
 					*(ff_enote *)max_min->maximum = *(ff_enote *)d_ptr;
-					max_min->max_record = record_number;
+					max_min->max_record = max_min->cur_record;
 				}
 	
 				if (*(ff_enote *)d_ptr < *(ff_enote *)max_min->minimum)
 				{
 					*(ff_enote *)max_min->minimum = *(ff_enote *)d_ptr;
-					max_min->min_record = record_number;
+					max_min->min_record = max_min->cur_record;
 				}
 			break;
 		
 			default:
 				assert(!ERR_SWITCH_DEFAULT);
-				err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(max_min->var), os_path_return_name(__FILE__), __LINE__);
+				err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(var), os_path_return_name(__FILE__), __LINE__);
 				return(1);
 		}
 	break;
@@ -577,11 +610,11 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 		max_flag = va_arg (args, void *);
 		min_flag = va_arg (args, void *);
 
-		if (IS_TEXT(max_min->var))
+		if (IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var))
 		{
 			/* The max_flag and min_flag must be NULL terminated void
 			   ptrs. This is necessary to right justify the strings */
-			var_length = FF_VAR_LENGTH(max_min->var);
+			var_length = FF_VAR_LENGTH(var);
 
 			max_min->max_flag = (void *)memCalloc(1, (size_t)(var_length+1), "max_min->max_flag");
 			max_min->min_flag = (void *)memCalloc(1, (size_t)(var_length+1), "max_min->min_flag");
@@ -600,11 +633,11 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 			bytes_to_skip = var_length - strlen((char*)min_flag);
 			sprintf(((char*)(max_min->min_flag) + bytes_to_skip),"%s",(char*)min_flag);
 		}
-		else if (IS_INTEGER(max_min->var) || IS_REAL(max_min->var))
+		else if (IS_INTEGER(var) || IS_REAL(var))
 		{
 			size_t byte_size = 0;
 				
-			byte_size = ffv_type_size(FFV_DATA_TYPE(max_min->var));
+			byte_size = ffv_type_size(FFV_DATA_TYPE(var));
 			if (byte_size)
 			{
 				int error;
@@ -617,13 +650,13 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 					return(1);
 				}
 						
-				error = btype_to_btype(max_flag, FFV_DATA_TYPE(max_min->var),
-				                       max_min->max_flag, FFV_DATA_TYPE(max_min->var));
+				error = btype_to_btype(max_flag, FFV_DATA_TYPE(var),
+				                       max_min->max_flag, FFV_DATA_TYPE(var));
 				if (error)
 					return(error);
 						
-				error = btype_to_btype(min_flag, FFV_DATA_TYPE(max_min->var),
-				                       max_min->min_flag, FFV_DATA_TYPE(max_min->var));
+				error = btype_to_btype(min_flag, FFV_DATA_TYPE(var),
+				                       max_min->min_flag, FFV_DATA_TYPE(var));
 				if (error)
 					return(error);
 			}
@@ -632,6 +665,8 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 		}
 		else
 			assert(0);
+
+		break;
 
 		default:
 			assert(!ERR_SWITCH_DEFAULT);
@@ -671,15 +706,24 @@ int mm_set(MAX_MIN_PTR max_min, ...)
 #endif
 #define ROUTINE_NAME "mm_print"
 
-int mm_print(MAX_MIN_PTR max_min)
+int mm_print(VARIABLE_PTR var)
 {
-	FF_VALIDATE(max_min);
+	MAX_MIN_PTR max_min = NULL;
 
-	if (!max_min)
+	FF_VALIDATE(var);
+
+	if (!var)
 		return(1);
 
+	if (IS_TRANSLATOR(var) || IS_CONVERT(var))
+		return err_push(ERR_API, "Wrong variable type for max/min information");
+
+	max_min = var->misc.mm;
+
+	FF_VALIDATE(max_min);
+	
 	/* Switch on the possible types */
-	switch (FFV_DATA_TYPE(max_min->var))
+	switch (FFV_DATA_TYPE(var))
 	{
 		case FFV_TEXT:
 			printf("Minimum: %s  Maximum: %s\n",
@@ -778,7 +822,7 @@ int mm_print(MAX_MIN_PTR max_min)
 		
 		default:	/* Error, Unknown Input Variable type */
 			assert(!ERR_SWITCH_DEFAULT);
-			err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(max_min->var), os_path_return_name(__FILE__), __LINE__);
+			err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(var), os_path_return_name(__FILE__), __LINE__);
 			return(1);
 	}
 	
@@ -813,23 +857,32 @@ int mm_print(MAX_MIN_PTR max_min)
  *
 */
 
-double mm_getmx(MAX_MIN_PTR max_min)
+double mm_getmx(VARIABLE_PTR var)
 {
 	double dbl_var = 0.0;
 	int error = 0;
 	
+	MAX_MIN_PTR max_min = NULL;
+
+	FF_VALIDATE(var);
+
+	if (!var)
+		return(1);
+
+	if (IS_TRANSLATOR(var) || IS_CONVERT(var))
+		return err_push(ERR_API, "Wrong variable type for max/min information");
+
+	max_min = var->misc.mm;
+
 	FF_VALIDATE(max_min);
 
-	if (!max_min)
-		return((double)1);
-	
-	if (IS_TEXT(max_min->var))
+	if (IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var))
 	{
 		/* Return the actual ptr cast to a double */
 		return( (double)((long)(max_min->maximum)) );
 	}
 	
-	error = btype_to_btype(max_min->maximum, FFV_DATA_TYPE(max_min->var),
+	error = btype_to_btype(max_min->maximum, FFV_DATA_TYPE(var),
 	                       (void *)&dbl_var, FFV_DOUBLE);
 	if (error)
 		return(1);
@@ -840,23 +893,32 @@ double mm_getmx(MAX_MIN_PTR max_min)
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "mm_getmn"
 
-double mm_getmn(MAX_MIN_PTR max_min)
+double mm_getmn(VARIABLE_PTR var)
 {
 	double dbl_var = 0.0;
 	int error = 0;
 	
+	MAX_MIN_PTR max_min = NULL;
+
+	FF_VALIDATE(var);
+
+	if (!var)
+		return(1);
+
+	if (IS_TRANSLATOR(var) || IS_CONVERT(var))
+		return err_push(ERR_API, "Wrong variable type for max/min information");
+
+	max_min = var->misc.mm;
+
 	FF_VALIDATE(max_min);
-
-	if (!max_min)
-		return((double)1);
-
-	if (IS_TEXT(max_min->var))
+	
+	if (IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var))
 	{
 		/* Return the actual ptr cast to a double */
 		return( (double)((long)(max_min->minimum)) );
 	}
 	
-	error = btype_to_btype(max_min->minimum, FFV_DATA_TYPE(max_min->var),
+	error = btype_to_btype(max_min->minimum, FFV_DATA_TYPE(var),
 	                       (void *)&dbl_var, FFV_DOUBLE);
 	if (error)
 		return(1);
@@ -909,8 +971,6 @@ int mm_free(MAX_MIN_PTR max_min)
 
 	if (max_min->min_flag)
 		memFree(max_min->min_flag, "mm_free: flag");
-
-	memFree(max_min->var, "mm_free: Variable");
 
 	memFree(max_min, "mm_free: max_min");
 

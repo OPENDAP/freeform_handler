@@ -43,109 +43,41 @@
 
 #include <freeform.h>
 
-#ifdef ROUTINE_NAME
-#undef ROUTINE_NAME
-#endif
-#define ROUTINE_NAME "print_format_type"
+#define IS_LAST_EOL_VAR(vlist) ((vlist) ? IS_EOL(FF_VARIABLE(vlist)) && FF_VARIABLE((vlist)->next) == NULL : FALSE)
 
-static int print_format_type
+static int get_format_type_and_title
 	(
-	 PROCESS_INFO_PTR pinfo,
+	 FORMAT_PTR format,
 	 FF_BUFSIZE_PTR bufsize
 	)
-{	
-	FF_VALIDATE(pinfo);
+{
+	int error = 0;
+	FF_TYPES_t save_format_type = 0;
+
+	FF_VALIDATE(format);
 	FF_VALIDATE(bufsize);
 
-	if (IS_ASCII_TYPE(PINFO_TYPE(pinfo)))
-		sprintf(bufsize->buffer + bufsize->bytes_used, "ASCII");
-	else if (IS_BINARY_TYPE(PINFO_TYPE(pinfo)))
-		sprintf(bufsize->buffer + bufsize->bytes_used, "Binary");
-	else if (IS_DBASE_TYPE(PINFO_TYPE(pinfo)))
-		sprintf(bufsize->buffer + bufsize->bytes_used, "dBASE");
-	else
+	/* print format name */
+	if (bufsize->total_bytes - bufsize->bytes_used + strlen(format->name) < LOGGING_QUANTA)
 	{
-		assert(!ERR_SWITCH_DEFAULT);
-		return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
+		if (ff_resize_bufsize(bufsize->total_bytes + strlen(format->name) + LOGGING_QUANTA, &bufsize))
+			return(ERR_MEM_LACK);
 	}
-	
+
+	save_format_type = format->type;
+#if 0
+	if (IS_ASCII(format))
+	{
+		format->type &= ~FFF_ASCII;
+		format->type |= FFF_FLAT;
+	}
+#endif
+	sprintf(bufsize->buffer + bufsize->bytes_used, "%s\t\"%s\"\n", ff_lookup_string(format_types, FFF_FORMAT_TYPE(format)), strchr(format->name, '\b') ? strchr(format->name, '\b') + 1 : format->name);
 	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
-	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
-			return(ERR_MEM_LACK);
-	}
 
-	if (IS_INPUT_TYPE(PINFO_TYPE(pinfo)))
-		sprintf(bufsize->buffer + bufsize->bytes_used, " Input");
-	else if (IS_OUTPUT_TYPE(PINFO_TYPE(pinfo)))
-		sprintf(bufsize->buffer + bufsize->bytes_used, " Output");
-	else
-	{
-		assert(!ERR_SWITCH_DEFAULT);
-		return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
-	}
-	
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
-	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
-			return(ERR_MEM_LACK);
-	}
+	format->type = save_format_type;
 
-
-	if (IS_DATA_TYPE(PINFO_TYPE(pinfo)))
-	{
-		sprintf(bufsize->buffer + bufsize->bytes_used, " Data");
-		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	}
-	else if (IS_HEADER_TYPE(PINFO_TYPE(pinfo)))
-	{
-		if (IS_SEPARATE_TYPE(PINFO_TYPE(pinfo)))
-			sprintf(bufsize->buffer + bufsize->bytes_used, " Separate");
-		else if (IS_EMBEDDED_TYPE(PINFO_TYPE(pinfo)))
-			sprintf(bufsize->buffer + bufsize->bytes_used, " Embedded");
-		else
-		{
-			assert(!ERR_SWITCH_DEFAULT);
-			return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
-		}
-		
-		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-
-		if (IS_VARIED_TYPE(PINFO_TYPE(pinfo)))
-			sprintf(bufsize->buffer + bufsize->bytes_used, " Varied");
-		
-		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-
-		if (IS_FILE_TYPE(PINFO_TYPE(pinfo)))
-			sprintf(bufsize->buffer + bufsize->bytes_used, " File");
-		else if (IS_REC_TYPE(PINFO_TYPE(pinfo)))
-			sprintf(bufsize->buffer + bufsize->bytes_used, " Record");
-		else
-		{
-			assert(!ERR_SWITCH_DEFAULT);
-			return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
-		}
-		
-		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-
-		sprintf(bufsize->buffer + bufsize->bytes_used, " Header");
-		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	}
-	else
-	{
-		assert(!ERR_SWITCH_DEFAULT);
-		return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
-	}
-
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
-	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
-			return(ERR_MEM_LACK);
-	}
-
-	return(0);
+	return 0;
 }
 
 /*
@@ -177,70 +109,68 @@ static int print_format_type
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "ff_process_info"
+#define ROUTINE_NAME "ff_format_info"
 
-static int ff_process_info(PROCESS_INFO_PTR pinfo, FF_BUFSIZE_PTR bufsize)
+static int ff_format_info(PROCESS_INFO_PTR pinfo, FF_BUFSIZE_PTR bufsize)
 {
 	int error = 0;
 
 	FF_VALIDATE(pinfo);
 	FF_VALIDATE(bufsize);
 
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
+	if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
 	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
+		if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
 			return(ERR_MEM_LACK);
 	}
 
 	sprintf(bufsize->buffer + bufsize->bytes_used,"\n(%s) ", PINFO_ORIGIN(pinfo));
 
 	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
+	if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
 	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
+		if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
 			return(ERR_MEM_LACK);
 	}
 
-	error = print_format_type(pinfo, bufsize);
+	error = get_format_type_and_title(PINFO_FORMAT(pinfo), bufsize);
 	if (error)
-		return(error);
+		return error;
 
-	sprintf(bufsize->buffer + bufsize->bytes_used,":  \"%s\"\n", PINFO_NAME(pinfo));
-
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
+	if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
 	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
-			return(ERR_MEM_LACK);
-	}
-
-	sprintf(bufsize->buffer + bufsize->bytes_used,
-	        "%s %ld %s%s%s (%ld byte%s) %s: ",
-	        IS_INPUT_TYPE(PINFO_TYPE(pinfo)) ? "Reading" : "Writing",
-	        (long)PINFO_SUB_ARRAY_ELS(pinfo),
-			  !FD_IS_NATIVE_BYTE_ORDER(PINFO_FD(pinfo)) && IS_BINARY(PINFO_FORMAT(pinfo)) ? "byteswapped " : "",
-	        IS_ARRAY_TYPE(PINFO_TYPE(pinfo)) ? "element" : "record",
-	        PINFO_SUB_ARRAY_ELS(pinfo) == 1 ? "" : "s",
-	        (long)PINFO_ARRAY_BYTES(pinfo),
-	        PINFO_ARRAY_BYTES(pinfo) == 1 ? "" : "s",
-	        IS_INPUT_TYPE(PINFO_TYPE(pinfo)) ? "from" : "to");
-
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
-	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
+		if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
 			return(ERR_MEM_LACK);
 	}
 
 	if (PINFO_IS_FILE(pinfo))
-		sprintf(bufsize->buffer + bufsize->bytes_used, "%s\n", PINFO_FNAME(pinfo));
+		sprintf(bufsize->buffer + bufsize->bytes_used, "File %s", PINFO_FNAME(pinfo));
 	else
-		sprintf(bufsize->buffer + bufsize->bytes_used, "Application Program\n");
+		sprintf(bufsize->buffer + bufsize->bytes_used, "Program memory");
 
 	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	if (bufsize->total_bytes - bufsize->bytes_used < SCRATCH_QUANTA)
+	if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
 	{
-		if (ff_resize_bufsize(bufsize->total_bytes + SCRATCH_QUANTA, &bufsize))
+		if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
+			return(ERR_MEM_LACK);
+	}
+
+	sprintf(bufsize->buffer + bufsize->bytes_used,
+	        " contains %ld %s%s%s %s%s (%ld byte%s)\n",
+	        (long)(PINFO_ARRAY_MAP(pinfo) ? PINFO_SUPER_ARRAY_ELS(pinfo) : 0),
+			IS_REC_HEADER(PINFO_FORMAT(pinfo)) ? "(or more) " : "",
+	        !FD_IS_NATIVE_BYTE_ORDER(PINFO_FD(pinfo)) && IS_BINARY(PINFO_FORMAT(pinfo)) ? "byteswapped " : "",
+			IS_DATA(PINFO_FORMAT(pinfo)) ? "data" : "header",
+	        IS_ARRAY(PINFO_FORMAT(pinfo)) ? "element" : "record",
+	        PINFO_ARRAY_MAP(pinfo) ? (PINFO_SUPER_ARRAY_ELS(pinfo) == 1 ? "" : "s") : "s",
+	        (long)(PINFO_ARRAY_MAP(pinfo) ? PINFO_ARRAY_BYTES(pinfo) : 0),
+	        PINFO_ARRAY_MAP(pinfo) ? (PINFO_ARRAY_BYTES(pinfo) == 1 ? "" : "s") : "s");
+
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+	if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
+	{
+		if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
 			return(ERR_MEM_LACK);
 	}
 
@@ -272,6 +202,18 @@ static PROCESS_INFO_PTR create_process_info(FF_ARRAY_DIPOLE_PTR pole)
 #endif
 		pinfo->pole = pole;
 
+		pinfo->name = memStrdup(pole->name, "pole->name");
+		if (!pinfo->name)
+		{
+			memFree(pinfo, "pinfo");
+			pinfo = NULL;
+			err_push(ERR_MEM_LACK, "");
+		}
+
+#ifdef FF_CHK_ADDR
+		pinfo->locked_buffer = NULL;
+#endif
+
 		if (pole->mate)
 		{
 			pinfo->mate = (PROCESS_INFO_PTR)memMalloc(sizeof(PROCESS_INFO), "pinfo->mate");
@@ -282,6 +224,19 @@ static PROCESS_INFO_PTR create_process_info(FF_ARRAY_DIPOLE_PTR pole)
 #endif
 				pinfo->mate->pole = pole->mate;
 				pinfo->mate->mate = pinfo; /* This may not be necessary */
+
+				pinfo->mate->name = memStrdup(pole->mate->name, "pole->mate->name");
+				if (!pinfo->mate->name)
+				{
+					memFree(pinfo->name, "pinfo->name");
+					memFree(pinfo, "pinfo");
+					pinfo = NULL;
+					err_push(ERR_MEM_LACK, "");
+				}
+
+#ifdef FF_CHK_ADDR
+				pinfo->mate->locked_buffer = NULL;
+#endif
 			}
 			else
 			{
@@ -294,7 +249,7 @@ static PROCESS_INFO_PTR create_process_info(FF_ARRAY_DIPOLE_PTR pole)
 			pinfo->mate = NULL;
 	}
 	else
-		err_push(ERR_MEM_LACK, NULL);
+		err_push(ERR_MEM_LACK, "");
 
 	return(pinfo);
 }
@@ -324,6 +279,7 @@ static PROCESS_INFO_PTR create_process_info(FF_ARRAY_DIPOLE_PTR pole)
 static int dbask_format_summary
 	(
 	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t format_type,
 	 FF_BUFSIZE_HANDLE hbufsize
 	)
 {
@@ -332,14 +288,16 @@ static int dbask_format_summary
 	PROCESS_INFO_LIST pinfo_list = NULL;
 	PROCESS_INFO_PTR  pinfo = NULL;
 	
+	FF_VALIDATE(dbin);
+
 	assert(hbufsize);
 	assert(*hbufsize == NULL);
 
-	*hbufsize = ff_create_bufsize(SCRATCH_QUANTA);
+	*hbufsize = ff_create_bufsize(LOGGING_QUANTA);
 	if (!*hbufsize)
 		return(ERR_MEM_LACK);
 			
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_NULL, &pinfo_list);
+	error = db_ask(dbin, DBASK_PROCESS_INFO, format_type, &pinfo_list);
 	if (error)
 		return(error);
 
@@ -349,7 +307,7 @@ static int dbask_format_summary
 	{
 		FF_VALIDATE(pinfo);
 		
-		error = ff_process_info(pinfo, *hbufsize);
+		error = ff_format_info(pinfo, *hbufsize);
 		if (error)
 			return(error);
 
@@ -360,6 +318,696 @@ static int dbask_format_summary
 	ff_destroy_process_info_list(pinfo_list);
 
 	return(0);
+}
+
+static long digit_count(long l)
+{
+	return( l ? (long)(log10(labs(l)) + 1) : 1);
+}
+
+typedef struct vdf_struct_t
+{
+	int var_fw      ; /* name field width */
+	int start_pos_fw; /* start pos field width */
+	int end_pos_fw  ; /* end pos field width */
+	int type_fw     ; /* type field width */
+	int prec_fw     ; /* precision field width */
+	int sb_fw       ; /* separated by field width */
+} VDF, *VDF_PTR;
+
+static void init_vdf(VDF_PTR vdf)
+{
+	vdf->var_fw        = 0;
+	vdf->start_pos_fw  = 0;
+	vdf->end_pos_fw    = 0;
+	vdf->type_fw       = 0;
+	vdf->prec_fw       = 0;
+	vdf->sb_fw         = 0;
+}
+
+static void get_var_desc_formatting
+	(
+	 int array_offset,
+	 FORMAT_PTR format,
+	 VDF_PTR vdf
+	)
+{
+	VARIABLE_LIST vlist = NULL;
+	VARIABLE_PTR var = NULL;
+
+	FF_VALIDATE(format);
+
+	vlist = FFV_FIRST_VARIABLE(format);
+	var = FF_VARIABLE(vlist);
+	while (var)
+	{
+		if (!IS_INTERNAL_VAR(var))
+		{
+			vdf->var_fw = max(vdf->var_fw, (int)strlen(IS_EOL(var) ? "EOL" : var->name));
+			vdf->start_pos_fw = max(vdf->start_pos_fw, (int)digit_count(var->start_pos + array_offset));
+			vdf->end_pos_fw = max(vdf->end_pos_fw, (int)digit_count(var->end_pos + array_offset));
+			vdf->type_fw = max(vdf->type_fw, (int)strlen(ff_lookup_string(variable_types, FFV_DATA_TYPE(var))));
+			vdf->prec_fw = max(vdf->prec_fw, (int)digit_count(var->precision));
+			vdf->sb_fw = max(vdf->sb_fw, (int)digit_count(FORMAT_LENGTH(format) - FF_VAR_LENGTH(var)));
+		}
+
+		vlist = dll_next(vlist);
+		var = FF_VARIABLE(vlist);
+	}
+}
+
+BOOLEAN okay_to_write_array_desc(void)
+{
+#ifdef GEOVU
+	return FALSE;
+#else
+	return TRUE;
+#endif
+}
+
+static int display_var_desc
+	(
+	 int array_offset,
+	 FORMAT_PTR format,
+	 VDF_PTR vdf,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	VARIABLE_LIST vlist = NULL;
+	VARIABLE_PTR var = NULL;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	vlist = FFV_FIRST_VARIABLE(format);
+	var   = FF_VARIABLE(vlist);
+	while (var && !error)
+	{
+		int i = 0;
+
+		FF_VALIDATE(var);
+
+		if (IS_INTERNAL_VAR(var) || (!IS_ARRAY(format) && IS_ASCII(format) && IS_LAST_EOL_VAR(vlist)))
+		{
+			vlist = dll_next(vlist);
+			var = FF_VARIABLE(vlist);
+
+			continue;
+		}
+
+		if (bufsize->total_bytes - bufsize->bytes_used + strlen(var->name) < LOGGING_QUANTA)
+		{
+			if (ff_resize_bufsize(bufsize->total_bytes + strlen(var->name) + LOGGING_QUANTA, &bufsize))
+				return(ERR_MEM_LACK);
+		}
+
+		os_str_replace_unescaped_char1_with_char2(' ', '%', var->name);
+
+		sprintf(bufsize->buffer + bufsize->bytes_used, "%-*s %*d %*d ",
+				  vdf->var_fw, IS_EOL(var) ? "EOL" : var->name,
+				  vdf->start_pos_fw, (int)var->start_pos + array_offset,
+				  vdf->end_pos_fw, (int)var->end_pos + array_offset);
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+		os_str_replace_unescaped_char1_with_char2('%', ' ', var->name);
+
+		if (IS_ARRAY(var) && okay_to_write_array_desc())
+		{
+			strcat(bufsize->buffer, var->array_desc_str);
+			bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+			strcpy(bufsize->buffer + bufsize->bytes_used, " OF ");
+			bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+		}
+
+		sprintf(bufsize->buffer + bufsize->bytes_used, "%s %d\n", ff_lookup_string(variable_types, FFV_DATA_TYPE(var)), var->precision);
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+		vlist = FFV_NEXT_VARIABLE(vlist);
+		var   = FF_VARIABLE(vlist);
+	}
+
+	return error;
+}
+
+#ifdef ROUTINE_NAME
+#undef ROUTINE_NAME
+#endif
+#define ROUTINE_NAME "display_array_variable_list"
+
+/*****************************************************************************
+ * NAME: display_array_variable_list
+ *
+ * PURPOSE: Display variables in a list to a text buffer
+ *
+ * USAGE:  error = display_variable_list(pinfo, bufsize_ptr);
+ *
+ * RETURNS:  Zero on success, an error code on failure
+ *
+ * DESCRIPTION:  Appends to the bufsize a text representation of a variable list.
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * GLOBALS:
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:
+ *
+ * ERRORS:
+ ****************************************************************************/
+
+static int display_variable_list
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	VDF vdf;
+
+	int error = 0;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	init_vdf(&vdf);
+
+	get_var_desc_formatting(array_offset, format, &vdf);
+	
+	error = display_var_desc(array_offset, format, &vdf, bufsize);
+	
+	return(error);
+}
+
+#ifdef ROUTINE_NAME
+#undef ROUTINE_NAME
+#endif
+#define ROUTINE_NAME "display_array_format"
+
+/*****************************************************************************
+ * NAME: display_format
+ *
+ * PURPOSE: Display a format to a text buffer for debugging
+ *
+ * USAGE:  error = display_format(format, bufsize_ptr);
+ *
+ * RETURNS:  Zero on success, an error code on failure
+ *
+ * DESCRIPTION:  Appends to the bufsize a text representation of a format.
+ * The format looks like:
+ *
+ * Format: <name>
+ * <type name>
+ * <num_in_list>
+ * <max_length>
+ * <check_address>
+ * <variables...>
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * GLOBALS:
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:
+ *
+ * ERRORS:
+ ****************************************************************************/
+
+static int display_format
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	format->type &= ~FFF_VARIED;
+
+	error = get_format_type_and_title(format, bufsize);
+	if (error)
+		return error;
+
+	error = display_variable_list(array_offset, format, bufsize);
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "\n");
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+	
+	return(error);
+}
+
+static int display_format_to_user
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	error = get_format_type_and_title(format, bufsize);
+	if (error)
+		return error;
+
+	if (IS_VARIED(format))
+	{
+		sprintf(bufsize->buffer + bufsize->bytes_used, "create_format 0 0 text 0\n");
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+	}
+	else
+		error = display_variable_list(array_offset, format, bufsize);
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "\n");
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+	
+	return(error);
+}
+
+static int display_record_variable_list
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	char *cp = NULL;
+
+	VDF vdf;
+
+	VARIABLE_LIST vlist = NULL;
+	VARIABLE_PTR var = NULL;
+
+	FF_VALIDATE(format);
+
+	init_vdf(&vdf);
+
+	get_var_desc_formatting(0, format, &vdf);
+
+	vlist = FFV_FIRST_VARIABLE(format);
+	var = FF_VARIABLE(vlist);
+	while (var && !error)
+	{
+		FF_VALIDATE(var);
+
+		if (IS_INTERNAL_VAR(var) || (IS_ASCII(format) && IS_LAST_EOL_VAR(vlist)))
+		{
+			vlist = dll_next(vlist);
+			var = FF_VARIABLE(vlist);
+
+			continue;
+		}
+
+		os_str_replace_unescaped_char1_with_char2(' ', '%', var->name);
+
+		sprintf(bufsize->buffer + bufsize->bytes_used, "%*s %*d %*d ",
+				  vdf.var_fw, IS_EOL(var) ? "EOL" : var->name,
+				  vdf.start_pos_fw, (int)var->start_pos + array_offset,
+				  vdf.end_pos_fw, (int)var->end_pos + array_offset);
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+		os_str_replace_unescaped_char1_with_char2('%', ' ', var->name);
+
+		if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
+		{
+			if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
+			{
+				error = ERR_MEM_LACK;
+				goto display_record_variable_list_exit;
+			}
+		}
+
+		strcpy(bufsize->buffer + bufsize->bytes_used, var->array_desc_str);
+		cp = strrchr(bufsize->buffer + bufsize->bytes_used, ']');
+		sprintf(cp, " %s %*d]", NDARR_SB_KEY0, (int)vdf.sb_fw, (int)(FORMAT_LENGTH(format) - FF_VAR_LENGTH(var)));
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+		if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
+		{
+			if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
+			{
+				error = ERR_MEM_LACK;
+				goto display_record_variable_list_exit;
+			}
+		}
+
+		sprintf(bufsize->buffer + bufsize->bytes_used, " OF %*s %*d\n",
+				  vdf.type_fw, ff_lookup_string(variable_types, FFV_DATA_TYPE(var)),
+				  vdf.prec_fw, var->precision);
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+		vlist = dll_next(vlist);
+		var = FF_VARIABLE(vlist);
+	}
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "\n");
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+display_record_variable_list_exit:
+
+	return error;
+}
+
+static int display_record_format
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	error = get_format_type_and_title(format, bufsize);
+	if (error)
+		return error;
+
+	if (IS_VARIED(format))
+	{
+		sprintf(bufsize->buffer + bufsize->bytes_used, "create_format 0 0 text 0\n");
+		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+	}
+	else
+		error = display_record_variable_list(array_offset, format, bufsize);
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "\n");
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+	
+	return(error);
+}
+
+static int display_array_list
+	(
+	 PROCESS_INFO_LIST plist,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	VDF vdf;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	int error = 0;
+
+	FF_VALIDATE(bufsize);
+
+	init_vdf(&vdf);
+
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo)
+	{
+		FF_VALIDATE(pinfo);
+
+		if (IS_ARRAY(PINFO_FORMAT(pinfo)))
+			get_var_desc_formatting(PINFO_FIRST_ARRAY_OFFSET(pinfo), PINFO_FORMAT(pinfo), &vdf);
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
+	}
+		
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo)
+	{
+		FF_VALIDATE(pinfo);
+
+		if (IS_ARRAY(PINFO_FORMAT(pinfo)))
+			display_var_desc(PINFO_FIRST_ARRAY_OFFSET(pinfo), PINFO_FORMAT(pinfo), &vdf, bufsize);
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
+	}
+	
+	return(error);
+}
+
+static int dbask_format_list_description
+	(
+	 PROCESS_INFO_LIST plist,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int format_num = 0;
+	int error = 0;
+
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	FF_VALIDATE(bufsize);
+
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo)
+	{
+		FF_VALIDATE(pinfo);
+
+		if (IS_RECORD_FORMAT(PINFO_FORMAT(pinfo)))
+			error = display_record_format(PINFO_FIRST_ARRAY_OFFSET(pinfo), PINFO_FORMAT(pinfo), bufsize);
+		else if (IS_ARRAY(PINFO_FORMAT(pinfo)))
+		{
+			error = get_format_type_and_title(PINFO_FORMAT(pinfo), bufsize);
+			if (error)
+				break;
+
+			error = display_array_list(plist, bufsize);
+			break;
+		}
+		else
+			error = display_format(PINFO_FIRST_ARRAY_OFFSET(pinfo), PINFO_FORMAT(pinfo), bufsize);
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
+	}
+
+	return error;
+}
+
+static int dbask_format_list_description_to_user
+	(
+	 PROCESS_INFO_LIST plist,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int format_num = 0;
+	int error = 0;
+
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	FF_VALIDATE(bufsize);
+
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo)
+	{
+		FF_VALIDATE(pinfo);
+
+		if (IS_RECORD_FORMAT(PINFO_FORMAT(pinfo)))
+			error = display_record_format(PINFO_FIRST_ARRAY_OFFSET(pinfo), PINFO_FORMAT(pinfo), bufsize);
+		else if (IS_ARRAY(PINFO_FORMAT(pinfo)))
+		{
+			error = get_format_type_and_title(PINFO_FORMAT(pinfo), bufsize);
+			if (error)
+				break;
+
+			error = display_array_list(plist, bufsize);
+			break;
+		}
+		else
+			error = display_format_to_user(PINFO_FIRST_ARRAY_OFFSET(pinfo), PINFO_FORMAT(pinfo), bufsize);
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
+	}
+
+	return error;
+}
+
+static int dbask_format_description
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	if (IS_RECORD_FORMAT(format))
+		error = display_record_format(array_offset, format, bufsize);
+	else
+		error = display_format(array_offset, format, bufsize);
+
+	return error;
+}
+
+static int dbask_format_description_to_user
+	(
+	 FF_ARRAY_OFFSET_t array_offset,
+	 FORMAT_PTR format,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(format);
+	FF_VALIDATE(bufsize);
+
+	if (IS_RECORD_FORMAT(format))
+		error = display_record_format(array_offset, format, bufsize);
+	else
+		error = display_format_to_user(array_offset, format, bufsize);
+
+	return error;
+}
+
+static int dbask_tab_to_array_format_description
+	(
+	 DATA_BIN_PTR dbin, 
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	FF_VALIDATE(dbin);
+
+	FF_VALIDATE(bufsize);
+
+	error = db_ask(dbin, DBASK_PROCESS_INFO, 0, &plist);
+	if (!error)
+	{
+		plist = dll_first(plist);
+		pinfo = FF_PI(plist);
+		while (pinfo)
+		{
+			if (/*IS_DATA(PINFO_FORMAT(pinfo)) &&*/ !IS_ARRAY(PINFO_FORMAT(pinfo)))
+			{
+				VDF vdf;
+
+				VARIABLE_LIST vlist = NULL;
+				VARIABLE_PTR var = NULL;
+
+				error = get_format_type_and_title(PINFO_FORMAT(pinfo), bufsize);
+				if (error)
+					return error;
+
+				if (IS_VARIED(PINFO_FORMAT(pinfo)))
+				{
+					sprintf(bufsize->buffer + bufsize->bytes_used, "create_format 0 0 text 0\n");
+					bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+					plist = dll_next(plist);
+					pinfo = FF_PI(plist);
+
+					continue;
+				}
+				
+				if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
+				{
+					if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
+					{
+						error = ERR_MEM_LACK;
+						goto dbask_tab_to_array_format_description_exit;
+					}
+				}
+
+				init_vdf(&vdf);
+
+				get_var_desc_formatting(0, PINFO_FORMAT(pinfo), &vdf);
+
+				vlist = FFV_FIRST_VARIABLE(PINFO_FORMAT(pinfo));
+				var = FF_VARIABLE(vlist);
+				while (var && !error)
+				{
+					FF_VALIDATE(var);
+
+					if (IS_INTERNAL_VAR(var))
+					{
+						vlist = dll_next(vlist);
+						var = FF_VARIABLE(vlist);
+
+						continue;
+					}
+
+					os_str_replace_unescaped_char1_with_char2(' ', '%', var->name);
+
+					sprintf(bufsize->buffer + bufsize->bytes_used, "%*s %*d %*d ARRAY",
+					        vdf.var_fw, IS_EOL(var) ? "EOL" : var->name,
+					        vdf.start_pos_fw, (int)var->start_pos,
+					        vdf.end_pos_fw, (int)var->end_pos);
+					bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+					os_str_replace_unescaped_char1_with_char2('%', ' ', var->name);
+
+					if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
+					{
+						if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
+						{
+							error = ERR_MEM_LACK;
+							goto dbask_tab_to_array_format_description_exit;
+						}
+					}
+
+					sprintf(bufsize->buffer + bufsize->bytes_used, "[\"t\" %ld to %ld %s %*ld]",
+					        (long)(IS_INPUT(PINFO_FORMAT(pinfo)) ? PINFO_SUPER_ARRAY(pinfo)->start_index[0] : PINFO_MATE_SUB_ARRAY(pinfo)->start_index[0]),
+					        (long)(IS_INPUT(PINFO_FORMAT(pinfo)) ? PINFO_SUPER_ARRAY(pinfo)->end_index[0] : PINFO_MATE_SUB_ARRAY(pinfo)->end_index[0]),
+					        NDARR_SB_KEY0,
+					        vdf.sb_fw, (long)(PINFO_RECL(pinfo) - FF_VAR_LENGTH(var)));
+					bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+		
+					if (bufsize->total_bytes - bufsize->bytes_used < LOGGING_QUANTA)
+					{
+						if (ff_resize_bufsize(bufsize->total_bytes + LOGGING_QUANTA, &bufsize))
+						{
+							error = ERR_MEM_LACK;
+							goto dbask_tab_to_array_format_description_exit;
+						}
+					}
+
+					sprintf(bufsize->buffer + bufsize->bytes_used, " OF %*s %*d\n",
+					        vdf.type_fw, ff_lookup_string(variable_types, FFV_DATA_TYPE(var)),
+					        vdf.prec_fw, var->precision);
+					bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+					vlist = dll_next(vlist);
+					var = FF_VARIABLE(vlist);
+				}
+
+				sprintf(bufsize->buffer + bufsize->bytes_used, "\n");
+				bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+			}
+			else
+				error = dbask_format_description(0, PINFO_FORMAT(pinfo), bufsize);
+
+			plist = dll_next(plist);
+			pinfo = FF_PI(plist);
+		}
+	}
+
+dbask_tab_to_array_format_description_exit:
+
+	ff_destroy_process_info_list(plist);
+
+	return error;
 }
 
 static int add_process_info
@@ -423,7 +1071,7 @@ static int create_process_info_list
 	{
 		FF_VALIDATE(conduit);
 		
-		if ((conduit->input->fd->format->type & format_type) == format_type)
+		if (conduit->input && (conduit->input->fd->format->type & format_type) == format_type)
 		{
 			error = add_process_info(conduit->input, *hpinfo_list);
 			if (error)
@@ -497,7 +1145,7 @@ static int dbask_process_info
  *
  * GLOBALS:
  *
- * COMMENTS:  Array variables will have format title and colon-colon "::" prepended
+ * COMMENTS:  Array variables will NOT have format title and colon-colon "::" prepended
  * to the variable name.
  *
  * Are there arrays of records?  For example:
@@ -572,7 +1220,11 @@ static int dbask_var_names
 		{
 			if (PINFO_IS_ARRAY(pinfo))
 			{
+#if 0
+				(*names_vector)[(*num_names)++] = strstr(PINFO_NAME(pinfo), "::") + 2;
+#else
 				(*names_vector)[(*num_names)++] = PINFO_NAME(pinfo);
+#endif
 			}
 			else
 			{
@@ -666,6 +1318,7 @@ static int dbask_array_dim_names
 	/* Has *dim_names_vector already been allocated?  If so, this would be a memory leak.
 	   Do we automatically free *dim_names_vector, or do we force the AP to clean up?
 	*/
+
 	assert(*dim_names_vector == NULL);
 
 	if (!dbin || !array_var_name || !num_dim_names || !dim_names_vector)
@@ -883,15 +1536,23 @@ static int dbask_var_minmaxs
 
 		((double **)*mm_vector)[i] = NULL;
 
-		sprintf(name_buffer, "%s_%s", names_vector[i], mm_spec);
-		error = nt_ask(dbin, NT_ANYWHERE, name_buffer, mm_type, data_dest);
+		sprintf(name_buffer, "%s_%simum", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i], mm_spec);
+		error = nt_ask(dbin, NT_INPUT, name_buffer, mm_type, data_dest);
 		if (error && error != ERR_NT_KEYNOTDEF)
 			error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 
 		if (error)
 		{
+			sprintf(name_buffer, "%s_%s", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i], mm_spec);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, mm_type, data_dest);
+			if (error && error != ERR_NT_KEYNOTDEF)
+				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
+		}
+
+		if (error)
+		{
 			sprintf(name_buffer, "band_%d_%s", i + 1, mm_spec);
-			error = nt_ask(dbin, NT_ANYWHERE, name_buffer, mm_type, data_dest);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, mm_type, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 		}
@@ -899,7 +1560,7 @@ static int dbask_var_minmaxs
 		if (error)
 		{
 			sprintf(name_buffer, "%simum_value", mm_spec);
-			error = nt_ask(dbin, NT_ANYWHERE, name_buffer, mm_type, data_dest);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, mm_type, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 		}
@@ -964,7 +1625,8 @@ static int dbask_var_minmaxs
  *
  * Minimums are not calculated as in Checkvar.  Instead a sequence of nt_ask calls are made
  * to see if minimum value is defined in a header, constant table, or environment.  First
- * a call for the name appended with "_min" is made, then a call for "band_"#"_min" where
+ * a call for the name appended with "_minimum" is made, the a call for the name appended
+ * with "_min", then a call for "band_"#"_min" where
  * # is the sequence number of the name in names_vector, and last a call for "minimum_value".
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
@@ -1043,7 +1705,8 @@ static int dbask_var_mins
  *
  * Maximums are not calculated as in Checkvar.  Instead a sequence of nt_ask calls are made
  * to see if maximum value is defined in a header, constant table, or environment.  First
- * a call for the name appended with "_max" is made, then a call for "band_"#"_max" where
+ * a call for the name appended with "_maximum" is made, then a call for the name appended
+ * with "_max", then a call for "band_"#"_max" where
  * # is the sequence number of the name in names_vector, and last a call for "maximum_value".
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
@@ -1182,15 +1845,15 @@ static int dbask_var_units
 	{
 		(*units_vector)[i] = NULL;
 
-		sprintf(name_buffer, "%s_unit", names_vector[i]);
-		error = nt_ask(dbin, NT_ANYWHERE, name_buffer, FFV_TEXT, data_dest);
+		sprintf(name_buffer, "%s_unit", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i]);
+		error = nt_ask(dbin, NT_INPUT, name_buffer, FFV_TEXT, data_dest);
 		if (error && error != ERR_NT_KEYNOTDEF)
 			error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 
 		if (error)
 		{
 			sprintf(name_buffer, "band_%d_unit", i + 1);
-			error = nt_ask(dbin, NT_ANYWHERE, name_buffer, FFV_TEXT, data_dest);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, FFV_TEXT, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 		}
@@ -1198,7 +1861,7 @@ static int dbask_var_units
 		if (error)
 		{
 			sprintf(name_buffer, "value_unit");
-			error = nt_ask(dbin, NT_ANYWHERE, name_buffer, FFV_TEXT, data_dest);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, FFV_TEXT, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 		}
@@ -1330,15 +1993,15 @@ static int dbask_var_flags
 
 		((double **)*flags_vector)[i] = NULL;
 
-		sprintf(name_buffer, "%s_missing_flag", names_vector[i]);
-		error = nt_ask(dbin, NT_ANYWHERE, name_buffer, flags_type, data_dest);
+		sprintf(name_buffer, "%s_missing_flag", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i]);
+		error = nt_ask(dbin, NT_INPUT, name_buffer, flags_type, data_dest);
 		if (error && error != ERR_NT_KEYNOTDEF)
 			error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 
 		if (error)
 		{
 			sprintf(name_buffer, "band_%d_missing_flag", i + 1);
-			error = nt_ask(dbin, NT_ANYWHERE, name_buffer, flags_type, data_dest);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, flags_type, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 		}
@@ -1346,7 +2009,7 @@ static int dbask_var_flags
 		if (error)
 		{
 			sprintf(name_buffer, "missing_flag");
-			error = nt_ask(dbin, NT_ANYWHERE, name_buffer, flags_type, data_dest);
+			error = nt_ask(dbin, NT_INPUT, name_buffer, flags_type, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 		}
@@ -1361,21 +2024,34 @@ static int dbask_var_flags
 	return(error_state);
 }
 
-static long dbask_bytes_to_process(PROCESS_INFO_LIST pinfo_list)
+static long dbask_bytes_to_process
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t pinfo_type
+	)
 {
+	int error = 0;
 	long bytes_to_process = 0;
+	PROCESS_INFO_LIST pinfo_list = NULL;
 	PROCESS_INFO_PTR pinfo = NULL;
+
+	FF_VALIDATE(dbin);
+
+	error = db_ask(dbin, DBASK_PROCESS_INFO, pinfo_type, &pinfo_list);
+	if (error)
+		return -1;
 
 	pinfo_list = dll_first(pinfo_list);
 	pinfo      = FF_PI(pinfo_list);
 	while (pinfo)
 	{
-		if (PINFO_MATE(pinfo))
-			bytes_to_process += PINFO_MATE_BYTES_LEFT(pinfo);
+		bytes_to_process += PINFO_BYTES_LEFT(pinfo);
 
 		pinfo_list = dll_next(pinfo_list);
 		pinfo      = FF_PI(pinfo_list);
 	}
+
+	ff_destroy_process_info_list(pinfo_list);
 
 	return(bytes_to_process);
 }
@@ -1409,9 +2085,56 @@ int db_ask(DATA_BIN_PTR dbin, int message, ...)
 
 	case DBASK_FORMAT_SUMMARY:
 	{
+		FF_TYPES_t format_type = va_arg(args, FF_TYPES_t);
 		FF_BUFSIZE_HANDLE hbufsize = va_arg(args, FF_BUFSIZE_HANDLE);
 
-		error = dbask_format_summary(dbin, hbufsize);
+		error = dbask_format_summary(dbin, format_type, hbufsize);
+	}
+	break;
+
+	case DBASK_FORMAT_DESCRIPTION:
+	{
+		FF_ARRAY_OFFSET_t array_offset = va_arg(args, FF_ARRAY_OFFSET_t); 
+		FORMAT_PTR format = va_arg(args, FORMAT_PTR);
+		FF_BUFSIZE_PTR bufsize = va_arg(args, FF_BUFSIZE_PTR);
+
+		error = dbask_format_description(array_offset, format, bufsize);
+	}
+	break;
+
+	case DBASK_FORMAT_LIST_DESCRIPTION:
+	{
+		PROCESS_INFO_LIST plist = va_arg(args, PROCESS_INFO_LIST);
+		FF_BUFSIZE_PTR bufsize = va_arg(args, FF_BUFSIZE_PTR);
+
+		error = dbask_format_list_description(plist, bufsize);
+	}
+	break;
+
+	case DBASK_FORMAT_DESCRIPTION_TO_USER:
+	{
+		FF_ARRAY_OFFSET_t array_offset = va_arg(args, FF_ARRAY_OFFSET_t); 
+		FORMAT_PTR format = va_arg(args, FORMAT_PTR);
+		FF_BUFSIZE_PTR bufsize = va_arg(args, FF_BUFSIZE_PTR);
+
+		error = dbask_format_description_to_user(array_offset, format, bufsize);
+	}
+	break;
+
+	case DBASK_FORMAT_LIST_DESCRIPTION_TO_USER:
+	{
+		PROCESS_INFO_LIST plist = va_arg(args, PROCESS_INFO_LIST);
+		FF_BUFSIZE_PTR bufsize = va_arg(args, FF_BUFSIZE_PTR);
+
+		error = dbask_format_list_description_to_user(plist, bufsize);
+	}
+	break;
+
+	case DBASK_TAB_TO_ARRAY_FORMAT_DESCRIPTION:
+	{
+		FF_BUFSIZE_PTR bufsize = va_arg(args, FF_BUFSIZE_PTR);
+
+		error = dbask_tab_to_array_format_description(dbin, bufsize);
 	}
 	break;
 
@@ -1490,9 +2213,9 @@ int db_ask(DATA_BIN_PTR dbin, int message, ...)
 
 	case DBASK_BYTES_TO_PROCESS:
 	{
-		PROCESS_INFO_LIST pinfo_list = va_arg(args, PROCESS_INFO_LIST);
+		FF_TYPES_t pinfo_type = va_arg(args, FF_TYPES_t);
 
-		error = dbask_bytes_to_process(pinfo_list);
+		error = dbask_bytes_to_process(dbin, pinfo_type);
 	}
 	break;
 

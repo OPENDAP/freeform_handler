@@ -534,7 +534,7 @@ FORMAT_DATA_PTR fd_find_format_data(FORMAT_DATA_LIST fd_list, ...)
  * Mark all ambiguous ASCII formats as FFF_INPUT.
  *
  * input_file_name ends in ".dab":
- * Mark all ambiguous dBASE formats as FFF_INPUT.
+ * Mark all ambiguous FLAT formats as FFF_INPUT.
  *
  * input_file_name ends in anything else:
  * Mark all ambiguous binary formats as FFF_INPUT.
@@ -543,7 +543,7 @@ FORMAT_DATA_PTR fd_find_format_data(FORMAT_DATA_LIST fd_list, ...)
  * Mark all ambiguous ASCII formats as FFF_OUTPUT.
  *
  * output_file_name ends in ".dab":
- * Mark all ambiguous dBASE formats as FFF_OUTPUT.
+ * Mark all ambiguous FLAT formats as FFF_OUTPUT.
  *
  * output_file_name ends in anything else:
  * Mark all ambiguous binary formats as FFF_OUTPUT.
@@ -590,7 +590,7 @@ void db_format_list_mark_io
 		if (in_point && !osf_strcmp(in_point, "dat"))
 			search_format_type = FFF_ASCII;
 		else if (in_point && !osf_strcmp(in_point, "dab"))
-			search_format_type = FFF_DBASE;
+			search_format_type = FFF_FLAT;
 		else
 			search_format_type = FFF_BINARY;
 	}
@@ -599,7 +599,7 @@ void db_format_list_mark_io
 		if (out_point && !osf_strcmp(out_point, "dat"))
 			search_format_type = FFF_ASCII;
 		else if (out_point && !osf_strcmp(out_point, "dab"))
-			search_format_type = FFF_DBASE;
+			search_format_type = FFF_FLAT;
 		else if (output_file_name)
 			search_format_type = FFF_BINARY;
 		else

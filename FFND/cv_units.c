@@ -445,7 +445,7 @@ static int ff_get_string
 	switch (format_type)
 	{
 		case FFF_ASCII:
-		case FFF_DBASE:
+		case FFF_FLAT:
 	
 			/* ASCII Input:
 				Numeric variables must be left justified in the variable
@@ -3395,7 +3395,7 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
  *
  */
 
-static FF_DATA_BUFFER ff_strnstr(char *pcPattern, FF_DATA_BUFFER pcText, size_t uTextLen)
+FF_DATA_BUFFER ff_strnstr(char *pcPattern, FF_DATA_BUFFER pcText, size_t uTextLen)
 {
              /* array of character mis-match offsets */
     unsigned uCharJump[AlphabetSize];
@@ -3517,7 +3517,7 @@ static int ff_get_value(VARIABLE_PTR var, /* The variable description */
 	switch (format_type & FFF_FORMAT_TYPES)
 	{
 		case FFF_ASCII:         /* If the format is ASCII, copy the string */
-		case FFF_DBASE:         /* If the format is DBASE, copy the string */
+		case FFF_FLAT:         /* If the format is FLAT, copy the string */
 
 			/* If the variable type is FFV_CHAR, copy to destination, return now */
 			if (IS_TEXT(var))

@@ -116,7 +116,7 @@ DLL_NODE_PTR dll_init(void)
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "dll_insert"
 
-static DLL_NODE_PTR dll_insert(DLL_NODE_PTR next_node)
+DLL_NODE_PTR dll_insert(DLL_NODE_PTR next_node)
 {
 #ifdef DLL_CHK
 	DLL_NODE_PTR new_node = dll_node_create(next_node);
@@ -246,6 +246,12 @@ static void dll_destroy_data(DLL_DATA_PTR data)
 			FF_VALIDATE(data->u.err);
 			ff_destroy_error(data->u.err);
 			data->u.err = NULL;
+		break;
+
+		case DLL_DF:
+			FF_VALIDATE(data->u.err);
+			ff_destroy_data_flag(data->u.df);
+			data->u.df = NULL;
 		break;
 
 		default:
@@ -595,6 +601,18 @@ FF_ERROR_PTR           FF_EP(FF_ERROR_LIST error_list)
 	return(error_list->data.u.err);
 }
 
+FF_DATA_FLAG_PTR       FF_DF(FF_DATA_FLAG_LIST data_flag_list)
+{
+	FF_VALIDATE(data_flag_list);
+
+	if (DLL_IS_HEAD_NODE(data_flag_list))
+		return(NULL);
+
+	assert(data_flag_list->data.type == DLL_DF);
+
+	return(data_flag_list->data.u.df);
+}
+
 #endif /* FF_DBG */
 
 DLL_NODE_PTR dll_first(DLL_NODE_PTR node)
@@ -668,6 +686,13 @@ void dll_assign
 
 			node->data.u.err = data;
 			FF_VALIDATE(node->data.u.var);
+		break;
+
+		case DLL_DF:
+			assert(node->data.u.df == NULL);
+
+			node->data.u.df = data;
+			FF_VALIDATE(node->data.u.df);
 		break;
 
 		default:

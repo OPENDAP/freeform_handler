@@ -256,7 +256,7 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format)
 	assert(equation);
 	FF_VALIDATE(eqn_format);
 
-	scratch = (char *)memMalloc((size_t)(strlen(equation) + 200), "ee_make_std_equation: scratch");
+	scratch = (char *)memMalloc((size_t)(max(80, strlen(equation) + EE_SCRATCH_EQN_LEN)), "scratch");
 	if(!scratch)
 	{
 		err_push(ERR_MEM_LACK, "Creating a copy of the query restriction");
@@ -266,7 +266,7 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format)
 	memStrcpy(scratch, equation,NO_TAG);
 	if(ee_set_var_types(scratch, eqn_format)){
 		err_push(ERR_GENERAL, "Preprocessing equation");
-		memFree(scratch, "ee_make_std_equation: scratch");
+		memFree(scratch, "scratch");
 		return(NULL);
 	}
 			
@@ -276,7 +276,7 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format)
 	{
 		ee_show_err_mesg(scratch, error); /* retrieve the exact error */
 		err_push(ERR_PARSE_EQN, scratch);
-		memFree(scratch, "ee_make_std_equation: scratch");
+		memFree(scratch, "scratch");
 		return(NULL);
 	}
 
@@ -285,10 +285,10 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format)
 	if(ee_check_vars_exist(einfo, eqn_format))
 	{
 		ee_free_einfo(einfo);
-		memFree(scratch, "ee_make_std_equation: scratch");
+		memFree(scratch, "scratch");
 		return(NULL);
 	}
-	memFree(scratch, "ee_make_std_equation: scratch");
+	memFree(scratch, "scratch");
 	return(einfo);
 }
 

@@ -48,7 +48,9 @@ static ERROR_RECORD local_errlist[] =
 	ERR_OPEN_FILE,                  "Opening file (file does not exist, or too many open files)",                                 /*501*/
 	ERR_READ_FILE,                  "Reading file",                                 /*502*/
 	ERR_WRITE_FILE,                 "Writing to file",                              /*503*/
+	ERR_PTR_DEF,                    "Required internal data structure undefined",                                  /*504*/
 	ERR_MEM_LACK,                   "Insufficient memory (RAM)",                 /* 505 */
+	ERR_UNKNOWN,                    "Undefined error",                                      /*506*/
 	ERR_FIND_FILE,                  "Finding file",                                      /*507*/
 	ERR_FILE_DEFINED,               "File undefined",                                     /*508*/
 	ERR_OUT_OF_RANGE,               "Value went out of range",                     /*510*/
@@ -56,27 +58,45 @@ static ERROR_RECORD local_errlist[] =
 	ERR_NUM_TOKENS,                 "Incorrect Number of Tokens on Line",                    /* 519 */
 	ERR_FILE_EXISTS,                "File already exists (Can you delete or move the file?)",   /* 522 */
 	ERR_CREATE_FILE,                "Creating file (Do you have write access to the file and directory?)",    /* 523 */
-	ERR_WILL_OVERWRITE_FILE,        "Output file will be overwritten (Define \"nooverwrite\" keyword?)",  /* 524 */
+	ERR_WILL_OVERWRITE_FILE,        "File will be overwritten (Define \"nooverwrite\" keyword?)",  /* 524 */
 	ERR_REMOVE_FILE,                "Removing file (is the file read-only?)",                             /* 525 */
+	ERR_WONT_OVERWRITE_FILE,        "File will not be overwritten (Delete file and try again)",  /* 524 */
 
 	/* Freeform Errors */
 	ERR_UNKNOWN_VAR_TYPE,           "Unknown variable type",                                /*1000*/
+	ERR_UNKNOWN_PARAMETER,          "Could not get a value for parameter or keyword",                  /*1001*/
 	ERR_CONVERT,                    "Problem in conversion",                                /*1003*/
 	ERR_MAKE_FORM,                  "Making format",                                /*1004*/
 	ERR_NO_VARIABLES,               "No variables found in format",                                   /*1012*/
 	ERR_FIND_FORM,                  "Finding the named format",                               /*1021*/
 	ERR_CONVERT_VAR,                "Could not determine type of conversion for the given variable",           /*1022*/
 	ERR_ORPHAN_VAR,                 "Output variable has no relation to input",                                /* 1023 */
+	ERR_POSSIBLE,                   "Possible problem when you next use output data",
 
 	/* Binview Errors */
 
 	ERR_SET_DBIN,                   "Setting data bin",                             /*1509*/
-	ERR_FILE_LENGTH,                "File length / Record Length Mismatch",                 /*1517*/
+	ERR_PARTIAL_RECORD,             "Last record was incomplete and was not read",      /*1517*/
 	ERR_NT_DEFINE,                  "Defining name table",                          /*1520*/
 	ERR_UNKNOWN_FORMAT_TYPE,        "Unknown Format Type",									/*1525*/
 	
 	/* EQUATION errors */
 	ERR_EQN_SET,                 "Problem setting up equation variable",
+
+	ERR_SDTS,          "Problem in SDTS conversion",
+	ERR_SDTS_BYE_ATTR, "GeoVu keyword will not be encoded into the SDTS transfer",
+	
+	/* String database and menu systems */
+
+	ERR_MAKE_MENU_DBASE,            "Creating menu database",                       /*3000*/
+	ERR_NO_SUCH_SECTION,            "No Section with this title",                           /*3001*/
+	ERR_GETTING_SECTION,            "Getting text for section",                     /*3002*/
+	ERR_MENU,                       "Processing Menu",                              /*3003*/
+
+	ERR_MN_BUFFER_TRUNCATED,        "Menu section buffer truncated",                        /*3500*/
+	ERR_MN_SEC_NFOUND,              "Requested menu section not found",                       /*3501*/
+	ERR_MN_FILE_CORRUPT,            "Menu file corrupt",                                    /*3502*/
+	ERR_MN_REF_FILE_NFOUND,         "Referenced file not found",                            /*3503*/
 	
 	/* Interpreter and parse errors */
 
@@ -106,13 +126,14 @@ static ERROR_RECORD local_errlist[] =
 	ERR_MISPLACED_SECTION_END,   "Badly Placed Section End:",
 	ERR_NT_MERGE,                "Error in merging/copying name tables",
 	ERR_NT_KEYNOTDEF,            "Expected keyword not defined",
+	ERR_EQV_CONTEXT,             "Definition(s) in equivalence section would be out of context",
 
 	ERR_GEN_ARRAY, "Problem in performing array operation",
 
 	/* Programmer's eyes only, or programmer support */
 	ERR_API,                     "Error in Application Programmer Interface, contact support",   /* 7900 */
 	ERR_SWITCH_DEFAULT,          "Unexpected default case in switch statement, contact support", /* 7901 */
-	ERR_ASSERT_FAILURE,          "Assertion Failure",                                            /* 7902 */
+	ERR_ASSERT_FAILURE,          "Assertion Failure, contact support",                                            /* 7902 */
 	ERR_NO_NAME_TABLE,           "Equivalence section has not been defined",
 	ERR_API_BUF_LOCKED,          "API Error -- internal buffer is already locked",
 	ERR_API_BUF_NOT_LOCKED,      "API Error -- internal buffer is not locked"
@@ -149,10 +170,12 @@ static FF_ERROR_PTR create_error
 		return(NULL);
 	}
 
+	os_str_replace_char(error->message, '\b', ':');
+
 	error->problem = err_get_msg(code - (code > ERR_WARNING_ONLY ? ERR_WARNING_ONLY : 0));
 
-	error->warning_num = 0;
-	error->error_num   = 0;
+	error->warning_ord = 0;
+	error->error_ord   = 0;
 
 	return(error);
 }
@@ -176,8 +199,8 @@ void ff_destroy_error(FF_ERROR_PTR error)
 
 	error->problem = NULL;
 
-	error->warning_num = 0;
-	error->error_num   = 0;
+	error->warning_ord = 0;
+	error->error_ord   = 0;
 
 	memFree(error, "error");
 }
@@ -224,13 +247,13 @@ static void add_error
 				dll_assign(error, DLL_ERR, new_error_node);
 				if (is_a_warning(error))
 				{
-					error->error_num = last_error ? last_error->error_num : 0;
-					error->warning_num = 1 + (last_error ? last_error->warning_num : 0);
+					error->error_ord = last_error ? last_error->error_ord : 0;
+					error->warning_ord = 1 + (last_error ? last_error->warning_ord : 0);
 				}
 				else
 				{
-					error->error_num = 1 + (last_error ? last_error->error_num : 0);
-					error->warning_num = last_error ? last_error->warning_num : 0;
+					error->error_ord = 1 + (last_error ? last_error->error_ord : 0);
+					error->warning_ord = last_error ? last_error->warning_ord : 0;
 				}
 			}
 			else
@@ -240,6 +263,21 @@ static void add_error
 			}
 		}
 	}
+}
+
+int err_count(void)
+{
+	FF_ERROR_PTR error = NULL;
+	int total = 0;
+
+	if (error_list)
+	{
+		error = FF_EP(dll_last(error_list));
+		if (error)
+			total = error->error_ord + error->warning_ord;
+	}
+
+	return total;
 }
 
 static FF_ERROR_PTR pop_error(void)
@@ -280,6 +318,29 @@ static FF_ERROR_PTR pull_error(void)
 	}
 
 	return(error);
+}
+
+int verr_push
+	(
+	 const int ercode,
+	 const char *format,
+	 va_list va_args
+	)
+{
+	enum {MAX_ERRSTR_SIZE = 2 * MAX_PATH};
+
+	char message[MAX_ERRSTR_SIZE]; /* big enough? */
+
+	FF_ERROR_PTR error = NULL;
+
+	assert(ercode);
+	assert(format);
+
+	vsprintf(message, format, va_args);
+
+	add_error(ercode, message);
+
+	return(ercode);
 }
 
 /*
@@ -352,26 +413,21 @@ static FF_ERROR_PTR pull_error(void)
 
 int err_push
 	(
-	 int ercode,
-	 char *format,
+	 const int ercode,
+	 const char *format,
 	 ...
 	)
 {
-	enum {MAX_ERRSTR_SIZE = 2 * _MAX_PATH};
-
-	char message[MAX_ERRSTR_SIZE]; /* big enough? */
 	va_list va_args;
-
-	FF_ERROR_PTR error = NULL;
 
 	assert(ercode);
 	assert(format);
 
 	va_start(va_args, format);
 	
-	vsprintf(message, format, va_args);
+	verr_push(ercode, format, va_args);
 
-	add_error(ercode, message);
+	va_end(va_args);
 
 	return(ercode);
 }
@@ -467,14 +523,24 @@ void err_clear(void)
 static void print_error
 	(
 	 FILE *fp,
-	 FF_ERROR_PTR error
+	 FF_ERROR_PTR error,
+	 BOOLEAN error_logging,
+	 BOOLEAN error_screen
 	)
 {
 	FF_VALIDATE(error);
 
-	fprintf(fp, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_num : error->error_num, error->problem);
+	if (error_logging)
+	{
+		fprintf(fp, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_ord : error->error_ord, error->problem);
+		fprintf(fp, "\nEXPLANATION: %s\n", error->message);
+	}
 
-	fprintf(fp, "\nEXPLANATION: %s\n", error->message);
+	if (error_screen)
+	{
+		fprintf(stderr, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_ord : error->error_ord, error->problem);
+		fprintf(stderr, "\nEXPLANATION: %s\n", error->message);
+	}
 }
 
 /*
@@ -516,9 +582,11 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 
 	char num_warnings_str[10];
 	char num_errors_str[10];
+
 	BOOLEAN user_interactive = FALSE;
-	BOOLEAN display_error = TRUE;
 	BOOLEAN error_logging = FALSE;
+	BOOLEAN error_screen = FALSE;
+
 	FILE *fp = NULL;
 	FF_ERROR_PTR error = NULL;
 
@@ -528,8 +596,8 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 	if (!error_list)
 		return;
 
-	num_warnings = ((FF_ERROR_PTR)(FF_EP(dll_last(error_list))))->warning_num;
-	num_errors = ((FF_ERROR_PTR)(FF_EP(dll_last(error_list))))->error_num;
+	num_warnings = ((FF_ERROR_PTR)(FF_EP(dll_last(error_list))))->warning_ord;
+	num_errors = ((FF_ERROR_PTR)(FF_EP(dll_last(error_list))))->error_ord;
 
 	error = pull_error();
 	if (!error)
@@ -537,30 +605,24 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 
 	if (std_args && std_args->error_log)
 	{
-		fp = fopen(std_args->error_log, "wt");
+		fp = fopen(std_args->error_log, "at");
 		if (!fp)
 		{
 			error_logging = FALSE;
 			fprintf(stderr, "Cannot open %s to log errors!!!\n", std_args->error_log);
 		}
 		else
-		{
 			error_logging = TRUE;
-			fprintf(stderr, "Error messages have been recorded in %s\n", std_args->error_log);
-		}
+	}
 
+	if ((std_args && std_args->error_prompt == FALSE) || (std_args && std_args->log_file))
 		user_interactive = FALSE;
-	}
-	else if (!std_args || (std_args && !std_args->error_log))
-	{
-		fp = stderr;
-
-		if (std_args && std_args->error_prompt == FALSE)
-			user_interactive = FALSE;
-		else if (isatty(fileno(stdin))) /* stdin is not redirected */
-			user_interactive = TRUE;
-	}
+	else if (isatty(fileno(stdin))) /* stdin is not redirected */
+		user_interactive = TRUE;
 	
+	if (!std_args || !std_args->log_file)
+		error_screen = TRUE;
+
 	if (num_warnings)
 		sprintf(num_warnings_str, "%d", num_warnings);
 	else
@@ -573,29 +635,67 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 
 	if (num_warnings && num_errors)
 	{
-		fprintf(fp, "\nThere %s %s warning%s and %s error%s!\n",
-				num_warnings == 1 ? "is" : "are",
-				num_warnings_str,
-				num_warnings == 1 ? "" : "s",
-				num_errors_str,
-				num_errors == 1 ? "" : "s"
-			   );
+		if (error_logging)
+		{
+			fprintf(fp, "\nThere %s %s warning%s and %s error%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
+
+		if (error_screen)
+		{
+			fprintf(stderr, "\nThere %s %s warning%s and %s error%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
 	}
 	else if (num_warnings)
 	{
-		fprintf(fp, "\nThere %s %s warning%s!\n",
-				num_warnings == 1 ? "is" : "are",
-				num_warnings_str,
-				num_warnings == 1 ? "" : "s"
-			   );
+		if (error_logging)
+		{
+			fprintf(fp, "\nThere %s %s warning%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s"
+				   );
+		}
+
+		if (error_screen)
+		{
+			fprintf(stderr, "\nThere %s %s warning%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s"
+				   );
+		}
 	}
 	else if (num_errors)
 	{
-		fprintf(fp, "\nThere %s %s error%s!\n",
-				num_errors == 1 ? "is" : "are",
-				num_errors_str,
-				num_errors == 1 ? "" : "s"
-			   );
+		if (error_logging)
+		{
+			fprintf(fp, "\nThere %s %s error%s!\n",
+					num_errors == 1 ? "is" : "are",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
+
+		if (error_screen)
+		{
+			fprintf(stderr, "\nThere %s %s error%s!\n",
+					num_errors == 1 ? "is" : "are",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
 	}
 
 	while (error)
@@ -604,8 +704,7 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 
 		next_error = pull_error();
 
-		if (display_error)
-			print_error(fp, error);
+		print_error(fp, error, error_logging, error_screen);
 
 		if (!next_error && user_interactive && !is_a_warning(error))
 		{
@@ -621,7 +720,7 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 			if (toupper(reply[0]) != 'Y' && reply[0] != '\n')
 			{
 				user_interactive = FALSE;
-				display_error = FALSE;
+				error_screen = FALSE;
 			}
 		}
 
@@ -630,10 +729,17 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 		error = next_error;
 	} /* while error */
 
-	fprintf(fp, "\nNo more messages\n");
+	if (error_logging)
+		fprintf(fp, "\nNo more messages\n");
+
+	if (error_screen)
+		fprintf(stderr, "\nNo more messages\n");
 
 	if (error_logging)
+	{
+		fprintf(stderr, "Messages have been recorded in %s\n", std_args->error_log);
 		fclose(fp);
+	}
 }
 
 

@@ -125,6 +125,10 @@ static int trim_format
 
 		v_list = dll_next(v_list);
 
+		/* Is this the automatic newline variable at the end of an ASCII format? */
+		if (IS_ASCII(format) && IS_EOL(var) && var->end_pos == format->length)
+			break;
+
 		/* is var->name a substring of buffer? */
 		save_var_name = strstr(buffer, var->name);
 		if (save_var_name)
@@ -276,7 +280,7 @@ static int ask_header_parts
 	int error = 0;
 	BOOLEAN hfn_defined = FALSE;
 
-	if (nt_ask(dbin, (FFF_IO & io_type) | NT_ANYWHERE, "header_file_name", FFV_CHAR, header_file_name))
+	if (nt_ask(dbin, (FFF_IO & io_type) | NT_TABLE, "header_file_name", FFV_CHAR, header_file_name))
 	{
 		if (!file_name)
 			return(err_push(ERR_FILE_DEFINED, IS_INPUT_TYPE(io_type) ? "Input data file" : "Output data file"));
@@ -298,7 +302,7 @@ static int ask_header_parts
 	}
 	else
 	{
-		if (nt_ask(dbin, (FFF_IO & io_type) | NT_ANYWHERE, "header_file_path", FFV_CHAR, header_file_path))
+		if (nt_ask(dbin, (FFF_IO & io_type) | NT_TABLE, "header_file_path", FFV_CHAR, header_file_path))
 			header_file_path[0] = STR_END;
 		else
 			os_path_make_native(header_file_path, header_file_path);
@@ -308,7 +312,7 @@ static int ask_header_parts
 		os_path_get_parts(header_file_name, NULL, NULL, header_file_ext);
 	else
 	{
-		if (nt_ask(dbin, (FFF_IO & io_type) | NT_ANYWHERE, "header_file_ext", FFV_CHAR, header_file_ext))
+		if (nt_ask(dbin, (FFF_IO & io_type) | NT_TABLE, "header_file_ext", FFV_CHAR, header_file_ext))
 			strcpy(header_file_ext, "hdr");
 		else
 			os_path_make_native(header_file_ext, header_file_ext);
@@ -344,68 +348,73 @@ static int ask_header_parts
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
-#define ROUTINE_NAME "setup_header"
+#define ROUTINE_NAME "setup_input_header"
 
-static int setup_header
+static int setup_input_header
 	(
 	 DATA_BIN_PTR dbin,
 	 PROCESS_INFO_PTR pinfo
 	)
 {
-	long bytes_to_read = 0;
-	char temp_buf[MAX_PV_LENGTH];
-	int error = 0;
-
-	PROCESS_INFO_LIST id_pinfo_list = NULL;
-	PROCESS_INFO_PTR id_pinfo = NULL;
-	
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &id_pinfo_list);
-	if (error)
-		return(error);
-	
-	id_pinfo = FF_PI(dll_first(id_pinfo_list));
-	
 	/* get the file header in */
-	if (IS_EMBEDDED_TYPE(PINFO_TYPE(pinfo)))
+	if (IS_VARIED_TYPE(PINFO_TYPE(pinfo)))
 	{
-		if (IS_VARIED_TYPE(PINFO_TYPE(pinfo)))
+		long bytes_to_read = 0;
+		int error = 0;
+
+		if (IS_EMBEDDED_TYPE(PINFO_TYPE(pinfo)))
 		{
-			if (nt_ask(dbin, NT_ANYWHERE, "header_length", FFV_USHORT, &temp_buf))
+			char temp_buf[MAX_PV_LENGTH];
+
+			if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "header_length", FFV_USHORT, &temp_buf))
 			{
 				/* The default bytes to read is the entire file, or maximum cache size */
+				PROCESS_INFO_LIST id_pinfo_list = NULL;
+				PROCESS_INFO_PTR id_pinfo = NULL;
+				
+				error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &id_pinfo_list);
+				if (error)
+					return(error);
+				
+				id_pinfo = FF_PI(dll_first(id_pinfo_list));
+				
 				bytes_to_read = (unsigned)min(FF_MAX_CACHE_SIZE, os_filelength(PINFO_FNAME(id_pinfo)));
+
+				ff_destroy_process_info_list(id_pinfo_list);
 			}
 			else
 				bytes_to_read = *(unsigned short *)temp_buf;
 						
 			/* This is a kludge so that READ_FORMATS can read the header,
-			   so that we can parse it, so that we can know its max_length!
+				so that we can parse it, so that we can know its max_length!
 			*/
 			PINFO_FORMAT(pinfo)->length = (FF_NDX_t)bytes_to_read;
-			error = ff_resize_bufsize(PINFO_FORMAT(pinfo)->length + 1, &PINFO_DATA(pinfo));
-			if (error)
-				return(error);
-		}
-	} /* if IS_EMBEDDED */
-	else if (IS_SEPARATE_TYPE(PINFO_TYPE(pinfo)))
-	{
-		if (IS_VARIED_TYPE(PINFO_TYPE(pinfo)))
+		} /* if IS_EMBEDDED */
+		else if (IS_SEPARATE_TYPE(PINFO_TYPE(pinfo)))
 		{
 			assert(os_file_exist(PINFO_FNAME(pinfo)));
 						
 			/* This is a kludge so that READ_FORMATS can read the header,
-			   so that we can parse it, so that we can know its max_length!
+				so that we can parse it, so that we can know its max_length!
 			*/
 			PINFO_FORMAT(pinfo)->length = (FF_NDX_t)os_filelength(PINFO_FNAME(pinfo));
-			error = ff_resize_bufsize(PINFO_FORMAT(pinfo)->length + 1, &PINFO_DATA(pinfo));
+		}
+		else
+			assert(0);
+
+		error = ff_resize_bufsize(PINFO_FORMAT(pinfo)->length + 1, &PINFO_DATA(pinfo));
+		if (error)
+			return(error);
+
+		if (PINFO_MATE(pinfo) && IS_VARIED(PINFO_MATE_FORMAT(pinfo)))
+		{
+			PINFO_MATE_FORMAT(pinfo)->length = PINFO_FORMAT(pinfo)->length;
+
+			error = ff_resize_bufsize(PINFO_MATE_FORMAT(pinfo)->length + 1, &PINFO_MATE_DATA(pinfo));
 			if (error)
 				return(error);
 		}
 	}
-	else
-		assert(0);
-
-	ff_destroy_process_info_list(id_pinfo_list);
 
 	return(0);
 }
@@ -439,27 +448,27 @@ static int setup_header
 #endif
 #define ROUTINE_NAME "strascii"
 
-static char strascii(char *ch)
+static char *strascii(char *ch)
 {
 	if (*ch != '\\')
-		return(*ch);
+		return ch;
 
 	switch(*++ch)
 	{
 		case 'n':
-			return('\n');
+			return("\n");
 	
 		case 't':
-			return('\t');
+			return("\t");
 	
 		case '0':
-			return(STR_END);
+			return("");
 			
 		case 'r':
-			return('\r');
+			return("\r");
 	
 		default:
-			return(*ch);
+			return(ch);
 	}
 }       
 
@@ -687,8 +696,8 @@ static void set_var_typeprec
 	 VARIABLE_PTR var
 	)
 {
-	FF_TYPES_t type;
-	short precision;
+	FF_TYPES_t type = 0;
+	short precision = 0;
 	
 	type = alphanum_type(header, var->start_pos, var->end_pos);
 	switch (type)
@@ -745,9 +754,247 @@ static void set_var_typeprec
 		break;
 	} /* switch alphanum_type() */
 
-	var->type      = type;
-	var->precision = precision;
+	if (!var->type)
+	{
+		var->type = type;
+		var->precision = precision;
+	}
 }
+
+/*****************************************************************************
+ * NAME:  create_fully_dynamic_header_format
+ *
+ * PURPOSE:  Fully create a header format from "create_format" special variable
+ *
+ * USAGE:
+ *
+ * RETURNS:  Zero on success, an error code on failure
+ *
+ * DESCRIPTION:
+ * Parse header_text given either 1) namevalue_delim (the delimeter between
+ * a parameter value and its name) and valuename_delim (the delimeter
+ * between a parameter value and the next parameter name), or 2) distance
+ * (the distance between the previous valuename_delim and the next parameter
+ * value) and valuename_delim.
+ *
+ * Create variables for both parameter name (and its delimeter) and parameter
+ * value -- this way the header format can be copied to an output format and
+ * the header can be exactly duplicated on output (with any appropriate
+ * alterations, such as changes in number_of_rows, minimum_value, etc.).
+ *
+ * For each parameter name variable, set its type to text.  For each parameter
+ * value variable, set its type to text, int32 or uint32 if integer, float64
+ * if floating point, and enote if in exponential notation.
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * GLOBALS:
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:
+ *
+ * ERRORS:
+ ****************************************************************************/
+
+static int create_fully_dynamic_header_format
+	(
+	 char *header_text,
+	 char *name_value_delim,
+	 char *value_name_delim,
+	 int distance,
+	 FORMAT_PTR format
+	)
+{
+	int error = 0;
+
+	char *cp = NULL;
+
+	FF_NDX_t start = 0;
+	FF_NDX_t end = 0;
+
+	FF_VALIDATE(format);
+
+	while (start < strlen(header_text))
+	{
+		VARIABLE_PTR var = NULL;
+
+		/* Find parameter name */
+		if (name_value_delim)
+			end = strcspn(header_text + start, name_value_delim) + start - 1; /* replace with multi-char delimeter search */
+		else if (distance)
+			end = start + distance;
+		else
+		{
+			error = err_push(ERR_GENERAL, "distance or a name-value delimeter must be defined");
+			break;
+		}
+
+		var = ff_create_variable("");
+		if (!var)
+		{
+			error = ERR_MEM_LACK;
+			break;
+		}
+
+		if (!dll_add(format->variables))
+		{
+			error = ERR_MEM_LACK;
+			break;
+		}
+
+		++format->num_vars;
+		dll_assign(var, DLL_VAR, dll_last(format->variables));
+
+		cp = memRealloc(var->name, end - start + 2 + strlen("_\bname"), "var->name");
+		if (cp)
+		{
+			var->name = cp;
+
+			strncpy(var->name, header_text + start, end - start + 1);
+			strcpy(var->name + end - start + 1, "_\bname");
+		}
+		else
+		{
+			error = err_push(ERR_MEM_LACK, "");
+			break;
+		}
+
+		var->start_pos = start + 1;
+		var->end_pos = end + 1;
+		var->type = FFV_CONSTANT | FFV_INTERNAL | FFV_PARAM_NAME;
+		
+		if (!header_text[var->end_pos - 1])
+			--var->end_pos;
+
+		format->length = max(format->length, var->end_pos);
+
+		/* Find parameter value */
+		if (!header_text[end])
+			return error;
+
+		if (name_value_delim)
+		{
+			start = end + 1;
+
+			end = strspn(header_text + start, name_value_delim) + start - 1; /* technically wrong */
+
+			var = ff_create_variable(name_value_delim);
+			if (!var)
+			{
+				error = ERR_MEM_LACK;
+				break;
+			}
+
+			if (!dll_add(format->variables))
+			{
+				error = ERR_MEM_LACK;
+				break;
+			}
+
+			++format->num_vars;
+			dll_assign(var, DLL_VAR, dll_last(format->variables));
+
+			var->start_pos = start + 1;
+			var->end_pos = end + 1;
+			var->type = FFV_CONSTANT | FFV_INTERNAL | FFV_DELIM_VALUE;
+			
+			if (!header_text[var->end_pos - 1])
+				--var->end_pos;
+
+			format->length = max(format->length, var->end_pos);
+
+			/* Find parameter value */
+			if (!header_text[end])
+				return error;
+		}
+
+		start = strspn(header_text + (end + 1), LINESPACE) + (end + 1);
+
+		if (value_name_delim)
+			end = strcspn(header_text + start, value_name_delim) + start - 1; /* replace with multi-char delimeter search */
+		else
+		{
+			error = err_push(ERR_GENERAL, "value-name delimeter must be defined");
+			break;
+		}
+
+		if (name_value_delim)
+			var = ff_create_variable(FF_VARIABLE(dll_previous(dll_last(format->variables)))->name);
+		else
+			var = ff_create_variable(FF_VARIABLE(dll_last(format->variables))->name);
+		if (!var)
+		{
+			error = ERR_MEM_LACK;
+			break;
+		}
+
+		if (!dll_add(format->variables))
+		{
+			error = ERR_MEM_LACK;
+			break;
+		}
+
+		++format->num_vars;
+		dll_assign(var, DLL_VAR, dll_last(format->variables));
+
+		*strstr(var->name, "_\bname") = STR_END;
+		os_str_trim_whitespace(var->name, var->name);
+
+		var->start_pos = start + 1;
+		var->end_pos = end + 1;
+
+		if (!header_text[var->end_pos - 1])
+			--var->end_pos;
+
+		format->length = max(format->length, var->end_pos);
+
+		set_var_typeprec(header_text, var);
+
+		var->type |= FFV_PARAM_VALUE;
+
+		/* Find value_name_delim */
+		start = end + 1;
+
+		if (!header_text[start])
+			return error;
+
+		end += strspn(header_text + start, value_name_delim);
+
+		var = ff_create_variable(value_name_delim);
+		if (!var)
+		{
+			error = ERR_MEM_LACK;
+			break;
+		}
+
+		if (!dll_add(format->variables))
+		{
+			error = ERR_MEM_LACK;
+			break;
+		}
+
+		++format->num_vars;
+		dll_assign(var, DLL_VAR, dll_last(format->variables));
+
+		var->type = FFV_CONSTANT | FFV_INTERNAL | FFV_DELIM_ITEM;
+
+		if (!strcmp(value_name_delim, "\n") || !strcmp(value_name_delim, "\r\n") || !strcmp(value_name_delim, "\r"))
+			var->type |= FFV_EOL;
+
+		var->start_pos = start + 1;
+		var->end_pos = end + 1;
+
+		format->length = max(format->length, var->end_pos);
+
+		start = end + 1;
+	} /* while more to do */
+
+	return error;
+}
+
 
 /*
  * NAME:  set_var_info
@@ -1043,8 +1290,8 @@ static int header_to_format
 	(
 	 FORMAT *format,
 	 char *header,
-	 int value_terminator,
-	 int name_terminator,
+	 char *value_terminator,
+	 char *name_terminator,
 	 int name_dist
 	)
 {
@@ -1054,18 +1301,9 @@ static int header_to_format
 	VARIABLE *var;
 	VARIABLE_LIST v_list;
 
-	char value_terminator_str[2];
-	char name_terminator_str[2];
-
 	FF_VALIDATE(format);
 	assert(header);
 	assert(value_terminator);
-		
-	value_terminator_str[0] = (char)value_terminator;
-	value_terminator_str[1] = STR_END;
-		
-	name_terminator_str[0] = (char)name_terminator;
-	name_terminator_str[1] = STR_END;
 		
 	l_offset = 0;
 	format->length = 0;
@@ -1086,37 +1324,9 @@ static int header_to_format
 		if (format->variables == NULL)
 			return(err_push(ERR_MEM_LACK, "format variable list"));
 
-		while (header[l_offset] != STR_END)
-		{
-			size_t offset = 0;
-			
-			var = NULL;
-			error = set_var_info(header + l_offset, NULL, value_terminator_str, name_terminator_str, name_dist, &var);
-			if (!error)
-			{
-				v_list = dll_add(format->variables);
-				if (!v_list)
-				{
-					dll_free_holdings(format->variables);
-					format->variables = NULL;   
-					return(err_push(ERR_MEM_LACK, "Unable to add to format variable list"));
-				}
-
-				dll_assign(var, DLL_VAR, v_list);
-
-				/* Variable start and end positions were relative */
-				var->start_pos += l_offset;
-				var->end_pos   += l_offset;
-
-				format->length = max(format->length, var->end_pos);
-				++format->num_vars;
-			} /* if not error */
-
-			if (text_delim_offset(header + l_offset, value_terminator_str, &offset))
-				l_offset += offset + 1;
-			else
-				break;
-		} /* header[l_offset] != STR_END */
+		error = create_fully_dynamic_header_format(header, name_terminator, value_terminator, name_dist, format);
+		if (error)
+			return error;
 	} /* if var && var->name is create_format... */
 	else
 	{
@@ -1125,7 +1335,7 @@ static int header_to_format
 		{
 			size_t offset = 0;
 			
-			error = set_var_info(header + l_offset, var->name, value_terminator_str, name_terminator_str, name_dist, &var);
+			error = set_var_info(header + l_offset, var->name, value_terminator, name_terminator, name_dist, &var);
 			if (!error)
 			{
 				/* Variable start and end positions may be relative */
@@ -1136,9 +1346,9 @@ static int header_to_format
 				++format->num_vars;
 			}
 			
-			if ((char)name_terminator == STR_END && name_dist == 0)
+			if (!strcmp(name_terminator, "") && name_dist == 0)
 			{ /* item_names are not in header */
-				if (text_delim_offset(header + l_offset, value_terminator_str, &offset))
+				if (text_delim_offset(header + l_offset, value_terminator, &offset))
 					l_offset += offset + 1;
 			}
 
@@ -1157,14 +1367,217 @@ static int header_to_format
 		return(0);
 }
 
-static void make_Unix_newlines(char *s)
+int get_output_delims
+	(
+	 DATA_BIN_PTR dbin,
+	 char *delim_item,
+	 short *distance,
+	 char *delim_value
+	)
 {
-	s = strchr(s, '\r');
-	while (s)
+	int error = 0;
+
+	FF_VALIDATE(dbin);
+
+	error = nt_ask(dbin, FFF_OUTPUT | NT_TABLE, "delimiter_item", FFV_CHAR, delim_item);
+	if (error == ERR_NT_KEYNOTDEF)
 	{
-		*s = '\n';
-		s = strchr(s, '\r');
+		error = 0;
+
+		strcpy(delim_item, NATIVE_EOL_STRING);
 	}
+	else if (error)
+		return(err_push(error, "Badly formed keyword definition: delimiter_item"));
+	else
+		strcpy(delim_item, strascii(delim_item));
+
+	if (!strcmp(delim_item, "\n"))
+		strcpy(delim_item, NATIVE_EOL_STRING);
+
+	*distance = 0;
+	error = nt_ask(dbin, FFF_OUTPUT | NT_TABLE, "pname_width", FFV_SHORT, distance);
+	if (error == ERR_NT_KEYNOTDEF)
+	{
+		error = 0;
+
+		*distance = 0;
+	}
+	else if (error)
+		return(err_push(error, "Badly formed keyword definition: pname_width"));
+
+	error = nt_ask(dbin, FFF_OUTPUT | NT_TABLE, "delimiter_value", FFV_CHAR, delim_value);
+	if (error == ERR_NT_KEYNOTDEF)
+	{
+		error = 0;
+
+		if (*distance)
+			strcpy(delim_value, "");
+		else
+			strcpy(delim_value, "=");
+	}
+	else if (error)
+		return(err_push(error, "Badly formed keyword definition: delimiter_value"));
+	else
+		strcpy(delim_value, strascii(delim_value));
+
+	return error;
+}
+
+static int check_dynamic_output_header_format
+	(
+	 FORMAT_DATA_PTR input_fd,
+	 FORMAT_DATA_HANDLE output_fd
+	)
+{
+	int error = 0;
+
+	VARIABLE *var = NULL;
+	FORMAT_PTR format = NULL;
+
+	FF_VALIDATE(input_fd);
+	if (*output_fd)
+		FF_VALIDATE(*output_fd);
+	else
+		return 0;
+
+	var = FF_VARIABLE(FFV_FIRST_VARIABLE((*output_fd)->format));
+	if (!strcmp(var->name, "create_format"))
+	{
+		format = ff_copy_format(input_fd->format);
+		if (!format)
+			error = ERR_MEM_LACK;
+		else
+		{
+			if (new_name_string__((*output_fd)->format->name, &format->name))
+				return ERR_MEM_LACK;
+
+			ff_destroy_format((*output_fd)->format);
+			(*output_fd)->format = format;
+
+			format->type &= ~FFF_INPUT;
+			format->type |= FFF_OUTPUT;
+		}
+	}
+
+	return error;
+}
+
+/*
+ * NAME:        get_buffer_eol_str
+ *              
+ * PURPOSE:     to determine the EOL sequence for a given buffer
+ *
+ * USAGE:       int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
+ *
+ * RETURNS:     0 if all is OK, >< 0 on error
+ *
+ * DESCRIPTION: Determines the EOL sequence for a given file.  If no EOL
+ *				sequence is observed, buffer_eol_str is simply set to '\0';
+ *				otherwise the first characters of buffer_eol_str are set to 
+ *				the EOL sequence (buffer_eol_str must be at least 3 bytes)
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:  none- completely portable
+ *
+ * AUTHOR:      Kevin Frender kbf@ngdc.noaa.gov
+ *
+ * COMMENTS:
+ *          
+ * KEYWORDS: EOL
+ *
+ */
+#undef ROUTINE_NAME
+#define ROUTINE_NAME "get_buffer_eol_str"
+
+static int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
+{
+	enum {GBEOLS_EOL_LF = 10, GBEOLS_EOL_CR = 13};
+	char *c;
+	
+	assert(buffer && buffer_eol_str);
+	
+	c = buffer;
+	
+	while(c[0])
+	{
+		if(c[0] == GBEOLS_EOL_LF)
+		{
+			/* Must be a unix file */
+			buffer_eol_str[0] = (char)GBEOLS_EOL_LF;
+			buffer_eol_str[1] = '\0';
+			
+			return(0);
+		}
+		else if(c[0] == GBEOLS_EOL_CR)
+		{
+			c++;
+
+			if(c[0] == GBEOLS_EOL_LF)
+			{
+				/* Must be a DOS file */
+				buffer_eol_str[0] = (char)GBEOLS_EOL_CR;
+				buffer_eol_str[1] = (char)GBEOLS_EOL_LF;
+				buffer_eol_str[2] = '\0';
+			
+				return(0);
+			}
+
+			/* Must be a MAC file */
+			buffer_eol_str[0] = (char)GBEOLS_EOL_CR;
+			buffer_eol_str[1] = '\0';
+		
+			return(0);
+		}
+
+		c++;
+	}
+	
+	/* Couldn't find any EOL chars */
+	buffer_eol_str[0] = '\0';
+	return(0);
+}
+
+#define MAX_EOL_LENGTH DOS_EOL_LENGTH
+
+static int search_for_EOL
+	(
+	 FILE *file,
+	 char *fname,
+	 char *EOL_string
+	)
+{
+	unsigned long file_offset = ftell(file);
+	unsigned long file_length = os_filelength(fname);
+
+	while (file_offset < file_length)
+	{
+		char buffer[MAX_EOL_LENGTH];
+		unsigned int num_to_read = 0;
+		int num_read = 0;
+
+		num_to_read = min(MAX_EOL_LENGTH, (int)(file_length - file_offset));
+
+		num_read = fread(buffer, sizeof(char), num_to_read, file);
+		if (num_read != (int)num_to_read)
+			return(err_push(ERR_READ_FILE, fname));
+
+		get_buffer_eol_str(buffer, EOL_string);
+		if (strlen(EOL_string))
+		{
+			if (buffer[0] != EOL_string[0])
+			{
+				fseek(file, -1, SEEK_CUR);
+				return search_for_EOL(file, fname, EOL_string);
+			}
+
+			break;
+		}
+
+		file_offset = ftell(file);
+		if (file_offset == -1)
+			return(err_push(ERR_READ_FILE, fname));
+	}
+
+	return(0);
 }
 
 /*****************************************************************************
@@ -1196,60 +1609,63 @@ static void make_Unix_newlines(char *s)
 #endif
 #define ROUTINE_NAME "finishup_header"
 
-static int finishup_header
+static int finishup_input_header
 	(
 	 DATA_BIN_PTR dbin,
 	 PROCESS_INFO_PTR pinfo
 	)
 {
-	char temp_buf[MAX_PV_LENGTH];
-	int delim_item, delim_value;
+	char delim_item[MAX_PV_LENGTH];
+	char delim_value[MAX_PV_LENGTH];
 	int error = 0;
 	short distance;
 	
 	/* make variable length, variable position header format, need to be modified */
 	if (IS_VARIED_TYPE(PINFO_TYPE(pinfo)))
 	{ /* get the delimiter 1, delimiter 2 and/or distance */
-		error = nt_ask(dbin, NT_ANYWHERE, "delimiter_item", FFV_CHAR, temp_buf);
+		error = nt_ask(dbin, FFF_INPUT | NT_TABLE, "delimiter_item", FFV_CHAR, delim_item);
 		if (error == ERR_NT_KEYNOTDEF)
 		{
 			error = 0;
 
-			delim_item = '\n';
+			strcpy(delim_item, "\n");
 		}
 		else if (error)
 			return(err_push(error, "Badly formed keyword definition: delimiter_item"));
 		else
-			delim_item = strascii(temp_buf);
+			strcpy(delim_item, strascii(delim_item));
 
-		if (delim_item == '\n')
+		if (!strcmp(delim_item, "\n"))
 		{
-			if (IS_ASCII(PINFO_FORMAT(pinfo)))
-				make_Unix_newlines(PINFO_BUFFER(pinfo));
+			FILE *fp = fopen(PINFO_FNAME(pinfo), "rb");
+
+			search_for_EOL(fp, PINFO_FNAME(pinfo), delim_item);
+
+			fclose(fp);
 		}
 	
 		distance = 0;
-		error = nt_ask(dbin, NT_ANYWHERE, "_distance", FFV_SHORT, &distance);
+		error = nt_ask(dbin, FFF_INPUT | NT_TABLE, "_distance", FFV_SHORT, &distance);
 		if (error == ERR_NT_KEYNOTDEF)
 		{
 			error = 0;
 
-			error = nt_ask(dbin, NT_ANYWHERE, "delimiter_value", FFV_CHAR, temp_buf);
+			error = nt_ask(dbin, FFF_INPUT | NT_TABLE, "delimiter_value", FFV_CHAR, delim_value);
 			if (error == ERR_NT_KEYNOTDEF)
 			{
 				error = 0;
 
-				delim_value = '=';
+				strcpy(delim_value, "=");
 			}
 			else if (error)
 				return(err_push(error, "Badly formed keyword definition: delimiter_value"));
 			else
-				delim_value = strascii(temp_buf);
+				strcpy(delim_value, strascii(delim_value));
 		}
 		else if (error)
 			return(err_push(error, "Badly formed keyword definition: _distance"));
 		else
-			delim_value = STR_END;
+			strcpy(delim_value, "");
 	
 		if (IS_VARIED_TYPE(PINFO_TYPE(pinfo)))
 		{
@@ -1260,6 +1676,13 @@ static int finishup_header
 				return(err_push(error, "Unable to create header format"));
 
 			PINFO_BYTES_USED(pinfo) = FORMAT_LENGTH(PINFO_FORMAT(pinfo));
+
+			if (PINFO_MATE(pinfo))
+			{
+				error = check_dynamic_output_header_format(PINFO_FD(pinfo), &PINFO_MATE_FD(pinfo));
+				if (error)
+					return error;
+			}
 		}
 					
 		if (IS_EMBEDDED_TYPE(PINFO_TYPE(pinfo)))
@@ -1313,7 +1736,7 @@ static int check_file_exists
 	 char *ext
 	)
 {
-	char trial_fname[_MAX_PATH];
+	char trial_fname[MAX_PATH];
 	
 	(void)os_path_put_parts(trial_fname, search_dir, filebase, ext);
 	if (os_file_exist(trial_fname))
@@ -1405,8 +1828,8 @@ static int find_files
 	)
 {
 	char *fileext = NULL; /* the extension on the search file name */
-	char  filename[_MAX_PATH];
-	char  home_dir[_MAX_PATH];
+	char  filename[MAX_PATH];
+	char  home_dir[MAX_PATH];
 	int num_found = 0;
 	char *filenames[MAX_CAN_FIND] = {NULL, NULL, NULL, NULL, NULL, NULL};
 
@@ -1434,7 +1857,7 @@ static int find_files
 	{
 		if (IS_A_RELATIVE_PATH(first_dir))
 		{
-			char partial_path[_MAX_PATH];
+			char partial_path[MAX_PATH];
 
 			os_path_put_parts(partial_path, first_dir, filename, NULL);
 
@@ -1530,7 +1953,7 @@ static int find_dir_format_files
 {
 	int num_found;
 	char *fileext = os_path_return_ext(input_file);
-	char filename[_MAX_PATH];
+	char filename[MAX_PATH];
 
 	os_path_get_parts(input_file, NULL, filename, NULL);
 	if (FF_STRLEN(filename) == 0)
@@ -1620,8 +2043,8 @@ static int find_format_files
 	)
 {
 	enum {NUM_FMT_FILES = 2};
-	char home_dir[_MAX_PATH];
-	char format_dir[_MAX_PATH];
+	char home_dir[MAX_PATH];
+	char format_dir[MAX_PATH];
 	char *format_files[NUM_FMT_FILES] = {NULL, NULL};
 	int num_found;
 	
@@ -1638,7 +2061,7 @@ static int find_format_files
 		return(0);
 	}
 
-	if (nt_ask(dbin, NT_TABLE, "format_dir", FFV_CHAR, format_dir))
+	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
 		format_dir[0] = STR_END;
 	
 	os_path_get_parts(input_file, home_dir, NULL, NULL);
@@ -1701,14 +2124,14 @@ static int find_initialization_files
 	 FORMAT_PTR format
 	)
 {
-	char format_dir[_MAX_PATH];
+	char format_dir[MAX_PATH];
 
 	char *path      = NULL;
 
 	VARIABLE_LIST v_list = FFV_FIRST_VARIABLE(format);
 	VARIABLE_PTR         var = FF_VARIABLE(v_list);
 
-	if (nt_ask(dbin, NT_ANYWHERE, "format_dir", FFV_CHAR, format_dir))
+	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
 		format_dir[0] = STR_END;
 
 	v_list = FFV_FIRST_VARIABLE(format);
@@ -1716,7 +2139,7 @@ static int find_initialization_files
 	
 	while (var)
 	{
-		if (IS_INITIAL_VAR(var))
+		if (IS_INITIAL(var))
 		{
 			os_path_find_parts(var->name, &path, NULL, NULL);
 			if (path && *path)
@@ -1728,7 +2151,7 @@ static int find_initialization_files
 			{
 				char *ext          = NULL;
 				char **found_files = NULL;
-				char dfname[_MAX_PATH];
+				char dfname[MAX_PATH];
 				
 				int number;
 				
@@ -1768,6 +2191,11 @@ static int find_initialization_files
   
 	return(0);
 }
+
+static void destroy_format_list(FORMAT_LIST f_list)
+{
+	dll_free_holdings(f_list);
+} 
 
 /*****************************************************************************
  * NAME:
@@ -1853,7 +2281,15 @@ static int make_format_eqv_list
 		pp_object.u.hf_list = hf_list;
 		
 		error = ff_text_pre_parser(fmt_fname, bufsize, &pp_object);
-		if (!error)
+		if (error)
+		{
+			if (*hf_list)
+			{
+				destroy_format_list(*hf_list);
+				*hf_list = NULL;
+			}
+		}
+		else
 		{
 			pp_object.ppo_type = PPO_NT_LIST;
 			pp_object.u.nt_list.nt_io_type = fff_iotype;
@@ -1862,6 +2298,14 @@ static int make_format_eqv_list
 			error = ff_text_pre_parser(fmt_fname, bufsize, &pp_object);
 			if (error == ERR_NO_NAME_TABLE)
 				error = 0;
+			else if (error)
+			{
+				if (*hnt_list)
+				{
+					fd_destroy_format_data_list(*hnt_list);
+					*hnt_list = NULL;
+				}
+			}
 		}
 		
 		if (number)
@@ -2082,11 +2526,6 @@ static int collect_record_formats
 	return(0);
 }
 
-static void destroy_format_list(FORMAT_LIST f_list)
-{
-	dll_free_holdings(f_list);
-} 
-
 /*****************************************************************************
  * NAME:
  *
@@ -2299,9 +2738,9 @@ static int dbset_header_file_names
 	PROCESS_INFO_LIST pinfo_list = NULL;
 	PROCESS_INFO_PTR  pinfo      = NULL;
 
-	char header_file_name[_MAX_PATH];
-	char header_file_path[_MAX_PATH];
-	char header_file_ext[_MAX_PATH];
+	char header_file_name[MAX_PATH];
+	char header_file_path[MAX_PATH];
+	char header_file_ext[MAX_PATH];
 	int error = 0;
 		
 	FF_VALIDATE(dbin);
@@ -2360,7 +2799,7 @@ static int dbset_header_file_names
 				memFree(found_files, "found_files");
 			}
 			else
-				error = err_push(ERR_FIND_FILE, "Input header file");
+				error = err_push(ERR_FIND_FILE, "Input header file (%s, %s, %s)", header_file_path, header_file_name, header_file_ext);
 		}
 		else if (IS_OUTPUT_TYPE(io_type))
 		{
@@ -2481,9 +2920,9 @@ static int dbset_header_file_names
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
-#define ROUTINE_NAME "dbset_input_header"
+#define ROUTINE_NAME "dbset_headers"
 
-static int dbset_input_header(DATA_BIN_PTR dbin)
+static int dbset_headers(DATA_BIN_PTR dbin)
 {
 	PROCESS_INFO_LIST pinfo_list = NULL;
 	PROCESS_INFO_PTR pinfo = NULL;
@@ -2495,102 +2934,137 @@ static int dbset_input_header(DATA_BIN_PTR dbin)
 	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
 	if (!error)
 	{
-		pinfo = FF_PI(dll_first(pinfo_list));
-		FF_VALIDATE(pinfo);
+		pinfo_list = dll_first(pinfo_list);
+		pinfo = FF_PI(pinfo_list);
+		while (pinfo)
+		{
+			FF_VALIDATE(pinfo);
 
-		error = setup_header(dbin, pinfo);
-		if (error)
-			return(error);
-			
-		error = db_set(dbin, DBSET_INIT_CONDUITS, FFF_FILE | FFF_HEADER, 0);
-		if (error)
-			return(error);
+			error = setup_input_header(dbin, pinfo);
+			if (error)
+				break;
 
-		error = db_do(dbin, DBDO_READ_FORMATS, pinfo_list);
-		if (error && error != EOF)
-			return(error);
-	/*
-		error = db_clear_array_mappings(dbin);
-		if (error)
-			return(error);
- 
-		error = db_create_array_mappings(dbin);
-		if (error)
-			return(error);
-	  */
-		error = finishup_header(dbin, pinfo);
-
-		ff_destroy_process_info_list(pinfo_list);
-		if (error)
-			return(error);
-
-		db_set(dbin, DBSET_BYTE_ORDER, FFF_INPUT | FFF_DATA);
- 	}
+			pinfo_list = dll_next(pinfo_list);
+			pinfo = FF_PI(pinfo_list);
+		}
+	}
 	else if (error == ERR_GENERAL)
 		error = 0;
 
 	if (!error)
+		error = db_set(dbin, DBSET_INIT_CONDUITS, FFF_FILE | FFF_HEADER, 0);
+	
+	if (error)
 	{
-		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_REC | FFF_HEADER, &pinfo_list);
-		if (!error)
-		{
-			PROCESS_INFO_LIST data_pinfo_list = NULL;
+		if (pinfo_list)
+			ff_destroy_process_info_list(pinfo_list);
 
-			pinfo = FF_PI(dll_first(pinfo_list));
+		return error;
+	}
+
+	if (pinfo_list)
+	{
+		pinfo_list = dll_first(pinfo_list);
+		pinfo = FF_PI(pinfo_list);
+		while (pinfo)
+		{
+			FF_VALIDATE(pinfo);
+
+			error = db_do(dbin, DBDO_READ_FORMATS, FFF_INPUT | FFF_FILE | FFF_HEADER);
+			if (error && error != EOF)
+				break;
+
+			error = finishup_input_header(dbin, pinfo);
+			if (error)
+				break;
+
+			pinfo_list = dll_next(pinfo_list);
+			pinfo = FF_PI(pinfo_list);
+		}
+
+		ff_destroy_process_info_list(pinfo_list);
+	}
+
+	/* Does a file header tell the byte order of a record header? */
+	if (!error)
+		error = db_set(dbin, DBSET_BYTE_ORDER, FFF_INPUT | FFF_REC);
+
+	if (error)
+		return(error);
+
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_REC | FFF_HEADER, &pinfo_list);
+	if (!error)
+	{
+		pinfo_list = dll_first(pinfo_list);
+		pinfo = FF_PI(pinfo_list);
+		while (pinfo)
+		{
 			FF_VALIDATE(pinfo);
 
 			assert(!IS_VARIED(PINFO_FORMAT(pinfo)));
 
-			error = setup_header(dbin, pinfo);
+			error = setup_input_header(dbin, pinfo);
 			if (error)
-				return(error);
+				break;
 
-			error = db_set(dbin, DBSET_INIT_CONDUITS, FFF_REC | FFF_HEADER, 0);
-			if (error)
-				return(error);
+			pinfo_list = dll_next(pinfo_list);
+			pinfo = FF_PI(pinfo_list);
+		}
+	}
+	else if (error == ERR_GENERAL)
+		error = 0;
+
+	if (!error)
+		error = db_set(dbin, DBSET_INIT_CONDUITS, FFF_REC | FFF_HEADER, 0);
+
+	if (error)
+	{
+		if (pinfo_list)
+			ff_destroy_process_info_list(pinfo_list);
+
+		return error;
+	}
+
+	if (pinfo_list)
+	{
+		pinfo_list = dll_first(pinfo_list);
+		pinfo = FF_PI(pinfo_list);
+		while (pinfo)
+		{
+			PROCESS_INFO_LIST data_pinfo_list = NULL;
 
 			error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &data_pinfo_list);
 			if (error)
 			{
-				/* Disaster! */
-				assert(0);
+				err_push(error, "A data format is required when a record header format is present");
+				break;
 			}
 			else
 			{
 				PROCESS_INFO_PTR data_pinfo = FF_PI(dll_first(data_pinfo_list));
 
+				assert(!IS_ARRAY(PINFO_FORMAT(data_pinfo)));
 				PINFO_ARRAY_DONE(data_pinfo) = 1;
-
 				if (PINFO_MATE(data_pinfo))
 					PINFO_MATE_ARRAY_DONE(data_pinfo) = 1;
 
 				ff_destroy_process_info_list(data_pinfo_list);
+
+				error = db_do(dbin, DBDO_READ_FORMATS, FFF_INPUT | FFF_REC | FFF_HEADER);
+				if (error && error != EOF)
+					break;
+
+				error = finishup_input_header(dbin, pinfo);
+				if (error)
+					break;
 			}
 
-			error = db_do(dbin, DBDO_READ_FORMATS, pinfo_list);
-			if (error && error != EOF)
-				return(error);
-		/*
-			error = db_clear_array_mappings(dbin);
-			if (error)
-				return(error);
- 
-			error = db_create_array_mappings(dbin);
-			if (error)
-				return(error);
-		  */
+			pinfo_list = dll_next(pinfo_list);
+			pinfo = FF_PI(pinfo_list);
+		}
 
-			error = finishup_header(dbin, pinfo);
-
-			ff_destroy_process_info_list(pinfo_list);
-			if (error)
-				return(error);
-
-			db_set(dbin, DBSET_BYTE_ORDER, FFF_INPUT | FFF_REC);
-		} /* if not error */
-		else if (error == ERR_GENERAL)
-			error = 0;
-	} /* if not error */
+		ff_destroy_process_info_list(pinfo_list);
+	}
 
 	return(error);
 }
@@ -2656,7 +3130,7 @@ static int dbset_input_header(DATA_BIN_PTR dbin)
  * format descriptor type.  This apparently is an oversight and should be
  * corrected.  My suggestion (MAO) is to use the dbin->file_name extension
  * and the default extension rules, (i.e., .dat means ASCII, .dab means
- * dBASE, and anything else means binary).
+ * FLAT, and anything else means binary).
  *
  * If both file_name and format_buffer are non-NULL (and file_name
  * has not been set to FORMAT_BUFFER_IS_A_TITLE) then file_name is
@@ -2697,8 +3171,8 @@ static int dbset_input_header(DATA_BIN_PTR dbin)
  * may result, and no measures are taken to detect or prevent this.  If no
  * input format exists, then ambiguous formats are marked as either input
  * or output according to the extension of dbin->file_name and the format
- * file type (i.e., .dat/ASCII => input, .dat/binary/dBASE => output,
- * .bin/binary => input, .bin/ASCII/dBASE => output, .dab/dBASE => input,
+ * file type (i.e., .dat/ASCII => input, .dat/binary/FLAT => output,
+ * .bin/binary => input, .bin/ASCII/FLAT => output, .dab/FLAT => input,
  * .dab/ASCII/binary => output).  After this ambiguity resolution, the
  * first input format is selected to be added into dbin->format_list and
  * assigned to dbin->input_format.  All other data formats are deleted from
@@ -2865,7 +3339,9 @@ static int dbset_input_formats
 			dll_assign(id_fd, DLL_FD, fdl);
 	}
 
-	error = collect_record_formats(f_list, *format_data_list);
+	if (*format_data_list)
+		error = collect_record_formats(f_list, *format_data_list);
+
 	destroy_format_list(f_list);
 	if (error)
 		return(error);
@@ -2969,13 +3445,14 @@ static int dbset_read_eqv
 			FF_BUFSIZE_PTR bufsize = NULL;
 
 			error = ff_file_to_bufsize(file_name, &bufsize);
-			if (error)
-				return(error);
-
-			error = nt_parse(file_name, bufsize, &table);
-			ff_destroy_bufsize(bufsize);
 			if (!error)
-				error = nt_merge_name_table(&dbin->table_list, table);
+			{
+				error = nt_parse(file_name, bufsize, &table);
+				if (!error)
+					error = nt_merge_name_table(&dbin->table_list, table);
+			}
+
+			ff_destroy_bufsize(bufsize);
 
 			while (number)
 				memFree(found_files[--number], "found_files[]");
@@ -3088,7 +3565,9 @@ static int dbset_byte_order
 		PROCESS_INFO_PTR pinfo = NULL;
 		
 		error = db_ask(dbin, DBASK_PROCESS_INFO, format_type, &pinfo_list);
-		if (error)
+		if (error == ERR_GENERAL)
+			return 0;
+		else if (error)
 			return(error);
 			
 		pinfo_list = dll_first(pinfo_list);
@@ -3235,9 +3714,7 @@ static int dbset_output_formats
 		                      &fh_fd
 		                     );
 	if (error == ERR_GENERAL)
-	{
 		error = 0;
-	}
 	else if (error)
 		return(error);
 
@@ -3269,9 +3746,7 @@ static int dbset_output_formats
 		                      &rh_fd
 		                     );
 	if (error == ERR_GENERAL)
-	{
 		error = 0;
-	}
 	else if (error)
 		return(error);
 
@@ -3306,9 +3781,7 @@ static int dbset_output_formats
 	destroy_format_list(f_list);
 		
 	if (error == ERR_GENERAL)
-	{
 		error = 0;
-	}
 	else if (error)
 		return(error);
 
@@ -3387,8 +3860,8 @@ static int dbset_query_restriction
 	if (error)
 		return(error);
 		
-	ch = bufsize->buffer - 1;
-	while (++ch)
+	ch = bufsize->buffer;
+	while (ch)
 	{
 		if (ch[0] < ' ')
 		{
@@ -3399,6 +3872,8 @@ static int dbset_query_restriction
 			ch[0] = '\0';
 			break;
 		}
+
+		ch++;
 	}
 
 	input = fd_get_data(dbin, FFF_INPUT);
@@ -3467,7 +3942,7 @@ static int dbset_variable_restriction
 }
 
 /*
- * NAME:	dynamic_update_var
+ * NAME:	update_format_var
  *		
  * PURPOSE:	 Change the variable info according to the new data_type and bytes_per_pixel
  *
@@ -3496,78 +3971,17 @@ static int dbset_variable_restriction
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
-#define ROUTINE_NAME "dynamic_update_var"
+#define ROUTINE_NAME "update_format_var"
 
-static int dynamic_update_var
+void update_format_var
 	(
-	 VARIABLE_PTR var,
 	 FF_TYPES_t data_type,
-	 short bytes_per_pixel,
-	 short *diff
-	)
-{
-	int error = 0;
-
-	VARIABLE_LIST vlist = NULL;
-	VARIABLE_PTR vstepper = NULL;
-
-	FF_VALIDATE(var);
-
-	*diff = (short)(bytes_per_pixel - FF_VAR_LENGTH(var));
-
-	var->end_pos += *diff;
-
-	var->type &= ~(FFV_DATA_TYPES);
-	var->type |= data_type;
-
-	if (IS_ARRAY(var))
-	{
-		sprintf(var->array_desc_str + strlen(var->array_desc_str) - FF_ARRAY_ELEMENT_SIZE_WIDTH,
-		        "%*d", FF_ARRAY_ELEMENT_SIZE_WIDTH, (int)bytes_per_pixel
-		       );
-	}
-		
-	return(error);
-}
-
-/*
- * NAME:	dynamic_update_var
- *		
- * PURPOSE:	 
- *
- * USAGE:	
- *
- * RETURNS:	 Zero on success, an error code on failure.
- *
- * DESCRIPTION:  
- *
- * SYSTEM DEPENDENT FUNCTIONS:	none
- *
- * GLOBALS:	none
- *
- * AUTHOR:
- *
- * ERRORS:
- *
- * COMMENTS:	
- *
- * KEYWORDS:
- *
- */
-
-#ifdef ROUTINE_NAME
-#undef ROUTINE_NAME
-#endif
-#define ROUTINE_NAME "dynamic_update_format"
-
-static int dynamic_update_format
-	(
+	 FF_NDX_t bytes_per_pixel,
 	 VARIABLE_PTR var,
-	 FORMAT_PTR format,
-	 short diff
+	 FORMAT_PTR format
 	)
 {
-	int error = 0;
+	long diff = 0;
 
 	VARIABLE_LIST vlist = NULL;
 	VARIABLE_PTR vstepper = NULL;
@@ -3575,28 +3989,34 @@ static int dynamic_update_format
 	FF_VALIDATE(format);
 	FF_VALIDATE(var);
 
+	diff = bytes_per_pixel - FF_VAR_LENGTH(var);
+
 	var->end_pos += diff;
 
-	/* change the position of the variables after the current variable var */
-	vlist = FFV_FIRST_VARIABLE(format);
-	vstepper = FF_VARIABLE(vlist);
-	while (vstepper)
+	var->type &= ~(FFV_DATA_TYPES);
+	var->type |= data_type;
+
+	if (diff)
 	{
-		FF_VALIDATE(vstepper);
-		
-		if (vstepper->start_pos > var->start_pos)
+		/* change the position of the variables after the current variable var */
+		vlist = FFV_FIRST_VARIABLE(format);
+		vstepper = FF_VARIABLE(vlist);
+		while (vstepper)
 		{
-			vstepper->start_pos += diff;
-			vstepper->end_pos += diff;
+			FF_VALIDATE(vstepper);
+				
+			if (vstepper->start_pos > var->start_pos)
+			{
+				vstepper->start_pos += diff;
+				vstepper->end_pos += diff;
+			}
+
+			vlist = dll_next(vlist);
+			vstepper = FF_VARIABLE(vlist);
 		}
 
-		vlist = dll_next(vlist);
-		vstepper = FF_VARIABLE(vlist);
+		format->length += diff;
 	}
-
-	format->length += diff;
-
-	return(error);
 }
 
 /*
@@ -3675,7 +4095,7 @@ static VARIABLE *get_default_var(FORMAT_PTR form)
  *
  * DESCRIPTION:  Sets the data bin image parameters data_type according to
  * value of data_representation, and bytes_per_pixel according to namesake.
- * Calls dynamic_update_var() to change variable type and size for the qualifying
+ * Calls update_format_var() to change variable type and size for the qualifying
  * variable in the data bin input format.
  *
  * If input format is NULL nothing is done.
@@ -3713,7 +4133,7 @@ static int change_input_img_format
 
 	FF_VALIDATE(dbin);
 
-	error = nt_ask(dbin, NT_ANYWHERE, "data_representation", FFV_CHAR, data_rep);
+	error = nt_ask(dbin, NT_INPUT, "data_representation", FFV_CHAR, data_rep);
 	if (error == ERR_NT_KEYNOTDEF)
 		error = 0;
 	else if (!error)
@@ -3729,15 +4149,13 @@ static int change_input_img_format
 			if (IS_BINARY(input))
 				bytes_per_pixel = (short)ffv_type_size(new_data_type);
 			else
-				error = nt_ask(dbin, NT_ANYWHERE, "bytes_per_pixel", FFV_SHORT, &bytes_per_pixel);
+				error = nt_ask(dbin, NT_INPUT, "bytes_per_pixel", FFV_SHORT, &bytes_per_pixel);
 			
 			if (!error)
 			{
 				var = get_default_var(input);
 				if (var)
 				{
-					short diff = 0;
-
 					/* Does var have a precision of zero and are we changing the data type
 						from an integer to a float or a double?  If so, change the precision to
 						a magic number like five or nine.
@@ -3751,9 +4169,7 @@ static int change_input_img_format
 							var->precision = 9;
 					}
 					
-					error = dynamic_update_var(var, new_data_type, bytes_per_pixel, &diff);
-					if (!error)
-						error = dynamic_update_format(var, input, diff);
+					update_format_var(new_data_type, (FF_NDX_t)bytes_per_pixel, var, input);
 				}
 			} /* if bytes_per_pixel */
 		} /* if data_type != FF_VAR_TYPE_FLAG */
@@ -3763,12 +4179,12 @@ static int change_input_img_format
 }
 
 /*****************************************************************************
- * NAME: ask_change_input_img_format()
+ * NAME: old_change_input_img_format()
  *
  * PURPOSE:  Change the input format according to data_representation and
  * bytes_per_pixel, if data file is an image file.
  *
- * USAGE:  error = ask_change_input_img_format(dbin);
+ * USAGE:  error = old_change_input_img_format(dbin);
  *
  * RETURNS: Zero on success, ERR_MEM_LACK on failure
  *
@@ -3799,9 +4215,9 @@ static int change_input_img_format
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
-#define ROUTINE_NAME "ask_change_input_img_format"
+#define ROUTINE_NAME "old_change_input_img_format"
 
-static BOOLEAN ask_change_input_img_format
+static BOOLEAN old_change_input_img_format
 	(
 	 DATA_BIN_PTR dbin
 	)
@@ -3810,7 +4226,7 @@ static BOOLEAN ask_change_input_img_format
 
 	FF_VALIDATE(dbin);
 	
-	if (!nt_ask(dbin, NT_ANYWHERE, "data_type", FFV_CHAR, data_type))
+	if (!nt_ask(dbin, NT_INPUT, "data_type", FFV_CHAR, data_type))
 	{
 		if (strstr(data_type, "image") || strstr(data_type, "raster") || strstr(data_type, "grid"))
 			return(TRUE);
@@ -3819,7 +4235,7 @@ static BOOLEAN ask_change_input_img_format
 	return(FALSE);
 }
 
-static int check_vars_types_for_keywords
+static int check_vars_desc_for_keywords
 	(
 	 DATA_BIN_PTR dbin,
 	 FORMAT_PTR format
@@ -3838,18 +4254,19 @@ static int check_vars_types_for_keywords
 	var = FF_VARIABLE(vlist);
 	while (var)
 	{
-		if (!FFV_DATA_TYPE(var) && !IS_CONSTANT_VAR(var) && !IS_INITIAL_VAR(var))
+		if (!FFV_DATA_TYPE(var) && !IS_CONSTANT(var) && !IS_INITIAL(var) && !IS_RECORD_VAR(var))
 		{
 			char variable_type[MAX_PV_LENGTH] = {""};
+
+			assert(var->record_title);
+			assert(IS_KEYWORDED_PARAMETER(var->record_title));
 
 			if (!IS_BINARY(format))
 				return(err_push(ERR_GENERAL, "Keyworded variable types only supported for binary formats (\"%s\")", format->name));
 
-			assert(var->record_title);
-
-			error = nt_ask(dbin, NT_ANYWHERE, var->record_title, FFV_TEXT, variable_type);
+			error = nt_ask(dbin, NT_ANYWHERE, var->record_title + 1, FFV_TEXT, variable_type);
 			if (error)
-				err_push(error, "Keyworded variable type (\"%s\") not defined for %s", var->record_title, var->name);
+				err_push(ERR_UNKNOWN_PARAMETER, "Keyworded variable type (\"%s\") not defined for %s", var->record_title, var->name);
 			else
 			{
 				FF_TYPES_t data_type = FFV_NULL;
@@ -3861,15 +4278,12 @@ static int check_vars_types_for_keywords
 				}
 				else
 				{
-					short diff = 0;
 					short bytes_per_pixel = (short)ffv_type_size(data_type);
 
-					error = dynamic_update_var(var, data_type, bytes_per_pixel, &diff);
-					if (!error && diff)
-						error = dynamic_update_format(var, format, diff);
+					update_format_var(data_type, (FF_NDX_t)bytes_per_pixel, var, format);
 				}
 			}
-		} /* if (!FFV_DATA_TYPE(var) && !IS_CONSTANT_VAR(var) && !IS_INITIAL_VAR(var)) */
+		} /* if (!FFV_DATA_TYPE(var) && !IS_CONSTANT(var) && !IS_INITIAL(var)) */
 
 		if (error)
 			error_return = error;
@@ -3898,11 +4312,11 @@ static int dbset_user_update_formats
 	{
  		FF_VALIDATE(input_fd);
 
-		error = check_vars_types_for_keywords(dbin, input_fd->format);
+		error = check_vars_desc_for_keywords(dbin, input_fd->format);
 		if (error)
 			return(error);
 
-		if (ask_change_input_img_format(dbin))
+		if (old_change_input_img_format(dbin))
 		{
 			error = change_input_img_format(dbin, input_fd->format);
 			if (error)
@@ -3915,7 +4329,7 @@ static int dbset_user_update_formats
 	{
 		FF_VALIDATE(output_fd);
 
-		error = check_vars_types_for_keywords(dbin, output_fd->format);
+		error = check_vars_desc_for_keywords(dbin, output_fd->format);
 	}
 
 	return(error);
@@ -4008,14 +4422,14 @@ static int copy_variable_list
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif 
-#define ROUTINE_NAME "copy_format"
+#define ROUTINE_NAME "ff_copy_format"
 
 /*
- * NAME:	copy_format
+ * NAME:	ff_copy_format
  *
  * PURPOSE:	To create a format in memory.
  *
- * USAGE: format_copy = copy_format(source->format);
+ * USAGE: format_copy = ff_copy_format(source->format);
  *
  * RETURNS:	A pointer to the new format, else NULL
  *
@@ -4033,7 +4447,7 @@ static int copy_variable_list
  *
  */
  
-static FORMAT_PTR copy_format(FORMAT_PTR format)
+FORMAT_PTR ff_copy_format(FORMAT_PTR format)
 {
 	FORMAT_PTR new_format = NULL;
 	
@@ -4076,6 +4490,7 @@ static int spawn_record_array_format
 	 FORMAT_HANDLE spawn_format_h
 	)
 {
+	VARIABLE_LIST vlist = NULL;
 	VARIABLE_PTR var = NULL;
 
 	char *spawn_name = NULL;
@@ -4083,7 +4498,7 @@ static int spawn_record_array_format
 	FF_VALIDATE(format);
 	FF_VALIDATE(record_var);
 
-	*spawn_format_h = copy_format(fd->format);
+	*spawn_format_h = ff_copy_format(fd->format);
 	if (!*spawn_format_h)
 		return(ERR_MEM_LACK);
 
@@ -4095,12 +4510,14 @@ static int spawn_record_array_format
 		return(err_push(ERR_MEM_LACK, ""));
 
 	sprintf(spawn_name, "%s::%s", format->name, record_var->name);
+
 	(*spawn_format_h)->name = spawn_name;
 
 	FFF_TYPE(*spawn_format_h) = FFF_TYPE(format) | FFF_RECORD;
 
-	var = FF_VARIABLE(FFV_FIRST_VARIABLE((*spawn_format_h)));
-	if (var)
+	vlist = FFV_FIRST_VARIABLE(*spawn_format_h);
+	var = FF_VARIABLE(vlist);
+	while (var)
 	{
 		FF_VALIDATE(var);
 
@@ -4111,9 +4528,10 @@ static int spawn_record_array_format
 			ff_destroy_format(*spawn_format_h);
 			return(err_push(ERR_MEM_LACK, ""));
 		}
+
+		vlist = dll_next(vlist);
+		var = FF_VARIABLE(vlist);
 	}
-	else
-		assert(var);
 
 	return(0);
 }
@@ -4141,6 +4559,7 @@ static int spawn_array_format
 		return(err_push(ERR_MEM_LACK, ""));
 
 	sprintf(spawn_name, "%s::%s", format->name, var->name);
+
 	(*spawn_format_h)->name = spawn_name;
 
 	(*spawn_format_h)->variables = dll_init();
@@ -4183,7 +4602,14 @@ static int spawn_array_format_data
 	FORMAT_PTR spawn_format = NULL;
 
 	FF_VALIDATE(format);
-	FF_VALIDATE(var);
+
+	if (var)
+		FF_VALIDATE(var);
+	else
+	{
+		*fdh = NULL;
+		return 0;
+	}
 
 	assert(fdh);
 
@@ -4211,7 +4637,7 @@ static int spawn_array_format_data
 		}
 	}
 
-	/* var might have been RECORD but has changed to ARRAY */
+	/* Could be a mistaken record variable that is now a keyworded variable */
 	if (!IS_RECORD_VAR(var))
 	{
 		error = spawn_array_format(format, var, &spawn_format);
@@ -4243,30 +4669,42 @@ static void set_array_offsets
 	FORMAT_PTR output_format = NULL;
 	VARIABLE_PTR output_var = NULL;
 
-	input_format = array_conduit->input->fd->format;
-	input_var = FF_VARIABLE(FFV_FIRST_VARIABLE(input_format));
+	if (array_conduit->input)
+	{
+		input_format = array_conduit->input->fd->format;
+		input_var = FF_VARIABLE(FFV_FIRST_VARIABLE(input_format));
+
+		if (array_conduit->input->connect.id & NDARRS_FILE)
+		{
+			array_conduit->input->connect.file_info.first_array_offset = input_var->start_pos - 1;
+			array_conduit->input->connect.file_info.current_array_offset = input_var->start_pos - 1;
+		}
+		else
+		{
+			array_conduit->input->connect.file_info.first_array_offset = 0;
+			array_conduit->input->connect.file_info.current_array_offset = 0;
+		}
+
+		input_var->end_pos = FF_VAR_LENGTH(input_var);
+		input_var->start_pos = 1;
+	}
 
 	if (array_conduit->output)
 	{
 		output_format = array_conduit->output->fd->format;
 		output_var = FF_VARIABLE(FFV_FIRST_VARIABLE(output_format));
-	}
 
-	if (array_conduit->input->connect.id & NDARRS_FILE)
-		array_conduit->input->connect.file_info.array_offset = input_var->start_pos - 1;
-	else
-		array_conduit->input->connect.file_info.array_offset = 0;
+		if (array_conduit->output->connect.id & NDARRS_FILE)
+		{
+			array_conduit->output->connect.file_info.first_array_offset = output_var->start_pos - 1;
+			array_conduit->output->connect.file_info.current_array_offset = output_var->start_pos - 1;
+		}
+		else
+		{
+			array_conduit->output->connect.file_info.first_array_offset = 0;
+			array_conduit->output->connect.file_info.current_array_offset = 0;
+		}
 
-	if (array_conduit->output->connect.id & NDARRS_FILE)
-		array_conduit->output->connect.file_info.array_offset = output_var->start_pos - 1;
-	else
-		array_conduit->output->connect.file_info.array_offset = 0;
-
-	input_var->end_pos = FF_VAR_LENGTH(input_var);
-	input_var->start_pos = 1;
-
-	if (output_format)
-	{
 		output_var->end_pos = FF_VAR_LENGTH(output_var);
 		output_var->start_pos = 1;
 	}
@@ -4279,21 +4717,36 @@ static void set_record_array_offsets
 	 FF_ARRAY_CONDUIT_PTR array_conduit
 	)
 {
-	FF_VALIDATE(in_var);
-	
-	if (array_conduit->input->connect.id & NDARRS_FILE)
-		array_conduit->input->connect.file_info.array_offset = in_var->start_pos - 1;
-	else
-		array_conduit->input->connect.file_info.array_offset = 0;
+	if (in_var)
+	{
+		FF_VALIDATE(in_var);
+		
+		if (array_conduit->input->connect.id & NDARRS_FILE)
+		{
+			array_conduit->input->connect.file_info.first_array_offset = in_var->start_pos - 1;
+			array_conduit->input->connect.file_info.current_array_offset = in_var->start_pos - 1;
+		}
+		else
+		{
+			array_conduit->input->connect.file_info.first_array_offset = 0;
+			array_conduit->input->connect.file_info.current_array_offset = 0;
+		}
+	}
 
 	if (out_var)
 	{
 		FF_VALIDATE(out_var);
 
 		if (array_conduit->output->connect.id & NDARRS_FILE)
-			array_conduit->output->connect.file_info.array_offset = out_var->start_pos - 1;
+		{
+			array_conduit->output->connect.file_info.first_array_offset = out_var->start_pos - 1;
+			array_conduit->output->connect.file_info.current_array_offset = out_var->start_pos - 1;
+		}
 		else
-			array_conduit->output->connect.file_info.array_offset = 0;
+		{
+			array_conduit->output->connect.file_info.first_array_offset = 0;
+			array_conduit->output->connect.file_info.current_array_offset = 0;
+		}
 	}
 }
 
@@ -4370,7 +4823,8 @@ static int create_array_pole
 
 		(*pole_h)->connect.id = id;
 		
-		(*pole_h)->connect.file_info.array_offset = 0;
+		(*pole_h)->connect.file_info.first_array_offset = 0;
+		(*pole_h)->connect.file_info.current_array_offset = 0;
 
 		(*pole_h)->connect.locus.filename = NULL;
 		(*pole_h)->connect.locus.bufsize = NULL;
@@ -4383,6 +4837,7 @@ static int create_array_pole
 			if (!(*pole_h)->connect.locus.filename)
 			{
 				memFree(*pole_h, "*pole_h");
+				memFree((*pole_h)->name, "(*pole_h)->name");
 				*pole_h = NULL;
 				return(err_push(ERR_MEM_LACK, NULL));
 			}
@@ -4394,6 +4849,7 @@ static int create_array_pole
 
 		(*pole_h)->connect.array_done = 0;
 		(*pole_h)->connect.bytes_left = 0;
+		(*pole_h)->connect.bytes_done = 0;
 	} /* if *pole_h */
 	else
 		return(err_push(ERR_MEM_LACK, NULL));
@@ -4520,34 +4976,40 @@ static int make_tabular_array_conduit
 	FF_ARRAY_DIPOLE_PTR input_pole = NULL;
 	FF_ARRAY_DIPOLE_PTR output_pole = NULL;
 	
-	FF_VALIDATE(input);
 	FF_VALIDATE(std_args);
-	
-	error = create_array_pole(input->format->name,
-	                             input,
-	                             (NDARR_SOURCE)(std_args->input_file ?
-	                             NDARRS_FILE:
-	                             NDARRS_BUFFER),
-	                             std_args->input_file,
-	                             std_args->input_bufsize,
-	                             &input_pole
-	                            );
-	if (error)
-		goto make_tabular_array_conduit_exit;
+
+	if (input)
+	{
+		FF_VALIDATE(input);
+		
+		error = create_array_pole(input->format->name,
+		                          input,
+		                          (NDARR_SOURCE)(std_args->input_file ?
+		                          NDARRS_FILE:
+		                          NDARRS_BUFFER),
+		                          std_args->input_file,
+		                          std_args->input_bufsize,
+		                          &input_pole
+		                         );
+		if (error)
+			goto make_tabular_array_conduit_exit;
+	}
+	else
+		input_pole = NULL;
 	
 	if (output)
 	{
 		FF_VALIDATE(output);
 	
 		error = create_array_pole(output->format->name,
-		                             output,
-		                             (NDARR_SOURCE)(std_args->output_file ?
-		                             NDARRS_FILE :
-		                             NDARRS_BUFFER),
-		                             std_args->output_file,
-		                             std_args->output_bufsize,
-		                             &output_pole
-		                            );
+		                          output,
+		                          (NDARR_SOURCE)(std_args->output_file ?
+		                          NDARRS_FILE :
+		                          NDARRS_BUFFER),
+		                          std_args->output_file,
+		                          std_args->output_bufsize,
+		                          &output_pole
+		                         );
 		if (error)
 			goto make_tabular_array_conduit_exit;
 	}
@@ -4629,60 +5091,76 @@ static int spawn_array_conduits
 	 FORMAT_DATA_LIST format_data_list
 	)
 {
-	FF_BUFSIZE_PTR new_id = NULL;
-	FF_BUFSIZE_PTR new_od = NULL;
-
-	VARIABLE_LIST variables = NULL;
-	VARIABLE_PTR in_var = NULL;
+	VARIABLE_LIST vlist = NULL;
+	VARIABLE_PTR var = NULL; /* nominally an output variable, but might be input */
 
 	int error = 0;
 	
-	FF_VALIDATE(input);
 	FF_VALIDATE(std_args);
+
+	if (input)
+		FF_VALIDATE(input);
 
 	if (output)
 		FF_VALIDATE(output);
-	else
-		return(0);
 
-	variables = FFV_FIRST_VARIABLE(input->format);
-	in_var    = FF_VARIABLE(variables);
-	while (in_var)
+	vlist = FFV_FIRST_VARIABLE(output ? output->format : input->format);
+	var   = FF_VARIABLE(vlist);
+	while (var)
 	{
 		FORMAT_DATA_PTR new_ifd = NULL;
 		FORMAT_DATA_PTR new_ofd = NULL;
 
-		VARIABLE_PTR out_var = NULL;
+		VARIABLE_PTR in_var = NULL;
 
-		if (!IS_ARRAY(in_var) && !IS_RECORD_VAR(in_var))
+		if (!IS_ARRAY(var) && !IS_RECORD_VAR(var))
 		{
-			error = err_push(ERR_GENERAL, "%s: A non-array variable cannot occur with array variables", in_var->name);
+			error = err_push(ERR_GENERAL, "%s: A non-array variable cannot occur with array variables", var->name);
 			return(error);
 		}
 
-		out_var = ff_find_variable(in_var->name, output->format);
-		if (out_var)
+		if (input && output)
 		{
-			error = spawn_array_format_data(format_data_list, input->format, in_var, &new_ifd);
-			if (error)
-				break;
+			in_var = ff_find_variable(var->name, input->format);
+			if (!in_var)
+			{
+				/* Might be a calculated output variable */
 
-			error = spawn_array_format_data(format_data_list, output->format, out_var, &new_ofd);
-			if (error)
-				break;
-
-			error = make_tabular_array_conduit(new_ifd, new_ofd, std_args, array_conduit_list);
-			if (error)
-				break;
-
-			if (IS_RECORD_VAR(in_var))
-				set_record_array_offsets(in_var, out_var, FF_AC(dll_last(array_conduit_list)));
-			else
-				set_array_offsets(FF_AC(dll_last(array_conduit_list)));
+				char *cp = strstr(var->name, "_eqn");
+				if (cp && strlen(cp) == strlen("_eqn"))
+				{
+					*cp = STR_END;
+					in_var = ff_find_variable(var->name, input->format);
+					*cp = '_';
+				}
+			}
 		}
 
-		variables = FFV_NEXT_VARIABLE(variables);
-		in_var    = FF_VARIABLE(variables);
+		if (input)
+		{
+			error = spawn_array_format_data(format_data_list, input->format, output ? in_var : var, &new_ifd);
+			if (error)
+				break;
+		}
+
+		if (output)
+		{
+			error = spawn_array_format_data(format_data_list, output->format, var, &new_ofd);
+			if (error)
+				break;
+		}
+
+		error = make_tabular_array_conduit(new_ifd, new_ofd, std_args, array_conduit_list);
+		if (error)
+			break;
+
+		if (IS_RECORD_VAR(var))
+			set_record_array_offsets(output ? in_var : var, output ? var : NULL, FF_AC(dll_last(array_conduit_list)));
+		else
+			set_array_offsets(FF_AC(dll_last(array_conduit_list)));
+
+		vlist = FFV_NEXT_VARIABLE(vlist);
+		var   = FF_VARIABLE(vlist);
 	} /* while var */
 
 	return(error);
@@ -4777,7 +5255,7 @@ static int reproduce_format_data
 {
 	FORMAT_PTR format = NULL;
 
-	format = copy_format(source->format);
+	format = ff_copy_format(source->format);
 	if (!format)
 		return(ERR_MEM_LACK);
 
@@ -4820,29 +5298,79 @@ static int dbset_create_conduits_core
 	{
 		FF_VALIDATE(fd);
 		
-		if (IS_OUTPUT(fd->format) || IS_RECORD_FORMAT(fd->format))
+		if (IS_RECORD_FORMAT(fd->format))
 		{
 			fdlist = dll_next(fdlist);
 			fd = FD_FORMAT_DATA(fdlist);
 			
 			continue;
 		}
+
+		if (IS_OUTPUT(fd->format))
+		{
+			/* Is output format paired with an input format? */
+
+			FF_ARRAY_CONDUIT_LIST walker = array_conduit_list;
+			FF_ARRAY_CONDUIT_PTR candidate = NULL;
+
+			walker = dll_first(walker);
+			candidate = FF_AC(walker);
+			while (candidate)
+			{
+				if (candidate->output)
+				{
+					if (IS_ARRAY(fd->format))
+					{
+						/* An orphan output _array_?  Should I allow this? */
+						if (!strncmp(fd->format->name, candidate->output->fd->format->name, strlen(fd->format->name)) &&
+						    strlen(candidate->output->fd->format->name) + 2 > strlen(fd->format->name) &&
+							 !strncmp(candidate->output->fd->format->name + strlen(fd->format->name), "::", 2))
+							break;
+					}
+					else
+					{
+						if (ff_format_comp(fd->format, candidate->output->fd->format))
+							break;
+					}
+				}
+
+				walker = dll_next(walker);
+				candidate = FF_AC(walker);
+			}
+
+			if (candidate)
+			{
+				fdlist = dll_next(fdlist);
+				fd = FD_FORMAT_DATA(fdlist);
+				
+				continue;
+			}
+
+			/* This is an orphan output format -- proceed */
+		}
 		
 		format_type = (FFF_TYPE(fd->format) & ~FFF_IO) & FFF_DATA_TYPES;
 
 #ifdef FF_DBG
-		input = fd_find_format_data(format_data_list, FFF_GROUP, FFF_INPUT | format_type);
-		assert(input == fd);
+		if (IS_INPUT(fd->format))
+		{
+			input = fd_find_format_data(format_data_list, FFF_GROUP, FFF_INPUT | format_type);
+			assert(input == fd);
+		}
 #endif
 
-		output = fd_find_format_data(format_data_list, FFF_GROUP, FFF_OUTPUT | format_type);
-
-		if (output)
-			FF_VALIDATE(output);
+		if (IS_INPUT(fd->format))
+		{
+			output = fd_find_format_data(format_data_list, FFF_GROUP, FFF_OUTPUT | format_type);
+			if (output)
+				FF_VALIDATE(output);
+		}
+		else
+			output = fd;
 
 		if (IS_ARRAY(fd->format))
 		{
-			if (output && !IS_ARRAY(output->format))
+			if (IS_INPUT(fd->format) && output && !IS_ARRAY(output->format))
 				return(err_push(ERR_GEN_ARRAY, "Array/Tabular Format mismatch"));
 
 			error = spawn_array_conduits(fd, output, std_args, array_conduit_list, format_data_list);
@@ -4854,12 +5382,15 @@ static int dbset_create_conduits_core
 			FORMAT_DATA_PTR input_copy = NULL;
 			FORMAT_DATA_PTR output_copy = NULL;
 
-			if (output && IS_ARRAY(output->format))
+			if (IS_INPUT(fd->format) && output && IS_ARRAY(output->format))
 				return(err_push(ERR_GEN_ARRAY, "Array/Tabular Format mismatch"));
 
-			error = reproduce_format_data(fd, &input_copy);
-			if (error)
-				return(error);
+			if (IS_INPUT(fd->format))
+			{
+				error = reproduce_format_data(fd, &input_copy);
+				if (error)
+					return(error);
+			}
 
 			if (output)
 			{
@@ -4884,6 +5415,39 @@ static int dbset_create_conduits_core
 	}
 	
 	return(error);
+}
+
+/* file headers followed by record headers followed by data */
+static void sort_format_data_list(FORMAT_DATA_LIST format_data_list)
+{
+	FORMAT_DATA_LIST walker = NULL;
+	FORMAT_DATA_LIST end = NULL;
+	FORMAT_DATA_PTR swapper = NULL;
+
+	end = dll_last(format_data_list);
+	walker = dll_first(format_data_list);
+	while (walker != end)
+	{
+		while (FD_FORMAT_DATA(walker) && FD_FORMAT_DATA(dll_next(walker)) && walker != end)
+		{
+			if ((FD_TYPE(FD_FORMAT_DATA(walker)) & (FFF_FILE | FFF_REC | FFF_DATA)) >
+				 (FD_TYPE(FD_FORMAT_DATA(dll_next(walker))) & (FFF_FILE | FFF_REC | FFF_DATA)))
+			{
+				swapper = FD_FORMAT_DATA(walker);
+				
+				walker->data.u.fd = NULL;
+				dll_assign(FD_FORMAT_DATA(dll_next(walker)), DLL_FD, walker);
+
+				dll_next(walker)->data.u.fd = NULL;
+				dll_assign(swapper, DLL_FD, dll_next(walker));
+			}
+
+			walker = dll_next(walker);
+		}
+
+		end = dll_previous(end);
+		walker = dll_first(format_data_list);
+	}
 }
 
 /*****************************************************************************
@@ -4950,6 +5514,8 @@ static int dbset_create_conduits
 		if (!*array_conduit_list_handle)
 			return(ERR_MEM_LACK);
 	}
+
+	sort_format_data_list(format_data_list);
 
 	error = dbset_create_conduits_core(format_data_list, std_args, *array_conduit_list_handle);
 	if (error)
@@ -5030,106 +5596,6 @@ static int ask_EOL_string
 		return(error);
 }
 
-/*
- * NAME:        get_buffer_eol_str
- *              
- * PURPOSE:     to determine the EOL sequence for a given buffer
- *
- * USAGE:       int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
- *
- * RETURNS:     0 if all is OK, >< 0 on error
- *
- * DESCRIPTION: Determines the EOL sequence for a given file.  If no EOL
- *				sequence is observed, buffer_eol_str is simply set to '\0';
- *				otherwise the first characters of buffer_eol_str are set to 
- *				the EOL sequence (buffer_eol_str must be at least 3 bytes)
- *
- * SYSTEM DEPENDENT FUNCTIONS:  none- completely portable
- *
- * AUTHOR:      Kevin Frender kbf@ngdc.noaa.gov
- *
- * COMMENTS:
- *          
- * KEYWORDS: EOL
- *
- */
-#undef ROUTINE_NAME
-#define ROUTINE_NAME "get_buffer_eol_str"
-
-static int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
-{
-	enum {GBEOLS_EOL_LF = 10, GBEOLS_EOL_CR = 13};
-	char *c;
-	
-	assert(buffer && buffer_eol_str);
-	
-	c = buffer;
-	
-	while(c[0]){
-		if(c[0] == GBEOLS_EOL_LF){ /* LF */
-			/* Must be a unix file */
-			buffer_eol_str[0] = (char)GBEOLS_EOL_LF;
-			buffer_eol_str[1] = '\0';
-			return(0);
-		}
-		if(c[0] == GBEOLS_EOL_CR){ /* CR */
-			c++;
-			if(c[0] == GBEOLS_EOL_LF){ /* CR-LF */
-				/* Must be a DOS file */
-				buffer_eol_str[0] = (char)GBEOLS_EOL_CR;
-				buffer_eol_str[1] = (char)GBEOLS_EOL_LF;
-				buffer_eol_str[2] = '\0';
-				return(0);
-			}
-			/* Must be a MAC file */
-			buffer_eol_str[0] = (char)GBEOLS_EOL_CR;
-			buffer_eol_str[1] = '\0';
-			return(0);
-		}
-		c++;
-	}
-	
-	/* Couldn't find any EOL chars */
-	buffer_eol_str[0] = '\0';
-	return(0);
-}
-
-#define MAX_EOL_LENGTH DOS_EOL_LENGTH
-
-static int search_for_EOL
-	(
-	 FILE *file,
-	 char *fname,
-	 char *EOL_string
-	)
-{
-	unsigned long file_offset = 0;
-	unsigned long file_length = os_filelength(fname);
-
-	while (file_offset < file_length)
-	{
-		char buffer[MAX_EOL_LENGTH];
-		unsigned int num_to_read = 0;
-		int num_read = 0;
-
-		num_to_read = min(MAX_EOL_LENGTH, (int)(file_length - file_offset));
-
-		num_read = fread(buffer, sizeof(char), num_to_read, file);
-		if (num_read != (int)num_to_read)
-			return(err_push(ERR_READ_FILE, fname));
-
-		get_buffer_eol_str(buffer, EOL_string);
-		if (strlen(EOL_string))
-			break;
-
-		file_offset = ftell(file);
-		if (file_offset == -1)
-			return(err_push(ERR_READ_FILE, fname));
-	}
-
-	return(0);
-}
-
 static VARIABLE_PTR find_EOL_var
 	(
 	 FORMAT_PTR format
@@ -5146,7 +5612,7 @@ static VARIABLE_PTR find_EOL_var
 	{
 		FF_VALIDATE(var);
 
-		if (IS_EOL_VAR(var))
+		if (IS_EOL(var))
 			break;
 
 		vlist = FFV_NEXT_VARIABLE(vlist);
@@ -5178,6 +5644,8 @@ static void get_relative_file_offset
 #endif
 #define ROUTINE_NAME "read_EOL_from_file"
 
+/* EOL check won't work if we allow the first record header to have an empty data block.
+*/
 static int read_EOL_from_file
 	(
 	 PROCESS_INFO_PTR pinfo,
@@ -5202,7 +5670,7 @@ static int read_EOL_from_file
 		get_relative_file_offset(PINFO_FORMAT(pinfo), &file_offset);
 
 	if (PINFO_IS_FILE(pinfo))
-		file_offset += PINFO_ARRAY_OFFSET(pinfo);
+		file_offset += PINFO_CURRENT_ARRAY_OFFSET(pinfo);
 	else
 		assert(PINFO_IS_FILE(pinfo));
 	
@@ -5293,10 +5761,11 @@ static int resize_for_EOL
 	int adjust = 0;
 	size_t EOL_length = strlen(EOL_string);
 	
-	if (IS_BINARY(format) || IS_VARIED(format))
+	if (IS_BINARY(format))
 		return(0);
 	
-	format->length = 0;
+	if (!IS_VARIED(format))
+		format->length = 0;
 
 	while (var)
 	{
@@ -5304,7 +5773,7 @@ static int resize_for_EOL
 		
 		EOL_delta = 0;
 
-		if (IS_EOL_VAR(var))
+		if (IS_EOL(var))
 		{
 			error = new_name_string__(EOL_string, &var->name);
 			if (error)
@@ -5335,7 +5804,7 @@ static BOOLEAN format_has_newlines
 
 	FF_VALIDATE(pinfo);
 
-	if (IS_ASCII(PINFO_FORMAT(pinfo)) || IS_DBASE(PINFO_FORMAT(pinfo)))
+	if (IS_ASCII(PINFO_FORMAT(pinfo)) || IS_FLAT(PINFO_FORMAT(pinfo)))
 	{
 		if (find_EOL_var(PINFO_FORMAT(pinfo)))
 			format_has_newlines = TRUE;
@@ -5402,8 +5871,15 @@ static int determine_EOL_by_type
 				assert(IS_INPUT(PINFO_FORMAT(pinfo)) || IS_OUTPUT(PINFO_FORMAT(pinfo)));
 		}
 
-		if (!IS_VARIED(PINFO_FORMAT(pinfo)))
+		if (!IS_VARIED(PINFO_FORMAT(pinfo)) || IS_OUTPUT(PINFO_FORMAT(pinfo)))
+		{
 			error = resize_for_EOL(PINFO_FORMAT(pinfo), EOL_string);
+			if (!error)
+			{
+				if (PINFO_RECL(pinfo) > PINFO_TOTAL_BYTES(pinfo))
+					error = ff_resize_bufsize(PINFO_RECL(pinfo), &PINFO_DATA(pinfo));
+			}
+		}
 	} /* if format_has_newlines(pinfo) */
 
 	*EOL_string = STR_END;
@@ -5423,33 +5899,14 @@ static int determine_EOLs
 	FF_VALIDATE(dbin);
 	FF_VALIDATE(pinfo);
 
-	error = ask_EOL_string(dbin, FFF_INPUT, EOL_string);
+	error = ask_EOL_string(dbin, PINFO_TYPE(pinfo) & FFF_IO, EOL_string);
 	if (!error)
 		error = determine_EOL_by_type(pinfo, EOL_string);
-
-	if (error)
-		return(error);
-
-	error = ask_EOL_string(dbin, FFF_OUTPUT, EOL_string);
-	if (!error && PINFO_MATE(pinfo))
-		error = determine_EOL_by_type(PINFO_MATE(pinfo), EOL_string);
-
-	if (error)
-		return(error);
 
 	return(error);
 }
 
-static BOOLEAN check_index_for_token(char *s)
-{
-	char *endptr = NULL;
-
-	(void)strtol(s, &endptr, 10);
-	if (endptr && strlen(endptr) && !isspace(*endptr) && *endptr != ']')
-		return(TRUE);
-	else
-		return(FALSE);
-}
+#define FF_ARRAY_ELEMENT_SIZE_WIDTH 5
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "literal_arr_str_copy"
@@ -5457,15 +5914,13 @@ static BOOLEAN check_index_for_token(char *s)
 /*****************************************************************************
  * NAME: literal_arr_str_copy
  *
- * PURPOSE: Copy array descriptor string and replace dummy indices with literals
+ * PURPOSE: Copy array descriptor string
  *
  * USAGE:  array_desc_str_copy = literal_arr_str_copy(dbin, array_desc_str, format);
  *
  * RETURNS:  A copy of the array descriptor string, or NULL on failure
  *
- * DESCRIPTION:  Parse array descriptor string for non-numeric indices.  For all
- * so found, call nt_ask on the token, and if successful, write the token's value
- * in its place in the string copy.
+ * DESCRIPTION:  
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
@@ -5482,157 +5937,27 @@ static BOOLEAN check_index_for_token(char *s)
 
 static int literal_arr_str_copy
 	(
-	 DATA_BIN_PTR dbin,
-	 char *array_desc_str,
+	 VARIABLE_PTR var,
 	 FORMAT_PTR format,
 	 char **desc_str_copy_h
 	)
 {
-	size_t fudge_room = strlen(array_desc_str);
-	size_t desc_str_size = (2 * fudge_room) + FF_ARRAY_ELEMENT_SIZE_WIDTH + 2;
-
-	FF_VALIDATE(dbin);
+	FF_VALIDATE(var);
 	FF_VALIDATE(format);
 
-	*desc_str_copy_h = (char *)memMalloc(desc_str_size, "desc_str_copy");
+	*desc_str_copy_h = (char *)memMalloc(2 * strlen(var->array_desc_str) + FF_ARRAY_ELEMENT_SIZE_WIDTH + 2, "*desc_str_copy_h");
 	if (*desc_str_copy_h)
 	{
-		enum
-		{
-			NO_MODE = 1,
-			BEGIN_SUBSCRIPT = 2,
-			END_SUBSCRIPT = 3,
-			BEGIN_ARRAY_NAME = 4,
-			END_ARRAY_NAME = 5,
-			BEGIN_START_INDEX = 6,
-			END_START_INDEX = 7,
-			BEGIN__TO_ = 8,
-			END__TO_ = 9,
-			BEGIN_FINISH_INDEX = 10,
-			END_FINISH_INDEX = 11
-		} mode = NO_MODE;
-
-		size_t desc_index = 0;
-		size_t copy_index = 0;
-
-		while (array_desc_str[desc_index])
-		{
-			BOOLEAN sub_token = FALSE;
-			if (isspace(array_desc_str[desc_index]))
-			{
-				if (mode == BEGIN_START_INDEX)
-					mode = END_START_INDEX;
-				else if (mode == BEGIN__TO_)
-					mode = END__TO_;
-				else if (mode == BEGIN_FINISH_INDEX)
-					mode = END_FINISH_INDEX;
-			}
-			else if (array_desc_str[desc_index] == '[' && (mode == END_SUBSCRIPT || mode == NO_MODE))
-				mode = BEGIN_SUBSCRIPT;
-			else if (array_desc_str[desc_index] == '"' && mode == BEGIN_SUBSCRIPT)
-				mode = BEGIN_ARRAY_NAME;
-			else if (array_desc_str[desc_index] == '"' && mode == BEGIN_ARRAY_NAME)
-				mode = END_ARRAY_NAME;
-			else if (os_strncmpi(array_desc_str + desc_index, "TO", 2) == 0 && mode == END_START_INDEX)
-				mode = BEGIN__TO_;
-			else if (array_desc_str[desc_index] == ']' && mode == BEGIN_FINISH_INDEX)
-				mode = END_SUBSCRIPT;
-			else 
-			{
-				if (mode == END_ARRAY_NAME)
-					mode = BEGIN_START_INDEX;
-				else if (mode == END__TO_)
-					mode = BEGIN_FINISH_INDEX;
-			}
-
-			if (mode == BEGIN_START_INDEX || mode == BEGIN_FINISH_INDEX)
-			{
-				if (check_index_for_token(array_desc_str + desc_index))
-					sub_token = TRUE;
-			}
-
-			if (sub_token)
-			{
-				int error = 0;
-
-				unsigned long index = 0;
-				char save_char = STR_END;
-				size_t save_char_pos = 0;
-
-				save_char_pos = strcspn(array_desc_str + desc_index, " \t]");
-				save_char_pos += desc_index;
-				save_char = *(array_desc_str + save_char_pos);
-				*(array_desc_str + save_char_pos) = STR_END;
-
-				error = nt_ask(dbin, NT_ANYWHERE, array_desc_str + desc_index, FFV_ULONG, &index);
-				if (error)
-				{
-					return(err_push(error, "Unrecognized keyword \"%s\"", array_desc_str + desc_index));
-				} /* error: nt_ask */
-				else
-				{
-					signed short fudge = 0;
-					char index_str[11]; /* 10 digits for ULONG_MAX + 1 for STR_END */
-
-					sprintf(index_str, "%lu", index);
-					fudge = (signed short)(strlen(index_str) - strlen(array_desc_str + desc_index));
-					if (fudge > 0)
-					{
-						if ((size_t)fudge < fudge_room)
-							fudge_room -= fudge;
-						else
-						{
-							char *temp = NULL;
-
-							fudge_room = max(strlen(array_desc_str), (size_t)fudge);
-							desc_str_size += fudge_room;
-
-							temp = memRealloc(*desc_str_copy_h, desc_str_size, "*desc_str_copy_h");
-							if (temp)
-								*desc_str_copy_h = temp;
-							else
-							{
-								memFree(*desc_str_copy_h, "*desc_str_copy_h");
-								return(err_push(ERR_MEM_LACK, ""));
-							}
-						}
-					} /* fudge > 0 */
-
-					strcpy(*desc_str_copy_h + copy_index, index_str);
-					copy_index += strlen(index_str);
-
-					if (fudge > 0)
-					{
-						desc_index += strlen(array_desc_str + desc_index);
-					}
-					else
-					{
-						desc_index += strlen(index_str);
-
-						fudge = (short)-fudge;
-						for (; fudge; fudge--, copy_index++, desc_index++)
-							(*desc_str_copy_h)[copy_index] = ' ';
-					} /* else fudge > 0 */
-
-					(*desc_str_copy_h)[copy_index] = save_char;
-				}  /* else error: nt_ask */
-
-				*(array_desc_str + save_char_pos) = save_char;
-
-				sub_token = FALSE;
-			}
-			else
-			{
-				(*desc_str_copy_h)[copy_index] = array_desc_str[desc_index];
-				copy_index++;
-				desc_index++;
-			}
-		} /* while array_desc_str[desc_index] */
-
-		(*desc_str_copy_h)[copy_index] = STR_END;
+		int var_length = 0;
 
 		if (IS_RECORD_FORMAT(format))
-			sprintf(*desc_str_copy_h + strlen(*desc_str_copy_h) - FF_ARRAY_ELEMENT_SIZE_WIDTH, "%*d", (int)FF_ARRAY_ELEMENT_SIZE_WIDTH, (int)FORMAT_LENGTH(format));
+			var_length = FORMAT_LENGTH(format);
+		else if (IS_TEXT(var) || IS_CONSTANT(var) || IS_INITIAL(var) || !IS_BINARY(format))
+			var_length = FF_VAR_LENGTH(var);
+		else
+			var_length = (int)ffv_type_size(var->type);
+
+		sprintf(*desc_str_copy_h, "%s %*d", var->array_desc_str, (int)FF_ARRAY_ELEMENT_SIZE_WIDTH, var_length);
 	}
 	else
 		return(err_push(ERR_MEM_LACK, ""));
@@ -5640,23 +5965,83 @@ static int literal_arr_str_copy
 	return(0);
 }
 
-/* Remove separation and grouping from all dimensions, change output element size to input's */
-static void make_inputs_output_desc_str
+/* Remove separation and grouping from all dimensions, use output array's dimension information */
+static int make_inputs_sub_desc_str
 	(
-	 ARRAY_DESCRIPTOR_PTR input_desc,
-	 ARRAY_DESCRIPTOR_PTR temp_desc,
-	 char *output_desc_str
+	 DATA_BIN_PTR dbin,
+	 ARRAY_DESCRIPTOR_PTR super_desc,
+	 ARRAY_DESCRIPTOR_PTR output_desc,
+	 long records_to_do,
+	 char *sub_desc_str
 	)
 {
 	int i;
+	int fudge = 0;
+	int error = 0;
 
-	output_desc_str[0] = STR_END;
-	for (i = 0; i < temp_desc->num_dim; i++)
+	char grid_cell_registration[32];
+	char data_type[32];
+
+	FF_VALIDATE(dbin);
+
+	fudge = 0;
+
+	/* Introduce a fudge factor that will be  removed in ndarr_create_from_str.
+		This code parallels that in ndarr_create_from_str
+	*/
+
+	error = nt_ask(dbin, NT_INPUT, "data_type", FFV_TEXT, data_type);
+	if (error && error != ERR_NT_KEYNOTDEF)
+		error = err_push(ERR_PARAM_VALUE, "for data_type (%s)", data_type);
+	else if (!error)
 	{
-		sprintf(output_desc_str + strlen(output_desc_str), "[\"%s\" %ld to %ld by %ld] ", temp_desc->dim_name[i], (long)temp_desc->start_index[i], (long)temp_desc->end_index[i], (long)temp_desc->granularity[i]);
+		if (!os_strcmpi(data_type, "image") || !os_strcmpi(data_type, "raster"))
+		{
+			error = nt_ask(dbin, NT_INPUT, "grid_cell_registration", FFV_TEXT, grid_cell_registration);
+			if (error && error != ERR_NT_KEYNOTDEF)
+				error = err_push(ERR_PARAM_VALUE, "for grid_cell_registration (%s)", grid_cell_registration);
+			else if (!error)
+			{
+				if (!os_strncmpi(grid_cell_registration, "center", 6))
+					fudge = 1;
+			}
+			else if (error == ERR_NT_KEYNOTDEF)
+				error = 0;
+		}
+	}
+	else if (error == ERR_NT_KEYNOTDEF)
+		error = 0;
+
+	sub_desc_str[0] = STR_END;
+	for (i = 0; i < output_desc->num_dim; i++)
+	{
+		int end_fudge = 0;
+		int start_fudge = 0;
+
+		if (fudge)
+		{
+			if (output_desc->start_index[i] < output_desc->end_index[i])
+			{
+				end_fudge = 1;
+				start_fudge = 0;
+			}
+			else
+			{
+				start_fudge = 1;
+				end_fudge = 0;
+			}
+		}
+
+		sprintf(sub_desc_str + strlen(sub_desc_str), "[\"%s\" %ld to %ld by %ld] ",
+	            output_desc->dim_name[i],
+		        (long)output_desc->start_index[i] + start_fudge + (records_to_do < 0 ? output_desc->end_index[i] + records_to_do : 0),
+				(long)((records_to_do > 0 ? records_to_do + output_desc->start_index[i] - 1 : output_desc->end_index[i]) + end_fudge),
+		        (long)output_desc->granularity[i]);
 	}
 
-	sprintf(output_desc_str + strlen(output_desc_str), "%*d", FF_ARRAY_ELEMENT_SIZE_WIDTH, (int)input_desc->element_size);
+	sprintf(sub_desc_str + strlen(sub_desc_str), "%*d", FF_ARRAY_ELEMENT_SIZE_WIDTH, (int)super_desc->element_size);
+
+	return error;
 }
 
 #undef ROUTINE_NAME
@@ -5665,87 +6050,166 @@ static void make_inputs_output_desc_str
 static int make_input_array_mapping
 	(
 	 DATA_BIN_PTR dbin,
-	 FF_ARRAY_DIPOLE_PTR pole
+	 long records_to_do,
+	 PROCESS_INFO_PTR pinfo
 	)
 {
 	int error = 0;
 
-	ARRAY_DESCRIPTOR_PTR input_desc = NULL;
-	ARRAY_DESCRIPTOR_PTR output_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR super_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR sub_desc = NULL;
 
-	ARRAY_DESCRIPTOR_PTR temp_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR output_desc = NULL;
 	
-	char *input_desc_str = NULL;
+	char *super_desc_str = NULL;
+	char *sub_desc_str = NULL;
 	char *output_desc_str = NULL;
 
-	VARIABLE_PTR invar  = FF_VARIABLE(FFV_FIRST_VARIABLE(pole->fd->format));
-	VARIABLE_PTR outvar = FF_VARIABLE(FFV_FIRST_VARIABLE(pole->mate->fd->format));
+	VARIABLE_PTR invar  = NULL;
+	VARIABLE_PTR outvar = NULL;
 
 	FF_VALIDATE(dbin);
-	FF_VALIDATE(pole);
+	FF_VALIDATE(pinfo);
 
-	error = literal_arr_str_copy(dbin, invar->array_desc_str, pole->fd->format, &input_desc_str);
+	invar = FF_VARIABLE(FFV_FIRST_VARIABLE(PINFO_FORMAT(pinfo)));
+
+	if (PINFO_MATE(pinfo))
+		outvar = FF_VARIABLE(FFV_FIRST_VARIABLE(PINFO_MATE_FORMAT(pinfo)));
+	else
+		outvar = invar;
+
+	error = literal_arr_str_copy(invar, PINFO_FORMAT(pinfo), &super_desc_str);
 	if (error)
 		return(err_push(ERR_NDARRAY, "Problem with variable \"%s\"", invar->name));
 
-	input_desc = ndarr_create_from_str(input_desc_str);
-	memFree(input_desc_str, "input_desc_str");
-	if (!input_desc)
+	super_desc = ndarr_create_from_str(dbin, super_desc_str);
+	memFree(super_desc_str, "super_desc_str");
+	if (!super_desc)
 		return(ERR_GEN_ARRAY);
 
-	error = literal_arr_str_copy(dbin, outvar->array_desc_str, pole->fd->format, &output_desc_str);
+	error = literal_arr_str_copy(outvar, PINFO_FORMAT(pinfo), &output_desc_str);
 	if (error)
 	{
-		ndarr_free_descriptor(input_desc);
+		ndarr_free_descriptor(super_desc);
 		return(err_push(ERR_NDARRAY, "Problem with variable \"%s\"", outvar->name));
 	}
 
-	temp_desc = ndarr_create_from_str(output_desc_str);
-	if (!temp_desc)
-	{
-		memFree(input_desc_str, "input_desc_str");
-		memFree(output_desc_str, "output_desc_str");
-		ndarr_free_descriptor(input_desc);
-		return(ERR_GEN_ARRAY);
-	}
-			
-	make_inputs_output_desc_str(input_desc, temp_desc, output_desc_str); /* versus make_outputs_input_desc_str */
-	ndarr_free_descriptor(temp_desc);
-
-	output_desc = ndarr_create_from_str(output_desc_str);
+	output_desc = ndarr_create_from_str(dbin, output_desc_str);
 	if (!output_desc)
 	{
-		memFree(input_desc_str, "input_desc_str");
 		memFree(output_desc_str, "output_desc_str");
-		ndarr_free_descriptor(input_desc);
-		ndarr_free_descriptor(temp_desc);
+		ndarr_free_descriptor(super_desc);
 		return(ERR_GEN_ARRAY);
 	}
 			
-	memFree(output_desc_str, "output_desc_str");
-	pole->array_mapping = ndarr_create_mapping(output_desc, input_desc);
-	if (!pole->array_mapping)
+	sub_desc_str = output_desc_str;
+	error = make_inputs_sub_desc_str(dbin, super_desc, output_desc, records_to_do, sub_desc_str); /* versus make_outputs_super_desc_str */
+	ndarr_free_descriptor(output_desc);
+	if (error)
+	{
+		ndarr_free_descriptor(super_desc);
+		ndarr_free_descriptor(output_desc);
 		return(ERR_GEN_ARRAY);
+	}
+
+	sub_desc = ndarr_create_from_str(dbin, sub_desc_str);
+	if (!sub_desc)
+	{
+		memFree(sub_desc_str, "sub_desc_str");
+		ndarr_free_descriptor(super_desc);
+		ndarr_free_descriptor(output_desc);
+		return(ERR_GEN_ARRAY);
+	}
+			
+	memFree(sub_desc_str, "sub_desc_str");
+	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
+	if (!PINFO_ARRAY_MAP(pinfo))
+	{
+		ndarr_free_descriptor(sub_desc);
+		ndarr_free_descriptor(super_desc);
+
+		return(ERR_GEN_ARRAY);
+	}
 	
 	return(0);
 }
 
 /* Remove separation and grouping from all dimensions */
-static void make_outputs_input_desc_str
+static int make_outputs_super_desc_str
 	(
-	 ARRAY_DESCRIPTOR_PTR temp_desc,
-	 char *input_desc_str
+	 DATA_BIN_PTR dbin,
+	 ARRAY_DESCRIPTOR_PTR sub_desc,
+	 char *super_desc_str,
+	 long records_to_do
 	)
 {
 	int i;
+	int fudge = 0;
+	int error = 0;
 
-	input_desc_str[0] = STR_END;
-	for (i = 0; i < temp_desc->num_dim; i++)
+	char grid_cell_registration[32];
+	char data_type[32];
+
+	FF_VALIDATE(dbin);
+
+	fudge = 0;
+
+	/* Introduce a fudge factor that will be  removed in ndarr_create_from_str.
+		This code parallels that in ndarr_create_from_str
+	*/
+
+	error = nt_ask(dbin, NT_INPUT, "data_type", FFV_TEXT, data_type);
+	if (error && error != ERR_NT_KEYNOTDEF)
+		error = err_push(ERR_PARAM_VALUE, "for data_type (%s)", data_type);
+	else if (!error)
 	{
-		sprintf(input_desc_str + strlen(input_desc_str), "[\"%s\" %ld to %ld by %ld] ", temp_desc->dim_name[i], (long)temp_desc->start_index[i], (long)temp_desc->end_index[i], (long)temp_desc->granularity[i]);
+		if (!os_strcmpi(data_type, "image") || !os_strcmpi(data_type, "raster"))
+		{
+			error = nt_ask(dbin, NT_INPUT, "grid_cell_registration", FFV_TEXT, grid_cell_registration);
+			if (error && error != ERR_NT_KEYNOTDEF)
+				error = err_push(ERR_PARAM_VALUE, "for grid_cell_registration (%s)", grid_cell_registration);
+			else if (!error)
+			{
+				if (!os_strncmpi(grid_cell_registration, "center", 6))
+					fudge = 1;
+			}
+			else if (error == ERR_NT_KEYNOTDEF)
+				error = 0;
+		}
+	}
+	else if (error == ERR_NT_KEYNOTDEF)
+		error = 0;
+
+	super_desc_str[0] = STR_END;
+	for (i = 0; i < sub_desc->num_dim; i++)
+	{
+		int end_fudge = 0;
+		int start_fudge = 0;
+
+		if (fudge)
+		{
+			if (sub_desc->start_index[i] < sub_desc->end_index[i])
+			{
+				end_fudge = 1;
+				start_fudge = 0;
+			}
+			else
+			{
+				start_fudge = 1;
+				end_fudge = 0;
+			}
+		}
+
+		sprintf(super_desc_str + strlen(super_desc_str), "[\"%s\" %ld to %ld by %ld] ",
+		        sub_desc->dim_name[i],
+		        (long)sub_desc->start_index[i] + start_fudge + (records_to_do < 0 ? sub_desc->end_index[i] + records_to_do : 0),
+		        (long)((records_to_do > 0 ? records_to_do + sub_desc->start_index[i] - 1 : sub_desc->end_index[i]) + end_fudge),
+		        (long)sub_desc->granularity[i]);
 	}
 
-	sprintf(input_desc_str + strlen(input_desc_str), "%*d", FF_ARRAY_ELEMENT_SIZE_WIDTH, (int)temp_desc->element_size);
+	sprintf(super_desc_str + strlen(super_desc_str), "%*d", FF_ARRAY_ELEMENT_SIZE_WIDTH, (int)sub_desc->element_size);
+
+	return error;
 }
 
 #undef ROUTINE_NAME
@@ -5754,73 +6218,80 @@ static void make_outputs_input_desc_str
 static int make_output_array_mapping
 	(
 	 DATA_BIN_PTR dbin,
-	 FF_ARRAY_DIPOLE_PTR pole
+	 long records_to_do,
+	 PROCESS_INFO_PTR pinfo
 	)
 {
 	int error = 0;
 
-	ARRAY_DESCRIPTOR_PTR input_desc = NULL;
-	ARRAY_DESCRIPTOR_PTR output_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR super_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR sub_desc = NULL;
 
-	ARRAY_DESCRIPTOR_PTR temp_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR sub_desc_copy = NULL;
 	
-	char *input_desc_str = NULL;
-	char *output_desc_str = NULL;
+	char *super_desc_str = NULL;
+	char *sub_desc_str_copy = NULL;
+	char *sub_desc_str = NULL;
 
 	VARIABLE_PTR var = NULL;
 
-	if (!pole)
+	if (!pinfo)
 		return(0);
 
 	FF_VALIDATE(dbin);
-	FF_VALIDATE(pole);
+	FF_VALIDATE(pinfo);
 
-	var = FF_VARIABLE(FFV_FIRST_VARIABLE(pole->fd->format));
+	var = FF_VARIABLE(FFV_FIRST_VARIABLE(PINFO_FORMAT(pinfo)));
 
-	FF_VALIDATE(pole);
-
-	error = literal_arr_str_copy(dbin, var->array_desc_str, pole->fd->format, &output_desc_str);
+	error = literal_arr_str_copy(var, PINFO_FORMAT(pinfo), &sub_desc_str);
 	if (error)
 		return(err_push(ERR_NDARRAY, "Problem with variable \"%s\"", var->name));
 
-	output_desc = ndarr_create_from_str(output_desc_str);
-	memFree(output_desc_str, "input_desc_str");
-	if (!output_desc)
+	sub_desc = ndarr_create_from_str(dbin, sub_desc_str);
+	memFree(sub_desc_str, "sub_desc_str");
+	if (!sub_desc)
 		return(ERR_GEN_ARRAY);
 
-	error = literal_arr_str_copy(dbin, var->array_desc_str, pole->fd->format, &input_desc_str);
+	error = literal_arr_str_copy(var, PINFO_FORMAT(pinfo), &sub_desc_str_copy);
 	if (error)
 	{
-		ndarr_free_descriptor(output_desc);
+		ndarr_free_descriptor(sub_desc);
 		return(err_push(ERR_NDARRAY, "Problem with variable \"%s\"", var->name));
 	}
 
-	temp_desc = ndarr_create_from_str(input_desc_str);
-	if (!temp_desc)
+	sub_desc_copy = ndarr_create_from_str(dbin, sub_desc_str_copy);
+	if (!sub_desc_copy)
 	{
-		memFree(input_desc_str, "input_desc_str");
-		memFree(output_desc_str, "output_desc_str");
-		ndarr_free_descriptor(output_desc);
+		memFree(sub_desc_str_copy, "sub_desc_str_copy");
+		ndarr_free_descriptor(sub_desc);
 		return(ERR_GEN_ARRAY);
 	}
 			
-	make_outputs_input_desc_str(temp_desc, input_desc_str); /* versus make_inputs_output_desc_str */
-	ndarr_free_descriptor(temp_desc);
+	super_desc_str = sub_desc_str_copy;
+	error = make_outputs_super_desc_str(dbin, sub_desc_copy, super_desc_str, records_to_do); /* versus make_inputs_sub_desc_str */
+	ndarr_free_descriptor(sub_desc_copy);
+	if (error)
+	{
+		ndarr_free_descriptor(sub_desc);
+		return(ERR_GEN_ARRAY);
+	}
 
-	input_desc = ndarr_create_from_str(input_desc_str);
-	if (!input_desc)
+	super_desc = ndarr_create_from_str(dbin, super_desc_str);
+	if (!super_desc)
 	{
-		memFree(input_desc_str, "input_desc_str");
-		memFree(output_desc_str, "output_desc_str");
-		ndarr_free_descriptor(output_desc);
-		ndarr_free_descriptor(temp_desc);
+		memFree(super_desc_str, "super_desc_str");
+		ndarr_free_descriptor(sub_desc);
 		return(ERR_GEN_ARRAY);
 	}
 			
-	memFree(input_desc_str, "output_desc_str");
-	pole->array_mapping = ndarr_create_mapping(output_desc, input_desc);
-	if (!pole->array_mapping)
+	memFree(super_desc_str, "super_desc_str");
+	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
+	if (!PINFO_ARRAY_MAP(pinfo))
+	{
+		ndarr_free_descriptor(sub_desc);
+
 		return(ERR_GEN_ARRAY);
+	}
 	
 	return(0);
 }
@@ -5831,6 +6302,7 @@ static int make_output_array_mapping
 static int make_array_mappings
 	(
 	 DATA_BIN_PTR dbin,
+	 long records_to_do, 
 	 PROCESS_INFO_PTR pinfo
 	)
 {
@@ -5839,9 +6311,10 @@ static int make_array_mappings
 	FF_VALIDATE(dbin);
 	FF_VALIDATE(pinfo);
 
-	error = make_input_array_mapping(dbin, PINFO_POLE(pinfo));
-	if (!error)
-		error = make_output_array_mapping(dbin, PINFO_MATE_POLE(pinfo));
+	if (IS_INPUT_TYPE(PINFO_TYPE(pinfo)))
+		error = make_input_array_mapping(dbin, records_to_do, pinfo);
+	else if (IS_OUTPUT_TYPE(PINFO_TYPE(pinfo)))
+		error = make_output_array_mapping(dbin, records_to_do, pinfo);
 
 	return(error);
 }
@@ -5887,63 +6360,75 @@ static int set_array_mappings
 	
 	if (IS_ARRAY(PINFO_FORMAT(pinfo)))
 	{
-		error = make_array_mappings(dbin, pinfo);
+		error = make_array_mappings(dbin, records_to_do, pinfo);
 		if (error)
 			return(error);
 
-		PINFO_BYTES_LEFT(pinfo) = PINFO_SUB_ARRAY_BYTES(pinfo);
+		if (PINFO_IS_BROKEN(pinfo))
+		{
+			PINFO_ID(pinfo) &= ~NDARRS_UPDATE;
+			PINFO_ID(pinfo) |= NDARRS_CREATE;
+		}
 
-		if (PINFO_MATE(pinfo))
-			PINFO_MATE_BYTES_LEFT(pinfo) = PINFO_MATE_SUB_ARRAY_BYTES(pinfo);
+		PINFO_BYTES_LEFT(pinfo) = PINFO_SUB_ARRAY_BYTES(pinfo);
 	}
 	else
 	{
 		if (IS_HEADER(PINFO_FORMAT(pinfo)))
 		{
-			error = make_tabular_format_array_mappings(pinfo, 1, 1);
+			error = make_tabular_format_array_mapping(pinfo, 1, 1, 1);
 			if (error)
 				return(error);
 
 			if (PINFO_BYTES_LEFT(pinfo) != PINFO_RECL(pinfo))
-				error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_NAME(pinfo));
-
-			if (PINFO_MATE(pinfo) && PINFO_MATE_BYTES_LEFT(pinfo) != PINFO_MATE_RECL(pinfo))
-				error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_MATE_NAME(pinfo));
+				err_push(ERR_WARNING_ONLY + ERR_PARTIAL_RECORD, "Using \"%s\"", PINFO_NAME(pinfo));
 		}
 		else if (IS_DATA(PINFO_FORMAT(pinfo)))
 		{
 			if (!fd_get_header(dbin, FFF_REC))
 			{
 				unsigned long num_records = 0;
+				long start_record = 0;
+				long end_record = 0;
 
-				if (PINFO_IS_FILE(pinfo))
+				if (PINFO_IS_FILE(pinfo) && IS_INPUT_TYPE(PINFO_TYPE(pinfo)))
 				{
 					unsigned long bytes_left = 0;
 
-					bytes_left = (os_filelength(PINFO_FNAME(pinfo)) - PINFO_ARRAY_OFFSET(pinfo));
+					bytes_left = (os_filelength(PINFO_FNAME(pinfo)) - PINFO_CURRENT_ARRAY_OFFSET(pinfo));
 					num_records = bytes_left / PINFO_RECL(pinfo);
 
 					if (bytes_left % PINFO_RECL(pinfo))
-						error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_NAME(pinfo));
-					else
-						error = make_tabular_format_array_mappings(pinfo, num_records, records_to_do ? records_to_do : num_records);
+						err_push(ERR_WARNING_ONLY + ERR_PARTIAL_RECORD, "Using \"%s\"", PINFO_NAME(pinfo));
+				}
+				else if (IS_OUTPUT_TYPE(PINFO_TYPE(pinfo)) && PINFO_MATE(pinfo))
+					num_records = PINFO_MATE_SUB_ARRAY_ELS(pinfo);
+				else
+					num_records = 1;
 
-#if 0	/* I don't remember what this is supposed to do and it doesn't seem to work right! */
-					if (!records_to_do)
-					{
-						if (PINFO_BYTES_LEFT(pinfo) != bytes_left - PINFO_ARRAY_OFFSET(pinfo))
-							error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_NAME(pinfo));
-
-						if (PINFO_MATE(pinfo) && PINFO_MATE_BYTES_LEFT(pinfo) != num_records * PINFO_MATE_RECL(pinfo))
-							error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_MATE_NAME(pinfo));
-					}
-#endif
+				if (records_to_do >= 0)
+				{
+					start_record = 1;
+					end_record = records_to_do ? records_to_do : num_records;
 				}
 				else
 				{
-					num_records = 1;
-					error = make_tabular_format_array_mappings(pinfo, num_records, records_to_do ? records_to_do : num_records);
+					start_record = num_records - -records_to_do + 1;
+					end_record = num_records;
 				}
+
+				error = make_tabular_format_array_mapping(pinfo, num_records, start_record, end_record);
+
+#if 0	/* I don't remember what this is supposed to do and it doesn't seem to work right! */
+				if (!records_to_do)
+				{
+					if (PINFO_BYTES_LEFT(pinfo) != bytes_left - PINFO_ARRAY_OFFSET(pinfo))
+						error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_NAME(pinfo));
+
+					if (PINFO_MATE(pinfo) && PINFO_MATE_BYTES_LEFT(pinfo) != num_records * PINFO_MATE_RECL(pinfo))
+						error = err_push(ERR_FILE_LENGTH, "Using \"%s\"", PINFO_MATE_NAME(pinfo));
+				}
+#endif
 			} /* if !fd_get_header(dbin, FFF_REC) */
 		} /* else if IS_DATA(PINFO_FORMAT(pinfo)) */
 		else
@@ -6001,53 +6486,33 @@ static long length_in_file(PROCESS_INFO_PTR pinfo)
 		return(0);
 }
 
-static int update_following_offsets_or_size
+int update_following_offsets_or_size
 	(
 	 PROCESS_INFO_PTR updater,
-	 PROCESS_INFO_LIST updater_list
+	 PROCESS_INFO_LIST updater_list,
+	 long adjustment
 	)
 {
 	int error = 0;
 
 	if (PINFO_IS_FILE(updater))
 	{
-		char *input_file_name = NULL;
-		long input_file_length = 0; 
-			
-		char *output_file_name = NULL;
-		long output_file_length = 0; 
-			
+		char *file_name = NULL;
+
 		PROCESS_INFO_PTR pinfo = NULL;
 
-		input_file_name = PINFO_FNAME(updater);
-		input_file_length = length_in_file(updater);
-
-		if (PINFO_MATE(updater))
-		{
-			output_file_name = PINFO_MATE_FNAME(updater);
-			output_file_length = length_in_file(PINFO_MATE(updater));
-		}
+		file_name = PINFO_FNAME(updater);
 
 		updater_list = dll_next(updater_list); /* set sub_list to next node in super_list */
 		pinfo        = FF_PI(updater_list);
 		while (pinfo)
 		{
-			if (PINFO_IS_FILE(pinfo) && input_file_name)
+			if ((PINFO_TYPE(updater) & FFF_IO) == (PINFO_TYPE(pinfo) & FFF_IO))
 			{
-				if (!strcmp(input_file_name, PINFO_FNAME(pinfo)))
-					PINFO_ARRAY_OFFSET(pinfo) += input_file_length;
-			}
-			else
-			{
-				/* else what? */
-			}
-
-			if (PINFO_MATE(pinfo))
-			{
-				if (PINFO_MATE_IS_FILE(pinfo) && output_file_name)
+				if (PINFO_IS_FILE(pinfo) && file_name)
 				{
-					if (!strcmp(output_file_name, PINFO_MATE_FNAME(pinfo)))
-						PINFO_MATE_ARRAY_OFFSET(pinfo) += output_file_length;
+					if (!strcmp(file_name, PINFO_FNAME(pinfo)))
+						PINFO_CURRENT_ARRAY_OFFSET(pinfo) += adjustment;
 				}
 				else
 				{
@@ -6084,9 +6549,12 @@ static int dbset_init_conduits
 
 	FF_VALIDATE(dbin);
 
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
-	if (error)
-		return(err_push(ERR_GENERAL, "Nothing to process"));
+	/* Get both input and output; & mask gives zero -- tricky! */
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT & FFF_OUTPUT, &pinfo_list);
+	if (error == ERR_GENERAL)
+		return 0;
+	else if (error)
+		return(error);
 
 	pinfo_list = dll_first(pinfo_list);
 	pinfo = FF_PI(pinfo_list);
@@ -6104,7 +6572,7 @@ static int dbset_init_conduits
 
 			if (!IS_ARRAY(PINFO_FORMAT(pinfo)))
 			{
-				error = update_following_offsets_or_size(pinfo, pinfo_list);
+				error = update_following_offsets_or_size(pinfo, pinfo_list, length_in_file(pinfo));
 				if (error)
 					break;
 			}
@@ -6119,51 +6587,51 @@ static int dbset_init_conduits
 	return(error);
 }
 
-static int dbset_format_mappings
-	(
-	 DATA_BIN_PTR dbin
-	)
+static int dbset_format_mappings(DATA_BIN_PTR dbin)
 {
 	int error = 0;
 	
 	PROCESS_INFO_LIST pinfo_list  = NULL;
-	PROCESS_INFO_PTR  input_finfo = NULL;
+	PROCESS_INFO_PTR  output_pinfo = NULL;
 
 	FF_VALIDATE(dbin);
 
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
-	if (error)
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &pinfo_list);
+	if (error == ERR_GENERAL)
+		return 0;
+	else if (error)
 		return(error);
 
-	error = db_do(dbin, DBDO_READ_FORMATS, pinfo_list);
+	error = db_do(dbin, DBDO_READ_FORMATS, FFF_INPUT);
 	if (!error || error == EOF)
 	{
 		pinfo_list  = dll_first(pinfo_list);
-		input_finfo = FF_PI(pinfo_list);
-		while (input_finfo)
+		output_pinfo = FF_PI(pinfo_list);
+		while (output_pinfo)
 		{
-			if (PINFO_IS_FILE(input_finfo) || PINFO_LOCUS_BUFSIZE(input_finfo))
+			PROCESS_INFO_PTR input_pinfo = NULL;
+
+			FF_VALIDATE(output_pinfo);
+
+			input_pinfo = PINFO_MATE(output_pinfo);
+
+			if (input_pinfo && !PINFO_NEW_RECORD(input_pinfo))
 			{
-				PROCESS_INFO_PTR finfo = NULL;
-
-				FF_VALIDATE(input_finfo);
-
-				finfo = PINFO_MATE(input_finfo);
-				if (finfo)
-				{
-					if (PINFO_FORMAT_MAP(finfo))
-						ff_destroy_format_data_mapping(PINFO_FORMAT_MAP(finfo));
-
-					error = ff_create_format_data_mapping(PINFO_FD(input_finfo), PINFO_FD(finfo), &PINFO_FORMAT_MAP(finfo));
-					if (error && error < ERR_WARNING_ONLY)
-						break;
-					else if (error)
-						error = 0;
-				}
+				error = err_push(ERR_GEN_QUERY, "Query excludes all data records!  (Nothing to process!)");
+				break;
 			}
 
+			if (PINFO_FORMAT_MAP(output_pinfo))
+				ff_destroy_format_data_mapping(PINFO_FORMAT_MAP(output_pinfo));
+
+			error = ff_create_format_data_mapping(input_pinfo ? PINFO_FD(input_pinfo) : NULL, PINFO_FD(output_pinfo), &PINFO_FORMAT_MAP(output_pinfo));
+			if (error && error < ERR_WARNING_ONLY)
+				break;
+			else if (error)
+				error = 0;
+
 			pinfo_list  = dll_next(pinfo_list);
-			input_finfo = FF_PI(pinfo_list);
+			output_pinfo = FF_PI(pinfo_list);
 		}
 	}
 
@@ -6174,23 +6642,23 @@ static int dbset_format_mappings
 static int dbset_equation_variables(DATA_BIN_PTR dbin)
 {
 	PROCESS_INFO_LIST process_info_list = NULL;
-	PROCESS_INFO_PTR output_pinfo = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
 
 	int error = 0;
 
 	FF_VALIDATE(dbin);
 
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &process_info_list);
+	error = db_ask(dbin, DBASK_PROCESS_INFO, 0, &process_info_list);
 	if (!error)
 	{
 		process_info_list = dll_first(process_info_list);
-		output_pinfo = FF_PI(process_info_list);
-		while (output_pinfo)
+		pinfo = FF_PI(process_info_list);
+		while (pinfo)
 		{
 			VARIABLE_LIST vlist = NULL;
 			VARIABLE_PTR var = NULL;
 
-			vlist = FFV_FIRST_VARIABLE(PINFO_FORMAT(output_pinfo));
+			vlist = FFV_FIRST_VARIABLE(PINFO_FORMAT(pinfo));
 			var = FF_VARIABLE(vlist);
 			while (var)
 			{
@@ -6207,18 +6675,18 @@ static int dbset_equation_variables(DATA_BIN_PTR dbin)
 				if (IS_EQN(var))
 				{
 					char *ch = NULL;
-					char eqn_string[MAX_PV_LENGTH];
+					char eqn_string[EE_SCRATCH_EQN_LEN];
 
-					error = nt_ask(dbin, NT_ANYWHERE, var->name, FFV_TEXT, eqn_string);
+					error = nt_ask(dbin, (PINFO_TYPE(pinfo) & FFF_IO) | NT_TABLE, var->name, FFV_TEXT, eqn_string);
 					if (error)
 					{
-						err_push(ERR_EQN_SET, var->name);
+						err_push(ERR_NT_KEYNOTDEF, "Equation variable (%s)", var->name);
 						ff_destroy_process_info_list(process_info_list);
 						return(error);
 					}
 
-					ch = eqn_string - 1;
-					while (++ch)
+					ch = eqn_string;
+					while (ch)
 					{
 						if (ch[0] < ' ')
 						{
@@ -6229,9 +6697,40 @@ static int dbset_equation_variables(DATA_BIN_PTR dbin)
 							ch[0] = '\0';
 							break;
 						}
+
+						ch++;
 					}
 
-					var->eqn_info = ee_make_std_equation(eqn_string, PINFO_MATE_FORMAT(output_pinfo));
+					if (IS_INPUT(PINFO_FORMAT(pinfo)))
+					{
+						/* add new variable with largest size to avoid overflow and overwrite */
+
+						VARIABLE_PTR new_var = NULL;
+
+						new_var = ff_create_variable(var->name);
+						if (!new_var || !dll_insert(dll_next(vlist)))
+						{
+							ff_destroy_process_info_list(process_info_list);
+							return ERR_MEM_LACK;
+						}
+
+						dll_assign(new_var, DLL_VAR, dll_next(vlist));
+						++PINFO_FORMAT(pinfo)->num_vars;
+
+						error = ff_copy_variable(var, new_var);
+						if (error)
+						{
+							ff_destroy_process_info_list(process_info_list);
+							return error;
+						}
+
+						*strstr(new_var->name, "_eqn") = STR_END;
+						new_var->type &= ~FFV_EQN;
+					}
+					else
+						assert(PINFO_MATE(pinfo));
+
+					var->eqn_info = ee_make_std_equation(eqn_string, IS_INPUT(PINFO_FORMAT(pinfo)) ? PINFO_FORMAT(pinfo) : PINFO_MATE_FORMAT(pinfo));
 					if (!var->eqn_info)
 					{
 						ff_destroy_process_info_list(process_info_list);
@@ -6244,7 +6743,7 @@ static int dbset_equation_variables(DATA_BIN_PTR dbin)
 			} /* while var */
 
 			process_info_list = dll_next(process_info_list);
-			output_pinfo = FF_PI(process_info_list);
+			pinfo = FF_PI(process_info_list);
 		} /* while output_pinfo */
 
 		ff_destroy_process_info_list(process_info_list);
@@ -6350,6 +6849,165 @@ static int dbset_setup_stdin(DATA_BIN_PTR dbin, FF_STD_ARGS_PTR std_args)
 	return(error);
 }
 
+static BOOLEAN get_var_name_number
+	(
+	 char *output_var_name,
+	 char **input_var_names,
+	 int *name_number
+	)
+{
+	int i = 0;
+
+	while (input_var_names[i] && strcmp(output_var_name, strstr(input_var_names[i], "::") ? strstr(input_var_names[i], "::") + 2 : input_var_names[i]))
+		++i;
+
+	if (input_var_names[i])
+	{
+		*name_number = i;
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+static int dbset_var_minmax(DATA_BIN_PTR dbin)
+{
+	int error = 0;
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	int num_names = 0;
+	int name_number = 0;
+	char **var_names = 0;
+	double **var_flags = NULL;
+
+	FF_VALIDATE(dbin);
+                                          /* shouldn't this be FFF_OUTPUT? */
+	error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names, &var_names);
+	if (error)
+	{
+		if (var_names)
+			memFree(var_names, "var_names");
+
+		return err_push(ERR_GENERAL, "Cannot get variable's names");
+	}
+
+	error = db_ask(dbin, DBASK_VAR_FLAGS, FFV_DOUBLE, num_names, var_names, &var_flags);
+	if (error)
+	{
+		memFree(var_names, "var_names");
+
+		if (var_flags)
+			memFree(var_flags, "var_flags");
+
+		return err_push(ERR_GENERAL, "Cannot get variable's data flags");
+	}
+
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &plist);
+	if (!error)
+	{
+		plist = dll_first(plist);
+		pinfo = FF_PI(plist);
+		while (!error && pinfo)
+		{
+			VARIABLE_LIST vlist = NULL;
+			VARIABLE_PTR var = NULL;
+
+			FF_VALIDATE(PINFO_FORMAT(pinfo));
+
+			vlist = FFV_FIRST_VARIABLE(PINFO_FORMAT(pinfo));
+			var = FF_VARIABLE(vlist);
+			while (var)
+			{
+				FF_VALIDATE(var);
+
+				if (!IS_RECORD_VAR(var))
+				{
+					error = mm_make(var);
+					if (error)
+						break;
+
+					/* Set the missing data flag for this variable */
+					if (IS_DATA(PINFO_FORMAT(pinfo)) && get_var_name_number(var->name, var_names, &name_number) && var_flags[name_number])
+					{
+						double lower_bound = 0;
+						double upper_bound = 0;
+
+						switch (FFV_DATA_TYPE(var))
+						{
+							double temp;
+
+							case FFV_TEXT:
+								error = err_push(ERR_GENERAL, "Sorry, cannot set a data flag for text variables");
+							break;
+
+							case FFV_INT8:
+							case FFV_UINT8:
+							case FFV_INT16:
+							case FFV_UINT16:
+							case FFV_INT32:
+							case FFV_UINT32:
+							case FFV_INT64:
+							case FFV_UINT64:
+								temp = *var_flags[name_number] * pow(10, var->precision);
+
+								btype_to_btype(&temp, FFV_DOUBLE, &lower_bound, FFV_DATA_TYPE(var));
+								btype_to_btype(&temp, FFV_DOUBLE, &upper_bound, FFV_DATA_TYPE(var));
+							break;
+							
+							case FFV_FLOAT32:
+								btype_to_btype(var_flags[name_number], FFV_DOUBLE, &temp, FFV_FLOAT);
+
+								if (*var_flags[name_number] < 0)
+								{
+									*(float *)&lower_bound = *(float *)&temp * (1 + FLT_EPSILON);
+									*(float *)&upper_bound = *(float *)&temp * (1 - FLT_EPSILON);							
+								}
+								else
+								{
+									*(float *)&lower_bound = *(float *)&temp * (1 - FLT_EPSILON);
+									*(float *)&upper_bound = *(float *)&temp * (1 + FLT_EPSILON);							
+								}
+							break;
+							
+							case FFV_FLOAT64:
+							case FFV_ENOTE:
+								if (*var_flags[name_number] < 0)
+								{
+									lower_bound = *var_flags[name_number] * (1 + DBL_EPSILON);
+									upper_bound = *var_flags[name_number] * (1 - DBL_EPSILON);
+								}
+								else
+								{
+									lower_bound = *var_flags[name_number] * (1 - DBL_EPSILON);
+									upper_bound = *var_flags[name_number] * (1 + DBL_EPSILON);
+								}
+							break;
+						}
+
+						mm_set(var, MM_MISSING_DATA_FLAGS, &upper_bound, &lower_bound);
+					}
+				}
+
+				vlist = dll_next(vlist);
+				var = FF_VARIABLE(vlist);
+			}
+
+			plist = dll_next(plist);
+			pinfo = FF_PI(plist);
+		}
+
+		ff_destroy_process_info_list(plist);
+	}
+	else if (error == ERR_GENERAL)
+		error = 0;
+
+	memFree(var_flags, "var_flags");
+	memFree(var_names, "var_names");
+
+	return error;
+}
+
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
@@ -6391,9 +7049,9 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 
 		break;
 
-		case DBSET_INPUT_HEADER:
+		case DBSET_HEADERS:
 
-			error = dbset_input_header(dbin);
+			error = dbset_headers(dbin);
 
 		break;
 
@@ -6507,6 +7165,11 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 			FF_STD_ARGS_PTR std_args = va_arg(args, FF_STD_ARGS_PTR);
 
 			error = dbset_setup_stdin(dbin, std_args);
+		}
+
+		case DBSET_VAR_MINMAX:
+		{
+			error = dbset_var_minmax(dbin);
 		}
 
 		break;

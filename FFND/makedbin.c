@@ -68,7 +68,7 @@
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "db_make"
 
-static DATA_BIN_PTR db_make(char *title)
+/*static*/ DATA_BIN_PTR db_make(char *title)
 {
 	DATA_BIN_PTR dbin;
 
@@ -296,6 +296,8 @@ static int option_F_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 	
 				std_args->output_format_file = argv[*i];
 				std_args->input_format_file = argv[*i];
+
+				std_args->user.format_file = 1;
 			}
 		break;
 							
@@ -311,6 +313,8 @@ static int option_F_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 					{
 						std_args->input_format_title = argv[*i];
 						std_args->output_format_title = argv[*i];
+
+						std_args->user.format_title = 1;
 					}
 				break;
 								
@@ -413,36 +417,6 @@ static int option_M_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 			}
 		break;
 							
-		case 'D' :
-			switch (toupper(argv[*i][3])) /* -md? */
-			{
-				case STR_END :
-					(*i)++;
-
-					if (!argv[*i])
-						error = err_push(ERR_PARAM_VALUE, "Need a value for missing data flag (following %s)", argv[*i - 1]);
-					else
-					{
-						char *endptr = NULL;
-
-						std_args->user.set_cv_missing_data = 1;
-
-						errno = 0;
-						std_args->cv_missing_data = strtod(argv[*i], &endptr);
-						if (errno == ERANGE)
-							error = err_push(errno, argv[*i]);
-					
-						if (ok_strlen(endptr))
-							error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
-					}
-				break;
-
-				default:
-					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-				break;
-			}
-		break;
-							
 		case 'M' :
 			switch (toupper(argv[*i][3])) /* -mm? */
 			{
@@ -476,7 +450,30 @@ static int option_O__(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 			if (!argv[*i])
 				error = err_push(ERR_PARAM_VALUE, "Need a name for the output file (following %s).", argv[*i - 1]);
 			else
+			{
 				std_args->output_file = argv[*i];
+				std_args->user.is_stdout_redirected = 0;
+			}
+		break;
+							
+		case 'D' :
+		
+			switch (toupper(argv[*i][3])) /* -od? */
+			{
+				case STR_END : /* output directory for variable summary files */
+					(*i)++;
+					
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Expecting a directory for variable summary files (following %s)", argv[*i - 1]);
+					else
+						std_args->cv_list_file_dir = argv[*i];
+				break;
+								
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			} /* switch on third letter of -O flag */
+
 		break;
 							
 		case 'F' :
@@ -586,6 +583,52 @@ static int option_P(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 			
 				if (ok_strlen(endptr))
 					error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+			}
+		break;
+
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+	}
+	
+	return(error);
+}
+
+static int option_S(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
+{
+	int error = 0;
+
+	switch (toupper(argv[*i][2])) /* -s? */
+	{
+		case STR_END :
+			std_args->cv_subset = TRUE;
+		break;
+
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+	}
+	
+	return(error);
+}
+
+static int option_T(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
+{
+	int error = 0;
+
+	switch (toupper(argv[*i][2])) /* -t? */
+	{
+		case STR_END :
+			(*i)++;
+
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a terms file name (following %s)", argv[*i - 1]);
+			else
+			{
+				if (!os_file_exist(argv[*i]))
+					error = err_push(ERR_OPEN_FILE, argv[*i]);
+			
+				std_args->sdts_terms_file = argv[*i];
 			}
 		break;
 
@@ -709,10 +752,22 @@ static BOOLEAN is_redirecting_stdin(void)
 	return(redirecting_stdin);
 }
 
+static BOOLEAN is_redirecting_stdout(void)
+{
+	BOOLEAN redirecting_stdout = FALSE;
+
+	if (isatty(fileno(stdout)))
+		return(FALSE);
+	else
+		return(TRUE);
+
+	return(redirecting_stdout);
+}
+
 void show_command_line(int argc, char *argv[])
 {
 	int i;
-	char cline[2 * _MAX_PATH] = {""};
+	char cline[2 * MAX_PATH] = {""};
 
 	sprintf(cline, "==>%s%s", argv[0], argc > 1 ? " " : "");
 
@@ -865,7 +920,15 @@ int parse_command_line(int argc, char *argv[], FF_STD_ARGS_PTR std_args)
 					
 					case 'P' : /* Checkvar precision */
 						error = option_P(argv, std_args, &i);
-					break; /* Checkvar precision */
+					break;
+					
+					case 'S' : /* Checkvar subsetting */
+						error = option_S(argv, std_args, &i);
+					break;
+					
+					case 'T' : /* FF2PSDTS terms file */
+						error = option_T(argv, std_args, &i);
+					break;
 					
 					case 'Q' : /* query file */
 						error = option_Q(argv, std_args, &i);
@@ -909,6 +972,9 @@ int parse_command_line(int argc, char *argv[], FF_STD_ARGS_PTR std_args)
 			last_error = err_push(ERR_GENERAL, "Expecting a data file to process");
 	}
 
+	if (!std_args->output_file && is_redirecting_stdout())
+		std_args->user.is_stdout_redirected = 1;
+
 	if (last_error)
 		show_command_line(argc, argv);
 
@@ -930,7 +996,12 @@ static BOOLEAN cmp_array_conduit
 	FF_VALIDATE(src_conduit);
 	FF_VALIDATE(trg_conduit);
 
-	return(ff_format_comp(src_conduit->input->fd->format, trg_conduit->input->fd->format));
+	if (src_conduit->input && trg_conduit->input)
+		return(ff_format_comp(src_conduit->input->fd->format, trg_conduit->input->fd->format));
+	else if (src_conduit->output && trg_conduit->output)
+		return(ff_format_comp(src_conduit->output->fd->format, trg_conduit->output->fd->format));
+	else
+		return 0;
 }
 	 
 static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
@@ -941,20 +1012,87 @@ static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
 	return(error);
 }
 
-static int check_file_write_access(DATA_BIN_PTR dbin)
+#ifdef ND_FP 
+static void release_file_handles
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t io
+	)
 {
 	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	FF_VALIDATE(dbin);
+
+	if (!db_ask(dbin, DBASK_PROCESS_INFO, io, &plist))
+	{
+		plist = dll_first(plist);
+		pinfo = FF_PI(plist);
+		while (pinfo)
+		{
+			if (PINFO_SUPER_ARRAY(pinfo)->fp)
+				fclose(PINFO_SUPER_ARRAY(pinfo)->fp);
+			else if (PINFO_SUB_ARRAY(pinfo)->fp)
+				fclose(PINFO_SUB_ARRAY(pinfo)->fp);
+
+			plist = dll_next(plist);
+			pinfo = FF_PI(plist);
+		}
+
+		ff_destroy_process_info_list(plist);
+	}
+}
+#endif
+
+static void remove_header_from_ac_list
+	(
+	 DATA_BIN_PTR dbin,
+	 char *name
+	)
+{
+	FF_ARRAY_CONDUIT_LIST aclist = NULL;
+	FF_ARRAY_CONDUIT_PTR acptr = NULL;
+
+	FF_VALIDATE(dbin);
+
+	aclist = dbin->array_conduit_list;
+	aclist = dll_next(aclist);
+	acptr = FF_AC(aclist);
+	while (acptr)
+	{
+		FF_VALIDATE(acptr);
+
+		if (!strcmp(name, acptr->output->fd->format->name))
+		{
+			ff_destroy_array_pole(acptr->output);
+
+			if (acptr->input)
+				acptr->input->mate = NULL;
+
+			acptr->output = NULL;
+
+			break;
+		}
+
+		aclist = dll_next(aclist);
+		acptr = FF_AC(aclist);
+	}
+}
+
+static int check_file_access(DATA_BIN_PTR dbin)
+{
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
 
 	int error = 0;
 
 	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &plist);
 	if (!error)
 	{
-		BOOLEAN overwrite_okay = TRUE;
-		PROCESS_INFO_PTR pinfo = NULL;
+		BOOLEAN no_overwrite = FALSE;
 
 		if (nt_askexist(dbin, NT_ANYWHERE, "nooverwrite"))
-			overwrite_okay = FALSE;
+			no_overwrite = TRUE;
 
 		plist = dll_first(plist);
 		pinfo = FF_PI(plist);
@@ -964,35 +1102,24 @@ static int check_file_write_access(DATA_BIN_PTR dbin)
 			{
 				if (os_file_exist(PINFO_FNAME(pinfo)))
 				{
-					if (overwrite_okay)
-						error = err_push(ERR_WARNING_ONLY + ERR_WILL_OVERWRITE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
-					else
-						error = err_push(ERR_FILE_EXISTS, PINFO_FNAME(pinfo));
-				}
-			}
-
-			plist = dll_next(plist);
-			pinfo = FF_PI(plist);
-		}
-
-		plist = dll_first(plist);
-		pinfo = FF_PI(plist);
-		while (pinfo)
-		{
-			if (PINFO_IS_FILE(pinfo))
-			{
-				FILE *fp = NULL;
-
-				if (overwrite_okay || !os_file_exist(PINFO_FNAME(pinfo)))
-				{
-					fp = fopen(PINFO_FNAME(pinfo), "w"); /* Can we write to file? */
-					if (!fp)
+					if (PINFO_MATE(pinfo) && PINFO_MATE_IS_FILE(pinfo) && !strcmp(PINFO_FNAME(pinfo), PINFO_MATE_FNAME(pinfo)))
+						error = err_push(ERR_GENERAL, "Input and output %s files have the same name!", IS_DATA(PINFO_FORMAT(pinfo)) ? "data" : "header");
+					else if (!PINFO_IS_BROKEN(pinfo))
 					{
-						/* need to clean-up turds */
-						error = err_push(ERR_CREATE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
+						if (no_overwrite)
+							error = err_push(ERR_FILE_EXISTS, PINFO_FNAME(pinfo));
+						else
+						{
+							if (IS_SEPARATE(PINFO_FORMAT(pinfo)) && IS_FILE_HEADER(PINFO_FORMAT(pinfo)))
+							{
+								err_push(ERR_WARNING_ONLY + ERR_FILE_EXISTS, "Output header (%s) will not be overwritten", PINFO_FNAME(pinfo));
+
+								remove_header_from_ac_list(dbin, PINFO_FORMAT(pinfo)->name);
+							}
+							else
+								err_push(ERR_WARNING_ONLY + ERR_WILL_OVERWRITE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
+						}
 					}
-					else
-						fclose(fp);
 				}
 			}
 
@@ -1001,12 +1128,89 @@ static int check_file_write_access(DATA_BIN_PTR dbin)
 		}
 
 		ff_destroy_process_info_list(plist);
-	}
+		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &plist);
+		if (!error)
+		{
+			plist = dll_first(plist);
+			pinfo = FF_PI(plist);
+			while (pinfo)
+			{
+				if (PINFO_IS_FILE(pinfo) && !PINFO_IS_BROKEN(pinfo))
+				{
+					 /* Can we write to file? */
+					if ((!error || error > ERR_WARNING_ONLY) && (!no_overwrite || !os_file_exist(PINFO_FNAME(pinfo))))
+					{
+#ifdef ND_FP 
+						PINFO_SUB_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "w");
+						if (PINFO_SUB_ARRAY(pinfo)->fp)
+						{
+							fclose(PINFO_SUB_ARRAY(pinfo)->fp);
 
-	return(0);
+							PINFO_SUB_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "w+b");
+							if (!PINFO_SUB_ARRAY(pinfo)->fp)
+							{
+								release_file_handles(dbin, FFF_OUTPUT);
+								break;
+							}
+						}
+#else
+						FILE *fp = NULL;
+
+						fp = fopen(PINFO_FNAME(pinfo), "w");
+						if (fp)
+							fclose(fp);
+#endif
+						else
+							error = err_push(ERR_CREATE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
+					}
+				}
+
+				plist = dll_next(plist);
+				pinfo = FF_PI(plist);
+			}
+
+			ff_destroy_process_info_list(plist);
+		}
+		else if (error == ERR_GENERAL)
+			error = 0;
+	}
+	else if (error == ERR_GENERAL)
+		error = 0;
+
+#ifdef ND_FP 
+	if (!error)
+	{
+		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
+		if (!error)
+		{
+			plist = dll_first(plist);
+			pinfo = FF_PI(plist);
+			while (pinfo)
+			{
+				if (PINFO_IS_FILE(pinfo) && !PINFO_IS_BROKEN(pinfo))
+				{
+					PINFO_SUPER_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "rb");
+					if (!PINFO_SUPER_ARRAY(pinfo)->fp)
+					{
+						release_file_handles(dbin, FFF_INPUT);
+						release_file_handles(dbin, FFF_OUTPUT);
+						break;
+					}
+				}
+
+				plist = dll_next(plist);
+				pinfo = FF_PI(plist);
+			}
+		}
+
+		ff_destroy_process_info_list(plist);
+	}
+#endif
+
+	return(error);
 }
 
-static void destroy_format_data_list(FORMAT_DATA_LIST format_data_list)
+void fd_destroy_format_data_list(FORMAT_DATA_LIST format_data_list)
 {
 	dll_free_holdings(format_data_list);
 }
@@ -1056,7 +1260,7 @@ void db_destroy(DATA_BIN_PTR dbin)
 
 	if (dbin->table_list)
 	{
-		destroy_format_data_list(dbin->table_list);
+		fd_destroy_format_data_list(dbin->table_list);
 		dbin->table_list = NULL;
 	}
 
@@ -1143,9 +1347,10 @@ static BOOLEAN variable_comp
 	if (v1->precision != v2->precision)
 		return(FALSE);
 
-	if (IS_CONVERT_VAR(v1) && v1->misc.cv_var_num != v2->misc.cv_var_num)
+	assert(!IS_CONVERT(v1));
+	if (IS_CONVERT(v1) && v1->misc.cv_var_num != v2->misc.cv_var_num)
 		return(FALSE);
-	else if (IS_TRANSLATOR_VAR(v1) && !nt_comp_translator_sll(v1, v2))
+	else if (IS_TRANSLATOR(v1) && !nt_comp_translator_sll(v1, v2))
 		return(FALSE);
 	
 	return(TRUE);
@@ -1281,6 +1486,71 @@ BOOLEAN ff_format_comp
 	return(TRUE);
 }
 
+/* Longest: Binary Output Separate Varied Record Header */
+static int get_format_type
+	(
+	 FORMAT_PTR format,
+	 char *title
+	)
+{	
+	FF_VALIDATE(format);
+
+	strcpy(title, ff_lookup_string(format_types, FFF_FORMAT_TYPE(format)));
+	os_str_replace_char(title, '_', ' ');
+
+	strcat(title, "\b");
+
+	return(0);
+}
+
+static int make_unique_format_titles(DATA_BIN_PTR dbin)
+{
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	int error = 0;
+	int SCRATCH = strlen("Binary Output Separate Varied Record Header: ") + 1; /* Longest */
+
+	char *cp = NULL;
+
+	FF_VALIDATE(dbin);
+
+	db_ask(dbin, DBASK_PROCESS_INFO, 0, &plist);
+
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo && !error)
+	{
+		FF_VALIDATE(pinfo);
+
+		cp = (char *)memRealloc(PINFO_FORMAT(pinfo)->name, strlen(PINFO_FORMAT(pinfo)->name) + SCRATCH + 1, "PINFO_FORMAT(pinfo)->name");
+		if (cp)
+		{
+			PINFO_FORMAT(pinfo)->name = cp;
+			memmove(cp + SCRATCH, cp, strlen(cp) + 1);
+		}
+		else
+		{
+			error = err_push(ERR_MEM_LACK, "");
+			break;
+		}
+
+		error = get_format_type(PINFO_FORMAT(pinfo), cp);
+		if (error)
+			break;
+
+		memmove(cp + strlen(cp), cp + SCRATCH, strlen(cp + SCRATCH) + 1);
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
+	}
+
+	ff_destroy_process_info_list(plist);
+
+	return error;
+}
+
+
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "db_init"
 
@@ -1290,18 +1560,12 @@ BOOLEAN ff_format_comp
  * PURPOSE:  Makes a data bin and calls db_set() events according to FreeForm
  * standard arguments structure
  *
- * USAGE:  error = db_create(std_args, &dbin, call_back);
+ * USAGE:  error = db_create(std_args, &dbin);
  *
  * RETURNS:  0 on success or an error code defined in err.h or a db_set event
  * code on failure.
  *
- * DESCRIPTION:    The error code indicates the type of failure.
- * Certain errors may be deemed unimportant by the calling application, and so the 
- * function pointer call_back is used to indicate which errors should allow
- * this function to continue.
- *
- * If the call-back function is NULL, then this function returns on the first error,
- * or at its successful completion.
+ * DESCRIPTION:    The error code indicates the event which failed.
  *
  * The following are error return codes defined in err.h:
  *
@@ -1316,7 +1580,7 @@ BOOLEAN ff_format_comp
  * DBSET_OUTPUT_FORMATS (an error in processing output formats)
  * DBSET_VARIABLE_RESTRICTION (an error in processing variable thinning file)
  * DBSET_HEADER_FILE_NAMES (an error in locating external headers)
- * DBSET_INPUT_HEADER (an error in reading an input header)
+ * DBSET_HEADERS (an error in reading an input header)
  * DBSET_QUERY_RESTRICTION (an error in processing a query file)
  *
  *
@@ -1342,6 +1606,7 @@ int db_init
 {
 	FORMAT_DATA_LIST format_data_list = NULL;
 	int error = 0;
+	int num_errors = 0;
 	
 	assert(dbin_h);
 
@@ -1360,8 +1625,7 @@ int db_init
 	if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file))
 	{
 		err_push(ERR_SET_DBIN, "making name table for %s", std_args->input_file);
-		if (!error_cb || error_cb(DBSET_READ_EQV))
-			return(DBSET_READ_EQV);
+		return(DBSET_READ_EQV);
 	}
 	
 	if (db_set(*dbin_h,
@@ -1375,38 +1639,47 @@ int db_init
 	          )
 	   )
 	{
+		if (format_data_list)
+			dll_free_holdings(format_data_list);
+
 		err_push(ERR_SET_DBIN, "setting an input format for %s", std_args->input_file);
-		if (!error_cb || error_cb(DBSET_INPUT_FORMATS))
-			return(DBSET_INPUT_FORMATS);
+		return(DBSET_INPUT_FORMATS);
 	}
 
-	if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+	num_errors = err_count();
+
+	if (db_set(*dbin_h,
+				  DBSET_OUTPUT_FORMATS,
+				  std_args->input_file,
+				  std_args->output_file,
+				  std_args->output_format_file,
+				  std_args->output_format_buffer,
+				  std_args->output_format_title,
+				  &format_data_list
+				 )
+		)
 	{
-		if (db_set(*dbin_h,
-					  DBSET_OUTPUT_FORMATS,
-					  std_args->input_file,
-					  std_args->output_file,
-					  std_args->output_format_file,
-					  std_args->output_format_buffer,
-					  std_args->output_format_title,
-					  &format_data_list
-					 )
-			)
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
 		{
+			dll_free_holdings(format_data_list);
+
 			err_push(ERR_SET_DBIN, "setting an output format for %s", std_args->input_file);
-			if (!error_cb || error_cb(DBSET_OUTPUT_FORMATS))
-				return(DBSET_OUTPUT_FORMATS);
+			return(DBSET_OUTPUT_FORMATS);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
 		}
 	}
 
-	if (db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list))
+	error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
+	dll_free_holdings(format_data_list);
+	if (error)
 	{
-		dll_free_holdings(format_data_list);
 		err_push(ERR_SET_DBIN, "creating array information for %s", std_args->input_file);
 		return(DBSET_CREATE_CONDUITS);
 	}
-	else
-		dll_free_holdings(format_data_list); /* Look into grafting, and not copying format-data's */
 
 	/* Check for variable file */
 	if (std_args->var_file)
@@ -1416,61 +1689,82 @@ int db_init
 		if (IS_ARRAY(output_fd->format))
 		{
 			err_push(ERR_SET_DBIN, "Cannot use variable file with arrays");
-			if (!error_cb || error_cb(DBSET_VARIABLE_RESTRICTION))
-				return(DBSET_VARIABLE_RESTRICTION);
+			return(DBSET_VARIABLE_RESTRICTION);
 		}
 
 		if (db_set(*dbin_h, DBSET_VARIABLE_RESTRICTION, std_args->var_file, output_fd->format))
 		{
 			err_push(ERR_SET_DBIN, "Unable to use variable file \"%s\"", std_args->var_file);
-			if (!error_cb || error_cb(DBSET_VARIABLE_RESTRICTION))
-				return(DBSET_VARIABLE_RESTRICTION);
+			return(DBSET_VARIABLE_RESTRICTION);
 		}
+	}
+
+	if (db_set(*dbin_h, DBSET_EQUATION_VARIABLES))
+	{
+		err_push(ERR_SET_DBIN, "setting equation variables for %s", std_args->input_file);
+		return(DBSET_EQUATION_VARIABLES);
 	}
 
 	if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT, std_args->input_file))
 	{
-		err_push(ERR_SET_DBIN, "setting input header file names for %s", std_args->input_file);
-		if (!error_cb || error_cb(DBSET_HEADER_FILE_NAMES))
-			return(DBSET_HEADER_FILE_NAMES);
+		err_push(ERR_SET_DBIN, "Determining input header file names for %s", std_args->input_file);
+		return(DBSET_HEADER_FILE_NAMES);
 	}
+
+	num_errors = err_count();
 
 	if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_OUTPUT, std_args->output_file))
 	{
-		err_push(ERR_SET_DBIN, "setting output header file names for %s", std_args->output_file);
-		if (!error_cb || error_cb(DBSET_HEADER_FILE_NAMES))
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			err_push(ERR_SET_DBIN, "Determining output header file names for %s", std_args->output_file);
 			return(DBSET_HEADER_FILE_NAMES);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
 	}
 
-	if (fd_get_header(*dbin_h, FFF_INPUT))
+	if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_INPUT | FFF_HEADER))
 	{
-		if (db_set(*dbin_h, DBSET_INPUT_HEADER))
-		{
-			err_push(ERR_SET_DBIN, "getting header file for %s", std_args->input_file);
-			if (!error_cb || error_cb(DBSET_INPUT_HEADER))
-				return(DBSET_INPUT_HEADER);
-		}
+		err_push(ERR_SET_DBIN, "Defining input data byte order");
+		return(DBSET_BYTE_ORDER);
+	}
+
+	if (db_set(*dbin_h, DBSET_HEADERS))
+	{
+		err_push(ERR_SET_DBIN, "getting header file for %s", std_args->input_file);
+		return(DBSET_HEADERS);
 	}
 	
 	if (db_set(*dbin_h, DBSET_USER_UPDATE_FORMATS))
 	{
 		err_push(ERR_SET_DBIN, "user update of a format for %s", std_args->input_file);
-		if (!error_cb || error_cb(DBSET_USER_UPDATE_FORMATS))
-			return(DBSET_USER_UPDATE_FORMATS);
+		return(DBSET_USER_UPDATE_FORMATS);
 	}
 
 	if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_INPUT))
 	{
 		err_push(ERR_SET_DBIN, "Defining input data byte order");
-		if (!error_cb || error_cb(DBSET_BYTE_ORDER))
-			return(DBSET_BYTE_ORDER);
+		return(DBSET_BYTE_ORDER);
 	}
+
+	num_errors = err_count();
 
 	if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_OUTPUT))
 	{
-		err_push(ERR_SET_DBIN, "Defining output data byte order");
-		if (!error_cb || error_cb(DBSET_BYTE_ORDER))
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			err_push(ERR_SET_DBIN, "Defining output data byte order");
 			return(DBSET_BYTE_ORDER);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
 	}
 
 	if (std_args->cache_size == 0)
@@ -1482,8 +1776,7 @@ int db_init
 		if (db_set(*dbin_h, DBSET_QUERY_RESTRICTION, std_args->query_file))
 		{
 			err_push(ERR_GEN_QUERY, "setting query using %s", std_args->query_file);
-			if (!error_cb || error_cb(DBSET_QUERY_RESTRICTION))
-				return(DBSET_QUERY_RESTRICTION);
+			return(DBSET_QUERY_RESTRICTION);
 		}
 	}
 
@@ -1507,24 +1800,35 @@ int db_init
 		return(err_push(ERR_MEM_LACK, "setting data cache for %s", std_args->input_file));
 	}
 
-	if (db_set(*dbin_h, DBSET_EQUATION_VARIABLES))
-	{
-		err_push(ERR_SET_DBIN, "setting equation variables for %s", std_args->input_file);
-		return(DBSET_EQUATION_VARIABLES);
-	}
-
 	if (db_set(*dbin_h, DBSET_FORMAT_MAPPINGS))
 	{
 		err_push(ERR_SET_DBIN, "mapping input to output formats for %s", std_args->input_file);
 		return(DBSET_FORMAT_MAPPINGS);
 	}
 
+	error = make_unique_format_titles(*dbin_h);
 	if (error)
-		return(error);
+		return ERR_MEM_LACK;
 
-	error = check_file_write_access(*dbin_h);
+	num_errors = err_count();
+
+	if (db_set(*dbin_h, DBSET_VAR_MINMAX))
+	{
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			err_push(ERR_SET_DBIN, "setting variable minimums and maximums for %s", std_args->input_file);
+			return(DBSET_VAR_MINMAX);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
+	}
+			
+	error = check_file_access(*dbin_h);
 	if (error)
-		return(error);
+		return error;
 
 	return(error);
 }

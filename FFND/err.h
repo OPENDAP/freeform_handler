@@ -37,7 +37,9 @@
 #define ERR_OPEN_FILE           501
 #define ERR_READ_FILE           502
 #define ERR_WRITE_FILE          503
+#define ERR_PTR_DEF             504 /* for menu library */
 #define ERR_MEM_LACK            505
+#define ERR_UNKNOWN             506 /* for menu library */
 #define ERR_FIND_FILE           507
 #define ERR_FILE_DEFINED        508
 #define ERR_OUT_OF_RANGE        510
@@ -47,10 +49,12 @@
 #define ERR_CREATE_FILE         523
 #define ERR_WILL_OVERWRITE_FILE 524
 #define ERR_REMOVE_FILE         525
+#define ERR_WONT_OVERWRITE_FILE 526
 
 
 /* Freeform Errors */
 #define ERR_UNKNOWN_VAR_TYPE    1000
+#define ERR_UNKNOWN_PARAMETER   1001
 #define ERR_CONVERT             1003
 #define ERR_MAKE_FORM           1004
 #define ERR_NO_VARIABLES        1012
@@ -58,15 +62,31 @@
 #define ERR_FIND_FORM           1021
 #define ERR_CONVERT_VAR         1022
 #define ERR_ORPHAN_VAR          1023
+#define ERR_POSSIBLE            1024
 
 /* Binview Errors */
 
 #define ERR_SET_DBIN            1509
-#define ERR_FILE_LENGTH         1517
+#define ERR_PARTIAL_RECORD      1517
 #define ERR_NT_DEFINE           1520
 #define ERR_UNKNOWN_FORMAT_TYPE 1525
 
 #define ERR_EQN_SET             2000
+
+#define ERR_SDTS                2500
+#define ERR_SDTS_BYE_ATTR       2501
+
+/* String database and menu systems */
+
+#define ERR_MAKE_MENU_DBASE     3000
+#define ERR_NO_SUCH_SECTION     3001
+#define ERR_GETTING_SECTION     3002
+#define ERR_MENU                3003
+
+#define ERR_MN_BUFFER_TRUNCATED 3500
+#define ERR_MN_SEC_NFOUND       3501
+#define ERR_MN_FILE_CORRUPT     3502
+#define ERR_MN_REF_FILE_NFOUND  3503
 
 /* Parameters and parsing */
 
@@ -96,6 +116,7 @@
 #define ERR_MISPLACED_SECTION_END    7004
 #define ERR_NT_MERGE                 7005
 #define ERR_NT_KEYNOTDEF             7006
+#define ERR_EQV_CONTEXT              7007
 
 /* FreeForm ND errors */
 #define ERR_GEN_ARRAY                7501
@@ -124,12 +145,14 @@ typedef int  ERR_BOOLEAN;
 #endif	/* end #ifdef FALSE -rf01 */
 #define FALSE                   0
 
+int   err_count(void);
 int   err_pop(void);
 void  err_clear(void);
 void  err_disp(FF_STD_ARGS_PTR std_args);
 void  err_end(void);
 
-int err_push(int, char *, ...);
+int err_push(const int, const char *, ...);
+int verr_push(const int ercode, const char *format, va_list va_args);
 
 ERR_BOOLEAN err_state(void);
 

@@ -24,20 +24,6 @@
 
 #define INPUT_NAME_TABLE_EXISTS(dbin) ( (dbin) ? !fd_get_format_data(dbin->table_list, FFF_INPUT | FFF_TABLE, NULL) : 0)
 
-/* define the conversion between user's variable name and value to geovu name and value */
-
-typedef struct t_table /* define value translation table */
-{
-#ifdef FF_CHK_ADDR
-	void           *check_address;
-#endif
-	FF_TYPES_t    gtype;  /* corresponding geovu data type */
-	void           *gvalue;	/* corresponding geovu data value */
-	FF_TYPES_t    utype;  /* define the user's data type */
-	void           *uvalue; /* define the user's data value */
-	struct t_table *next;
-} TRANSLATOR, *TRANSLATOR_PTR;
-
 /* Name Table Prototypes */
 int nt_parse(char *origin, FF_BUFSIZE_PTR, NAME_TABLE_HANDLE);
 NAME_TABLE_PTR nt_create(char *origin);
@@ -48,6 +34,35 @@ void nt_free_trans(TRANSLATOR_PTR trans);
 
 BOOLEAN nt_copy_translator_sll(VARIABLE_PTR source_var, VARIABLE_PTR target_var);
 BOOLEAN nt_comp_translator_sll(VARIABLE_PTR var1, VARIABLE_PTR var2);
+
+int nt_show(NAME_TABLE_PTR, FF_BUFSIZE_PTR);
+
+BOOLEAN nt_get_geovu_value
+	(
+	 NAME_TABLE_PTR table,
+	 char *gvalue_name,
+	 void *user_value,
+	 FF_TYPES_t uvalue_type,
+	 void *value,
+	 FF_TYPES_t *value_type
+	);
+
+BOOLEAN nt_get_user_value
+	(
+	 NAME_TABLE_PTR table,
+	 char *gvalue_name,
+	 void *geovu_value,
+	 FF_TYPES_t gvalue_type, 
+	 void *user_value,
+	 FF_TYPES_t *uvalue_type
+	);
+
+int ff_string_to_binary
+	(
+	 char *variable_str,
+	 FF_TYPES_t output_type,
+	 char *destination
+	);
 
 #endif /* (NOT) NAME_TAB_H__ */
 

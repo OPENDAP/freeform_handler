@@ -95,6 +95,21 @@ ARRAY_DESCRIPTOR_PTR ndarr_create(int numdim)
 	arrd->group_size = 0;
 	arrd->contig_size = 0;
 
+	arrd->dim_name = NULL;
+	arrd->start_index = NULL;
+	arrd->end_index = NULL;
+	arrd->granularity = NULL;
+	arrd->grouping = NULL;
+	arrd->separation = NULL;
+	arrd->index_dir = NULL;
+	arrd->dim_size = NULL;
+	arrd->coeffecient = NULL;
+	arrd->extra_info = NULL;
+	arrd->extra_index = NULL;
+#ifdef ND_FP 
+	arrd->fp = NULL;
+#endif
+
 	/* Malloc all of the arrays... */
 	if(!(arrd->dim_name = (char **)memMalloc((size_t)(sizeof(char *) * numdim), "arrd->dim_name"))){
 		err_push(ERR_NDARRAY, "Out of memory");
@@ -233,18 +248,30 @@ ARRAY_DESCRIPTOR_PTR ndarr_create(int numdim)
  */
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "ndarr_create_from_str"
-ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
+ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 {
 	int numdim, i, j;
 	char *position;
 	char *pos;
 	char *chpos;
-	ARRAY_DESCRIPTOR_PTR arrd;
-	long start, end, sep, grp, gran;
+	ARRAY_DESCRIPTOR_PTR arrd = NULL;
+	double start;
+	double end;
+	long sep;
+	double grp;
+	double gran;
 
 	char *endptr = NULL;
+	char save_char = STR_END;
+
+	char **dim_names = NULL;
+
+	int error = 0;
 
 	assert(arraystr);
+
+	if (dbin)
+		FF_VALIDATE(dbin);
     
     /* Determine the number of dimensions */
 	j = 0;
@@ -257,63 +284,62 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 	}
 
 	if(j != numdim){
-		err_push(ERR_NDARRAY, "Mismatched '[]'");
-		return(NULL);
+		error = err_push(ERR_NDARRAY, "Mismatched '[]'");
+		goto ndarr_create_from_str_exit;
 	}
 
 	pos = strrchr(arraystr, ']');
 	if(!pos){
-		err_push(ERR_NDARRAY, "No [] to hold array description");
-		return(NULL);
+		error = err_push(ERR_NDARRAY, "No [] to hold array description");
+		goto ndarr_create_from_str_exit;
 	}
 	pos++;
 
 	/* Allocate the descriptor struct */
 	arrd = ndarr_create(numdim);
 	if(!arrd){
-		err_push(ERR_NDARRAY, "Unable to allocate array descriptor");
-		return(NULL);
+		error = err_push(ERR_NDARRAY, "Unable to allocate array descriptor");
+		goto ndarr_create_from_str_exit;
+	}
+
+	dim_names = (char **)memMalloc(sizeof(char *) * numdim, "dim_names");
+	if (!dim_names)
+	{
+		error = err_push(ERR_NDARRAY, "Unable to allocate array descriptor");
+		goto ndarr_create_from_str_exit;
 	}
 
 	pos = skip_lead_space(pos);
 	arrd->element_size = (long)strtol(pos, &endptr, 10);
-	if (endptr && strlen(endptr)) /* disable this for now */
+	if (endptr && strlen(endptr))
 	{
-		err_push(ERR_NDARRAY, "Internal: badly formatted element size string");
-		return(NULL);
+		error = err_push(ERR_NDARRAY, "Internal: badly formatted element size string");
+		goto ndarr_create_from_str_exit;
 	}
 
 	j = numdim - 1;
 	for(i = strlen(arraystr); i >= 0; i--){
 		if(arraystr[i] == '[')
-			arrd->dim_name[j--] = arraystr + i + 1;
+			dim_names[j--] = arraystr + i + 1;
 		if(arraystr[i] == ']')
 			arraystr[i] = '\0';
 	}
 
 	for(i = 0; i < numdim; i++){
-		position = arrd->dim_name[i];
+		position = dim_names[i];
 		/* Create a name for the dimension */
 		pos = strchr(position, '\"');
 		if(pos){
 			chpos = strchr(++pos, '\"');
 			if(!chpos){
-				err_push(ERR_NDARRAY, "Mismatched \"\"");
-				for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
-				memFree(arrd->dim_name, "arrd->dim_name");
-				arrd->dim_name = NULL;
-				ndarr_free_descriptor(arrd);
-				return(NULL);
+				error = err_push(ERR_NDARRAY, "Mismatched \"\"");
+				goto ndarr_create_from_str_exit;
 			}
 			chpos[0] = '\0';
 			
 			if(ndarr_set(arrd, NDARR_DIM_NUMBER, (int)i, NDARR_DIM_NAME, pos, NDARR_END_ARGS)){
-				err_push(ERR_NDARRAY, "Cannot set dimension name");
-				for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
-				memFree(arrd->dim_name, "arrd->dim_name");
-				arrd->dim_name = NULL;
-				ndarr_free_descriptor(arrd);
-				return(NULL);
+				error = err_push(ERR_NDARRAY, "Cannot set dimension name");
+				goto ndarr_create_from_str_exit;
 			}
 			for(j = 0; pos[j]; j++){
 				pos[j] = ' ';
@@ -323,41 +349,79 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			chpos[0] = ' ';
 		}
 		else{
-			err_push(ERR_NDARRAY, "Dimension not named");
-			for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
-			memFree(arrd->dim_name, "arrd->dim_name");
-			arrd->dim_name = NULL;
-			ndarr_free_descriptor(arrd);
-			return(NULL);
+			error = err_push(ERR_NDARRAY, "Dimension not named");
+			goto ndarr_create_from_str_exit;
 		}
 
 		/* Get the starting and ending indices */
 		position = skip_lead_space(position);
-		start = strtol(position, &endptr, 10);
-		if (endptr && strlen(endptr) && !isspace(*endptr))
+		if (dbin && IS_KEYWORDED_PARAMETER(position))
 		{
-			err_push(ERR_NDARRAY, "Badly formatted starting index");
-			return(NULL);
+			endptr = position + 1;
+			while (!isspace(*endptr) && *endptr != ']')
+				++endptr;
+
+			save_char = *endptr;
+			*endptr = STR_END;
+
+			error = nt_ask(dbin, NT_ANYWHERE, position + 1, FFV_DOUBLE, &start);
+			if (error)
+			{
+				error = err_push(ERR_UNKNOWN_PARAMETER, position + 1);
+				goto ndarr_create_from_str_exit;
+			}
+
+			*endptr = save_char;
+		}
+		else
+		{
+			start = strtod(position, &endptr);
+#if 1
+			if (endptr && strlen(endptr) && !isspace(*endptr))
+			{
+				error = err_push(ERR_NDARRAY, "Badly formatted starting index for %s (%s)", arrd->dim_name[i], position);
+				goto ndarr_create_from_str_exit;
+			}
+#endif
 		}
 
 		for(j = strlen(position) - 1; j >= 0; j--)
 			position[j] = (char)tolower(position[j]);
 		pos = strstr(position, "to");
 		if(!pos){
-			err_push(ERR_NDARRAY, "Missing \"to\" in dimension");
-			for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
-			memFree(arrd->dim_name, "arrd->dim_name");
-			arrd->dim_name = NULL;
-			ndarr_free_descriptor(arrd);
-			return(NULL);
+			error = err_push(ERR_NDARRAY, "Missing \"to\" in dimension");
+			goto ndarr_create_from_str_exit;
 		}
 		pos += 2;
 		pos = skip_lead_space(pos);
-		end = strtol(pos, &endptr, 10);
-		if (endptr && strlen(endptr) && !isspace(*endptr))
+		if (dbin && IS_KEYWORDED_PARAMETER(pos))
 		{
-			err_push(ERR_NDARRAY, "Badly formatted ending index");
-			return(NULL);
+			endptr = pos + 1;
+			while (!isspace(*endptr) && *endptr != ']')
+				++endptr;
+
+			save_char = *endptr;
+			*endptr = STR_END;
+
+			error = nt_ask(dbin, NT_ANYWHERE, pos + 1, FFV_DOUBLE, &end);
+			if (error)
+			{
+				error = err_push(ERR_UNKNOWN_PARAMETER, pos + 1);
+				goto ndarr_create_from_str_exit;
+			}
+
+			*endptr = save_char;
+		}
+		else
+		{
+			end = strtod(pos, &endptr);
+#if 1
+			if (endptr && strlen(endptr) && !isspace(*endptr))
+			{
+				error = err_push(ERR_NDARRAY, "Badly formatted ending index for %s (%s)", arrd->dim_name[i], pos);
+				goto ndarr_create_from_str_exit;
+			}
+#endif
 		}
 
 		/* Determine dimension granularity */
@@ -365,16 +429,38 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 		if(pos){
 			pos += 2;
 			pos = skip_lead_space(pos);
-			gran = strtol(pos, &endptr, 10);
-			if (endptr && strlen(endptr) && !isspace(*endptr))
+			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
-				err_push(ERR_NDARRAY, "Badly formatted granularity (after \"by\")");
-				return(NULL);
+				endptr = pos + 1;
+				while (!isspace(*endptr) && *endptr != ']')
+					++endptr;
+
+				save_char = *endptr;
+				*endptr = STR_END;
+
+				error = nt_ask(dbin, NT_ANYWHERE, pos + 1, FFV_DOUBLE, &gran);
+				if (error)
+				{
+					error = err_push(ERR_UNKNOWN_PARAMETER, pos + 1);
+					goto ndarr_create_from_str_exit;
+				}
+
+				*endptr = save_char;
+			}
+			else
+			{
+				gran = strtod(pos, &endptr);
+#if 1
+				if (endptr && strlen(endptr) && !isspace(*endptr))
+				{
+					error = err_push(ERR_NDARRAY, "Badly formatted granularity for %s (%s)", arrd->dim_name[i], pos);
+					goto ndarr_create_from_str_exit;
+				}
+#endif
 			}
 		}
-		else{
+		else
 			gran = 1;
-		}
 
 		/* Determine dimension separation */
 		pos = strstr(position, NDARR_SB_KEY1);
@@ -388,16 +474,36 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 		}
 		if(pos){
 			pos = skip_lead_space(pos);
-			sep = strtol(pos, &endptr, 10);
-			if (endptr && strlen(endptr) && !isspace(*endptr))
+			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
-				err_push(ERR_NDARRAY, "Badly formatted separation");
-				return(NULL);
+				endptr = pos + 1;
+				while (!isspace(*endptr) && *endptr != ']')
+					++endptr;
+
+				save_char = *endptr;
+				*endptr = STR_END;
+
+				error = nt_ask(dbin, NT_ANYWHERE, pos + 1, FFV_DOUBLE, &sep);
+				if (error)
+				{
+					error = err_push(ERR_UNKNOWN_PARAMETER, pos + 1);
+					goto ndarr_create_from_str_exit;
+				}
+
+				*endptr = save_char;
+			}
+			else
+			{
+				sep = strtol(pos, &endptr, 10);
+				if (endptr && strlen(endptr) && !isspace(*endptr))
+				{
+					error = err_push(ERR_NDARRAY, "Badly formatted separation for %s (%s)", arrd->dim_name[i], pos);
+					goto ndarr_create_from_str_exit;
+				}
 			}
 		}
-		else{
+		else
 			sep = 0;
-		}
 
 		/* Determine dimension grouping */
 		pos = strstr(position, NDARR_GB_KEY1);
@@ -411,37 +517,111 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 		}
 		if(pos){
 			pos = skip_lead_space(pos);
-			grp = strtol(pos, &endptr, 10);
-			if (endptr && strlen(endptr) && !isspace(*endptr))
+			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
-				err_push(ERR_NDARRAY, "Badly formatted grouping");
-				return(NULL);
+				endptr = pos + 1;
+				while (!isspace(*endptr) && *endptr != ']')
+					++endptr;
+
+				save_char = *endptr;
+				*endptr = STR_END;
+
+				error = nt_ask(dbin, NT_ANYWHERE, pos + 1, FFV_DOUBLE, &grp);
+				if (error)
+				{
+					error = err_push(ERR_UNKNOWN_PARAMETER, pos + 1);
+					goto ndarr_create_from_str_exit;
+				}
+
+				*endptr = save_char;
+			}
+			else
+			{
+				grp = strtod(pos, &endptr);
+#if 1
+				if (endptr && strlen(endptr) && !isspace(*endptr))
+				{
+					error = err_push(ERR_NDARRAY, "Badly formatted grouping for %s (%s)", arrd->dim_name[i], pos);
+					goto ndarr_create_from_str_exit;
+				}
+#endif
 			}
 		}
-		else{
+		else
 			grp = 0;
+
+		if (dbin)
+		{
+			char grid_cell_registration[32];
+			char data_type[32];
+
+			start /= gran;
+			end /= gran;
+
+			start = (long)ROUND(start);
+			end = (long)ROUND(end);
+
+			grp /= gran;
+
+			grp = (long)ROUND(grp);
+
+			gran = 1;
+
+			/* This code parallels that in make_inputs_sub_desc_str and make_outputs_super_desc_str */
+
+			error = nt_ask(dbin, NT_INPUT, "data_type", FFV_TEXT, data_type);
+			if (error && error != ERR_NT_KEYNOTDEF)
+				error = err_push(ERR_PARAM_VALUE, "for data_type (%s)", data_type);
+			else if (!error)
+			{
+				if (!os_strcmpi(data_type, "image") || !os_strcmpi(data_type, "raster"))
+				{
+					error = nt_ask(dbin, NT_INPUT, "grid_cell_registration", FFV_TEXT, grid_cell_registration);
+					if (error && error != ERR_NT_KEYNOTDEF)
+						error = err_push(ERR_PARAM_VALUE, "for grid_cell_registration (%s)", grid_cell_registration);
+					else if (!error)
+					{
+						if (!os_strncmpi(grid_cell_registration, "center", 6))
+						{
+							if (start < end)
+								end -= 1;
+							else
+								start -= 1;
+						}
+					}
+					else if (error == ERR_NT_KEYNOTDEF)
+						error = 0;
+				}
+			}
+			else if (error == ERR_NT_KEYNOTDEF)
+				error = 0;
 		}
-		
+
 		if(ndarr_set(arrd, NDARR_DIM_NUMBER, (int)i,
-				NDARR_DIM_START_INDEX, start,
-				NDARR_DIM_END_INDEX, end,
-				NDARR_DIM_GRANULARITY, gran,
-				NDARR_DIM_GROUPING, grp, 
+				NDARR_DIM_START_INDEX, (long)start,
+				NDARR_DIM_END_INDEX, (long)end,
+				NDARR_DIM_GRANULARITY, (long)gran,
+				NDARR_DIM_GROUPING, (long)grp, 
 				NDARR_DIM_SEPARATION, sep,
 				NDARR_END_ARGS)){
-			err_push(ERR_NDARRAY, "Unable to set dimension attributes");
-			for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
-			memFree(arrd->dim_name, "arrd->dim_name");
-			arrd->dim_name = NULL;
-			ndarr_free_descriptor(arrd);
-			return(NULL);
+			error = err_push(ERR_NDARRAY, "Unable to set dimension attributes");
+			goto ndarr_create_from_str_exit;
 		}
 	}
 	
 	if(ndarr_do_calculations(arrd)){
-		err_push(ERR_NDARRAY, "Unable to calculate array attributes");
+		error = err_push(ERR_NDARRAY, "Unable to calculate array attributes");
+		goto ndarr_create_from_str_exit;
+	}
+
+ndarr_create_from_str_exit:
+
+	memFree(dim_names, "dim_names");
+
+	if (error && arrd)
+	{
 		ndarr_free_descriptor(arrd);
-		return(NULL);
+		arrd = NULL;
 	}
 
 	return(arrd);
@@ -810,9 +990,14 @@ void ndarr_free_descriptor(ARRAY_DESCRIPTOR_PTR arrdesc)
 
 	assert(arrdesc);
 
-	if(arrdesc->dim_name){
+	if(arrdesc->dim_name)
+	{
 		for(i = 0; i < arrdesc->num_dim; i++)
-			memFree(arrdesc->dim_name[i], "arrdesc->dim_name[i]");
+		{
+			if (arrdesc->dim_name[i])
+				memFree(arrdesc->dim_name[i], "arrdesc->dim_name[i]");
+		}
+
 		memFree(arrdesc->dim_name, "arrdesc->dim_name");
 	}
 	if(arrdesc->start_index)
@@ -850,6 +1035,11 @@ void ndarr_free_descriptor(ARRAY_DESCRIPTOR_PTR arrdesc)
 
 	if (arrdesc->separation)
 		memFree(arrdesc->separation, "arrdesc->separation");
+
+#ifdef ND_FP 
+	if (arrdesc->fp)
+		fclose(arrdesc->fp);
+#endif
 
 	memFree(arrdesc, "arrdesc");
 }
@@ -1737,9 +1927,17 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			infilename = NULL;
 		}
 		else{ /* The input array is contiguous */
-			if(!(infile = fopen(infilename, "rb"))){
-				err_push(ERR_NDARRAY, "Unable to open input file");
-				return(-1);
+#ifdef ND_FP 
+			if (super_array->fp)
+				infile = super_array->fp;
+			else
+#endif
+			{
+				if(!(infile = fopen(infilename, "rb")))
+				{
+					err_push(ERR_NDARRAY, "Unable to open input file");
+					return(-1);
+				}
 			}
 		}
 	}
@@ -1821,9 +2019,17 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			outfilename = NULL;
 		}
 		else{ /* The output file is contiguous */
-    		if(!(outfile = fopen(outfilename, fmode))){
-				err_push(ERR_NDARRAY, "Unable to open output file");
-    			return(-1);
+#ifdef ND_FP 
+			if (sub_array->fp)
+				outfile = sub_array->fp;
+			else
+#endif
+			{
+    			if(!(outfile = fopen(outfilename, fmode)))
+				{
+					err_push(ERR_NDARRAY, "Unable to open output file");
+    				return(-1);
+				}
 			}
     	}
 
@@ -1897,17 +2103,27 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 
 		if(!(buffer = (char *)memMalloc((size_t)(amap->increment_block + 50), "buffer"))){
 			err_push(ERR_NDARRAY, "Out of memory");
-			if(infile)
+
+			if(infile 
+#ifdef ND_FP 
+			   && !super_array->fp
+#endif
+			  )
 				fclose(infile);
-			if(outfile)
+
+			if(outfile
+#ifdef ND_FP 
+			   && !sub_array->fp
+#endif
+			  )
 				fclose(outfile);
+
 			return(-1);
 		}
 	
 		if((destid & NDARRS_UPDATE) && (sub_array->type != NDARRT_BROKEN)){
 			/* Get around or put out a header in output */
-			if(dest_size)
-				fseek(outfile, dest_size, SEEK_SET);
+			fseek(outfile, dest_size, SEEK_SET);
 		}
 
 		/* Create the sub-array */
@@ -1935,29 +2151,52 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			if(fseek(infile, (long)offset, SEEK_SET)){
 				err_push(ERR_NDARRAY, "Unable to seek in input file (file too small?)");
 				err_push(ERR_NDARRAY, infilename);
-				if(infile)
+
+				if(infile
+#ifdef ND_FP 
+				   && !super_array->fp
+#endif
+				  )
 					fclose(infile);
-				if(outfile)
+
+				if(outfile
+#ifdef ND_FP 
+				   && !sub_array->fp
+#endif
+				  )
 					fclose(outfile);
+
 				memFree(buffer, "buffer");
 				return(-1);
 			}
 			if(!(fread((void *)buffer, (size_t)amap->increment_block, (size_t)1, infile)))
 			{
-				if(outfile)
+				if(outfile
+#ifdef ND_FP 
+				   && !sub_array->fp
+#endif
+				  )
 					fclose(outfile);
 
 				memFree(buffer, "buffer");
 
 				if (feof(infile))
 				{
-					if(infile)
+					if(infile
+#ifdef ND_FP 
+					   && !super_array->fp
+#endif
+					  )
 						fclose(infile);
 
 					return(0);
 				}
 
-				if(infile)
+				if(infile
+#ifdef ND_FP 
+				   && !super_array->fp
+#endif
+				  )
 					fclose(infile);
 
 				err_push(ERR_NDARRAY, "Unable to read from input file (file too small?)");
@@ -1984,15 +2223,14 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					if(destid & NDARRS_UPDATE){
 						/* Get around or put out a header in output */
 						outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
-						if(outoffset)
-							if(fseek(outfile, outoffset, SEEK_SET)){
-								err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
-								err_push(ERR_NDARRAY, outfilename);
-								fclose(infile);
-								fclose(outfile);
-								memFree(buffer, "buffer");
-								return(-1);							
-							}
+						if(fseek(outfile, outoffset, SEEK_SET)){
+							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+							err_push(ERR_NDARRAY, outfilename);
+							fclose(infile);
+							fclose(outfile);
+							memFree(buffer, "buffer");
+							return(-1);							
+						}
 					}
 				}
 			}
@@ -2000,8 +2238,17 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			if(!(fwrite(buffer, (size_t)amap->increment_block, 1, outfile))){
 				err_push(ERR_NDARRAY, "Unable to write to output file");
 				err_push(ERR_NDARRAY, outfilename);
-				fclose(infile);
-				fclose(outfile);
+
+#ifdef ND_FP 
+				if (!super_array->fp)
+#endif
+					fclose(infile);
+
+#ifdef ND_FP 
+				if (!sub_array->fp)
+#endif
+					fclose(outfile);
+
 				memFree(buffer, "buffer");
 				return(-1);
 			}
@@ -2017,8 +2264,17 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					if(fseek(outfile, outoffset, SEEK_CUR)){
 						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
 						err_push(ERR_NDARRAY, outfilename);
-						fclose(infile);
-						fclose(outfile);
+
+#ifdef ND_FP 
+						if (!super_array->fp)
+#endif
+							fclose(infile);
+
+#ifdef ND_FP 
+						if (!sub_array->fp)
+#endif
+							fclose(outfile);
+						
 						memFree(buffer, "buffer");
 						return(-1);
 					}
@@ -2026,8 +2282,16 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 		} while(ndarr_increment_mapping(amap));
 
 		memFree(buffer, "buffer");
-		fclose(infile);
-		fclose(outfile);
+
+#ifdef ND_FP 
+		if (!super_array->fp)
+#endif
+			fclose(infile);
+
+#ifdef ND_FP 
+		if (!sub_array->fp)
+#endif
+			fclose(outfile);
 
 		if(array_complete)
 			*(array_complete) = 1;
@@ -2078,8 +2342,14 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						amap->increment_block = sub_array->element_size; 
 				}
 				err_push(ERR_NDARRAY, "Buffer too small");
-    			if(infile)
+
+    			if(infile
+#ifdef ND_FP 
+				   && !super_array->fp
+#endif
+				  )
     				fclose(infile);
+
     			return(-1);
 	    	}
 		}
@@ -2118,7 +2388,12 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			if(fseek(infile, (long)offset, SEEK_SET)){
 				err_push(ERR_NDARRAY, "Unable to seek in input file (file too small?)");
 				err_push(ERR_NDARRAY, infilename);
-				fclose(infile);
+
+#ifdef ND_FP 
+				if (!super_array->fp)
+#endif
+					fclose(infile);
+
 				return(-1);
 			}
 			
@@ -2130,18 +2405,30 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			
 			if(!(fread((void *)buffer, (size_t)amap->increment_block, (size_t)1, infile)))
 			{
-				if(outfile)
+				if(outfile
+#ifdef ND_FP 
+				   && !sub_array->fp
+#endif
+				  )
 					fclose(outfile);
 
 				if (feof(infile))
 				{
-					if (infile)
+					if (infile
+#ifdef ND_FP 
+					    && !super_array->fp
+#endif
+					   )
 						fclose(infile);
 
 					return(0);
 				}
 
-				if(infile)
+				if(infile
+#ifdef ND_FP 
+				   && !super_array->fp
+#endif
+				  )
 					fclose(infile);
 
 				err_push(ERR_NDARRAY, "Unable to read from input file (file too small?)");
@@ -2169,7 +2456,11 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					*(array_complete) = 0;
 		}
 
-		fclose(infile);
+#ifdef ND_FP 
+		if (!super_array->fp)
+#endif
+			fclose(infile);
+
 		return(bytesread);
 	}
 
@@ -2194,8 +2485,14 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
     	else{
     		if((amap->necessary) && ((long)source_size < super_array->total_size)){
     			err_push(ERR_API, "Input buffer (%lu bytes) must contain the entire array (%lu bytes)", (unsigned long)source_size, (unsigned long)super_array->total_size);
-				if(outfile)
+
+				if(outfile
+#ifdef ND_FP 
+				   && !sub_array->fp
+#endif
+				  )
     				fclose(outfile);
+
     			return(-1);
     		}
     		buffer = (char *)source;
@@ -2203,8 +2500,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 
 		if((destid & NDARRS_UPDATE) && (sub_array->type != NDARRT_BROKEN)){
 			/* Get around or put out a header in output */
-			if(dest_size)
-				fseek(outfile, dest_size, SEEK_SET);
+			fseek(outfile, dest_size, SEEK_SET);
 		}
 		
 		if(source_size < (long)super_array->group_size){
@@ -2215,17 +2511,21 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			
 			/* If we are resuming writing to a file opened for update, we need
 			 * to make sure to start off at the correct position */
-			if(destid & NDARRS_UPDATE){
+			if((destid & NDARRS_UPDATE) && (sub_array->type != NDARRT_BROKEN)){
 				/* Get around or put out a header in output */
 				outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
-				if(outoffset)
-					if(fseek(outfile, outoffset, SEEK_SET)){
-						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
-						err_push(ERR_NDARRAY, outfilename);
+				if(fseek(outfile, outoffset, SEEK_SET)){
+					err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+					err_push(ERR_NDARRAY, outfilename);
+
+#ifdef ND_FP 
+					if (!sub_array->fp)
+#endif
 						fclose(outfile);
-						memFree(buffer, "buffer");
-						return(-1);							
-					}
+
+					memFree(buffer, "buffer");
+					return(-1);							
+				}
 			}
             
             /* Subtract this starting offset from the offset into the buffer */
@@ -2263,14 +2563,13 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						if(destid & NDARRS_UPDATE){
 							/* Get around or put out a header in output */
 							outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
-							if(outoffset)
-								if(fseek(outfile, outoffset, SEEK_SET)){
-									err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
-									err_push(ERR_NDARRAY, outfilename);
-									fclose(outfile);
-									memFree(buffer, "buffer");
-									return(-1);							
-								}
+							if(fseek(outfile, outoffset, SEEK_SET)){
+								err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+								err_push(ERR_NDARRAY, outfilename);
+								fclose(outfile);
+								memFree(buffer, "buffer");
+								return(-1);							
+							}
 						}
 					}
 				}
@@ -2278,7 +2577,12 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				if(!(fwrite(bufferpos, (size_t)sub_array->element_size, 1, outfile))){
 					err_push(ERR_NDARRAY, "Unable to write to output file");
 					err_push(ERR_NDARRAY, outfilename);
-					fclose(outfile);
+
+#ifdef ND_FP 
+					if (!sub_array->fp)
+#endif
+						fclose(outfile);
+
 					memFree(buffer, "buffer");
 					return(-1);
 				}
@@ -2297,14 +2601,22 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						if(fseek(outfile, outoffset, SEEK_CUR)){
 							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
 							err_push(ERR_NDARRAY, outfilename);
-							fclose(outfile);
+
+#ifdef ND_FP 
+							if (!sub_array->fp)
+#endif
+								fclose(outfile);
+
 							memFree(buffer, "buffer");
 							return(-1);
 						}
 				}
 			} while(ndarr_increment_indices(amap->subaindex));
 	
-			fclose(outfile);
+#ifdef ND_FP 
+			if (!sub_array->fp)
+#endif
+				fclose(outfile);
 	
 			if(array_complete){
 				*(array_complete) = 1;
@@ -2349,14 +2661,13 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					if(destid & NDARRS_UPDATE){
 						/* Get around or put out a header in output */
 						outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
-						if(outoffset)
-							if(fseek(outfile, outoffset, SEEK_SET)){
-								err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
-								err_push(ERR_NDARRAY, outfilename);
-								fclose(outfile);
-								memFree(buffer, "buffer");
-								return(-1);							
-							}
+						if(fseek(outfile, outoffset, SEEK_SET)){
+							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+							err_push(ERR_NDARRAY, outfilename);
+							fclose(outfile);
+							memFree(buffer, "buffer");
+							return(-1);							
+						}
 					}
 				}
 			}
@@ -2364,7 +2675,12 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			if(!(fwrite(bufferpos, (size_t)amap->increment_block, 1, outfile))){
 				err_push(ERR_NDARRAY, "Unable to write to output file");
 				err_push(ERR_NDARRAY, outfilename);
-				fclose(outfile);
+
+#ifdef ND_FP 
+				if (!sub_array->fp)
+#endif
+					fclose(outfile);
+
 				memFree(buffer, "buffer");
 				return(-1);
 			}
@@ -2383,14 +2699,22 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					if(fseek(outfile, outoffset, SEEK_CUR)){
 						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
 						err_push(ERR_NDARRAY, outfilename);
-						fclose(outfile);
+
+#ifdef ND_FP 
+						if (!sub_array->fp)
+#endif
+							fclose(outfile);
+
 						memFree(buffer, "buffer");
 						return(-1);
 					}
 			}
 		} while(ndarr_increment_mapping(amap));
 
-		fclose(outfile);
+#ifdef ND_FP 
+		if (!sub_array->fp)
+#endif
+			fclose(outfile);
 
 		if(array_complete)
 			*(array_complete) = 1;
@@ -2522,6 +2846,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 	FILE *infile;
 	char *filename;
     char scratch[305];
+	 char path[MAX_PATH];
     char **ptrarray;
     char **filearray;
     char *position;
@@ -2555,7 +2880,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 	sprintf(position, " %d", (int)sizeof(char *));
 	
 	/* Create the array descriptor structure */
-	groupmap = ndarr_create_from_str(descstr);
+	groupmap = ndarr_create_from_str(NULL, descstr);
 	memFree(descstr, "descstr");
 	if(!groupmap){
 		err_push(ERR_NDARRAY, "Creating grouping map");
@@ -2633,7 +2958,9 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 					for(i--; i >=0; i--)
 						memFree(filearray[i], "filearray[i]");
 					memFree(filearray, "filearray");
+
 					fclose(infile);
+
 					return(1);
 				}
 				
@@ -2648,8 +2975,13 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 				while(position[0] < '!')
 					position++;
 
-				/*** FILENAMES TO NATIVE WOULD GO RIGHT HERE ***/
-				/*** The 'position' variable contains the filename... ***/
+				os_path_make_native(position, position);
+				os_path_get_parts(position, path, NULL, NULL);
+				if (!strlen(path))
+				{
+					os_path_get_parts(filename, path, NULL, NULL);
+					os_path_put_parts(position, path, position, NULL);
+				}
 		
 				/* Store the filename away in the array */
 				if(!(filearray[i] = (char *)memMalloc((size_t)(strlen(position) + 3), "filearray[i]"))){
@@ -2658,12 +2990,16 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 					for(i--; i >=0; i--)
 						memFree(filearray[i], "filearray[i]");
 					memFree(filearray, "filearray");
+
 					fclose(infile);
+
 					return(1);
 				}
 				strcpy(filearray[i], position);
 			}
+
 			fclose(infile);
+
 			break;
 		default:
 			err_push(ERR_NDARRAY, "Unknown mapping type");

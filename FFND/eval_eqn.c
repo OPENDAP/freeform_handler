@@ -106,7 +106,6 @@
 #define E  2.71828182846
 #define EE_INIT_EQNL 100
 #define EE_MAX_VAR_NAME_LENGTH 100
-#define EE_SCRATCH_EQN_LEN 500
 /* EE_SCRATCH_EQN_LEN MUST be bigger than 256 */
 #define TRUE 1
 #define FALSE 0
@@ -125,10 +124,10 @@ int   ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error);
 int   ee_get_num_out(char *eqn, int *error);
 int   ee_repl(char rwith, int fnl, char *position, EQUATION_INFO_PTR einfo, int *error);
 int   ee_check_for_char(int x, int y, EQUATION_INFO_PTR einfo, int *error);
-char *ee_extract_next_term(char *eqn, char *scratch);
+char *ee_extract_next_term(char *eqn, char scratch[EE_SCRATCH_EQN_LEN]);
 char *ee_get_prev_num(char *eqn, int *error);
 void  ee_insert_char(char *eqn, int i, char c);
-void  ee_replace(char *eqn, int num_chars, int replace_with);
+int   ee_replace(char *eqn, int num_chars, int replace_with);
 int   ee_replace_op(char *eqn, char *operator, char repwith, char char_allowed, char crepwith, EQUATION_INFO_PTR einfo, int *error);
 
 /*
@@ -625,6 +624,9 @@ void ee_show_err_mesg(char *buffer, int error)
 		case EE_ERR_BAD_OP_ON_CHAR:
 			memStrcpy(buffer, "Attempted operation on character type",NO_TAG);
 			break;
+		case EE_ERR_EQN_TOO_LONG:
+			memStrcpy(buffer, "Equation is too long -- try shorter variable names", NO_TAG);
+			break;
 		default:
 			memStrcpy(buffer, "Exact error unknown",NO_TAG);
 	}
@@ -672,14 +674,30 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
    FF_VALIDATE(einfo);
 	
 	position = strstr(eqn, "(");
-   while (position) {
-	 ee_replace(position, ee_get_next_term_len(position),
-	       ee_translate_expression(einfo,
-		     ee_extract_next_term(position, scratch_eqn), error));
-	 if(ee_get_num_out(position, error) <= 0)
-		 return(0);
-	 position = strstr(eqn, "(");
-   }
+   while (position)
+	{
+		int ee_error = 0;
+
+		ee_error = ee_replace(position,
+		                      ee_get_next_term_len(position),
+		                      ee_translate_expression(einfo,
+		                                              ee_extract_next_term(position, scratch_eqn),
+		                                              error
+		                                             )
+		                     );
+		if (ee_error || *error)
+		{
+			if (ee_error && !*error)
+				*error = ee_error;
+
+			return 0;
+		}
+
+		if(ee_get_num_out(position, error) == -1)
+			return(0);
+
+		position = strstr(eqn, "(");
+	}
 
    /*** look for functions, and replace them with their evaluations ***/
    ee_seek_and_replace("acosh", 'a', 5);
@@ -741,9 +759,11 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
 				if((einfo->equation[einfo->eqn_len] =
 						ee_choose_new_var(einfo, x, y, error)) == 0)
 						return(0); /* error in choose_new_var */
-				ee_replace(position_two,
+				*error = ee_replace(position_two,
 						position - position_two + ee_get_num_len(position + 2) + 2,
 						(int)einfo->equation[einfo->eqn_len++]);
+				if (*error)
+					return 0;
 				break;
 			case '/': /*** division ***/
 				einfo->equation[einfo->eqn_len++] = '/';
@@ -756,9 +776,11 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
 				if((einfo->equation[einfo->eqn_len] =
 						ee_choose_new_var(einfo, x, y, error)) == 0)
 						return(0); /* error in choose_new_var */
-				ee_replace(position_two,
+				*error = ee_replace(position_two,
 						position - position_two + ee_get_num_len(position + 2) + 2,
 						(int)einfo->equation[einfo->eqn_len++]);
+				if (*error)
+					return 0;
 				break;
 			case '%': /*** modulus ***/
 				einfo->equation[einfo->eqn_len++] = '%';
@@ -771,9 +793,11 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
 				if((einfo->equation[einfo->eqn_len] =
 						ee_choose_new_var(einfo, x, y, error)) == 0)
 						return(0); /* error in choose_new_var */
-				ee_replace(position_two,
+				*error = ee_replace(position_two,
 						position - position_two + ee_get_num_len(position + 2) + 2,
 						(int)einfo->equation[einfo->eqn_len++]);
+				if (*error)
+					return 0;
 				break;
 			default:
 				*(error) = EE_ERR_DOLLAR_SIGN;
@@ -797,9 +821,11 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
 				if((einfo->equation[einfo->eqn_len] =
 						ee_choose_new_var(einfo, x, y, error)) == 0)
 				return(0); /* error in choose_new_var */
-				ee_replace(position_two,
+				*error = ee_replace(position_two,
 						position - position_two + ee_get_num_len(position + 2) + 2,
 						(int)einfo->equation[einfo->eqn_len++]);
+				if (*error)
+					return 0;
 				break;
 			case '-': /*** subtraction ***/
 				einfo->equation[einfo->eqn_len++] = '-';
@@ -812,9 +838,11 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
 				if((einfo->equation[einfo->eqn_len] =
 						ee_choose_new_var(einfo, x, y, error)) == 0)
 						return(0); /* error in choose_new_var */
-				ee_replace(position_two,
+				*error = ee_replace(position_two,
 						position - position_two + ee_get_num_len(position + 2) + 2,
 						(int)einfo->equation[einfo->eqn_len++]);
+				if (*error)
+					return 0;
 				break;
 			default:
 				*(error) = EE_ERR_POUND_SIGN;
@@ -919,9 +947,11 @@ int ee_replace_op(char *eqn, char *operator, char repwith, char char_allowed, ch
 		}
 		if((einfo->equation[einfo->eqn_len] =
 				ee_choose_new_var(einfo, x, y, error)) == 0) return(0);
-		ee_replace(position_two,
+		*error = ee_replace(position_two,
 				position - position_two + ee_get_num_len(position + oplen) + oplen,
 				(int)einfo->equation[einfo->eqn_len++]);
+		if (*error)
+			return 0;
 
 		position = strstr(eqn, operator);
 	}
@@ -1019,8 +1049,11 @@ int ee_repl(char rwith, int fnl, char *position, EQUATION_INFO_PTR einfo, int *e
 	}
 	if((einfo->equation[einfo->eqn_len] = ee_choose_new_var(einfo, x, 0, error))
 			== 0) return(0); /* error in choose_new_var */
-	ee_replace(position, fnl + ee_get_num_len(position + fnl),
+	*error = ee_replace(position, fnl + ee_get_num_len(position + fnl),
 			(int)einfo->equation[einfo->eqn_len++]);
+	if (*error)
+		return 0;
+
 	return(1);
 }
 
@@ -1082,18 +1115,24 @@ char *ee_get_prev_num(char *eqn, int *error)
  * KEYWORDS: equation
  *
  */
-void ee_replace(char *eqn, int num_chars, int replace_with)
+int ee_replace(char *eqn, int num_chars, int replace_with)
 {
    char scratch[EE_SCRATCH_EQN_LEN];
 
-   memStrcpy(scratch, eqn + num_chars,NO_TAG);
+	if (strlen(eqn + num_chars) >= sizeof(scratch))
+		return EE_ERR_EQN_TOO_LONG;
+
+   strncpy(scratch, eqn + num_chars, sizeof(scratch) - 1);
+	scratch[sizeof(scratch) - 1] = '\0';
    eqn[0] = '[';
 
    sprintf(eqn + 1, "%d", replace_with);
    eqn[strlen(eqn) + 1] = '\0';
    eqn[strlen(eqn)] = ']';
 
-   memStrcat(eqn, scratch,NO_TAG);
+   strcat(eqn, scratch);
+
+	return 0;
 }
 
 /*
@@ -1158,7 +1197,7 @@ int ee_get_next_term_len(char * eqn)
  * KEYWORDS: equation
  *
  */
-char *ee_extract_next_term(char *eqn, char *scratch)
+char *ee_extract_next_term(char *eqn, char scratch[EE_SCRATCH_EQN_LEN])
 {
 	int paren_count = 1;
 	int i;
@@ -1167,15 +1206,17 @@ char *ee_extract_next_term(char *eqn, char *scratch)
 
 	eqn++;
 
-	for (i = 0; i < (signed int)strlen(eqn); i++) {
+	for (i = 0; i < (signed int)min(strlen(eqn), EE_SCRATCH_EQN_LEN - 1); i++) {
 		if (eqn[i] == '(') paren_count++;
 		if (eqn[i] == ')') paren_count--;
 		if (paren_count == 0) {
 			scratch[i] = '\0';
-			return (scratch);
+			break;
 		}
 		scratch[i] = eqn[i];
 	}
+
+	return scratch;
 }
 
 /*
@@ -1293,6 +1334,7 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 	double x;
 	void **allocated_list = NULL; /* This is where we store what has been allocated */
 	int num_allocated = 0;
+	int str_list_allocated = 0;
 
 	*(error) = 0;
 
@@ -1314,27 +1356,27 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 	num_string /= 2;
 	
 	/* NEVER insert any allocations between this one and the allocation for var_list */
-	if(!(allocated_list = (void **)memMalloc((size_t)(sizeof(void *) * (num_vars + num_string + 20)), "ee_clean_up_equation: allocated_list"))){
+	if(!(allocated_list = (void **)memMalloc((size_t)(sizeof(void *) * (num_vars + num_string + 20)), "allocated_list"))){
 		*(error) = EE_ERR_MEM_LACK;
 		return(NULL);
 	}
 	allocated_list[num_allocated++] = (void *)allocated_list;	
 
-	if(!(var_list = (char **)memMalloc((size_t)(sizeof(char *) * num_vars), "ee_clean_up_equation: var_list"))){
+	if(!(var_list = (char **)memMalloc((size_t)(sizeof(char *) * num_vars), "var_list"))){
 		*(error) = EE_ERR_MEM_LACK;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL);
+		goto ee_clean_up_equation_exit;
 	}
 	allocated_list[num_allocated++] = (void *)var_list;
 	/* IT IS _VERY_ IMPORTANT that var_list ALWAYS be the 2nd position in the
 	 * allocated_list array.  It gets realloced and reset later on. */
 
 	if(num_string){
-		if(!(str_list = (char **)memMalloc((size_t)(sizeof(char *) * num_string), "ee_clean_up_equation: str_list"))){
+		if(!(str_list = (char **)memMalloc((size_t)(sizeof(char *) * num_string), "str_list"))){
 			*(error) = EE_ERR_MEM_LACK;
-			for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-			return(NULL);
+		goto ee_clean_up_equation_exit;
 		}
+
+		str_list_allocated = num_allocated;
 		allocated_list[num_allocated++] = (void *)str_list;
 	}
 
@@ -1349,13 +1391,11 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 			}
 			if((j == (signed int)strlen(eqn)) || (j == (i + 1))){
 				*(error) = EE_ERR_VAR_NAME_BAD;
-				for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-				return(NULL);
+				goto ee_clean_up_equation_exit;
 			}
 			if((j - i) >= EE_MAX_VAR_NAME_LENGTH){
 				*(error) = EE_ERR_VAR_NAME_BAD;
-				for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-				return(NULL);
+				goto ee_clean_up_equation_exit;
 			}
 
 			k = 0;
@@ -1372,8 +1412,7 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 			
 			if(!strlen(var_name)){
 				*(error) = EE_ERR_VAR_NAME_BAD;
-				for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-				return(NULL);
+				goto ee_clean_up_equation_exit;
 			}
 
 			for(k = 0; k < (int)num_vars; k++){
@@ -1385,17 +1424,18 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 
 			if(!var_exists){
 				if(!(var_list[num_vars] =
-							(char *)memMalloc((size_t)(strlen(var_name) + 2), "ee_clean_up_equation: var_list[num_vars]"))){
+							(char *)memMalloc((size_t)(strlen(var_name) + 2), "var_list[num_vars]"))){
 					*(error) = EE_ERR_MEM_LACK;
-					for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-					return(NULL);
+					goto ee_clean_up_equation_exit;
 				}
 				allocated_list[num_allocated++] = (void *)var_list[num_vars];
 				k = num_vars;
 				memStrcpy(var_list[num_vars++], var_name,NO_TAG);
 			}
 
-			ee_replace(eqn + i, j - i + 1, k);
+			*error = ee_replace(eqn + i, j - i + 1, k);
+			if (*error)
+				goto ee_clean_up_equation_exit;
 		}
 
 		if(eqn[i] == '\"'){ /* String constant */
@@ -1409,8 +1449,16 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 						j++;
 						continue;
 					}
-					else{
-						memStrcpy(scratch, eqn + j,NO_TAG);
+					else
+					{
+						if (strlen(eqn + j) >= sizeof(scratch))
+						{
+							*(error) = EE_ERR_EQN_TOO_LONG;
+							return NULL; 
+						}
+
+						strncpy(scratch, eqn + j, sizeof(scratch) - 1);
+						scratch[sizeof(scratch) - 1] = '\0';
 						break; /* end of string */
 					}
 				}
@@ -1420,16 +1468,14 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 
 				if(k >= EE_MAX_VAR_NAME_LENGTH){
 					*(error) = EE_ERR_VAR_NAME_BAD;
-					for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-					return(NULL);
+					goto ee_clean_up_equation_exit;
 				}
 			}
 			var_name[k] = '\0';
 
 			if(!strlen(var_name)){
 				*(error) = EE_ERR_VAR_NAME_BAD;
-				for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-				return(NULL);
+				goto ee_clean_up_equation_exit;
 			}
 			var_exists = 0;
 
@@ -1442,10 +1488,9 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 
 			if(!var_exists){
 				if(!(str_list[num_string] =
-						(char *)memMalloc((size_t)(strlen(var_name) + 2), "ee_clean_up_equation: str_list[num_string]"))){
+						(char *)memMalloc((size_t)(strlen(var_name) + 2), "str_list[num_string]"))){
 					*(error) = EE_ERR_MEM_LACK;
-					for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-					return(NULL);
+					goto ee_clean_up_equation_exit;
 				}
 				allocated_list[num_allocated++] = (void *)str_list[num_string];
 				j = num_string;
@@ -1454,7 +1499,8 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 
 			sprintf(eqn + i + 1, "%d", j);
 			memStrcat(eqn, scratch,NO_TAG);
-			for(i++; eqn[i] != '\"'; i++);
+			for(i++; eqn[i] != '\"'; i++)
+				;
 		}
 	} /* end of variable and string constant extraction */
 
@@ -1462,28 +1508,24 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 		if(eqn[i] == '(') j++; else if(eqn[i] == ')') j--;
 	if(j != 0){
 		*(error) = EE_ERR_ODD_NUM_PARENS;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* Odd number of parens */
+		goto ee_clean_up_equation_exit;
 	}
 
 	for(j = 0, i = 0; i < (signed int)strlen(eqn); i++)
 		if(eqn[i] == '[') j++; else if(eqn[i] == ']') j--;
 	if(j != 0){
 		*(error) = EE_ERR_ODD_NUM_BRACKETS;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* Odd number of brackets */
+		goto ee_clean_up_equation_exit;
 	}
 
 	if(num_vars == 0){
 		*(error) = EE_ERR_NO_VARS;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL);
+		goto ee_clean_up_equation_exit;
 	}
 
-	if(!(var_list = (char **)memRealloc(var_list, (size_t)(num_vars * sizeof(char *)), "ee_clean_up_equation: var_list"))){
+	if(!(var_list = (char **)memRealloc(var_list, (size_t)(num_vars * sizeof(char *)), "var_list"))){
 		*(error) = EE_ERR_UNKNOWN;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* ??? Weird goings on */
+		goto ee_clean_up_equation_exit;
 	}
 	allocated_list[1] = (void *)var_list; /* var_list IS ALWAYS THE 2nd POS IN THIS ARRAY */
 
@@ -1631,20 +1673,18 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 
 	num_const = num_string + 10;
 
-	if(!(einfo = (EQUATION_INFO_PTR)memMalloc(sizeof(EQUATION_INFO), "ee_clean_up_equation: einfo"))){
+	if(!(einfo = (EQUATION_INFO_PTR)memMalloc(sizeof(EQUATION_INFO), "einfo"))){
 		*(error) = EE_ERR_MEM_LACK;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* out of memory */
+		goto ee_clean_up_equation_exit;
 	}
 	allocated_list[num_allocated++] = (void *)einfo;
 
 #ifdef FF_CHK_ADDR
 	einfo->check_address = einfo;
 #endif
-	if(!(einfo->equation = (unsigned char *)memMalloc((size_t)EE_INIT_EQNL, "ee_clean_up_equation: einfo->equation"))){
+	if(!(einfo->equation = (unsigned char *)memMalloc((size_t)EE_INIT_EQNL, "einfo->equation"))){
 		*(error) = EE_ERR_MEM_LACK;
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* out of memory */
+		goto ee_clean_up_equation_exit;
 	}
 	/* einfo->equation is not added to allocated_list for a reason */
     
@@ -1653,30 +1693,27 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 	einfo->eqn_len = 0;
 	einfo->num_work = num_vars + num_const;
 	if(!(einfo->eqn_vars =
-			(double *)memMalloc((size_t)(einfo->num_work * sizeof(double)), "ee_clean_up_equation: einfo->eqn_vars"))){
+			(double *)memMalloc((size_t)(einfo->num_work * sizeof(double)), "einfo->eqn_vars"))){
 		*(error) = EE_ERR_MEM_LACK;
-		memFree(einfo->equation, "ee_clean_up_equation: einfo->equation");
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* out of memory */
+		memFree(einfo->equation, "einfo->equation");
+		goto ee_clean_up_equation_exit;
 	}
 	/* This pointer is not stored in allocated_list for a reason */
 	
 	if(!(einfo->variable_type = 
-			(unsigned char *)memMalloc((size_t)(num_vars + num_string), "ee_clean_up_equation: einfo->variable_type"))){
+			(unsigned char *)memMalloc((size_t)(num_vars + num_string), "einfo->variable_type"))){
 		*(error) = EE_ERR_MEM_LACK;
-		memFree(einfo->eqn_vars, "ee_clean_up_equation: einfo->eqn_vars");
-		memFree(einfo->equation, "ee_clean_up_equation: einfo->equation");
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL);
+		memFree(einfo->eqn_vars, "einfo->eqn_vars");
+		memFree(einfo->equation, "einfo->equation");
+		goto ee_clean_up_equation_exit;
 	}
 	allocated_list[num_allocated++] = (void *)einfo->variable_type;
 	
-	if(!(einfo->variable_ptr = (void **)memMalloc((size_t)(num_vars * sizeof(void *)), "ee_clean_up_equation: einfo->variable_ptr"))){
+	if(!(einfo->variable_ptr = (void **)memMalloc((size_t)(num_vars * sizeof(void *)), "einfo->variable_ptr"))){
 		*(error) = EE_ERR_MEM_LACK;
-		memFree(einfo->eqn_vars, "ee_clean_up_equation: einfo->eqn_vars");
-		memFree(einfo->equation, "ee_clean_up_equation: einfo->equation");
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* out of memory */
+		memFree(einfo->eqn_vars, "einfo->eqn_vars");
+		memFree(einfo->equation, "einfo->equation");
+		goto ee_clean_up_equation_exit;
 	}
 	allocated_list[num_allocated++] = (void *)einfo->variable_ptr;
 	
@@ -1711,24 +1748,46 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 		j = j + num_vars;
 		einfo->eqn_vars[j] = (double)((long)str_list[k]);
 		einfo->variable_type[j] = EE_VAR_TYPE_CHAR;
-		ee_replace(position, ++i, j);
+		*error = ee_replace(position, ++i, j);
+		if (*error)
+			return NULL;
+
 		position = strchr(eqn, '\"');
 	}
-	if(num_string) memFree(str_list, "ee_clean_up_equation: str_list");
+
+	if(num_string)
+	{
+		allocated_list[str_list_allocated] = NULL;
+		memFree(str_list, "str_list");
+	}
 
 	position = strstr(eqn, ":pi");
 	while (position){ /* replace pi with 3.14 */
-		memStrcpy(scratch, position + 3,NO_TAG);
+		if (strlen(position + 3) >= sizeof(scratch))
+		{
+			*error = EE_ERR_EQN_TOO_LONG;
+			return NULL;
+		}
+
+		strncpy(scratch, position + 3, sizeof(scratch) - 1);
+		scratch[sizeof(scratch) - 1] = '\0';
 		sprintf(position, "%e", PI);
-		memStrcat(position, scratch,NO_TAG);
+		strcat(position, scratch);
 		position = strstr(eqn, ":pi");
 	}
 
 	position = strstr(eqn, ":e");
 	while (position){ /* replace e with 2.718 */
-		memStrcpy(scratch, position + 2,NO_TAG);
+		if (strlen(position + 2) >= sizeof(scratch))
+		{
+			*(error) = EE_ERR_EQN_TOO_LONG;
+			return NULL;
+		}
+
+		strncpy(scratch, position + 2, sizeof(scratch) - 1);
+		scratch[sizeof(scratch) - 1] = '\0';
 		sprintf(position, "%e", E);
-		memStrcat(position, scratch,NO_TAG);
+		strcat(position, scratch);
 		position = strstr(eqn, ":e");
 	}
 
@@ -1759,7 +1818,13 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 				einfo->eqn_vars[j] = x;
 				num_const++;
 			}
-			ee_replace(eqn + i, ee_get_num_len(eqn + i), j);
+			*error = ee_replace(eqn + i, ee_get_num_len(eqn + i), j);
+			if (*error)
+			{
+				memFree(einfo->equation, "einfo->equation");
+				goto ee_clean_up_equation_exit;
+			}
+
 			while(eqn[i] != ']')
 				i++;
 			if(einfo->numconst <= num_const){
@@ -1768,11 +1833,10 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 				einfo->numconst += 10;
 				if(!(einfo->eqn_vars =
 						(double *)memRealloc(einfo->eqn_vars,
-						(size_t)(einfo->num_work * sizeof(double)), "ee_clean_up_equation: einfo->eqn_vars"))){
+						(size_t)(einfo->num_work * sizeof(double)), "einfo->eqn_vars"))){
 					*(error) = EE_ERR_MEM_LACK;
-					memFree(einfo->equation, "ee_clean_up_equation: einfo->equation");
-					for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-					return(NULL); /* out of memory */
+					memFree(einfo->equation, "einfo->equation");
+					goto ee_clean_up_equation_exit;
 				}
 			}
 		}
@@ -1825,39 +1889,55 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 	 * track of the variables that have been previously used and can be recycled.  It
 	 * is set here to 1's so that no possible error could occur in recycling a non-work
 	 * variable. */
-	memMemset((void *)scratch, 1, (size_t)256, "scratch,1,256");
+	memset((void *)scratch, 1, (size_t)256);
 	einfo->variable_ptr[0] = (void *)scratch;
 
 	if(!(einfo->result = ee_translate_expression(einfo, eqn, error))){
-		memFree(einfo->eqn_vars, "ee_clean_up_equation: einfo->eqn_vars");
-		if(einfo->equation) memFree(einfo->equation, "ee_clean_up_equation: einfo->equation");
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL);
+		memFree(einfo->eqn_vars, "einfo->eqn_vars");
+		if(einfo->equation)
+			memFree(einfo->equation, "einfo->equation");
+		goto ee_clean_up_equation_exit;
 	}
 
 	if(!(einfo->eqn_vars = (double *)memRealloc(einfo->eqn_vars,
-			(size_t)(einfo->num_work * sizeof(double)), "ee_clean_up_equation: einfo->eqn_vars"))){
+			(size_t)(einfo->num_work * sizeof(double)), "einfo->eqn_vars"))){
 		*(error) = EE_ERR_MEM_LACK;
-		memFree(einfo->equation, "ee_clean_up_equation: einfo->equation");
-        for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* out of memory */
+		memFree(einfo->equation, "einfo->equation");
+		goto ee_clean_up_equation_exit;
 	}
 
 	einfo->equation[einfo->eqn_len++] = '=';
 	if(!(einfo->equation = (unsigned char *)memRealloc(einfo->equation,
-			(size_t)einfo->eqn_len, "ee_clean_up_equation: einfo->equation"))){
+			(size_t)einfo->eqn_len, "einfo->equation"))){
 		*(error) = EE_ERR_UNKNOWN;
-		memFree(einfo->eqn_vars, "ee_clean_up_equation: einfo->eqn_vars");
-		for(i = --num_allocated; i >= 0; i--) memFree(allocated_list[i], "ee_clean_up_equation: allocated_list[i]");
-		return(NULL); /* ??? error unknown */
+		memFree(einfo->eqn_vars, "einfo->eqn_vars");
+		goto ee_clean_up_equation_exit;
 	}
 
-/* The following memory block is referenced later -- cannot be free'd here
-	memFree(var_list, "ee_clean_up_equation: var_list");
-*/
-	memFree(allocated_list, "ee_clean_up_equation: allocated_list");
+ee_clean_up_equation_exit:
 
-	return(einfo); /* all is well */
+/* The following memory block is referenced later -- cannot be free'd here
+	memFree(var_list, "var_list");
+*/
+	if (*error)
+	{
+		for(i = --num_allocated; i >= 0; i--)
+		{
+			if (allocated_list[i])
+				memFree(allocated_list[i], "allocated_list[i]");
+		}
+	}
+
+	if (*error)
+		return NULL;
+	else
+	{
+		memFree(allocated_list, "allocated_list");
+
+		return(einfo); /* all is well */
+	}
+
+
 }
 
 /*

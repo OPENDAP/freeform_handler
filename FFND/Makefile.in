@@ -1,11 +1,13 @@
 
-# $Id: Makefile.in,v 1.1 1998/04/21 17:20:48 jimg Exp $
+# $Id: Makefile.in,v 1.2 1998/08/12 21:10:00 jimg Exp $
 
 @SET_MAKE@
 
 PROG = $(FF_LIBRARY) $(MEM_LIBRARY) readfile newform
 FF_LIBRARY = libfreeform.a
 MEM_LIBRARY = libmemtrack.a
+MM_LIBRARY = libmaxmin.a
+
 DODS_ROOT = ../../..
 
 INCS = -I.
@@ -46,13 +48,18 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
 
-FF_OBJS	= cv_units.o dbevents.o dl_lists.o eqn_util.o error.o eval_eqn.o \
-	file2buf.o formlist.o freeform.o makedbin.o makeform.o name_tab.o \
-	ndarray.o os_utils.o proclist.o setdbin.o showdbin.o 
+FF_OBJS = afm2bfm.o avlins.o avlfree.o cv_units.o dbevents.o dl_lists.o \
+	  eqn_util.o error.o eval_eqn.o ff_utils.o file2buf.o formlist.o \
+	  freeform.o makedbin.o makeform.o name_tab.o ndarray.o os_utils.o \
+	  proclist.o setdbin.o showdbin.o  
 
-MM_OBJS = mm_make.o
+MM_OBJS = mm_make.o 
 
 MEM_OBJS = memtrack.o
+
+#UTIL_OBJS = avlfree.o avlins.o checkvar.o fillhead.o gethead.o getll.o \
+#	    getllsym.o getnames.o makehdf.o newform.o pntshow.o readfile.o \
+#	    splitdat.o   
 
 PROG_OBJS = newform.o readfile.o
 
@@ -102,6 +109,8 @@ install: newform readfile $(FF_LIBRARY) $(MEM_LIBRARY)
 	$(RANLIB) $(libdir)/$(FF_LIBRARY)
 	$(INSTALL_DATA) $(MEM_LIBRARY) $(libdir)/$(MEM_LIBRARY)
 	$(RANLIB) $(libdir)/$(MEM_LIBRARY)
+	$(INSTALL_DATA) $(MM_LIBRARY) $(libdir)/$(MM_LIBRARY)
+	$(RANLIB) $(libdir)/$(MM_LIBRARY)
 	$(INSTALL_PROGRAM) newform $(bindir)/newform
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 

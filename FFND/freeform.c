@@ -128,14 +128,62 @@ static void init_std_args(FF_STD_ARGS_PTR std_args)
 	std_args->error_log = NULL;
 	std_args->error_prompt = TRUE;
 
+	std_args->cv_list_file_dir = NULL;
 	std_args->cv_precision = 0;
-	std_args->cv_missing_data = 0;
 	std_args->cv_maxbins = 0;
 	std_args->cv_maxmin_only = FALSE;
+	std_args->cv_subset = FALSE;
 	
 	std_args->user.set_cv_precision = 0;
-	std_args->user.set_cv_missing_data = 0;
 	std_args->user.is_stdin_redirected = 0;
+	std_args->user.is_stdout_redirected = 0;
+	std_args->user.format_title = 0;
+	std_args->user.format_file = 0;
+
+	std_args->sdts_terms_file = NULL;
+}
+
+
+static void init_data_flag(FF_DATA_FLAG_PTR data_flag)
+{
+#ifdef FF_CHK_ADDR
+	data_flag->check_address = NULL;
+#endif
+
+	data_flag->value = 0;
+	data_flag->temp_dvar = 0;
+	data_flag->var = NULL;
+	data_flag->value_exists = '\0';
+}
+
+FF_DATA_FLAG_PTR ff_create_data_flag(void)
+{
+	FF_DATA_FLAG_PTR data_flag = NULL;
+	
+	data_flag = (FF_DATA_FLAG_PTR)memMalloc(sizeof(FF_DATA_FLAG), "data_flag");
+	if (data_flag)
+	{
+		init_data_flag(data_flag);
+#ifdef FF_CHK_ADDR
+		data_flag->check_address = (void *)data_flag;
+#endif
+	}
+	else
+		err_push(ERR_MEM_LACK, NULL);
+	
+	return(data_flag);
+}
+
+void ff_destroy_data_flag(FF_DATA_FLAG_PTR data_flag)
+{
+	FF_VALIDATE(data_flag);
+
+	init_data_flag(data_flag);
+#ifdef FF_CHK_ADDR
+	data_flag->check_address = NULL;
+#endif
+	
+	memFree(data_flag, "data_flag");
 }
 
 #ifdef ROUTINE_NAME
@@ -162,7 +210,8 @@ FF_STD_ARGS_PTR ff_create_std_args(void)
 
 void ff_destroy_std_args(FF_STD_ARGS_PTR std_args)
 {
-	assert(std_args);
+	FF_VALIDATE(std_args);
+
 	if (std_args)
 	{
 		init_std_args(std_args);
@@ -182,10 +231,16 @@ void ff_destroy_std_args(FF_STD_ARGS_PTR std_args)
 void ff_destroy_process_info(PROCESS_INFO_PTR pinfo)
 {
 	FF_VALIDATE(pinfo);
-	if (pinfo->mate)
-		FF_VALIDATE(pinfo->mate);
-	
+
+	if (pinfo->name)
+	{
+		memFree(pinfo->name, "pinfo->name");
+		pinfo->name = NULL;
+	}
+
 #ifdef FF_CHK_ADDR
+	pinfo->locked_buffer = NULL;
+
 	pinfo->check_address = NULL;
 #endif
 
@@ -193,8 +248,20 @@ void ff_destroy_process_info(PROCESS_INFO_PTR pinfo)
 
 	if (pinfo->mate)
 	{
+		FF_VALIDATE(pinfo->mate);
+
 #ifdef FF_CHK_ADDR
 		pinfo->mate->check_address = NULL;
+#endif
+
+		if (pinfo->mate->name)
+		{
+			memFree(pinfo->mate->name, "pinfo->mate->name");
+			pinfo->mate->name = NULL;
+		}
+
+#ifdef FF_CHK_ADDR
+		pinfo->mate->locked_buffer = NULL;
 #endif
 
 		pinfo->mate->pole = NULL;
@@ -208,7 +275,7 @@ void ff_destroy_process_info(PROCESS_INFO_PTR pinfo)
 
 void ff_destroy_process_info_list(PROCESS_INFO_LIST pinfo)
 {
-	assert(pinfo);
+	FF_VALIDATE(pinfo);
 	
 	dll_free_holdings(pinfo);
 }
@@ -390,8 +457,13 @@ void ff_destroy_variable(VARIABLE_PTR variable)
 		variable->eqn_info = NULL;
 	}
 
-	if (IS_TRANSLATOR_VAR(variable) && variable->misc.nt_trans)
+	if (IS_TRANSLATOR(variable) && variable->misc.nt_trans)
 		nt_free_trans(variable->misc.nt_trans);
+	else if (IS_CONVERT(variable) && variable->misc.cv_var_num)
+	{
+	}
+	else if (variable->misc.mm)
+		mm_free(variable->misc.mm);
 	
 #ifdef FF_CHK_ADDR
 	variable->check_address = NULL;
@@ -528,23 +600,21 @@ int ff_copy_variable
 	FF_VALIDATE(target_var);
 	
 	error = 0;
-	if (IS_TRANSLATOR_VAR(source_var) && source_var->misc.nt_trans)
+	if (IS_TRANSLATOR(source_var) && source_var->misc.nt_trans)
 	{
 		error = nt_copy_translator_sll(source_var, target_var);
 		if (error)
 			return(error);
 	}
 
-	if (IS_ARRAY(source_var))
+	if (source_var->array_desc_str)
 	{
 		if (target_var->array_desc_str)
 			memFree(target_var->array_desc_str, "target_var->array_desc_str");
 
 		target_var->array_desc_str = memStrdup(source_var->array_desc_str, "source_var->array_desc_str");
 		if (!target_var->array_desc_str)
-		{
 			return(error = err_push(ERR_MEM_LACK, ""));
-		}
 	}
 
 	/* Does source_var have a keyworded variable type?  If it does, record_title contains
@@ -638,7 +708,7 @@ FF_BUFSIZE_PTR ff_create_bufsize(long total_bytes)
 		bufsize->bytes_used = 0;
 		if (total_bytes)
 		{
-			bufsize->buffer = (char *)memMalloc((size_t)total_bytes, "bufsize->buffer");
+			bufsize->buffer = (char *)memCalloc((size_t)total_bytes, 1, "bufsize->buffer");
 			if (bufsize->buffer)
 			{
 				bufsize->total_bytes = (FF_BSS_t)total_bytes;
@@ -871,238 +941,6 @@ size_t ffv_type_size(FF_TYPES_t var_type)
 	return(byte_size);
 }
 
-#ifdef FF_DBG
-
-#ifdef ROUTINE_NAME
-#undef ROUTINE_NAME
-#endif
-#define ROUTINE_NAME "display_variable"
-
-/*****************************************************************************
- * NAME: display_variable
- *
- * PURPOSE: Display a variable to a text buffer
- *
- * USAGE:  error = display_variable(format->variables, bufsize_ptr);
- *
- * RETURNS:  Zero on success, an error code on failure
- *
- * DESCRIPTION:  Appends to the bufsize a text representation
- * of a variable.  The format looks like:
- *
- * Variable <number>: <name>
- * <type name>
- * <start_pos>
- * <end_pos>
- * <precision>
- * <check_address>
- *
- * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * GLOBALS:
- *
- * COMMENTS:
- *
- * KEYWORDS:
- *
- * ERRORS:
- ****************************************************************************/
-
-static int display_variable
-	(
-	 VARIABLE_PTR var,
-	 FF_BUFSIZE_PTR bufsize
-	)
-{
-	FF_VALIDATE(var);
-
-	/* print variable name */
-	if (bufsize->total_bytes - bufsize->bytes_used + strlen(var->name) < SCRATCH_QUANTA)
-	{
-		if (ff_resize_bufsize(bufsize->total_bytes + strlen(var->name) + SCRATCH_QUANTA, &bufsize))
-			return(ERR_MEM_LACK);
-	}
-
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\tVariable: %s\n", var->name);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print variable type */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t\t%s\n", ff_lookup_string(variable_types, var->type));
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print variable start_pos */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t\t%d\n", (int)var->start_pos);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print variable end_pos */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t\t%d\n", (int)var->end_pos);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print variable precision */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t\t%d\n", (int)var->precision);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print variable check_address */
-#ifdef FF_CHK_ADDR
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t\t%lX\n", (long)var->check_address);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-#endif
-
-	return(0);
-}
-
-#ifdef ROUTINE_NAME
-#undef ROUTINE_NAME
-#endif
-#define ROUTINE_NAME "display_variable_list"
-
-/*****************************************************************************
- * NAME: display_variable_list
- *
- * PURPOSE: Display variables in a list to a text buffer
- *
- * USAGE:  error = display_variable_list(format->variables, bufsize_ptr);
- *
- * RETURNS:  Zero on success, an error code on failure
- *
- * DESCRIPTION:  Appends to the bufsize a text representation of a variable list.
- *
- * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * GLOBALS:
- *
- * COMMENTS:
- *
- * KEYWORDS:
- *
- * ERRORS:
- ****************************************************************************/
-
-static int display_variable_list
-	(
-	 VARIABLE_LIST vlist,
-	 FF_BUFSIZE_PTR bufsize
-	)
-{
-	VARIABLE_PTR var = NULL;
-	int error = 0;
-	
-	vlist = dll_first(vlist);
-	var   = FF_VARIABLE(vlist);
-	while (var && !error)
-	{
-		error = display_variable(var, bufsize);
-
-		vlist = FFV_NEXT_VARIABLE(vlist);
-		var   = FF_VARIABLE(vlist);
-	}
-	
-	return(error);
-}
-
-#ifdef ROUTINE_NAME
-#undef ROUTINE_NAME
-#endif
-#define ROUTINE_NAME "display_format"
-
-/*****************************************************************************
- * NAME: display_format
- *
- * PURPOSE: Display a format to a text buffer for debugging
- *
- * USAGE:  error = display_format(format, bufsize_ptr);
- *
- * RETURNS:  Zero on success, an error code on failure
- *
- * DESCRIPTION:  Appends to the bufsize a text representation of a format.
- * The format looks like:
- *
- * Format: <name>
- * <type name>
- * <num_in_list>
- * <max_length>
- * <check_address>
- * <variables...>
- *
- * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * GLOBALS:
- *
- * COMMENTS:
- *
- * KEYWORDS:
- *
- * ERRORS:
- ****************************************************************************/
-
-static int display_format
-	(
-	 FORMAT_PTR format,
-	 FF_BUFSIZE_PTR bufsize
-	)
-{
-	int error = 0;
-	
-	FF_VALIDATE(format);
-
-	/* print format name */
-	if (bufsize->total_bytes - bufsize->bytes_used + strlen(format->name) < SCRATCH_QUANTA)
-	{
-		if (ff_resize_bufsize(bufsize->total_bytes + strlen(format->name) + SCRATCH_QUANTA, &bufsize))
-			return(ERR_MEM_LACK);
-	}
-
-	sprintf(bufsize->buffer + bufsize->bytes_used, "Format: %s\n", format->name);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print format type */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t%s\n", ff_lookup_string(format_types, format->type));
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print format number in list */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t%d\n", (int)format->num_vars);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print variable maximum length */
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t%d\n", (int)format->length);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-	
-	/* print format check_address */
-#ifdef FF_CHK_ADDR
-	sprintf(bufsize->buffer + bufsize->bytes_used, "\t%lX\n", (long)format->check_address);
-	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
-#endif
-
-	error = display_variable_list(format->variables, bufsize);
-	return(error);
-}
-
-int ff_format_to_debug_log(FORMAT_PTR format)
-{
-	int error;
-	FF_BUFSIZE_PTR bufsize = NULL;
-	
-	bufsize = ff_create_bufsize(FF_DBG_LOG_SIZE);
-	if (!bufsize)
-		return(ERR_MEM_LACK);
-	
-	error = display_format(format, bufsize);
-	if (!error)
-		error = ff_bufsize_to_textfile_append(FF_DBG_LOG, bufsize);
-	
-	ff_destroy_bufsize(bufsize);
-
-	return(error);
-}
-
-#endif /* FF_DBG */
-
 /*
  * NAME:	fd_destroy_format_data
  *              
@@ -1218,7 +1056,7 @@ FORMAT_DATA_PTR fd_create_format_data
 		format_data->state.unused     = 0;
 	}
 	
-	format_data->data = ff_create_bufsize(data_size);
+	format_data->data = ff_create_bufsize(data_size ? data_size : 1);
 	if (!format_data->data)
 	{
 		error = err_push(ERR_MEM_LACK, "new format-data");
@@ -1289,7 +1127,9 @@ int ff_create_format_data_mapping
 	assert(format_data_map_h);
 	assert(*format_data_map_h == NULL);
 
-	FF_VALIDATE(input);
+	if (input)
+		FF_VALIDATE(input);
+
 	FF_VALIDATE(output);
 	
 	*format_data_map_h = (FORMAT_DATA_MAPPING_PTR)memMalloc(sizeof(FORMAT_DATA_MAPPING), "*format_data_map_h");
@@ -1483,10 +1323,12 @@ void ff_destroy_array_pole(FF_ARRAY_DIPOLE_PTR pole)
 			pole->name = NULL;
 		}
 	
-		pole->connect.file_info.array_offset = 0;
+		pole->connect.file_info.first_array_offset = 0;
+		pole->connect.file_info.current_array_offset = 0;
 
 		pole->connect.array_done = 0;
 		pole->connect.bytes_left = 0;
+		pole->connect.bytes_done = 0;
 
 		memFree(pole, "pole");
 	}
@@ -1588,97 +1430,80 @@ void ff_destroy_array_conduit_list(FF_ARRAY_CONDUIT_LIST conduit_list)
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "make_tabular_format_array_mapping"
 
-static int make_tabular_format_array_mapping
-	(
-	 FF_ARRAY_DIPOLE_PTR pole,
-	 long num_records,
-	 long records_to_do
-	)
-{
-	char input_desc_str[35];
-	char output_desc_str[35];
-	ARRAY_DESCRIPTOR_PTR input_desc = NULL;
-	ARRAY_DESCRIPTOR_PTR output_desc = NULL;
-	
-	if (pole)
-	{
-		long start_record = 0;
-		long end_record = 0;
-
-		sprintf(input_desc_str,
-		        "[\"t\" 1 to %ld] %u",
-				  num_records ? num_records : records_to_do,
-		        (unsigned)FORMAT_LENGTH(pole->fd->format)
-		       );
-		input_desc = ndarr_create_from_str(input_desc_str);
-		if (!input_desc)
-			return(ERR_GEN_ARRAY);
-	
-		if (records_to_do >= 0)
-		{
-			start_record = 1;
-			end_record = records_to_do ? records_to_do : num_records;
-		}
-		else
-		{
-			start_record = num_records - -records_to_do + 1;
-			end_record = num_records;
-		}
-
-		sprintf(output_desc_str,
-		        "[\"t\" %ld to %ld] %u",
-				  start_record,
-		        end_record,
-		        (unsigned)FORMAT_LENGTH(pole->fd->format)
-		       );
-		output_desc = ndarr_create_from_str(output_desc_str);
-		if (!output_desc)
-			return(ERR_GEN_ARRAY);
-				
-		pole->array_mapping = ndarr_create_mapping(output_desc, input_desc);
-		if (!pole->array_mapping)
-			return(ERR_GEN_ARRAY);
-	}
-	
-	pole->connect.array_done = 0;
-
-	return(0);
-}
-
-#undef ROUTINE_NAME
-#define ROUTINE_NAME "make_tabular_format_array_mappings"
-
-int make_tabular_format_array_mappings
+int make_tabular_format_array_mapping
 	(
 	 PROCESS_INFO_PTR pinfo,
 	 long num_records,
-	 long records_to_do
+	 long start_record,
+	 long end_record
 	)
 {
-	int error = 0;
+#ifdef ND_FP 
+	FILE *fp = NULL;
+#endif
+
+	char super_desc_str[35];
+	char sub_desc_str[35];
+	ARRAY_DESCRIPTOR_PTR super_desc = NULL;
+	ARRAY_DESCRIPTOR_PTR sub_desc = NULL;
 	
 	FF_VALIDATE(pinfo);
 
 	if (PINFO_ARRAY_MAP(pinfo))
+	{
+#ifdef ND_FP 
+		if (IS_INPUT(PINFO_FORMAT(pinfo)) && PINFO_IS_FILE(pinfo))
+		{
+			fp = PINFO_SUPER_ARRAY(pinfo)->fp;
+			PINFO_SUPER_ARRAY(pinfo)->fp = NULL;
+		}
+		else if (IS_OUTPUT(PINFO_FORMAT(pinfo)) && PINFO_IS_FILE(pinfo))
+		{
+			fp = PINFO_SUB_ARRAY(pinfo)->fp;
+			PINFO_SUB_ARRAY(pinfo)->fp = NULL;
+		}
+#endif
 		destroy_mapping(PINFO_ARRAY_MAP(pinfo));
+	}
 
-	error = make_tabular_format_array_mapping(PINFO_POLE(pinfo), num_records, records_to_do ? records_to_do : num_records);
-	if (error)
-		return(error);
+	sprintf(super_desc_str,
+		     "[\"t\" 1 to %ld] %u",
+			  num_records,
+		     (unsigned)PINFO_RECL(pinfo)
+		    );
+	super_desc = ndarr_create_from_str(NULL, super_desc_str);
+	if (!super_desc)
+		return(ERR_GEN_ARRAY);
+
+	sprintf(sub_desc_str,
+		     "[\"t\" %ld to %ld] %u",
+			  start_record,
+		     end_record,
+		     (unsigned)PINFO_RECL(pinfo)
+		    );
+	sub_desc = ndarr_create_from_str(NULL, sub_desc_str);
+	if (!sub_desc)
+		return(ERR_GEN_ARRAY);
+			
+	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
+	if (!PINFO_ARRAY_MAP(pinfo))
+	{
+		ndarr_free_descriptor(sub_desc);
+		ndarr_free_descriptor(super_desc);
+
+		return(ERR_GEN_ARRAY);
+	}
+
+	PINFO_ARRAY_DONE(pinfo) = 0;
 
 	PINFO_BYTES_LEFT(pinfo) = PINFO_SUB_ARRAY_BYTES(pinfo);
 
-	if (PINFO_MATE(pinfo))
-	{
-		if (PINFO_MATE_ARRAY_MAP(pinfo))
-			destroy_mapping(PINFO_MATE_ARRAY_MAP(pinfo));
-
-		error = make_tabular_format_array_mapping(PINFO_MATE_POLE(pinfo), records_to_do ? labs(records_to_do) : num_records, records_to_do ? labs(records_to_do) : num_records);
-		if (error)
-			return(error);
-
-		PINFO_MATE_BYTES_LEFT(pinfo) = PINFO_MATE_SUB_ARRAY_BYTES(pinfo);
-	}
+#ifdef ND_FP 
+	if (IS_INPUT(PINFO_FORMAT(pinfo)) && PINFO_IS_FILE(pinfo))
+		PINFO_SUPER_ARRAY(pinfo)->fp = fp;
+	else if (IS_OUTPUT(PINFO_FORMAT(pinfo)) && PINFO_IS_FILE(pinfo))
+		PINFO_SUB_ARRAY(pinfo)->fp = fp;
+#endif
 
 	return(0);
 }

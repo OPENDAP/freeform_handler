@@ -788,7 +788,7 @@ char *os_path_make_native(char *native_path, char *path)
 
 	/* look for DOS driver letter/colon combo */
 
-#if FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4	
+#if FF_OS == FF_OS_DOS
 	if (isalpha(path[0]) && path[1] == ':')
 	{
 		native_path[0] = path[0];
@@ -1162,7 +1162,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 
 char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fileext)
 {
-	char temppath[_MAX_PATH];
+	char temppath[MAX_PATH];
 	
 	assert(fullpath);
 	assert(filename);
@@ -1470,7 +1470,6 @@ char *os_str_trim_linespace(char *line)
 	return(line);
 }
 
-static void os_str_replace_xxxcaped_char1_with_char2(int mode, char char1, char char2, char *str)
 /*****************************************************************************
  * NAME: os_str_replace_xxxcaped_char1_with_char2()
  *
@@ -1518,6 +1517,14 @@ static void os_str_replace_xxxcaped_char1_with_char2(int mode, char char1, char 
  * ERRORS:
  ****************************************************************************/
 
+static void os_str_replace_xxxcaped_char1_with_char2
+	(
+	 const char escape,
+	 int mode,
+	 char char1,
+	 char char2,
+	 char *str
+	)
 {
 	char *cp1, *cp2;
 	int num_ESCAPERs = 0;
@@ -1532,7 +1539,7 @@ static void os_str_replace_xxxcaped_char1_with_char2(int mode, char char1, char 
 	while (cp1)
 	{
 		cp2 = cp1 - 1;
-		while (*cp2 == OS_ESCAPER && cp2 >= str)
+		while (*cp2 == escape && cp2 >= str)
 			--cp2;
 		++cp2; /* cp2 points to first OS_ESCAPER in a string preceding char1 */
 	
@@ -1583,7 +1590,7 @@ static void os_str_replace_xxxcaped_char1_with_char2(int mode, char char1, char 
 
 void os_str_replace_unescaped_char1_with_char2(char char1, char char2, char *str)
 {
-	os_str_replace_xxxcaped_char1_with_char2(OS_INVERSE_ESCAPE, char1, char2, str);
+	os_str_replace_xxxcaped_char1_with_char2('\0', OS_INVERSE_ESCAPE, char1, char2, str);
 }
 
 /*****************************************************************************
@@ -1618,9 +1625,15 @@ void os_str_replace_unescaped_char1_with_char2(char char1, char char2, char *str
  * ERRORS:
  ****************************************************************************/
 
-void os_str_replace_escaped_char1_with_char2(char char1, char char2, char *str)
+void os_str_replace_escaped_char1_with_char2
+	(
+	 const char escape,
+	 char char1,
+	 char char2,
+	 char *str
+	)
 {
-	os_str_replace_xxxcaped_char1_with_char2(OS_NORMAL_ESCAPE, char1, char2, str);
+	os_str_replace_xxxcaped_char1_with_char2(escape, OS_NORMAL_ESCAPE, char1, char2, str);
 }
 
 #ifdef ROUTINE_NAME
@@ -1647,4 +1660,19 @@ char *os_strdup(char *s)
 	strcpy(copy, s);
 
 	return(copy);
+}
+
+char *os_strrstr(const char *s1, const char *s2)
+{
+	char *last = strstr(s1, s2);
+	char *next = last;
+
+	while (next)
+	{
+		next = strstr(last + 1, s2);
+		if (next)
+			last = next;
+	}
+
+	return last;
 }

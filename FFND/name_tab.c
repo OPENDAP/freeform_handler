@@ -12,23 +12,25 @@
  
 #include <freeform.h>
 
+#define IS_NTEQUIV_VAR(v)      ((v) ? ((v)->type & FFNT_EQUIV) == FFNT_EQUIV : FALSE)
+#define IS_NTCONSTANT_VAR(v)   ((v) ? (((v)->type & FFNT_CONSTANT) == FFNT_CONSTANT) : FALSE)
+
 /* Module Functions */
 static void *nt_str_to_binary(char *buffer, FF_TYPES_t type);
 BOOLEAN nt_copy_translator_sll(VARIABLE_PTR source_var, VARIABLE_PTR target_var);
 static BOOLEAN nt_copy_translator_ugvalue(FF_TYPES_t value_type,
        void *source_value, void **target_value);
-static int parse_line_into_tokens_by_case(unsigned char status, char *line,
-       char tokens[][MAX_PV_LENGTH + 1], int count_tokens_only);
 void nt_free_trans(TRANSLATOR_PTR trans);
-static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type);
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "ff_string_to_binary"
 
-static int ff_string_to_binary(char *variable_str,	/* variable string address*/ 
-	FF_TYPES_t output_type, 			/* Output variable type */	
-	char *destination)				/* Destination  */
-															  
+int ff_string_to_binary
+	(
+	 char *variable_str,
+	 FF_TYPES_t output_type,
+	 char *destination
+	)
 {
 	double double_var; /* NOTE: leave as double, or change calling convention */
 	char *endptr;
@@ -37,115 +39,16 @@ static int ff_string_to_binary(char *variable_str,	/* variable string address*/
 	assert(variable_str && destination);
 
 	if (IS_TEXT_TYPE(output_type))
-	{
-		strcpy((void *)destination, (void *)variable_str);
-		return(0);
-	}
+		return(err_push(ERR_API, "Calling ff_string_to_binary with text -- file %s, line %d", __FILE__, (int)__LINE__));
 	else
 	{
 		errno = 0;
 		double_var = strtod(variable_str, &endptr);
 		if (FF_STRLEN(endptr) || errno == ERANGE)
-		{
 			return(err_push(ERR_CONVERT,"ASCII to binary number conversion"));
-		}
 	}
 
 	return(btype_to_btype(&double_var, FFV_DOUBLE, destination, FFV_DATA_TYPE_TYPE(output_type)));
-}
-
-/*****************************************************************************
- * NAME:  nt_delete_constant()
- *
- * PURPOSE:  Delete the named constant (or name_equiv) from table
- *
- * USAGE:  error = nt_delete_constant(table, name);
- *
- * RETURNS:  zero on success, otherwise a non-zero failure code
- *
- * DESCRIPTION:  Searches table's format's variable list for name and that
- * variable is removed from the variable list.  So as to avoid fragmenting
- * the values buffer, the deleted variable's space in the values buffer,
- * which is now a hole, is filled over with the remaining variables' constant
- * values.  The remaining variables in the variable list have their start
- * and end positions adjusted accordingly.
- *
- * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * GLOBALS:
- *
- * COMMENTS:
- *
- * KEYWORDS:
- *
- * ERRORS:
- ****************************************************************************/
-static int nt_delete_constant(NAME_TABLE_PTR table, char *name)
-{
-	VARIABLE_LIST v_list = NULL,
-	                  var_node = NULL;
-	FF_BSS_t adjustment = 0;
-
-	FF_VALIDATE(table);
-	FF_VALIDATE(table->format);
-	
-	v_list = FFV_FIRST_VARIABLE(table->format);
-
-	if (name == NULL || strlen(name) == 0)
-		return(ERR_MISSING_TOKEN);
-
-	/* This duplicates ff_find_variable(), but I need the node */
-	while(FF_VARIABLE(v_list))
-	{
-		FF_VALIDATE(FF_VARIABLE(v_list));
-
-		if (memStrcmp(name, FF_VARIABLE(v_list)->name,NO_TAG) == 0)
-			break;
-		v_list = dll_next(v_list);
-	}
-
-	if (FF_VARIABLE(v_list) == NULL)
-		return(ERR_NO_VARIABLES);
-	
-	var_node = v_list;
-
-	adjustment = FF_VAR_LENGTH(FF_VARIABLE(var_node));
-	
-	/* Variable is last in the list, or isn't */
-	
-	table->data->bytes_used -= adjustment;
-	
-	if (FF_VARIABLE(dll_next(var_node)) != NULL)
-	{ /* variable is in the middle, or start -- move it on down */
-		memmove(table->data->buffer + FF_VARIABLE(var_node)->start_pos - 1,
-		 table->data->buffer + FF_VARIABLE(var_node)->end_pos,
-		 (size_t)(table->format->length - FF_VARIABLE(var_node)->end_pos));
-		
-		v_list = dll_next(v_list);
-		while (FF_VARIABLE(v_list))
-		{
-			FF_VALIDATE(FF_VARIABLE(v_list));
-
-			FF_VARIABLE(v_list)->start_pos -= adjustment;
-			FF_VARIABLE(v_list)->end_pos -= adjustment;
-			v_list = dll_next(v_list);
-		}
-	}
-		
-	table->format->length -= adjustment;
-	--table->format->num_vars;
-	
-	if (IS_TRANSLATOR_VAR(FF_VARIABLE(var_node)))
-	{
-		nt_free_trans(FF_VARIABLE(var_node)->misc.nt_trans);
-		FF_VARIABLE(var_node)->misc.nt_trans = FFV_MISC_INIT;
-	}
-
-	dll_delete(var_node);
-
-	return(0);
 }
 
 /*
@@ -182,7 +85,7 @@ static NAME_TABLE_PTR nt_create_name_table(size_t data_size, char *name)
 /*
  * NAME:	nt_add_constant
  *              
- * PURPOSE:	To add a constant into name table.
+ * PURPOSE:	To add a constant into name table or header.
  *
  * USAGE:	NAME_TABLE *table_add_constant(NAME_TABLE_HANDLE htable, char *name, short var_type, void *value_ptr)
  *			htable: a handle (pointer to pointer) to the NAME_TABLE.
@@ -193,15 +96,11 @@ static NAME_TABLE_PTR nt_create_name_table(size_t data_size, char *name)
  *
  * RETURNS:	Zero if sucessful, an error code if failed
  *
- * DESCRIPTION:  Appends a new variable into the name table's format's
- * variable list.  The contents of value_ptr are appended into the name
- * table's values buffer, which is reallocated as necessary by
- * NAME_TABLE_QUANTA increments.  The name table's format's num_in_list and
- * max_length are incremented by one and according to var_type, respectively.
- *
- * If the named constant to be added already exists in the table, then the
- * previous constant in the table is deleted, effectively being replaced by
- * the added constant.
+ * DESCRIPTION:  If a variable with the given name already exists, then overwrite
+ * that variable's buffer space with value_ptr, and update that variable's and
+ * all subsequent variables' start and end positions as needed, and move all
+ * subsequent variables' buffer space as needed.  If a variable cannot be found
+ * with the given name, then add a new variable into the format list.
  *
  * Caution must be used if this function is not called by another name table
  * function.  This function will create a name table if necessary, but
@@ -249,18 +148,31 @@ static NAME_TABLE_PTR nt_create_name_table(size_t data_size, char *name)
  * the name table, though any translators which may be associated with a
  * name_equiv cannot be added with this function.
  *
+ * This call may move contents of name elsewhere; name won't be updated
+ * if name was gotten from nt_get_user_value or nt_get_geovu_value
+ *
  * KEYWORDS:    name table.
  *
  */
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "nt_add_constant"
 
-static int nt_add_constant(NAME_TABLE_HANDLE htable, char *name, FF_TYPES_t var_type, void *value_ptr)
+static int nt_add_constant
+	(
+	 NAME_TABLE_HANDLE htable,
+	 char *name,
+	 FF_TYPES_t format_type,
+	 FF_TYPES_t var_type,
+	 int precision,
+	 void *value_ptr
+	)
 {
 	size_t var_length = 0;
 	VARIABLE_LIST v_list_ok = NULL;
 
-	VARIABLE_PTR var;
+	VARIABLE_PTR var = NULL;
+
+	void *varspace = NULL;
 	
 	assert(name);
 	assert(value_ptr);
@@ -269,60 +181,52 @@ static int nt_add_constant(NAME_TABLE_HANDLE htable, char *name, FF_TYPES_t var_
 
 	if (!*htable)
 	{
-		*htable = nt_create(NULL);
+		*htable = nt_create("run-time");
 		if (!*htable)
 			return(ERR_MEM_LACK);
 		
 		FF_VALIDATE(*htable);
 	}
 
-	/* Replace constant if it already exists */
-						
-	if (ff_find_variable(name, (*htable)->format))
-		(void)nt_delete_constant(*htable, name);
-						
-	var = NULL;
-
-	if (IS_TEXT_TYPE(var_type))
-		var_length = strlen((char *)value_ptr) + 1;
+	if (IS_TEXT_TYPE(var_type) || !IS_BINARY_TYPE(format_type))
+	{
+		/* Want NULL-terminator in name tables but not headers */
+		var_length = strlen((char *)value_ptr) + (IS_TABLE((*htable)->format) ? 1 : 0);
+	}
 	else if (IS_INTEGER_TYPE(var_type) || IS_REAL_TYPE(var_type))
 		var_length = ffv_type_size(var_type);
 	else
 		assert(0);
 
-	while ((*htable)->data->total_bytes < (size_t)(*htable)->format->length + var_length)
+ 	if ((*htable)->data->bytes_used + var_length >= (*htable)->data->total_bytes &&
+	    ff_resize_bufsize((*htable)->data->total_bytes + NAME_TABLE_QUANTA * (1 + (var_length / NAME_TABLE_QUANTA)),
+	                      &(*htable)->data))
+		return(err_push(ERR_MEM_LACK, "Increase Table buffer size"));
+
+	var = ff_find_variable(name, (*htable)->format);
+
+	if (var)
 	{
- 		if (ff_resize_bufsize(  (*htable)->data->total_bytes + NAME_TABLE_QUANTA
-		                      , &(*htable)->data))
-			return(err_push(ERR_MEM_LACK, "Increase Table buffer size"));
-	}
+		varspace = (void *)((*htable)->data->buffer + var->start_pos - 1);
 
-	var = ff_create_variable(name);
-	if (!var)
-		return(err_push(ERR_MEM_LACK,"Adding Name Table Variable"));
+		memmove((char *)varspace + var_length,
+		        (char *)varspace + FF_VAR_LENGTH(var),
+		        (*htable)->data->bytes_used - var->end_pos
+		       );
 
-	var->start_pos = (*htable)->format->length + 1;
-	var->end_pos = var->start_pos + var_length - 1;
-	var->type = var_type;
-	if (IS_REAL(var))
-		var->precision = 6;
-	else
-		var->precision = 0;
-	var->misc.nt_trans = FFV_MISC_INIT;
+		(*htable)->data->bytes_used -= FF_VAR_LENGTH(var);
 
-	if (var_length > (*htable)->data->total_bytes - (*htable)->data->bytes_used)
-	{
-		/* this should be impossible, after resizing above */
-		assert(var_length <= (*htable)->data->total_bytes - (*htable)->data->bytes_used);
+		update_format_var(var_type, (FF_NDX_t)var_length, var, (*htable)->format);
 	}
 	else
 	{
-		memcpy((void *)((*htable)->data->buffer + (*htable)->format->length),
-			(void *)value_ptr, var_length);
-		(*htable)->data->bytes_used += var_length;
+		var = ff_create_variable(name);
+		if (!var)
+			return(err_push(ERR_MEM_LACK,"Adding Name Table Variable"));
+
+		var->start_pos = (*htable)->format->length + 1;
 
 		++(*htable)->format->num_vars;
-		(*htable)->format->length += var_length;
 		
 		/* Add variable to format */
 		v_list_ok = dll_add((*htable)->format->variables);
@@ -332,7 +236,27 @@ static int nt_add_constant(NAME_TABLE_HANDLE htable, char *name, FF_TYPES_t var_
 			(*htable)->format = NULL;
 			return(err_push(ERR_MEM_LACK,"Table Variable"));
 		}
+
 		dll_assign(var, DLL_VAR, v_list_ok);
+
+		varspace = (void *)((*htable)->data->buffer + (*htable)->format->length);
+
+		(*htable)->format->length += var_length;
+		var->end_pos = var->start_pos + var_length - 1;
+	}
+	
+	var->type = var_type;
+	var->precision = (short)precision;
+
+	if (var_length > (*htable)->data->total_bytes - (*htable)->data->bytes_used)
+	{
+		/* this should be impossible, after resizing above */
+		assert(var_length <= (*htable)->data->total_bytes - (*htable)->data->bytes_used);
+	}
+	else
+	{
+		memcpy(varspace, (void *)value_ptr, var_length);
+		(*htable)->data->bytes_used += var_length;
 	}
 
 	return(0);
@@ -380,7 +304,7 @@ NAME_TABLE_PTR nt_create(char *origin)
 		return(NULL);
 	}
 
-	nt->format->type = FFF_BINARY | FFF_INPUT;
+	nt->format->type = FFF_BINARY | FFF_INPUT | FFF_TABLE;
 
 	nt->format->variables = dll_init();
 	if (!nt->format->variables)
@@ -588,12 +512,207 @@ NAME_TABLE_PTR nt_create(char *origin)
 #define IN_CONSTANT_TABLE 1
 #define IN_EQUIV_TABLE 2
 
-#define COUNT_TOKENS_ONLY 1
+#define COUNT_TOKENS_ONLY TRUE
 #define MAX_TOKENS 4
 
 #define NUM_NAME_EQUIV_TOKENS 2
 #define NUM_CONSTANT_TOKENS 3
 #define NUM_TRANSLATOR_TOKENS 4
+
+/*****************************************************************************
+ * NAME: parse_line_into_tokens()
+ *
+ * PURPOSE:  Parses a text line from an eqv into tokens
+ *
+ * USAGE:  num_tokens = parse_line_into_tokens(line, tokens);
+ *
+ * RETURNS:  Number of tokens parsed
+ *
+ * DESCRIPTION:  Copies the tokens of line, which are separated by whitespace,
+ * into the array tokens.  The variable status must be either IN_CONSTANT_TABLE
+ * or IN_EQUIV_TABLE -- any other value and this function returns zero and the
+ * contents of the array tokens is undefined.
+ *
+ * In the case IN_CONSTANT_TABLE the first two tokens are copied into the
+ * first two elements of the array tokens, respectively, and whatever follows
+ * is copied into the third element -- this allows for the defined value in
+ * the constant section to contain whitespace itself, e.g.,
+ *
+ * ff_array char array_name[1 to 2][1 to 80]
+ *
+ * In the case IN_EQUIV_TABLE either two or four tokens are expected, depending
+ * on whether a name equivalence or a translator is being read.
+ *
+ * A line beginning with a forward slash ('/') indicates a comment line,
+ * which is ignored (return with a value of zero; tokens is undefined).
+ *
+ * If count_tokens_only is non-zero, then the array tokens is not filled,
+ * and token counting only is done.
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * GLOBALS:
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:
+ *
+ * ERRORS:
+ ****************************************************************************/
+
+static int parse_line_into_tokens_by_case
+	(
+	 unsigned char status,
+	 char *line,
+	 char *tokens[MAX_TOKENS],
+	 int count_tokens_only
+	)
+{
+	enum {COMMENT_INDICATOR = '/'};
+
+	char *ch_ptr = line;
+	int num_tokens = 0;
+	
+	assert(ch_ptr);
+	
+	while (isspace(*ch_ptr))
+		++ch_ptr;
+	
+	if (*ch_ptr == COMMENT_INDICATOR)
+		return(0);
+
+	switch (status)
+	{
+		case IN_CONSTANT_TABLE:
+			while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+			{
+				if (isspace(*ch_ptr))
+					++ch_ptr;
+				else
+				{
+					if (!count_tokens_only)
+						tokens[num_tokens] = ch_ptr;
+
+					if (num_tokens + 1 < NUM_CONSTANT_TOKENS)
+					{
+						while (!isspace(*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+							++ch_ptr;
+					}
+					else if (num_tokens + 1 == NUM_CONSTANT_TOKENS)
+					{
+						/* Allow multiple words */
+						while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+							++ch_ptr;
+					}
+
+					if (!count_tokens_only && strcspn(ch_ptr, UNION_EOL_CHARS))
+					{
+						*ch_ptr = STR_END;
+						++ch_ptr;
+					}
+
+					++num_tokens;
+				}
+			}
+
+		break;
+
+		case IN_EQUIV_TABLE:
+			while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+			{
+				if (isspace(*ch_ptr))
+					++ch_ptr;
+				else
+				{
+					if (!count_tokens_only)
+						tokens[num_tokens] = ch_ptr;
+
+					while (!isspace(*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+						++ch_ptr;
+
+					if (!count_tokens_only && strcspn(ch_ptr, UNION_EOL_CHARS))
+					{
+						*ch_ptr = STR_END;
+						++ch_ptr;
+					}
+
+					++num_tokens;
+				}
+			}
+
+		break;
+	}
+
+	return(num_tokens);
+}
+
+static void reconstitute_line
+	(
+	 unsigned char status,
+	 int num_tokens,
+	 char *line
+	)
+{
+	char *cp = NULL;
+
+	switch (status)
+	{
+		case IN_CONSTANT_TABLE:
+			line[strlen(line)] = ' ';
+
+			cp = line + strlen(line) + 1;
+			while (isspace(*cp))
+				++cp;
+
+			os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
+
+			line[strlen(line)] = ' ';
+		break;
+
+		case IN_EQUIV_TABLE:
+			switch (num_tokens)
+			{
+				case NUM_NAME_EQUIV_TOKENS:
+
+					cp = line;
+					while (isspace(*cp))
+						++cp;
+
+					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
+
+					cp = line + strlen(line) + 1;
+					while (isspace(*cp))
+						++cp;
+
+					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
+
+					line[strlen(line)] = ' ';
+				break;
+
+				case NUM_TRANSLATOR_TOKENS:
+
+					cp = line + strlen(line) + 1;
+					while (isspace(*cp))
+						++cp;
+
+					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
+					line[strlen(line)] = ' ';
+					line[strlen(line)] = ' ';
+
+					cp = line + strlen(line) + 1;
+					while (isspace(*cp))
+						++cp;
+
+					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
+
+					line[strlen(line)] = ' ';
+				break;
+			}
+		break;
+	}
+}
 
 int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 {
@@ -601,14 +720,14 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 	
 	char *line            = NULL;
 	char *next_line       = NULL;
-	char  tokens[MAX_TOKENS][MAX_PV_LENGTH + 1];
-	char *geovu_name      = NULL;
+	char *tokens[MAX_TOKENS];
+	char *value_name      = NULL;
 	char *gvalue_type_str  = NULL;
 	char *geovu_value_str = NULL;
 	char *user_name       = NULL;
 	char *uvalue_type_str   = NULL;
 	char *user_value_str  = NULL;
-	char scratch_buffer[MAX_PV_LENGTH + 1];
+	char scratch_buffer[sizeof(double) + 1];
 	
 	int num_tokens;
 	int num_lines = 0;
@@ -625,7 +744,7 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 	
 	int error = 0;
   
-	*htable = nt_create(origin);
+	*htable = nt_create(origin ? origin : "run-time");
 	if (!*htable)
 		return(ERR_MEM_LACK);
 
@@ -719,18 +838,18 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 					
 					case NUM_NAME_EQUIV_TOKENS:
 						trans = NULL;	/* End TRANSLATOR Creation */
-						geovu_name = tokens[0];
-						if (*geovu_name == '$')
-							++geovu_name;
-						os_str_replace_unescaped_char1_with_char2('%', ' ', geovu_name);
+						value_name = tokens[0];
+						if (*value_name == '$')
+							++value_name;
+						os_str_replace_unescaped_char1_with_char2('%', ' ', value_name);
 		
 						user_name = tokens[1];
 						os_str_replace_unescaped_char1_with_char2('%', ' ', user_name);
 						
 						/* Create a character type variable with the GeoVu name as
 						the variable name and the user name as the value */
-						gvalue_type = ff_lookup_number(variable_types, "char") | FFV_EQUIV;
-						error = nt_add_constant(htable, geovu_name, gvalue_type, (void *)user_name);
+						gvalue_type = ff_lookup_number(variable_types, "char") | FFNT_EQUIV;
+						error = nt_add_constant(htable, value_name, FFF_BINARY, gvalue_type, IS_REAL_TYPE(gvalue_type) ? 6 : 0, (void *)user_name);
 						if (error)
 						{
 							fd_destroy_format_data(*htable);
@@ -743,6 +862,7 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 						{
 							var->type |= FFV_TRANSLATOR;
 						}
+
 					break;
 						
 					case NUM_TRANSLATOR_TOKENS:
@@ -779,10 +899,11 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 						uvalue_type = ff_lookup_number(variable_types, uvalue_type_str);
 						if (gvalue_type == FF_VAR_TYPE_FLAG || uvalue_type == FF_VAR_TYPE_FLAG)
 						{
-							memFree((char *)trans, "trans");
+							memFree((char *)var->misc.nt_trans, "trans");
+							var->misc.nt_trans = NULL;
 							fd_destroy_format_data(*htable);
 							*htable = NULL;
-							return(err_push(ERR_UNKNOWN_VAR_TYPE,"Translator"));
+							return(err_push(ERR_UNKNOWN_VAR_TYPE, gvalue_type == FF_VAR_TYPE_FLAG ? gvalue_type_str : uvalue_type_str));
 						}
 						if ((trans->gvalue = nt_str_to_binary(geovu_value_str, gvalue_type)) == NULL)
 						{
@@ -813,6 +934,9 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 						*htable = NULL;
 						return(err_push(ERR_NUM_TOKENS, line));
 					} /* end of switch (num_tokens) */
+
+					reconstitute_line(status, num_tokens, line);
+
 				break;	/* End of IN_EQUIV_TABLE case */
 	
 			case IN_CONSTANT_TABLE:
@@ -849,7 +973,7 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 					break;
 					
 					case NUM_CONSTANT_TOKENS:
-						geovu_name = tokens[0];
+						value_name = tokens[0];
 						gvalue_type_str = tokens[1];
 						geovu_value_str = tokens[2];
 						
@@ -862,22 +986,31 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 						}
 						os_str_replace_unescaped_char1_with_char2('%', ' ', geovu_value_str);
 
-						error = ff_string_to_binary(geovu_value_str, gvalue_type, scratch_buffer);
+						if (!IS_TEXT_TYPE(gvalue_type))
+						{
+							error = ff_string_to_binary(geovu_value_str, gvalue_type, scratch_buffer);
+							if (error)
+							{
+								fd_destroy_format_data(*htable);
+								*htable = NULL;
+								return(error);
+							}
+						}
+
+						gvalue_type |= FFNT_CONSTANT;
+
+						error = nt_add_constant(htable, value_name, FFF_BINARY, gvalue_type, IS_REAL_TYPE(gvalue_type) ? 6 : 0, (void *)(IS_TEXT_TYPE(gvalue_type) ? geovu_value_str : scratch_buffer));
 						if (error)
 						{
 							fd_destroy_format_data(*htable);
 							*htable = NULL;
 							return(error);
 						}
-						gvalue_type |= FFV_CONSTANT;
-						error = nt_add_constant(htable, geovu_name, gvalue_type, (void *)scratch_buffer);
-						if (error)
-						{
-							fd_destroy_format_data(*htable);
-							*htable = NULL;
-							return(error);
-						}
+
 						var = FF_VARIABLE(dll_last((*htable)->format->variables));
+
+						reconstitute_line(status, num_tokens, line);
+
 					break;
 				
 					default:
@@ -918,7 +1051,7 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
  *              
  * PURPOSE:	To find user-defined name using a geovu dictionary name
  *
- * USAGE:	char *nt_find_user_name(NAME_TABLE_PTR table, char *geovu_name)
+ * USAGE:	char *nt_find_user_name(NAME_TABLE_PTR table, char *value_name)
  *
  * RETURNS:	if success, return a pointer to user-defined name,
  * otherwise return NULL.
@@ -929,7 +1062,7 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
  *
  * GLOBALS:
  *
- * AUTHOR:      Liping Di, NGDC, (303) 497 - 6284, lpd@ngdc.noaa.gov
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
  * COMMENTS:    
  *
@@ -937,25 +1070,120 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
  *
  */
 
-static char *nt_find_user_name(NAME_TABLE_PTR table, char *geovu_name)
+char *nt_find_user_name
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t origin_type,
+	 char *value_name,
+	 NAME_TABLE_HANDLE table_h
+	)
 {
-	VARIABLE_PTR var;
+	NAME_TABLE_PTR table = NULL;
+	VARIABLE_PTR var = NULL;
 
-	if (!table)
+	FF_VALIDATE(dbin);
+
+	table = fd_find_format_data(dbin->table_list,
+	                            FFF_GROUP,
+	                            FFF_TABLE |
+	                            (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT)
+	                           );
+	if (table)
+	{
+		FF_VALIDATE(table);
+		FF_VALIDATE(table->format);
+
+		if (table_h)
+			*table_h = table;
+	}
+	else
 		return(NULL);
 	
-	FF_VALIDATE(table);
-	FF_VALIDATE(table->format);
-
-	if (!geovu_name)
+	if (!value_name)
 		return(NULL);
 
-	var = ff_find_variable(geovu_name, table->format);
+	var = ff_find_variable(value_name, table->format);
 	if (!var)
-		return((char *)NULL);
+		return(NULL);
 	
-	if (var && IS_EQUIV_VAR(var))
-		return(memStrdup(table->data->buffer + var->start_pos - 1, NO_TAG));
+	if (var && IS_NTEQUIV_VAR(var))
+		return table->data->buffer + var->start_pos - 1;
+	else
+		return(NULL);
+}
+
+/*
+ * NAME:	nt_find_geovu_name
+ *              
+ * PURPOSE:	To find geovu standard name using a geovu dictionary name
+ *
+ * USAGE:	char *nt_find_geovu_name(dbin, origin, user_name, &name_table)
+ *
+ * RETURNS:	if success, return a pointer to geovu-defined name,
+ * otherwise return NULL.
+ *
+ * DESCRIPTION: 
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:  none
+ *
+ * GLOBALS:
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * COMMENTS:    
+ *
+ * KEYWORDS:    dictionary, equivalence name.
+ *
+ */
+
+
+char *nt_find_geovu_name
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t origin_type,
+	 char *user_name,
+	 NAME_TABLE_HANDLE table_h
+	)
+{
+	NAME_TABLE_PTR table = NULL;
+
+	VARIABLE_LIST vlist = NULL;
+	VARIABLE_PTR var = NULL;
+
+	FF_VALIDATE(dbin);
+
+	table = fd_find_format_data(dbin->table_list,
+	                            FFF_GROUP,
+	                            FFF_TABLE |
+	                            (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT)
+	                           );
+	if (table)
+	{
+		FF_VALIDATE(table);
+		FF_VALIDATE(table->format);
+
+		if (table_h)
+			*table_h = table;
+	}
+	else
+		return(NULL);
+	
+	if (!user_name)
+		return(NULL);
+
+	vlist = FFV_FIRST_VARIABLE(table->format);
+	var = FF_VARIABLE(vlist);
+	while (var)
+	{
+		if (IS_NTEQUIV_VAR(var) && !strncmp(table->data->buffer + var->start_pos - 1, user_name, FF_VAR_LENGTH(var)))
+			break;
+
+		vlist = dll_next(vlist);
+		var = FF_VARIABLE(vlist);
+	}
+
+	if (var && IS_NTEQUIV_VAR(var))
+		return var->name;
 	else
 		return(NULL);
 }
@@ -1006,14 +1234,7 @@ BOOLEAN nt_askexist
 
 	FF_VALIDATE(dbin);
 	
-	table = fd_find_format_data(dbin->table_list, FFF_GROUP, FFF_TABLE | (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT));
-	if (table)
-	{
-		FF_VALIDATE(table);
-		FF_VALIDATE(table->format);
-
-		user_name = (char *)nt_find_user_name(table, name);
-	}
+	user_name = nt_find_user_name(dbin, origin_type, name, &table);
 
 	if (IS_REC_TYPE(origin_type))
 	{
@@ -1048,11 +1269,11 @@ BOOLEAN nt_askexist
 	{
  		VARIABLE_PTR var = NULL;
 
- 		if ((var = ff_find_variable(name, table->format)) != NULL && IS_CONSTANT_VAR(var))
+ 		if ((var = ff_find_variable(name, table->format)) != NULL && IS_NTCONSTANT_VAR(var))
 			found = TRUE;
 		else if (user_name &&
 		         (var = ff_find_variable(user_name, table->format)) != NULL &&
-		          IS_CONSTANT_VAR(var)
+		          IS_NTCONSTANT_VAR(var)
 		        )
 			found = TRUE;
 	} /* if not found so far and there is a name table */
@@ -1070,9 +1291,6 @@ BOOLEAN nt_askexist
 		}
 	} /* if not found so far */
 
-	if (user_name)
-		memFree(user_name, "user_name");
-
 	return(found);
 }
 
@@ -1082,15 +1300,15 @@ BOOLEAN nt_askexist
  * PURPOSE:	To find the GeoVu value given a geovu name and a user-defined value
  *
  * USAGE:	BOOLEAN nt_get_geovu_value(NAME_TABLE_PTR table,
- *					char *geovu_name, void *user_value, FF_TYPES_t uvalue_type,
+ *					char *value_name, void *user_value, FF_TYPES_t uvalue_type,
  *					void *geovu_value, FF_TYPES_t *gvalue_type)
  *
  * RETURNS:	On success, return TRUE:
  * geovu_value and gvalue_type will be set according to
  * translating table when it exist.  Return FALSE if no translators exist for
- * geovu_name or no translator is found with a uvalue that equals user_value.
+ * value_name or no translator is found with a uvalue that equals user_value.
  *
- * DESCRIPTION:  The list of translators for geovu_name is searched until one
+ * DESCRIPTION:  The list of translators for value_name is searched until one
  * is found whose uvalue equals user_value.  If the types for a translator's
  * uvalue and user_value are both numeric but not identical user_value is
  * converted to the same type as the translator's so that a comparison can be
@@ -1112,14 +1330,14 @@ BOOLEAN nt_askexist
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "nt_get_geovu_value"
  
-static BOOLEAN nt_get_geovu_value
+BOOLEAN nt_get_geovu_value
 	(
 	 NAME_TABLE_PTR table,
-	 char *geovu_name,
+	 char *gvalue_name,
 	 void *user_value,
 	 FF_TYPES_t uvalue_type,
-	 void *geovu_value,
-	 FF_TYPES_t *gvalue_type
+	 void *value,
+	 FF_TYPES_t *value_type
 	)
 {
 	TRANSLATOR_PTR trans = NULL;
@@ -1128,27 +1346,28 @@ static BOOLEAN nt_get_geovu_value
 	void *vpoint = NULL;
 
 	/* check the input arguments */
-	assert(geovu_name);
+	assert(gvalue_name);
 	assert(user_value);
 	assert(uvalue_type);
-	assert(geovu_value);
-	assert(gvalue_type);
+	assert(value);
+	assert(value_type);
 
 	if (table)
 	{
 		FF_VALIDATE(table);
 		FF_VALIDATE(table->format);
-		var = ff_find_variable(geovu_name, table->format);
+
+		var = ff_find_variable(gvalue_name, table->format);
 	}
 	else
 	{
-		*gvalue_type = FFV_NULL;
+		*value_type = FFV_NULL;
 		return(FALSE);
 	}
 
-	if (!IS_TRANSLATOR_VAR(var))
+	if (!IS_TRANSLATOR(var))
 	{
-		*gvalue_type = FFV_NULL;
+		*value_type = FFV_NULL;
 		return(FALSE);
 	}
 
@@ -1186,8 +1405,8 @@ static BOOLEAN nt_get_geovu_value
 		
 		if (type_cmp(trans->utype, trans->uvalue, vpoint) == 1)
 		{
-			*gvalue_type = trans->gtype;
-			if (btype_to_btype(trans->gvalue, trans->gtype, geovu_value, trans->gtype))
+			*value_type = trans->gtype;
+			if (btype_to_btype(trans->gvalue, trans->gtype, value, trans->gtype))
 				return(FALSE);
 			else
 				return(TRUE);
@@ -1196,7 +1415,8 @@ static BOOLEAN nt_get_geovu_value
 		trans = trans->next;
 	}
 
-	*gvalue_type = FFV_NULL;
+	*value_type = FFV_NULL;
+
 	return(FALSE);
 }
 
@@ -1207,13 +1427,13 @@ static BOOLEAN nt_get_geovu_value
  *			dictionary name, a geovu type and a geovu value.
  *
  * USAGE:	BOOLEAN nt_get_user_value(DATA_BIN_PTR dbin,
- *			char *geovu_name, FF_TYPES_t gvalue_type, void *geovu_value,
+ *			char *value_name, FF_TYPES_t gvalue_type, void *geovu_value,
  *			FF_TYPES_t *uvalue_type, void *user_value)
  *
  * RETURNS:	If success, return TRUE, user_value and uvalue_type will be set
  * according to translation table if it exists.  Otherwise, return FALSE.  
  *
- * DESCRIPTION:  The list of translators for geovu_name is searched until one
+ * DESCRIPTION:  The list of translators for value_name is searched until one
  * is found whose gvalue equals geovu_value.  If the types for a translator's
  * gvalue and geovu_value are both numeric but not identical geovu_value is
  * converted to the same type as the translator's so that a comparison can be
@@ -1237,9 +1457,15 @@ static BOOLEAN nt_get_geovu_value
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "nt_get_user_value"
  
-static BOOLEAN nt_get_user_value(NAME_TABLE_PTR table, char *geovu_name,
-	void *geovu_value, FF_TYPES_t gvalue_type, 
-	void *user_value, FF_TYPES_t *uvalue_type)
+BOOLEAN nt_get_user_value
+	(
+	 NAME_TABLE_PTR table,
+	 char *gvalue_name,
+	 void *geovu_value,
+	 FF_TYPES_t gvalue_type, 
+	 void *user_value,
+	 FF_TYPES_t *uvalue_type
+	)
 {
 	TRANSLATOR *trans = NULL;
 	void *vpoint;
@@ -1247,7 +1473,7 @@ static BOOLEAN nt_get_user_value(NAME_TABLE_PTR table, char *geovu_name,
 	VARIABLE_PTR var = NULL;
 
 	/* check the input arguments */
-	assert(geovu_name);
+	assert(gvalue_name);
 	assert(geovu_value);
 	assert(gvalue_type);
 	assert(user_value);
@@ -1258,13 +1484,8 @@ static BOOLEAN nt_get_user_value(NAME_TABLE_PTR table, char *geovu_name,
 	{
 		FF_VALIDATE(table);
 		FF_VALIDATE(table->format);
-		assert(geovu_value);
-		assert(geovu_name);
-		assert(gvalue_type);
-		assert(user_value);
-		assert(uvalue_type);
 		
-		var = ff_find_variable(geovu_name, table->format);
+		var = ff_find_variable(gvalue_name, table->format);
 	}
 	else
 	{
@@ -1272,7 +1493,7 @@ static BOOLEAN nt_get_user_value(NAME_TABLE_PTR table, char *geovu_name,
 		return(FALSE);
 	}
 
-	if (!IS_TRANSLATOR_VAR(var))
+	if (!IS_TRANSLATOR(var))
 	{
 		*uvalue_type = FFV_NULL;
 		return(FALSE);
@@ -1390,7 +1611,7 @@ static int nt_make_request_format_data
 	var->type = FFV_DATA_TYPE_TYPE(data_type);
 		
 	var->start_pos = 1;
-	if (IS_TEXT_TYPE(data_type))
+	if (IS_TEXT_TYPE(data_type) || IS_CONSTANT_TYPE(data_type) || IS_INITIAL_TYPE(data_type))
 	{
 		var->end_pos = (FF_NDX_t)(*request_fdh)->data->total_bytes - 1; /* minus one! */
 		(*request_fdh)->data->buffer[FF_VAR_LENGTH(var)] = STR_END;
@@ -1416,15 +1637,15 @@ static int nt_make_request_format_data
  *
  * DESCRIPTION:
  * The header format, name table, and environment are searched in order
- * until geovu_name is found.  For each of the above searches if geovu_name
- * is not found then user_name (the name equivalent of geovu_name, if it
+ * until value_name is found.  For each of the above searches if value_name
+ * is not found then user_name (the name equivalent of value_name, if it
  * exists) is searched for.  If it is found, then its associated value is
  * retrieved from the header, name table, or environment, as appropriate.
  * The retrieved value is converted into dest according to data_type, with
  * translation, if appropriate.
  *
  * If the value type is unconvertable (i.e. char to numerical value
- * or numerical to char) or geovu_name is not found the function will return
+ * or numerical to char) or value_name is not found the function will return
  * FALSE.
  *
  * SYSTEM DEPENDENT FUNCTIONS: none     
@@ -1451,10 +1672,10 @@ static int nt_askcore
 	 FORMAT_DATA_PTR request_format_data,
 	 NAME_TABLE_PTR table,
 	 DATA_BIN_PTR dbin,
-	 char *geovu_name,
+	 char *value_name,
 	 char *request_name,
-	 FF_TYPES_t data_type,
-	 void *dest
+	 FF_TYPES_t value_type,
+	 void *value
 	)
 {
 	void *user_value = NULL;
@@ -1471,7 +1692,7 @@ static int nt_askcore
 	if (IS_REC_TYPE(origin_type))
 	{
 		rh_fd = fd_get_header(dbin, FFF_REC | (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT));
-		if (rh_fd && rh_fd->format)
+		if (rh_fd && rh_fd->format && rh_fd->data->bytes_used)
 		{
 			error = nt_convert_value(dbin, request_name, rh_fd, request_format_data);
 			if (error == ERR_NT_KEYNOTDEF)
@@ -1481,7 +1702,7 @@ static int nt_askcore
 			else
 			{
 				found = TRUE;
-				uvalue_type = data_type;
+				uvalue_type = value_type;
 			}
 		}
 	} /* if record header search requested */
@@ -1490,7 +1711,7 @@ static int nt_askcore
 	{
 		/* Check the file header */
 		fh_fd = fd_get_header(dbin, FFF_FILE | (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT));
-		if (fh_fd && fh_fd->format)
+		if (fh_fd && fh_fd->format && fh_fd->data->bytes_used)
 		{
 			error = nt_convert_value(dbin, request_name, fh_fd, request_format_data);
 			if (error == ERR_NT_KEYNOTDEF)
@@ -1500,7 +1721,7 @@ static int nt_askcore
 			else
 			{
 				found = TRUE;
-				uvalue_type = data_type;
+				uvalue_type = value_type;
 			}
 		}
 	} /* if not found and a file header search requested */
@@ -1518,7 +1739,7 @@ static int nt_askcore
 		else
 		{
 			found = TRUE;
-			uvalue_type = data_type;
+			uvalue_type = value_type;
 		}
 	} /* if not found so far and there is a name table */
 	
@@ -1539,14 +1760,19 @@ static int nt_askcore
 		
 		if (found)
 		{
-			error = ff_string_to_binary((char *)user_value, FFV_DATA_TYPE_TYPE(data_type), request_format_data->data->buffer);
-			if (error)
+			if (IS_TEXT_TYPE(value_type))
+				strcpy(request_format_data->data->buffer, user_value);
+			else
 			{
-				memFree(user_value, "user_value");
-				return(err_push(error, "Converting Environment Variable String"));
+				error = ff_string_to_binary((char *)user_value, FFV_DATA_TYPE_TYPE(value_type), request_format_data->data->buffer);
+				if (error)
+				{
+					memFree(user_value, "user_value");
+					return(err_push(error, "Converting Environment Variable String (%s)", request_name));
+				}
 			}
 
-			uvalue_type = FFV_DATA_TYPE_TYPE(data_type);
+			uvalue_type = FFV_DATA_TYPE_TYPE(value_type);
 		}
 	} /* if not found so far */
 
@@ -1563,7 +1789,7 @@ static int nt_askcore
 
 	/* get geovu equivalence value from equivalence value table */
 	if (nt_get_geovu_value(table,
-	                       geovu_name,
+	                       value_name,
 	                       user_value,
 	                       uvalue_type,
 	                       geovu_value,
@@ -1574,8 +1800,8 @@ static int nt_askcore
 	{
 		error = btype_to_btype(user_value,
 		                       uvalue_type,
-		                       dest,
-		                       FFV_DATA_TYPE_TYPE(data_type)
+		                       value,
+		                       FFV_DATA_TYPE_TYPE(value_type)
 		                      );
 		return(error);
 	}
@@ -1583,19 +1809,254 @@ static int nt_askcore
 	/* convert to required data type */
 	error = btype_to_btype(geovu_value,
 	                       gvalue_type,
-	                       dest,
-	                       FFV_DATA_TYPE_TYPE(data_type)
+	                       value,
+	                       FFV_DATA_TYPE_TYPE(value_type)
 	                      );
 	return(error);
 }                
+
+static int adjust_for_new_header_size
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t origin_type,
+	 long diff
+	)
+{
+	int error = 0;
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	/* Get both input and output; & mask gives zero -- tricky! */
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT & FFF_OUTPUT, &plist);
+	if (error == ERR_GENERAL)
+		return 0;
+	else if (error)
+		return(error);
+
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo)
+	{
+		if ((PINFO_TYPE(pinfo) & origin_type) == origin_type)
+		{
+			if (!IS_ARRAY(PINFO_FORMAT(pinfo)))
+			{
+				error = update_following_offsets_or_size(pinfo, plist, diff);
+				if (error)
+					break;
+			}
+		}
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
+	}
+
+	ff_destroy_process_info_list(plist);
+
+	return(error);
+}
+
+/*****************************************************************************
+ * NAME: nt_put
+ *
+ * PURPOSE:  Put a value in a name table or header
+ *
+ * USAGE:  error = nt_put(dbin, nt_type, value_name, value_type, value);
+ *
+ * RETURNS:  Zero on success, an error code on failure.
+ *
+ * DESCRIPTION:
+ * nt_type can be the logical OR'ing of:  FFF_INPUT, FFF_OUTPUT, FFF_REC, FFF_HEADER,
+ * and FFF_TABLE, depending on the desired location for the new value.
+ *
+ * The input or output record header, file header, or name table is located,
+ * and value is added.  If value has name equivalences and translators then
+ * value_name and value will be translated as appropriate.
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * GLOBALS:
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:
+ *
+ * ERRORS:
+ ****************************************************************************/
+
+int nt_put
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t origin_type,
+	 char *value_name,
+	 FF_TYPES_t value_type,
+	 void *value
+	)
+{
+	char user_value[MAX_PV_LENGTH];
+	FF_TYPES_t uvalue_type = 0;
+
+	NAME_TABLE_PTR table = NULL;
+	NAME_TABLE_PTR old_table = NULL;
+
+	FORMAT_DATA_PTR header = NULL;
+
+	char *user_name = NULL;
+	int error = 0;
+
+	FF_VALIDATE(dbin);
+	assert(value);
+	assert(value_name);
+
+	user_name = nt_find_user_name(dbin, (~FFF_IO & origin_type), value_name, &table);
+	if (user_name)
+		nt_get_user_value(table, value_name, value, value_type, &user_value, &uvalue_type);
+
+	old_table = table = fd_find_format_data(dbin->table_list,
+	                                        FFF_GROUP,
+	                                        FFF_TABLE |
+	                                        (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT)
+	                                       );
+	if (!table || !user_name || !uvalue_type)
+	{
+		if (!user_name)
+			user_name = value_name;
+
+		if (!uvalue_type)
+		{
+			uvalue_type = value_type;
+
+			if (IS_TEXT_TYPE(value_type))
+			{
+				strncpy(user_value, value, sizeof(user_value) - 1);
+				user_value[sizeof(user_value) - 1] = STR_END;
+			}
+			else
+				memcpy(user_value, value, ffv_type_size(value_type));
+		}
+	}
+
+	if (IS_REC_TYPE(origin_type))
+		header = fd_get_header(dbin, FFF_REC | (origin_type & FFF_IO));
+
+	if (header)
+		origin_type = (FFF_IO & origin_type) | FFF_HEADER | FFF_REC;
+	else
+	{
+		if (IS_FILE_TYPE(origin_type))
+		{
+			header = fd_get_header(dbin, FFF_FILE | (origin_type & FFF_IO));
+			if (header)
+				origin_type = (FFF_IO & origin_type) | FFF_HEADER | FFF_FILE;
+		}
+	}
+
+	if (header)
+	{
+		NAME_TABLE_PTR user_nt1 = NULL;
+		NAME_TABLE_PTR user_nt2 = NULL;
+		VARIABLE_PTR var = NULL;
+
+		PROCESS_INFO_LIST plist = NULL;
+		PROCESS_INFO_PTR pinfo = NULL;
+
+		long diff = 0;
+
+		FF_VALIDATE(header);
+
+		var = ff_find_variable(user_name, header->format);
+		if (!var)
+			return err_push(ERR_API, "%s is not defined in the header format", user_name);
+
+		error = nt_add_constant(&user_nt2, user_name, FFF_TYPE(header->format), FFV_TYPE(var), var->precision, header->data->buffer + var->start_pos - 1);
+		if (error)
+			return error;
+
+		if (!IS_BINARY(header->format))
+		{
+ 			user_nt2->format->length = FF_VARIABLE(FFV_FIRST_VARIABLE(user_nt2->format))->end_pos = user_nt2->data->total_bytes - 1;
+
+			user_nt2->format->type &= ~FFF_BINARY;
+			user_nt2->format->type |= (FFF_ASCII | FFF_FLAT) & header->format->type;
+		}
+
+		error = nt_add_constant(&user_nt1, user_name, FFF_BINARY, uvalue_type, var->precision, &user_value);
+		if (error)
+			return error;
+
+		error = nt_convert_value(dbin, user_name, user_nt1, user_nt2);
+		nt_destroy_name_table(user_nt1);
+		if (error)
+			return error;
+
+		if (!IS_BINARY(user_nt2->format))
+		{
+			user_nt2->data->buffer[user_nt2->data->bytes_used] = STR_END;
+			os_str_trim_whitespace(user_nt2->data->buffer, user_nt2->data->buffer);
+		}
+
+		diff = FF_VAR_LENGTH(var);
+		diff = -diff;
+
+		error = nt_add_constant(&header, user_name, FFF_TYPE(header->format), FFV_TYPE(var), var->precision, user_nt2->data->buffer);
+		nt_destroy_name_table(user_nt2);
+		if (error)
+			return error;
+
+		diff += FF_VAR_LENGTH(var);
+
+		error = db_ask(dbin, DBASK_PROCESS_INFO, origin_type, &plist);
+		if (!error)
+		{
+			plist = dll_first(plist);
+			pinfo = FF_PI(plist);
+
+			FF_VALIDATE(pinfo);
+
+			error = adjust_for_new_header_size(dbin, origin_type, diff);
+
+			error = db_set(dbin, DBSET_INIT_CONDUITS, origin_type, 0);
+			if (!error)
+			{
+				ff_destroy_format_data_mapping(PINFO_FORMAT_MAP(pinfo));
+				PINFO_FORMAT_MAP(pinfo) = NULL;
+
+				error = ff_create_format_data_mapping(PINFO_MATE_FD(pinfo), PINFO_FD(pinfo), &PINFO_FORMAT_MAP(pinfo));
+
+				PINFO_NEW_RECORD(pinfo) = TRUE;
+
+				if (IS_SEPARATE(PINFO_FORMAT(pinfo)) && PINFO_IS_FILE(pinfo))
+				{
+					FILE *fp = fopen(PINFO_FNAME(pinfo), "w");
+					if (fp)
+						fclose(fp);
+				}
+			}
+
+			ff_destroy_process_info_list(plist);
+		}
+	}
+	else 
+	{
+		/* This call may move contents of user_name elsewhere; user_name won't be updated */
+		error = nt_add_constant(&table, user_name, FFF_BINARY, uvalue_type, IS_REAL_TYPE(uvalue_type) ? 6 : 0, &user_value);
+
+		if (!error && old_table == NULL)
+			error = nt_merge_name_table(&dbin->table_list, table);
+	}
+
+	return error;
+}
 
 int nt_ask
 	(
 	 DATA_BIN_PTR dbin,
 	 FF_TYPES_t origin_type,
-	 char *geovu_name,
-	 FF_TYPES_t data_type,
-	 void *dest
+	 char *value_name,
+	 FF_TYPES_t value_type,
+	 void *value
 	)
 {
 	NAME_TABLE_PTR table = NULL;
@@ -1606,27 +2067,14 @@ int nt_ask
 	int error;
 
 	FF_VALIDATE(dbin);
-	assert(dest);
-	assert(geovu_name);
+	assert(value);
+	assert(value_name);
 	
-	/* find the user-defined name from equivalence-name table -- will be set
-	   to NULL if table doesn't exist */
-	table = fd_find_format_data(dbin->table_list,
-	                            FFF_GROUP,
-	                            FFF_TABLE |
-	                            (IS_OUTPUT_TYPE(origin_type) ? FFF_OUTPUT : FFF_INPUT)
-	                           );
-	if (table)
-	{
-		FF_VALIDATE(table);
-		FF_VALIDATE(table->format);
-	}
-	
-	user_name = (char *)nt_find_user_name(table, geovu_name);
+	user_name = nt_find_user_name(dbin, origin_type, value_name, &table);
 
 	error = nt_make_request_format_data(user_name ? user_name :
-	                                    geovu_name,
-	                                    data_type,
+	                                    value_name,
+	                                    value_type,
 	                                    &request_format_data
 	                                   );
 
@@ -1636,31 +2084,29 @@ int nt_ask
 		                   request_format_data,
 		                   table,
 		                   dbin,
-		                   geovu_name,
+		                   value_name,
 		                   user_name ? user_name :
-		                               geovu_name,
-		                   data_type,
-		                   dest
+		                               value_name,
+		                   value_type,
+		                   value
 		                  );
 		
 		fd_destroy_format_data(request_format_data);
 	}
 	
+#if 0
 	if (user_name)
 	{
-		memFree(user_name, "user_name");
-		
-		/* At this point we can try again using the geovu_name.  This means we
+		/* At this point we can try again using the value_name.  This means we
 		   expect some headers or name tables to contain both the GeoVu keyword
 		   and a native keyword that is aliased to the GeoVu keyword.  This seems
 		   suspicious to me, but that's the way nt_ask has worked before.
 		   The code would like like:
 		*/
 
-#if 0
 		if (error)
 		{
-			error = nt_make_request_format_data(geovu_name,
+			error = nt_make_request_format_data(value_name,
 			                                    data_type,
 			                                    &request_format_data
 			                                   );
@@ -1670,8 +2116,8 @@ int nt_ask
 				error = nt_askcore(table,
 				                   request_format_data,
 				                   dbin,
-				                   geovu_name,
-				                   geovu_name,
+				                   value_name,
+				                   value_name,
 				                   data_type,
 				                   dest
 				                  );
@@ -1679,152 +2125,11 @@ int nt_ask
 				fd_destroy_format_data(request_format_data);
 			}
 		}
-#endif /* 0 */
-
 	}
+#endif /* 0 */
 	
 	return(error);
 }
-
-#if 0
-
-/*
- * NAME:	nt_putvalue
- *              
- * PURPOSE:	To put a value to header or name table
- *
- * USAGE:	BOOLEAN nt_putvalue(DATA_BIN_PTR dbin, char *geovu_name,
- *				FF_TYPES_t gvalue_type, void *value, short header_only)
- *			dbin: data bin;
- *			name: the geovu name of the value;
- *			type: the type of the value to be put;
- *			value: the value to be put;
- *			header_only: NT_HEADER_ONLY, put the value in header only.
- *				NT_ANYWHERE, the value will be put in the constant
- *				table if can not find corresponding variable in the header.
- *
- * RETURNS:     if success, return TRUE, otherwise, FALSE.
- *
- * DESCRIPTION: First convert geovu dictionary name (geovu_name)
- *				to user-defined name.
- *				Uses this name to find the location where the value is stored. and
- *				If found, replace the old value.
- *				If it can't be found, and header_only is false,
- *				the value is stored as a constant
- *
- * SYSTEM DEPENDENT FUNCTIONS: none     
- *
- * GLOBALS:     none
- *
- * AUTHOR:      Liping Di, NGDC, (303) 497 - 6284, lpd@ngdc.noaa.gov
- *
- * ERRORS:    
- *			Unknown variable type, NULL)
- *			Out of memory, "temp")
- *			Out of memory, "user_value"
- *			Pointer not defined, "header"
- *
- * COMMENTS:    
- *
- * KEYWORDS:  name table, databin.
- *
- */
-
-#undef ROUTINE_NAME
-#define ROUTINE_NAME "nt_putvalue"
-
-BOOLEAN nt_putvalue(DATA_BIN_PTR dbin, char *geovu_name,
-        FF_TYPES_t gvalue_type, void *geovu_value, short header_only)
-{
-	char *user_name = NULL;
-	FF_TYPES_t uvalue_type;
-	char temp[MAX_PV_LENGTH];
-	char user_value[MAX_PV_LENGTH];
-	int error;
-	NAME_TABLE_PTR table = NULL;
-	FF_TYPES_t nt_type = FFF_INPUT | FFF_TABLE;
-
-	VARIABLE_PTR var = NULL;
-	FORMAT_DATA_PTR hd_fd = NULL;
-
-	/* check the input arguments */
-	assert(geovu_value);
-	assert(geovu_name);
-	FF_VALIDATE(dbin)
-
-	/* get user-defined value */
-	(void)fd_get_format_data(dbin->table_list, nt_type, &table);
-
-	if (nt_get_user_value(table, geovu_name, geovu_value,
-		gvalue_type, user_value, &uvalue_type) == FALSE)
-	{
-		if (btype_to_btype(geovu_value, gvalue_type, (void *)user_value, gvalue_type))
-			return(FALSE);
-		uvalue_type = gvalue_type;
-	}
-	
-	/* find the user-defined name from equivalence-name table -- will be set
-	   to NULL if table doesn't exist */
-	user_name = (char *)nt_find_user_name(table, geovu_name);
-
-	/* find the location of the variable */
-	error = 0;
-	
-	hd_fd = fd_get_header(dbin, FFF_INPUT | FFF_FILE);
-	if (hd_fd)
-	{
-		var = ff_find_variable(user_name ? user_name : geovu_name, hd_fd->format);
-		if (var)
-		{
-			if (hd_fd == NULL)
-			{
-				err_push(ERR_HEAD_DEFINED, "Contents of header not read");
-				return(FALSE);
-			}
-		
-			if (!ff_binary_to_string(user_value, uvalue_type, temp, 0))
-			{
-				error = set_var(var, hd_fd->data->buffer, temp, hd_fd->format);
-				if (error == -1)
-					error = 1;
-			}
-			else
-				error = 1;
-		}
-	}
-	else
-	{
-		if (header_only)
-			error = 1;
-		else
-		{
-			BOOLEAN table_is_new = FALSE;
-
-			if (table == NULL)
-				table_is_new = TRUE;
-
-			if (nt_add_constant(&table,
-			                    user_name ? user_name : geovu_name,
-			                    uvalue_type | FFV_CONSTANT,
-			                    (void *)user_value)
-			                   )
-				error = 1;
-			
-			if (!error && table_is_new)
-				error = fd_put_format_data(&dbin->table_list, nt_type, table);
-		}
-	}
-	
-	if (user_name)
-		memFree(user_name, "user_name");
-	
-	if (!error)
-		return(TRUE);
-	else
-		return(FALSE);
-}
-
-#endif /* 0 */
 
 /*****************************************************************************
  * NAME: nt_merge()
@@ -1890,7 +2195,9 @@ static int nt_merge(NAME_TABLE_PTR update_table, NAME_TABLE_HANDLE htable)
 
 		error = nt_add_constant(htable,
 		                        FF_VARIABLE(v_list)->name,
+		                        FFF_BINARY,
 		                        FFV_DATA_TYPE(FF_VARIABLE(v_list)),
+		                        FF_VARIABLE(v_list)->precision,
 		                        (void *)(update_table->data->buffer +
 		                                 FF_VARIABLE(v_list)->start_pos - 1
 		                                )
@@ -1901,7 +2208,7 @@ static int nt_merge(NAME_TABLE_PTR update_table, NAME_TABLE_HANDLE htable)
 		var = FF_VARIABLE(dll_last((*htable)->format->variables));
 		var->type |= FF_VARIABLE(v_list)->type;
 		
-		if (IS_TRANSLATOR_VAR(var))
+		if (IS_TRANSLATOR(var))
 		{
 			if (nt_copy_translator_sll(FF_VARIABLE(v_list), var))
 				return(err_push(ERR_MEM_LACK,"Translator"));
@@ -2054,58 +2361,6 @@ static BOOLEAN nt_copy_translator_ugvalue(FF_TYPES_t value_type,
 	return(0);
 }
 
-/*
- * NAME:		nt_show
- *		
- * PURPOSE:	To show the NAME_TABLE	
- *
- * USAGE:	int nt_show(NAME_TABLE *, char *buffer)
- *
- * RETURNS:	if sucessful, return 0, otherwise err_no
- *
- * DESCRIPTION: convert the name table to ASCII.
- *
- * SYSTEM DEPENDENT FUNCTIONS:	none
- *
- * GLOBAL:	variable_type[] (defined in freeform.h)
- *
- * AUTHOR:	Liping Di, NGDC, (303) 497 - 6284, lpd@mail.ngdc.noaa.gov
- *
- * COMMENTS:	
- *
- * KEYWORDS:	dictionary, name table.
- *
- */
-
-#undef ROUTINE_NAME
-#define ROUTINE_NAME "nt_show"
-
-static int nt_show(NAME_TABLE *table, char *buffer)
-{
-	char *ch = buffer;
-	
-	FF_VALIDATE(table);
-	FF_VALIDATE(table->format);
-
-	sprintf(ch, "%s\n", NTKN_BEGIN_NAME_EQUIV);
-	ch += strlen(ch);
-	
-	nt_show_section(table, ch, FFV_EQUIV);
-	ch += strlen(ch);
-	sprintf(ch, "%s\n", NTKN_END_NAME_EQUIV);
-	ch += strlen(ch);
-
-	sprintf(ch, "%s\n", NTKN_BEGIN_CONSTANT);
-	ch += strlen(ch);
-	
-	nt_show_section(table, ch, FFV_CONSTANT);
-	ch += strlen(ch);
-	sprintf(ch, "%s\n", NTKN_END_CONSTANT);
-
-	return(0);
-} 
-
-static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type)
 /*****************************************************************************
  * NAME:  nt_show_section()
  *
@@ -2117,7 +2372,7 @@ static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type
  *
  * DESCRIPTION:  Writes either the name_equiv block body or the constant block
  * body of table into a text buffer.  The variable sect_type should be either
- * FFV_EQUIV or FFV_CONSTANT, and only those variables' type fields matching
+ * FFNT_EQUIV or FFNT_CONSTANT, and only those variables' type fields matching
  * sect_type will have their contents written into the buffer.  The syntax of
  * the buffer is the same as an eqv file or section.
  *
@@ -2134,53 +2389,78 @@ static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type
  * ERRORS:
  ****************************************************************************/
 
-
+static int nt_show_section
+	(
+	 NAME_TABLE_PTR table,
+	 FF_BUFSIZE_PTR bufsize,
+	 FF_TYPES_t sect_type
+	)
 {
+	int error = 0;
+
 	TRANSLATOR *trans;
 	char tokens[MAX_TOKENS][MAX_PV_LENGTH + 1];
 	VARIABLE_LIST v_list = NULL;
+
+	FF_VALIDATE(table);
+	FF_VALIDATE(table->format);
+
+	FF_VALIDATE(bufsize);
 
 	v_list = dll_first(table->format->variables);
 	while (FF_VARIABLE(v_list))
 	{
 		FF_VALIDATE(FF_VARIABLE(v_list));
 		
-		if ((FF_VARIABLE(v_list)->type & sect_type) == FFV_CONSTANT)
+		if (bufsize->bytes_used + SCRATCH_QUANTA > bufsize->total_bytes)
 		{
-			strcpy(tokens[0], FF_VARIABLE(v_list)->name);
-			strcpy(tokens[1], ff_lookup_string(variable_types, FFV_DATA_TYPE(FF_VARIABLE(v_list))));
+			error = ff_resize_bufsize(bufsize->bytes_used + SCRATCH_QUANTA, &bufsize);
+			if (error)
+				return error;
+		}
+
+		if ((FF_VARIABLE(v_list)->type & sect_type) == FFNT_CONSTANT)
+		{
+			strncpy(tokens[0], FF_VARIABLE(v_list)->name, sizeof(tokens[0]) - 1);
+			tokens[0][sizeof(tokens[0]) - 1] = STR_END;
+
+			strncpy(tokens[1], ff_lookup_string(variable_types, FFV_DATA_TYPE(FF_VARIABLE(v_list))), sizeof(tokens[1]) - 1);
+			tokens[1][sizeof(tokens[1]) - 1] = STR_END;
 
 			if (IS_TEXT(FF_VARIABLE(v_list)))
 			{
-				strncpy(tokens[2], table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, FF_VAR_LENGTH(FF_VARIABLE(v_list)));
-				tokens[2][FF_VAR_LENGTH(FF_VARIABLE(v_list))] = STR_END;
+				strncpy(tokens[2], table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, min(sizeof(tokens[2]) - 1, FF_VAR_LENGTH(FF_VARIABLE(v_list))));
+				tokens[2][min(sizeof(tokens[2]) - 1, FF_VAR_LENGTH(FF_VARIABLE(v_list)))] = STR_END;
 			}
 			else
-				ff_binary_to_string(table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, FFV_DATA_TYPE(FF_VARIABLE(v_list)), tokens[2]);
+				ff_binary_to_string(table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, FFV_DATA_TYPE(FF_VARIABLE(v_list)), FF_VARIABLE(v_list)->precision, tokens[2]);
 			
 			os_str_replace_char(tokens[0], ' ', '%');
 			os_str_replace_char(tokens[2], ' ', '%');
-			sprintf(ch, "\t%s %s %s\n", tokens[0], tokens[1], tokens[2]);
-/*			os_str_set_unescaping_char1(ch, '%');*/
-			ch += strlen(ch);
+
+			sprintf(bufsize->buffer + bufsize->bytes_used, "\t%s %s %s\n", tokens[0], tokens[1], tokens[2]);
+			bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
 		}
-		else if ((FF_VARIABLE(v_list)->type & sect_type) == FFV_EQUIV)
+		else if ((FF_VARIABLE(v_list)->type & sect_type) == FFNT_EQUIV)
 		{
-			strcpy(tokens[0], FF_VARIABLE(v_list)->name);
+			strncpy(tokens[0], FF_VARIABLE(v_list)->name, sizeof(tokens[0]) - 1);
+			tokens[0][sizeof(tokens[0]) - 1] = STR_END;
+
 			if (IS_TEXT(FF_VARIABLE(v_list)))
 			{
-				strncpy(tokens[1], table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, FF_VAR_LENGTH(FF_VARIABLE(v_list)));
-				tokens[1][FF_VAR_LENGTH(FF_VARIABLE(v_list))] = STR_END;
+				strncpy(tokens[1], table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, min(sizeof(tokens[1]) - 1, FF_VAR_LENGTH(FF_VARIABLE(v_list))));
+				tokens[1][min(sizeof(tokens[1]) - 1, FF_VAR_LENGTH(FF_VARIABLE(v_list)))] = STR_END;
 			}
 			else
-				ff_binary_to_string(table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, FFV_DATA_TYPE(FF_VARIABLE(v_list)), tokens[1]);
+				ff_binary_to_string(table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1, FFV_DATA_TYPE(FF_VARIABLE(v_list)), FF_VARIABLE(v_list)->precision, tokens[1]);
 
 			os_str_replace_char(tokens[0], ' ', '%');
 			os_str_replace_char(tokens[1], ' ', '%');
-			sprintf(ch, "\t$%s %s\n", tokens[0], tokens[1]);
-/*			os_str_set_unescaping_char1(ch, '%');*/
-			ch += strlen(ch);
-			if (IS_TRANSLATOR_VAR(FF_VARIABLE(v_list)))
+
+			sprintf(bufsize->buffer + bufsize->bytes_used, "\t$%s %s\n", tokens[0], tokens[1]);
+			bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+			if (IS_TRANSLATOR(FF_VARIABLE(v_list)))
 			{
 				trans = FF_VARIABLE(v_list)->misc.nt_trans;
 				while (trans)
@@ -2188,13 +2468,14 @@ static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type
 					FF_VALIDATE(trans);
 					
 					strcpy(tokens[0], ff_lookup_string(variable_types, FFV_DATA_TYPE_TYPE(trans->gtype)));
-					ff_binary_to_string(trans->gvalue, FFV_DATA_TYPE_TYPE(trans->gtype), tokens[1]);
-					strcpy(tokens[2], ff_lookup_string(variable_types,
-					       FFV_DATA_TYPE_TYPE(trans->utype)));
-					ff_binary_to_string(trans->uvalue, FFV_DATA_TYPE_TYPE(trans->utype), tokens[3]);
-					sprintf(ch, "\t\t%s %s %s %s\n", tokens[0], tokens[1], tokens[2],
-					 tokens[3]);
-					ch += strlen(ch);
+					ff_binary_to_string(trans->gvalue, FFV_DATA_TYPE_TYPE(trans->gtype), FLT_DIG, tokens[1]);
+					strcpy(tokens[2], ff_lookup_string(variable_types, FFV_DATA_TYPE_TYPE(trans->utype)));
+
+					ff_binary_to_string(trans->uvalue, FFV_DATA_TYPE_TYPE(trans->utype), FLT_DIG, tokens[3]);
+
+					sprintf(bufsize->buffer + bufsize->bytes_used, "\t\t%s %s %s %s\n", tokens[0], tokens[1], tokens[2], tokens[3]);
+					bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
 					trans = trans->next;
 				} /* end of while (trans) */
 			} /* end of if() translator */
@@ -2202,7 +2483,81 @@ static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type
 		
 		v_list = dll_next(v_list);
 	} /* while (v_list) */
+
+	return error;
 }	
+
+/*
+ * NAME:		nt_show
+ *		
+ * PURPOSE:	To show the NAME_TABLE	
+ *
+ * USAGE:	int nt_show(NAME_TABLE *, char *buffer)
+ *
+ * RETURNS:	if sucessful, return 0, otherwise err_no
+ *
+ * DESCRIPTION: convert the name table to ASCII.
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:	none
+ *
+ * GLOBAL:	variable_type[] (defined in freeform.h)
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * COMMENTS:	
+ *
+ * KEYWORDS:	dictionary, name table.
+ *
+ */
+
+#undef ROUTINE_NAME
+#define ROUTINE_NAME "nt_show"
+
+int nt_show
+	(
+	 NAME_TABLE_PTR table,
+	 FF_BUFSIZE_PTR bufsize
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(table);
+	FF_VALIDATE(table->format);
+
+	FF_VALIDATE(bufsize);
+
+	if (bufsize->bytes_used + SCRATCH_QUANTA > bufsize->total_bytes)
+	{
+		error = ff_resize_bufsize(bufsize->bytes_used + SCRATCH_QUANTA, &bufsize);
+		if (error)
+			return error;
+	}
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "%s\n", NTKN_BEGIN_NAME_EQUIV);
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+	nt_show_section(table, bufsize, FFNT_EQUIV);
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "%s\n", NTKN_END_NAME_EQUIV);
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+	if (bufsize->bytes_used + SCRATCH_QUANTA > bufsize->total_bytes)
+	{
+		error = ff_resize_bufsize(bufsize->bytes_used + SCRATCH_QUANTA, &bufsize);
+		if (error)
+			return error;
+	}
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "%s\n", NTKN_BEGIN_CONSTANT);
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+	nt_show_section(table, bufsize, FFNT_CONSTANT);
+
+	sprintf(bufsize->buffer + bufsize->bytes_used, "%s\n", NTKN_END_CONSTANT);
+	bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
+
+	return error;
+} 
 
 /*
  * NAME:  nt_str_to_binary
@@ -2223,7 +2578,7 @@ static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type
  *
  * GLOBALS:  none
  *
- * AUTHOR:  Liping Di, NGDC, lpd@ngdc.noaa.gov
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
  * COMMENTS:  This is a local function to the name table module.
  *
@@ -2268,141 +2623,8 @@ static void *nt_str_to_binary(char *buffer, FF_TYPES_t type)
 	return(dest);
 }
 
-static int parse_line_into_tokens_by_case(unsigned char status, char *line,
-       char tokens[][MAX_PV_LENGTH + 1], int count_tokens_only)
-/*****************************************************************************
- * NAME: parse_line_into_tokens()
- *
- * PURPOSE:  Parses a text line from an eqv into tokens
- *
- * USAGE:  num_tokens = parse_line_into_tokens(line, tokens);
- *
- * RETURNS:  Number of tokens parsed
- *
- * DESCRIPTION:  Copies the tokens of line, which are separated by whitespace,
- * into the array tokens.  The variable status must be either IN_CONSTANT_TABLE
- * or IN_EQUIV_TABLE -- any other value and this function returns zero and the
- * contents of the array tokens is undefined.
- *
- * In the case IN_CONSTANT_TABLE the first two tokens are copied into the
- * first two elements of the array tokens, respectively, and whatever follows
- * is copied into the third element -- this allows for the defined value in
- * the constant section to contain whitespace itself, e.g.,
- *
- * ff_array char array_name[1 to 2][1 to 80]
- *
- * In the case IN_EQUIV_TABLE either two or four tokens are expected, depending
- * on whether a name equivalence or a translator is being read.
- *
- * A line beginning with a forward slash ('/') indicates a comment line,
- * which is ignored (return with a value of zero; tokens is undefined).
- *
- * If count_tokens_only is non-zero, then the array tokens is not filled,
- * and token counting only is done.
- *
- * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * GLOBALS:
- *
- * COMMENTS:
- *
- * KEYWORDS:
- *
- * ERRORS:
- ****************************************************************************/
-
-#define COMMENT_INDICATOR '/'
-
-{
-	char *ch_ptr = line;
-	int num_tokens = 0, i;
-	
-	assert(ch_ptr);
-	
-	while (isspace(*ch_ptr))
-		++ch_ptr;
-	
-	if (*ch_ptr == COMMENT_INDICATOR)
-		return(0);
-
-	switch(status)
-	{
-		case IN_CONSTANT_TABLE:
-			while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
-			{
-				if (isspace(*ch_ptr))
-				{
-					++ch_ptr;
-				}
-				else
-				{
-					if (num_tokens + 1 < NUM_CONSTANT_TOKENS)
-					{
-						i = 0;
-						while (!isspace(*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
-						{
-							if (count_tokens_only != COUNT_TOKENS_ONLY)
-								tokens[num_tokens][i < MAX_PV_LENGTH ? i++ : i] = *ch_ptr;
-							++ch_ptr;
-						}
-						if (count_tokens_only != COUNT_TOKENS_ONLY)
-							tokens[num_tokens][i] = STR_END;
-					}
-					else
-					{
-						if (count_tokens_only != COUNT_TOKENS_ONLY)
-						{
-							strncpy(tokens[NUM_CONSTANT_TOKENS - 1], ch_ptr, MAX_PV_LENGTH);
-							tokens[NUM_CONSTANT_TOKENS - 1][MAX_PV_LENGTH] = STR_END;
-						}
-						ch_ptr += strlen(ch_ptr);
-					}
-					++num_tokens;
-				}
-			}
-
-		break;
-
-		case IN_EQUIV_TABLE:
-			while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
-			{
-				if (isspace(*ch_ptr))
-				{
-					++ch_ptr;
-				}
-				else
-				{
-					i = 0;
-					while (!isspace(*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
-					{
-						if (count_tokens_only != COUNT_TOKENS_ONLY)
-							tokens[num_tokens][i < MAX_PV_LENGTH ? i++ : i] = *ch_ptr;
-						++ch_ptr;
-					}
-					if (count_tokens_only != COUNT_TOKENS_ONLY)
-						tokens[num_tokens][i] = STR_END;
-					++num_tokens;
-				}
-			}
-
-		break;
-
-		default:
-		break;
-	}
-
-	if (count_tokens_only != COUNT_TOKENS_ONLY)
-		for (i = 0; i < num_tokens; i++)
-			(void)os_str_trim_whitespace(tokens[i], tokens[i]);
-	return(num_tokens);
-}
-
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "nt_free_trans"
-
-void nt_free_trans(TRANSLATOR_PTR trans)
 
 /*****************************************************************************
  * NAME: nt_free_trans()
@@ -2428,6 +2650,7 @@ void nt_free_trans(TRANSLATOR_PTR trans)
  * ERRORS:
  ****************************************************************************/
 
+void nt_free_trans(TRANSLATOR_PTR trans)
 {
 	TRANSLATOR_PTR next = NULL;
 
@@ -2542,6 +2765,7 @@ int nt_merge_name_table(NAME_TABLE_LIST_HANDLE hntl, NAME_TABLE_PTR table)
 			int error;
 			
 			error = nt_merge(table, &nt_old);
+			nt_destroy_name_table(table);
 			if (error)
 				return(error);
 			else
@@ -2593,13 +2817,23 @@ static BOOLEAN nt_comp_translator
 	if (t1->gtype != t2->gtype)
 		return(FALSE);
 
-	if (memcmp(t1->gvalue, t2->gvalue, ffv_type_size(t1->gtype)))
+	if (IS_TEXT_TYPE(t1->gtype))
+	{
+		if (strcmp(t1->gvalue, t2->gvalue))
+			return FALSE;
+	}
+	else if (memcmp(t1->gvalue, t2->gvalue, ffv_type_size(t1->gtype)))
 		return(FALSE);
 
 	if (t1->utype != t2->utype)
 		return(FALSE);
 
-	if (memcmp(t1->uvalue, t2->uvalue, ffv_type_size(t1->gtype)))
+	if (IS_TEXT_TYPE(t1->utype))
+	{
+		if (strcmp(t1->uvalue, t2->uvalue))
+			return FALSE;
+	}
+	else if (memcmp(t1->uvalue, t2->uvalue, ffv_type_size(t1->gtype)))
 		return(FALSE);
 
 	return(TRUE);
@@ -2655,6 +2889,9 @@ BOOLEAN nt_comp_translator_sll
 		t1 = t1->next;
 		t2 = t2->next;
 	}
+
+	if (t1 || t2)
+		return FALSE;
 
 	return(TRUE);
 }

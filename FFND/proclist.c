@@ -32,7 +32,7 @@ const char *fft_cnv_flags[FFNT_ENOTE + 1] =
 "%lu", /* uint32 */
 "?",   /* int64 */
 "?",   /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%d",  /* int32 */
 "%u",  /* uint32 */
 "%ld", /* int64 */
@@ -54,7 +54,7 @@ const char *fft_cnv_flags_width[FFNT_ENOTE + 1] =
 "%*lu", /* uint32 */
 "?",    /* int64 */
 "?",    /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%*d",  /* int32 */
 "%*u",  /* uint32 */
 "%*ld", /* int64 */
@@ -76,7 +76,7 @@ const char *fft_cnv_flags_prec[FFNT_ENOTE + 1] =
 "%.*lu", /* uint32 */
 "?",     /* int64 */
 "?",     /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%.*d",  /* int32 */
 "%.*u",  /* uint32 */
 "%.*ld", /* int64 */
@@ -98,7 +98,7 @@ const char *fft_cnv_flags_width_prec[FFNT_ENOTE + 1] =
 "%*.*lu", /* uint32 */
 "?",      /* int64 */
 "?",      /* uint64 */
-#elif defined(LONGS_ARE_64)
+#elif LONGS_ARE_64
 "%*.*d",  /* int32 */
 "%*.*u",  /* uint32 */
 "%*.*ld", /* int64 */
@@ -389,8 +389,8 @@ static int bin2bin(VARIABLE_PTR in_var, char *input_buffer,
 	{ 
 		if (IS_TEXT(out_var))
 		{
-			memcpy((void *)(output_buffer + out_var->start_pos - 1),
-			       (void *)(input_buffer + in_var->start_pos - 1),
+			memcpy((void *)(output_buffer + max(1, out_var->start_pos) - 1),
+			       (void *)(input_buffer + max(1, in_var->start_pos) - 1),
 			       FF_VAR_LENGTH(in_var)
 			      );
 		}
@@ -398,8 +398,8 @@ static int bin2bin(VARIABLE_PTR in_var, char *input_buffer,
 			return(err_push(ERR_CONVERT, "convert to var type"));
 	}
 	else
-		if ((error = btype_to_btype(input_buffer + in_var->start_pos - 1,
-		 FFV_DATA_TYPE(in_var), output_buffer + out_var->start_pos - 1,
+		if ((error = btype_to_btype(input_buffer + max(1, in_var->start_pos) - 1,
+		 FFV_DATA_TYPE(in_var), output_buffer + max(1, out_var->start_pos) - 1,
 		 FFV_DATA_TYPE(out_var))) != 0)
 			return(err_push(error, "conversion to variable type"));
 	
@@ -408,7 +408,7 @@ static int bin2bin(VARIABLE_PTR in_var, char *input_buffer,
 	    ( (IS_INTEGER(in_var) && IS_REAL(out_var)) ||
 	      (IS_REAL(in_var) && IS_INTEGER(out_var))) )
 	{
-		(void)btype_to_btype(output_buffer + out_var->start_pos - 1,
+		(void)btype_to_btype(output_buffer + max(1, out_var->start_pos) - 1,
 		 FFV_DATA_TYPE(out_var), &dbl_var, FFV_DOUBLE);
 
 		if (IS_INTEGER(in_var) && IS_REAL(out_var))
@@ -417,7 +417,7 @@ static int bin2bin(VARIABLE_PTR in_var, char *input_buffer,
 			dbl_var *= pow(10, out_var->precision);
 		
 		if ((error = btype_to_btype(&dbl_var, FFV_DOUBLE,
-		 output_buffer + out_var->start_pos - 1, FFV_DATA_TYPE(out_var))) != 0)
+		 output_buffer + max(1, out_var->start_pos) - 1, FFV_DATA_TYPE(out_var))) != 0)
 			return(err_push(error, "implicit precision conversion"));
 	}
 	
@@ -506,7 +506,13 @@ static void right_justify_conversion_output
  * ERRORS:
  ****************************************************************************/
 
-int ff_binary_to_string(void *binary_data, FF_TYPES_t data_type, char *text_string)
+int ff_binary_to_string
+	(
+	 void *binary_data,
+	 FF_TYPES_t data_type,
+	 int precision,
+	 char *text_string
+	)
 {
 	int error = 0;
 	align_var_type align_var;
@@ -555,15 +561,15 @@ int ff_binary_to_string(void *binary_data, FF_TYPES_t data_type, char *text_stri
 		break;
 		
 		case FFV_FLOAT32:
-			sprintf(text_string, fft_cnv_flags[FFNT_FLOAT32], *(float32 *)&align_var);
+			sprintf(text_string, fft_cnv_flags_prec[FFNT_FLOAT32], precision, *(float32 *)&align_var);
 		break;
 		
 		case FFV_FLOAT64:
-			sprintf(text_string, fft_cnv_flags[FFNT_FLOAT64], *(float64 *)&align_var);
+			sprintf(text_string, fft_cnv_flags_prec[FFNT_FLOAT64], precision, *(float64 *)&align_var);
 		break;
 		
 		case FFV_ENOTE:
-			sprintf(text_string, fft_cnv_flags[FFNT_ENOTE], *(ff_enote *)&align_var);
+			sprintf(text_string, fft_cnv_flags_prec[FFNT_ENOTE], precision, *(ff_enote *)&align_var);
 		break;
 		
 		default:
@@ -612,27 +618,32 @@ int ff_binary_to_string(void *binary_data, FF_TYPES_t data_type, char *text_stri
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "ff_put_binary_data"
 
-static int ff_put_binary_data
+int ff_put_binary_data
 	(
+	 VARIABLE_PTR var,
 	 void *in_data_ptr,
 	 size_t in_var_length,
 	 FF_TYPES_t in_data_type,
-	 size_t out_var_length,
 	 void *out_data_ptr,
-	 FF_TYPES_t out_data_type,
-	 int out_var_prec,
 	 FF_TYPES_t out_format_type
 	)
 {
+	BOOLEAN found_data_flag = FALSE;
 	double dbl_var = DBL_MAX;
 	char work_string[260]; /* must be large enough for any printf conversion */
+	size_t byte_offset = 0;
 
 	int error = 0;
+
+	size_t out_var_length = FF_VAR_LENGTH(var);
+	FF_TYPES_t out_data_type = FFV_DATA_TYPE(var);
+	int out_var_prec = var->precision;
+			                           
+	FF_VALIDATE(var);
 	
 	if (IS_TEXT_TYPE(in_data_type))
 	{
 		size_t bytes_to_copy = 0;
-		size_t byte_offset = 0;
 
 		/* character type and numeric type are not compatible */
 		if (!IS_TEXT_TYPE(out_data_type))
@@ -645,56 +656,27 @@ static int ff_put_binary_data
 		if (bytes_to_copy > 0)
 			memcpy((char *)out_data_ptr + byte_offset, (char *)in_data_ptr, bytes_to_copy);
 
+		if (!IS_TRANSLATOR(var) && !IS_CONVERT(var) && var->misc.mm)
+			mm_set(var, MM_MAX_MIN, (char *)out_data_ptr + byte_offset, &found_data_flag);
+	
 		return(0);
 	}
 	else
-	{
 		error = btype_to_btype(in_data_ptr, FFV_DOUBLE, &dbl_var, out_data_type);
-	}
+
 	if (error)
 		return(error);
+
+	if (!IS_TRANSLATOR(var) && !IS_CONVERT(var) && var->misc.mm)
+		mm_set(var, MM_MAX_MIN, (char *)&dbl_var, &found_data_flag);
 	
-	if (IS_ASCII_TYPE(out_format_type) || IS_DBASE_TYPE(out_format_type))
+	if (IS_ASCII_TYPE(out_format_type) || IS_FLAT_TYPE(out_format_type))
 	{
 		size_t bytes_to_copy;
 
-		if (IS_REAL_TYPE(out_data_type))
-		{
-			switch(out_data_type)
-			{
-				/* for float32, preserve float64 precision until the last */
-				case FFV_FLOAT32:
-					sprintf(work_string, fft_cnv_flags_prec[FFNT_FLOAT32],
-					        out_var_prec, *(float64 *)in_data_ptr);
-				break;
-						
-				case FFV_FLOAT64:
-					sprintf(work_string, fft_cnv_flags_prec[FFNT_FLOAT64],
-					        out_var_prec, *(float64 *)in_data_ptr);
-					break;
-						
-				case FFV_ENOTE:
-					sprintf(work_string, fft_cnv_flags_prec[FFNT_ENOTE],
-					        out_var_prec, *(float64 *)in_data_ptr);
-					break;
-						
-				default:
-						assert(!ERR_SWITCH_DEFAULT);
-						return(err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)out_data_type, os_path_return_name(__FILE__), __LINE__));
-				break;
-			}
-		} /* if (IS_REAL_TYPE(out_data_type)) */
-		else if (IS_INTEGER_TYPE(out_data_type))
-		{
-			error = ff_binary_to_string(&dbl_var, out_data_type, work_string);
-			if (error)
-				return(error);
-		}
-		else
-		{
-			assert(!ERR_SWITCH_DEFAULT);
-			return(err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)out_data_type, os_path_return_name(__FILE__), __LINE__));
-		}
+		error = ff_binary_to_string(IS_FLOAT32_TYPE(out_data_type) ? in_data_ptr : &dbl_var, IS_FLOAT32_TYPE(out_data_type) ? FFV_DOUBLE : out_data_type, out_var_prec, work_string);
+		if (error)
+			return(error);
 
 		/* Check size of output string */
 
@@ -713,7 +695,7 @@ static int ff_put_binary_data
 		       work_string,
 		       bytes_to_copy
 		      );
-	} /* if (IS_ASCII(out_format_type) || IS_DBASE(out_format_type)) */
+	} /* if (IS_ASCII(out_format_type) || IS_FLAT(out_format_type)) */
 	else if (IS_BINARY_TYPE(out_format_type))
 	{
 		memcpy(out_data_ptr,
@@ -794,7 +776,7 @@ static int ff_varstring_to_double(char *varstring, double *dblvalue)
  *				FF_TYPES_t format_type) The Format Type 
  *
  * ERRORS:
- *		Unknown variable type,"DBASE or ASCII var->type"
+ *		Unknown variable type,"FLAT or ASCII var->type"
  *		Unknown variable type,"Binary var->type"
  *		Unknown format type, NULL
  *
@@ -828,7 +810,7 @@ int ff_get_double
 	switch (format_type)
 	{
 		case FFF_ASCII:
-		case FFF_DBASE:
+		case FFF_FLAT:
 		
 			if (IS_TEXT(var))
 			{
@@ -858,7 +840,7 @@ int ff_get_double
 			if (IS_INTEGER(var) && var->precision)
 				*dbl_dest /= pow(10, var->precision);
 	
-		break; /* End of ASCII and DBASE cases */
+		break; /* End of ASCII and FLAT cases */
 			
 		case FFF_BINARY:
 
@@ -893,30 +875,26 @@ int ff_get_double
 	return(0);
 }
 
-static int calculate_variable
+int calculate_variable
 	(
-	 VARIABLE_PTR out_var, 
-	 FORMAT_PTR input_format,
+	 VARIABLE_PTR var, 
+	 FORMAT_PTR format,
 	 char *input_ptr,
 	 double *d
 	)
 {
 	int error = 0;
 
-	FF_VALIDATE(out_var);
-	FF_VALIDATE(input_format);
+	FF_VALIDATE(var);
+	FF_VALIDATE(format);
 
-	if (ee_check_vars_exist(out_var->eqn_info, input_format))
-	{
-		return(err_push(ERR_EE_VAR_NFOUND, "In input format"));
-	}
+	if (ee_check_vars_exist(var->eqn_info, format))
+		return(err_push(ERR_EE_VAR_NFOUND, "In format (%s)", format->name));
 
-	if (ee_set_var_values(out_var->eqn_info, input_ptr, input_format))
-	{
-		return(err_push(ERR_GEN_QUERY, "Seting equation variables"));
-	}
+	if (ee_set_var_values(var->eqn_info, input_ptr, format))
+		return(err_push(ERR_GEN_QUERY, "Seting equation variables in format (%s)", format->name));
 
-	*d = ee_evaluate_equation(out_var->eqn_info, &error);
+	*d = ee_evaluate_equation(var->eqn_info, &error);
 
 	return(error);
 } 
@@ -994,8 +972,6 @@ int ff_process_format_data_mapping
 	double  double_value = 0;
 	double  cv_double    = 0; /* convert variable, double will hold 8 char's */
 
-	char    variable_str[256];
-
 	void *data_ptr = NULL; /* for the conversion/input_buffer */
 	char *input_ptr  = NULL; /* increments along input_buffer */
 	char *output_ptr = NULL; /* increments along output_buffer */
@@ -1027,6 +1003,7 @@ int ff_process_format_data_mapping
 
 	input_ptr  = format_data_map->input->data->buffer;
 	output_ptr = format_data_map->output->data->buffer;
+	format_data_map->output->data->bytes_used = 0;
 
 	/********** MAIN LOOP ON INPUT DATA  - process bytes_left ***************/
 	while (bytes_left > 0)
@@ -1045,11 +1022,13 @@ int ff_process_format_data_mapping
 		out_var = FF_VARIABLE(out_v_list);
 		while (out_var)
 		{    
+			char variable_str[256];
+
 			/* Check for possible corrupt memory */
 			FF_VALIDATE(out_var);
 			FF_VALIDATE(mid_var);
 
-			if (IS_CONSTANT_VAR(out_var) || IS_INITIAL_VAR(out_var) || IS_ORPHAN_VAR(mid_var))
+			if (IS_CONSTANT(out_var) || IS_INITIAL(out_var) || IS_ORPHAN_VAR(mid_var))
 			{
 				mid_v_list = dll_next(mid_v_list);
 				out_v_list = dll_next(out_v_list);
@@ -1060,7 +1039,7 @@ int ff_process_format_data_mapping
 
 			/* Convert variables are processed by creating a double in double_value
 			and setting mid_var to the generic convert variable. */
-			if (IS_CONVERT_VAR(mid_var))
+			if (IS_CONVERT(mid_var))
 			{
 				conv_func = lookup_convert_function(mid_var->misc.cv_var_num);
 				(*(conv_func->convert_func))(out_var, &cv_double, format_data_map->input->format, input_ptr);
@@ -1068,26 +1047,20 @@ int ff_process_format_data_mapping
 				data_ptr = &cv_double;
 			} /* if convert variable */
 			else
-				data_ptr = input_ptr + mid_var->start_pos - 1;
+				data_ptr = input_ptr + max(1, mid_var->start_pos) - 1;
 
 			if (IS_TEXT(mid_var))
 			{
-				if (IS_CONVERT_VAR(mid_var))
+				if (IS_CONVERT(mid_var))
 				{
 					assert(FF_VAR_LENGTH(out_var) < sizeof(variable_str));
 					
 					right_justify_conversion_output(variable_str, data_ptr, FF_VAR_LENGTH(out_var));
+					o_work_space = &variable_str;
 				}
 				else
-				{
-					size_t bytes_to_copy = min(FF_VAR_LENGTH(mid_var), sizeof(variable_str) - 1);
-					
-					memset(variable_str, ' ', sizeof(variable_str) - 1);
-					variable_str[sizeof(variable_str) - 1] = STR_END;
-					memcpy(variable_str, data_ptr, bytes_to_copy);
-				} /* (else) if not conversion */
+					o_work_space = data_ptr;
 				
-				o_work_space = &variable_str;
 			} /* if is text variable */
 			else
 			{
@@ -1101,11 +1074,11 @@ int ff_process_format_data_mapping
 				{
 					/* Get a double with the value of the input variable */
 					error = ff_get_double(mid_var,
-												 data_ptr,
-												 &double_value,
-												 IS_CONVERT_VAR(mid_var) ? FFF_BINARY
-																				 : format_data_map->input->format->type
-												);
+					                      data_ptr,
+					                      &double_value,
+					                      IS_CONVERT(mid_var) ? FFF_BINARY
+					                                          : format_data_map->input->format->type
+					                     );
 					if (error)
 						return(err_push(error, "Problem with \"%s\"", mid_var->name));
 				}
@@ -1122,15 +1095,13 @@ int ff_process_format_data_mapping
 				o_work_space = &double_value;
 			} /* (else) if is text variable */
 
-			error = ff_put_binary_data(o_work_space,
-			                           IS_CONVERT_VAR(mid_var) ? FF_VAR_LENGTH(out_var) : FF_VAR_LENGTH(mid_var),
-				                        FFV_DATA_TYPE(mid_var),
-				                        FF_VAR_LENGTH(out_var),
-				                        output_ptr + out_var->start_pos - 1,
-				                        FFV_DATA_TYPE(out_var),
-				                        out_var->precision,
-				                        format_data_map->output->format->type
-				                       );
+			error = ff_put_binary_data(out_var,
+			                           o_work_space,
+			                           IS_CONVERT(mid_var) ? FF_VAR_LENGTH(out_var) : FF_VAR_LENGTH(mid_var),
+									   IS_TEXT(mid_var) ? FFV_TEXT : FFV_DOUBLE,
+			                           output_ptr + max(1, out_var->start_pos) - 1,
+			                           format_data_map->output->format->type
+			                          );
 			if (error)
 				return(err_push(error, "Problem with \"%s\"", out_var->name));
 
@@ -1152,10 +1123,10 @@ int ff_process_format_data_mapping
 	return the number of bytes not processed
 	*/
 
-	format_data_map->output->data->bytes_used = (FF_BSS_t)labs(((char HUGE *)output_ptr -
+	assert(format_data_map->output->data->bytes_used == (FF_BSS_t)labs(((char HUGE *)output_ptr -
 	                                               (char HUGE *)format_data_map->output->data->buffer
 	                                              )
-	                                             );
+	                                             ));
 	if (bytes_left)
 		return(err_push(ERR_CONVERT, "%d bytes not processed", (int)bytes_left));
 	else
@@ -1304,73 +1275,123 @@ int btype_to_btype(void *src_value, FF_TYPES_t src_type, void *dest_value, FF_TY
 		{
 			case FFV_INT8:
 				if (big_var < FFV_INT8_MIN || big_var > FFV_INT8_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(int8 *)&align_var = (int8)(big_var < 0 ? FFV_INT8_MIN : FFV_INT8_MAX);
+				}
 				else
 					*(int8 *)&align_var = (int8)ROUND(big_var);
 			break;
 			
 			case FFV_UINT8:
 				if (big_var < FFV_UINT8_MIN || big_var > FFV_UINT8_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(uint8 *)&align_var = (uint8)(big_var < 0 ? FFV_UINT8_MIN : FFV_UINT8_MAX);
+				}
 				else
 					*(uint8 *)&align_var = (uint8)ROUND(big_var);
 			break;
 			
 			case FFV_INT16:
 				if (big_var < FFV_INT16_MIN || big_var > FFV_INT16_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(int16 *)&align_var = (int16)(big_var < 0 ? FFV_INT16_MIN : FFV_INT16_MAX);
+				}
 				else
 					*(int16 *)&align_var = (int16)ROUND(big_var);
 			break;
 			
 			case FFV_UINT16:
 				if (big_var < FFV_UINT16_MIN || big_var > FFV_UINT16_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(uint16 *)&align_var = (uint16)(big_var < 0 ? FFV_UINT16_MIN : FFV_UINT16_MAX);
+				}
 				else
 					*(uint16 *)&align_var = (uint16)ROUND(big_var);
 			break;
 			
 			case FFV_INT32:
 				if (big_var < FFV_INT32_MIN || big_var > FFV_INT32_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(int32 *)&align_var = big_var < 0 ? FFV_INT32_MIN : FFV_INT32_MAX;
+				}
 				else
 					*(int32 *)&align_var = (int32)ROUND(big_var);
 			break;
 			
 			case FFV_UINT32:
 				if (big_var < FFV_UINT32_MIN || big_var > FFV_UINT32_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(uint32 *)&align_var = big_var < 0 ? FFV_UINT32_MIN : FFV_UINT32_MAX;
+				}
 				else
 					*(uint32 *)&align_var = (uint32)ROUND(big_var);
 			break;
 			
 			case FFV_INT64:
 				if (big_var < FFV_INT64_MIN || big_var > FFV_INT64_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(int64 *)&align_var = (int64)(big_var < 0 ? FFV_INT64_MIN : FFV_INT64_MAX);
+				}
 				else
 					*(int64 *)&align_var = (int64)ROUND(big_var);
 			break;
 			
 			case FFV_UINT64:
 				if (big_var < FFV_UINT64_MIN || big_var > FFV_UINT64_MAX)
+				{
 					error = ERR_OUT_OF_RANGE;
+
+					*(uint64 *)&align_var = (uint64)(big_var < 0 ? FFV_UINT64_MIN : FFV_UINT64_MAX);
+				}
 				else
 					*(uint64 *)&align_var = (uint64)ROUND(big_var);
 			break;
 			
 			case FFV_FLOAT32:         
-				if (fabs(big_var) > FFV_FLOAT32_MAX)
+				if (big_var > FFV_FLOAT32_MAX || big_var < FFV_FLOAT32_MIN)
+				{
 					error = ERR_OUT_OF_RANGE;
 
-				*(float32 *)&align_var = (float32)big_var;
+					*(float32 *)&align_var = big_var < 0 ? FFV_FLOAT32_MIN : FFV_FLOAT32_MAX;
+				}
+				else
+					*(float32 *)&align_var = (float32)big_var;
 			break;
 		
 			case FFV_FLOAT64:
-				*(float64 *)&align_var = (float64)big_var;
+				if (big_var > FFV_FLOAT64_MAX || big_var < FFV_FLOAT64_MIN)
+				{
+					error = ERR_OUT_OF_RANGE;
+
+					*(float64 *)&align_var = big_var < 0 ? FFV_FLOAT64_MIN : FFV_FLOAT64_MAX;
+				}
+				else
+					*(float64 *)&align_var = (float64)big_var;
 			break;
 		
 			case FFV_ENOTE:
-				*(ff_enote *)&align_var = (ff_enote)big_var;
+				if (big_var > FFV_ENOTE_MAX || big_var < FFV_ENOTE_MIN)
+				{
+					error = ERR_OUT_OF_RANGE;
+
+					*(ff_enote *)&align_var = big_var < 0 ? FFV_ENOTE_MIN : FFV_ENOTE_MAX;
+				}
+				else
+					*(ff_enote *)&align_var = (ff_enote)big_var;
 			break;
 		
 			default:
@@ -1380,16 +1401,12 @@ int btype_to_btype(void *src_value, FF_TYPES_t src_type, void *dest_value, FF_TY
 		} /* switch (FFV_DATA_TYPE_TYPE(dest_type)) */
 	} /* if not error */
 
+	memcpy(dest_value, (void *)&align_var, dest_type_size);
+
 	if (error)
-	{
-		memset(dest_value, 0, dest_type_size);
 		return(err_push(error, "Type %s cannot hold %f", ff_lookup_string(variable_types, FFV_DATA_TYPE_TYPE(dest_type)), big_var));
-	}
 	else
-	{
-		memcpy(dest_value, (void *)&align_var, dest_type_size);
 		return(0);
-	}
 }
 
 BOOLEAN type_cmp(FF_TYPES_t type, void *value0, void *value1)
@@ -1528,16 +1545,24 @@ static int make_middle_format
 
 	FF_VALIDATE(middle_format);
 	FF_VALIDATE(output_format);
-	FF_VALIDATE(input);
-	FF_VALIDATE(input->format);
+	if (input)
+	{
+		FF_VALIDATE(input);
+		FF_VALIDATE(input->format);
+	}
 
 	middle_format->variables = dll_init();
 	if (!middle_format->variables)
 		return(err_push(ERR_MEM_LACK,"Temporary Format Variables"));
 
-	copy_buffer = (char *)memMalloc((size_t)input->format->length, "copy_buffer");
-	if (!copy_buffer)
-		return(err_push(ERR_MEM_LACK,"copy buffer"));
+	if (input)
+	{
+		copy_buffer = (char *)memMalloc((size_t)input->format->length, "copy_buffer");
+		if (!copy_buffer)
+			return(err_push(ERR_MEM_LACK,"copy buffer"));
+	}
+	else
+		copy_buffer = NULL;
 
 	/* variable string is a character buffer used as temporary string
 	manipulation area. It must be as long as the longer of the input record
@@ -1553,11 +1578,32 @@ static int make_middle_format
 		mid_var = ff_create_variable("");
 		if (!mid_var)
 		{
-			memFree(copy_buffer, "copy_buffer");
+			if (copy_buffer)
+				memFree(copy_buffer, "copy_buffer");
+
 			return(err_push(ERR_MEM_LACK,"temporary variable"));
 		}
 
-		in_var = ff_find_variable(out_var->name, input->format);
+		if (input)
+		{
+			in_var = ff_find_variable(out_var->name, input->format);
+			if (!in_var)
+			{
+				/* Might be a calculated input variable */
+
+				char try_name[MAX_PV_LENGTH];
+
+				assert(strlen(out_var->name) + strlen("_eqn") < sizeof(try_name) - 1);
+
+				strncpy(try_name, out_var->name, sizeof(try_name) - 1);
+				strncat(try_name, "_eqn", sizeof(try_name) - strlen(try_name));
+
+				in_var = ff_find_variable(try_name, input->format);
+			}
+		}
+		else
+			in_var = NULL;
+
 		if (in_var)
 		{
 			FF_VALIDATE(in_var);
@@ -1566,11 +1612,14 @@ static int make_middle_format
 			if (error)
 			{
 				ff_destroy_variable(mid_var);
-				memFree(copy_buffer, "copy_buffer");
+
+				if (copy_buffer)
+					memFree(copy_buffer, "copy_buffer");
+
 				return(error);
 			}
 		}
-		else if (input->format->length <= input->data->bytes_used)
+		else if (input && input->format->length <= input->data->bytes_used)
 		{
 			memMemcpy(copy_buffer, input->data->buffer, (size_t)input->format->length, "copy_buffer");
 			error = cv_find_convert_var(out_var, input, &cv_var_num);
@@ -1579,7 +1628,10 @@ static int make_middle_format
 			if (error)
 			{
 				ff_destroy_variable(mid_var);
-				memFree(copy_buffer, "copy_buffer");
+
+				if (copy_buffer)
+					memFree(copy_buffer, "copy_buffer");
+
 				return(error);
 			}
 			
@@ -1591,7 +1643,10 @@ static int make_middle_format
 				if (error)
 				{
 					ff_destroy_variable(mid_var);
-					memFree(copy_buffer, "copy_buffer");
+
+					if (copy_buffer)
+						memFree(copy_buffer, "copy_buffer");
+
 					return(error);
 				}
 	
@@ -1618,11 +1673,14 @@ static int make_middle_format
 				if (error)
 				{
 					ff_destroy_variable(mid_var);
-					memFree(copy_buffer, "copy_buffer");
+
+					if (copy_buffer)
+						memFree(copy_buffer, "copy_buffer");
+
 					return(error);
 				}
 
-				if (!IS_INITIAL_VAR(out_var) && !IS_CONSTANT_VAR(out_var) && !IS_EQN(out_var))
+				if (!IS_INITIAL(out_var) && !IS_CONSTANT(out_var) && !IS_EQN(out_var))
 				{
 					mid_var->type |= FFV_ORPHAN;
 					error_return = err_push(ERR_ORPHAN_VAR + ERR_WARNING_ONLY, out_var->name);
@@ -1635,11 +1693,14 @@ static int make_middle_format
 			if (error)
 			{
 				ff_destroy_variable(mid_var);
-				memFree(copy_buffer, "copy_buffer");
+
+				if (copy_buffer)
+					memFree(copy_buffer, "copy_buffer");
+
 				return(error);
 			}
 
-			if (!IS_INITIAL_VAR(out_var) && !IS_CONSTANT_VAR(out_var))
+			if (!IS_INITIAL(out_var) && !IS_CONSTANT(out_var))
 			{
 				mid_var->type |= FFV_ORPHAN;
 				error_return = err_push(ERR_ORPHAN_VAR + ERR_WARNING_ONLY, out_var->name);
@@ -1650,7 +1711,10 @@ static int make_middle_format
 		if (!mid_v_list)
 		{
 			ff_destroy_variable(mid_var);
-			memFree(copy_buffer, "copy_buffer");
+
+			if (copy_buffer)
+				memFree(copy_buffer, "copy_buffer");
+
 			return(err_push(ERR_MEM_LACK,"temporary variable"));
 		}
 
@@ -1662,7 +1726,9 @@ static int make_middle_format
 		out_var = FF_VARIABLE(out_v_list);
 	} /* while out_var */
 
-	memFree(copy_buffer, "copy_buffer");
+
+	if (copy_buffer)
+		memFree(copy_buffer, "copy_buffer");
 
 	assert(output_format->num_vars == middle_format->num_vars);
 
@@ -1713,7 +1779,7 @@ int initialize_middle_data
 	out_var = FF_VARIABLE(out_v_list);
 	while (out_var)
 	{
-		if (IS_INITIAL_VAR(out_var))
+		if (IS_INITIAL(out_var))
 		{
 			initial_file = fopen(out_var->name, "rb");
 			if (initial_file == NULL)
@@ -1722,7 +1788,7 @@ int initialize_middle_data
 			if (FF_VAR_LENGTH(out_var) > middle->data->total_bytes - out_var->start_pos)
 				return(err_push(ERR_GENERAL, "Length of \"%s\" exceeds internal buffer", out_var->name));
 
-			if (fread(middle->data->buffer + out_var->start_pos - 1,
+			if (fread(middle->data->buffer + max(1, out_var->start_pos) - 1,
 				      sizeof(char),
 			          FF_VAR_LENGTH(out_var),
 			          initial_file
@@ -1732,34 +1798,31 @@ int initialize_middle_data
 
 			fclose(initial_file);
 		}
-		else if (IS_TEXT(out_var))
+		else if (IS_CONSTANT(out_var))
 		{
-			memMemset(middle->data->buffer + out_var->start_pos - 1, ' ', FF_VAR_LENGTH(out_var),"middle->data->buffer,'\\0',output_increment" );
+			char *targ = middle->data->buffer;
+			size_t bytes_to_copy = min(strlen(out_var->name), (size_t)FF_VAR_LENGTH(out_var));
+
+			targ += (max(1, out_var->start_pos) - 1);
+			targ += FF_VAR_LENGTH(out_var) - bytes_to_copy;
+
+			memcpy(targ, out_var->name, bytes_to_copy);
 		}
+		else if (IS_TEXT(out_var))
+			memMemset(middle->data->buffer + max(1, out_var->start_pos) - 1, ' ', FF_VAR_LENGTH(out_var),"middle->data->buffer,'\\0',output_increment" );
+
+		middle->data->bytes_used = max(middle->data->bytes_used, out_var->end_pos);
 		
 		out_v_list = dll_next(out_v_list);
 		out_var = FF_VARIABLE(out_v_list);
 	}/* end initial variable search */
 	
-	/* Search the output format for constants */
-	out_v_list = FFV_FIRST_VARIABLE(output->format);
-	out_var = FF_VARIABLE(out_v_list);
-	while (out_var)
+	if (output->data->total_bytes < middle->data->total_bytes)
 	{
-		if (IS_CONSTANT_VAR(out_var))
-		{
-			char *targ = middle->data->buffer;
-			size_t bytes_to_copy = min(strlen(out_var->name), (size_t)FF_VAR_LENGTH(out_var));
-
-			targ += (out_var->start_pos - 1);
-			targ += FF_VAR_LENGTH(out_var) - bytes_to_copy;
-
-			memcpy(targ, out_var->name, bytes_to_copy);
-		}
-
-		out_v_list = dll_next(out_v_list);
-		out_var = FF_VARIABLE(out_v_list);
-	}/* end search for constants */
+		error = ff_resize_bufsize(middle->data->total_bytes, &output->data);
+		if (error)
+			return(error);
+	}
 
 	return(error_return);
 }

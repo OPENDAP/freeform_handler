@@ -16,9 +16,10 @@
  *
  */
 
-#ifndef NDARRAY
+#ifndef NDARRAY_H__
+#define NDARRAY_H__
 
-#define NDARRAY
+#include "freeform.h"
 
 typedef unsigned short NDARR_SOURCE;
 
@@ -45,6 +46,10 @@ typedef struct array_descriptor_struct{
 	long element_size; /* The size of an individual element */
 	int num_dim;         /* number of dimensions */
 	char type;           /* The type of the array *RESERVED!* */
+
+#ifdef ND_FP 
+	FILE *fp;
+#endif
 } ARRAY_DESCRIPTOR, *ARRAY_DESCRIPTOR_PTR;
 
 typedef struct array_index_struct{
@@ -76,7 +81,6 @@ typedef struct array_mapping_struct{
  * Function declarations: *
  **************************/
 ARRAY_DESCRIPTOR_PTR ndarr_create(int numdim);
-ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr);
 ARRAY_MAPPING_PTR    ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray,
 							ARRAY_DESCRIPTOR_PTR superarray);
 ARRAY_INDEX_PTR      ndarr_create_indices(ARRAY_DESCRIPTOR_PTR arrdesc);
@@ -86,19 +90,18 @@ ARRAY_INDEX_PTR      ndarr_convert_indices(ARRAY_INDEX_PTR aindex,
 							unsigned char direction);
 unsigned long        ndarr_get_offset(ARRAY_INDEX_PTR aindex);
 unsigned long        ndarr_get_mapped_offset(ARRAY_MAPPING_PTR amap);
-long                 ndarr_reorient(ARRAY_MAPPING_PTR amap,
-							NDARR_SOURCE sourceid,  void *source,  long source_size,
-							NDARR_SOURCE destid,    void *dest,    long dest_size,
-							int *array_complete);
 void                 ndarr_free_descriptor(ARRAY_DESCRIPTOR_PTR arrdesc);
 void                 ndarr_free_indices(ARRAY_INDEX_PTR aindex);
 void                 ndarr_free_mapping(ARRAY_MAPPING_PTR amap);
 void                *ndarr_get_group(ARRAY_INDEX_PTR aindex);
 void                *ndarr_get_next_group(ARRAY_DESCRIPTOR_PTR arrdesc, char mode);
-int                  ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type,
-                            void *mapping);
-int                  ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...);
 int                  ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd);
+int                  ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mapping);
+int                  ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...);
+long                 ndarr_reorient(ARRAY_MAPPING_PTR amap,
+							NDARR_SOURCE sourceid,  void *source,  long source_size,
+							NDARR_SOURCE destid,    void *dest,    long dest_size,
+							int *array_complete);
 
 /*************************
  * Preprocessor defines: *
@@ -148,11 +151,6 @@ int                  ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd);
 #define NDARRS_PADDING (NDARR_SOURCE)0x00FF
 
 /* If we are under freeform, use freeform's err functions */
-#ifndef FREEFORM
-#error Expecting ndarray.c to be used only by FreeForm
-#endif
-
-
 /******************
  * Define macros: *
  ******************/
