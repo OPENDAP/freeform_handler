@@ -9,6 +9,10 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.8  1999/03/18 00:25:38  jimg
+// Fixed find_ancillary_file(). It now works correctly for files that have .s
+// in their names (not just spearating the basename from the extension.
+//
 // Revision 1.7  1998/08/31 04:06:15  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -46,7 +50,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.7 1998/08/31 04:06:15 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.8 1999/03/18 00:25:38 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -165,8 +169,11 @@ const String
 find_ancillary_file(const String &dataset, const String &delimiter,
 		    const String &extension)
 {
+    int delim = dataset.index(delimiter, -1);
+    String basename = ((String)dataset).at(0, delim);
+
     // cast away DATASET's const...
-    String basename = ((String)dataset).before(delimiter);
+    // String basename = ((String)dataset).before(delimiter);
 
     return String(basename + extension);
 }
