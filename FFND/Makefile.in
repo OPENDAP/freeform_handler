@@ -1,9 +1,9 @@
 
-# $Id: Makefile.in,v 1.12 1999/02/27 00:34:41 jimg Exp $
+# $Id: Makefile.in,v 1.13 1999/03/30 19:08:42 jimg Exp $
 
 @SET_MAKE@
 
-PROG = readfile newform chkform bufform
+PROG = readfile newform chkform bufform checkvar
 FF_LIBRARY = libfreeform.a
 MM_LIBRARY = libmaxmin.a
 
@@ -75,6 +75,9 @@ $(MM_LIBRARY):	$(MM_OBJS)
 
 newform: newform.o $(LIBS)
 	$(CC) $(LDFLAGS) newform.o -o $@ $(LIBS) -lm
+
+checkvar: checkvar.o $(LIBS)
+	$(CC) $(LDFLAGS) checkvar.o -o $@ $(LIBS) -lm
 
 newform-pure: newform.o $(LIBS)
 	$(PURIFY) $(CC) $(LDFLAGS) newform.o -o $@ $(LIBS) -lm
