@@ -737,7 +737,7 @@ void _ff_err_assert(char *, char *, unsigned);
 #ifdef FF_CHK_ADDR
 #define FF_VALIDATE(o) (((o) && ((void *)(o) == (o)->check_address)) ? (void)0 : _ff_err_assert(#o, __FILE__, __LINE__))
 #else
-#define FF_VALIDATE(o) 0
+#define FF_VALIDATE(o)
 #endif
 
 #include <errno.h>
