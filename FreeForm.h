@@ -687,6 +687,11 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #include <stddef.h>
 #include <string.h>
 
+/* I added this #undef to suppress warnings about redefining assert. 4/20/98
+   jhrg */
+
+#undef assert
+
 #if defined(DEBUG) || defined(_DEBUG) && !defined(FF_DBG)
 #define FF_DBG
 #endif
@@ -704,7 +709,7 @@ void _ff_err_assert(char *, char *, unsigned);
 #ifdef FF_CHK_ADDR
 #define FF_VALIDATE(o) (((o) && ((void *)(o) == (o)->check_address)) ? (void)0 : _ff_err_assert(#o, __FILE__, __LINE__))
 #else
-#define FF_VALIDATE(o) 0
+#define FF_VALIDATE(o) /* o */
 #endif
 
 #include <errno.h>

@@ -1,37 +1,8 @@
 
-/*
-  Copyright 1995 The University of Rhode Island and The Massachusetts
-  Institute of Technology
-
-  Portions of this software were developed by the Graduate School of
-  Oceanography (GSO) at the University of Rhode Island (URI) in collaboration
-  with The Massachusetts Institute of Technology (MIT).
-
-  Access and use of this software shall impose the following obligations and
-  understandings on the user. The user is granted the right, without any fee
-  or cost, to use, copy, modify, alter, enhance and distribute this software,
-  and any derivative works thereof, and its supporting documentation for any
-  purpose whatsoever, provided that this entire notice appears in all copies
-  of the software, derivative works and supporting documentation.  Further,
-  the user agrees to credit URI/MIT in any publications that result from the
-  use of this software or in any product that includes this software. The
-  names URI, MIT and/or GSO, however, may not be used in any advertising or
-  publicity to endorse or promote any products or commercial entity unless
-  specific written permission is obtained from URI/MIT. The user also
-  understands that URI/MIT is not obligated to provide the user with any
-  support, consulting, training or assistance of any kind with regard to the
-  use, operation and performance of this software nor to provide the user
-  with any updates, revisions, new versions or "bug fixes".
-
-  THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
-  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-  EVENT SHALL URI/MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-  DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-  PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
-  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
-  OF THIS SOFTWARE.
-*/
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
 // The files are patterned after the subcalssing examples 
@@ -40,15 +11,15 @@
 // ReZa 6/18/97
 
 // $Log: FFUrl.cc,v $
+// Revision 1.3  1998/04/21 17:14:05  jimg
+// Fixes for warnings, etc
+//
 // Revision 1.2  1998/04/16 18:11:21  jimg
 // Sequence support added by Reza
-//
-//
-//
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUrl.cc,v 1.2 1998/04/16 18:11:21 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUrl.cc,v 1.3 1998/04/21 17:14:05 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation

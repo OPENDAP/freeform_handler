@@ -1,13 +1,20 @@
+
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors: reza (Reza Nekovei)
+
 //
 // DODS C++ header file for FreeFrom library. 
 // 
 // ReZa 6/16/97
 
 // $Log: FFDods.h,v $
+// Revision 1.3  1998/04/21 17:13:45  jimg
+// Fixes for warnings, etc
+//
 // Revision 1.2  1998/04/16 18:11:02  jimg
 // Sequence support added by Reza
-//
-// 
 
 #ifndef _FFDODS_h
 #define _FFDODS_h 1

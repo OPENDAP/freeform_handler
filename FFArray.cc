@@ -1,36 +1,8 @@
-/*
-  Copyright 1997 The University of Rhode Island and The Massachusetts
-  Institute of Technology.
 
-  Portions of this software were developed by the Graduate School of
-  Oceanography (GSO) at the University of Rhode Island (URI) in collaboration
-  with The Massachusetts Institute of Technology (MIT).
-
-  Access and use of this software shall impose the following obligations and
-  understandings on the user. The user is granted the right, without any fee
-  or cost, to use, copy, modify, alter, enhance and distribute this software,
-  and any derivative works thereof, and its supporting documentation for any
-  purpose whatsoever, provided that this entire notice appears in all copies
-  of the software, derivative works and supporting documentation.  Further,
-  the user agrees to credit URI/MIT in any publications that result from the
-  use of this software or in any product that includes this software. The
-  names URI, MIT and/or GSO, however, may not be used in any advertising or
-  publicity to endorse or promote any products or commercial entity unless
-  specific written permission is obtained from URI/MIT. The user also
-  understands that URI/MIT is not obligated to provide the user with any
-  support, consulting, training or assistance of any kind with regard to the
-  use, operation and performance of this software nor to provide the user
-  with any updates, revisions, new versions or "bug fixes".
-
-  THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
-  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-  EVENT SHALL URI/MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-  DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-  PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
-  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
-  OF THIS SOFTWARE.
-*/
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
 // The files are patterned after the subcalssing examples 
@@ -39,14 +11,15 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.3  1998/04/21 17:13:41  jimg
+// Fixes for warnings, etc
+//
 // Revision 1.2  1998/04/16 18:10:58  jimg
 // Sequence support added by Reza
-//
-//
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.2 1998/04/16 18:10:58 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.3 1998/04/21 17:13:41 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -84,8 +57,10 @@ FFArray::FFArray(const String &n, BaseType *v) : Array(n, v)
 FFArray::~FFArray()
 {
 }
+
 // parse constraint expr. and make coordinate point location for an array.
 // return number of elements to read. 
+
 long
 FFArray::Arr_constraint(long *cor, long *step, long *edg, char **dim_nms, 
 			bool *has_stride)
@@ -98,30 +73,30 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, char **dim_nms,
     *has_stride = false;
 
     for (Pix p = first_dim(); p ; next_dim(p), id++) {
-      start = dimension_start(p, true); 
-      stride = dimension_stride(p, true);
-      stop = dimension_stop(p, true);
-      dimname = dimension_name(p);
+	start = dimension_start(p, true); 
+	stride = dimension_stride(p, true);
+	stop = dimension_stop(p, true);
+	dimname = dimension_name(p);
 
-      // Check for empty constraint
-      if(start+stop+stride == 0)
-	return -1;
+	// Check for empty constraint
+	if(start+stop+stride == 0)
+	    return -1;
 
-      (void) strcpy(dim_nms[id],(const char *)dimname);
+	(void) strcpy(dim_nms[id],(const char *)dimname);
 
-      cor[id] = start;
-      step[id] = stride;
-      edg[id] = ((stop - start)/stride) + 1; // count of elements
-      nels *= edg[id];      // total number of values for variable
-      if (stride != 1)
-	*has_stride = true;
+	cor[id] = start;
+	step[id] = stride;
+	edg[id] = ((stop - start)/stride) + 1; // count of elements
+	nels *= edg[id];      // total number of values for variable
+	if (stride != 1)
+	    *has_stride = true;
     }
     return nels;
 }
 
-
 // parse constraint expr. and make coordinate point location.
 // return number of elements to read. 
+
 long
 FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
 {
@@ -161,25 +136,29 @@ hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index,
     // a[10][10][10] is in SRC, for INDEX == 0 and 1 we do the code in the
     // THEN clause and for INDEX == 2 the ELSE clause is executed.  
 
+    // NOTE: I have added casts for src and dest from void * to char * since
+    // ANSI C++ won't allows pointer arithmetic on void * variables. 4/17/98
+    // jhrg 
+
     if(dim_num != (index+1)) {
         // number of lines, pages, etc to skip 
         for (int i = dim_num-1; i > index; i--)
             jump *= dimsz[i];
 
         for (int edge_tmp = 0; edge_tmp < edge[index] ; edge_tmp++){
-            void *srctmp = ( src + ( start[index] + edge_tmp ) * jump * szof);
-            dest += hyper_get(dest, srctmp, szof, dim_num, index+1, dimsz,
-                              start, edge);
+            void *srctmp = ((char *)src + (start[index] + edge_tmp) 
+			    * jump * szof);
+            dest = (char *)dest + hyper_get(dest, srctmp, szof, dim_num,
+					    index+1, dimsz, start, edge);
         }
         return (0);
     }
     else {
         // number of bytes to jump
-        void *srctmp = src + start[index] * szof ;
-        memcpy((void *) dest, (void *) srctmp, (size_t)edge[index]*szof);
+        void *srctmp = (char *)src + start[index] * szof ;
+        memcpy(dest, srctmp, (size_t)edge[index]*szof);
         return (edge[index] * szof);
     }
-
 }
 
 
@@ -258,38 +237,46 @@ FFArray::read(const String &dataset, int &)
     String output_format = make_output_format(name(), var()->type_name(), 
 					      var()->width());
     */
+#if 0
+    unused...
     bool has_stride;
-    char dname[40][40];
+#endif
+    char dname[40][40];		// *** change this to dynamically alloc.
     int ndims = dimensions();
-    long *start = new long[ndim];
-    long *stride = new long[ndim];
-    long *edge = new long[ndim];
+    long *start = new long[ndims];
+    long *stride = new long[ndims];
+    long *edge = new long[ndims];
 
-    long count = Arr_constraint(start, stride, edge, dname, &has_stride);  
+#if 0
+    unused...
+    long count = Arr_constraint(start, stride, edge, (char **)dname, 
+				&has_stride);  
+#endif
 
-    String output_format = makeND_output_format(name(), var()->type_name(), 
-					      var()->width(), ndims, start,
-					      edge, stride, dname);
+    String output_format = 
+	makeND_output_format(name(), var()->type_name(), var()->width(), 
+			     ndims, start, edge, stride, (const char **)dname);
 
-    char *O_fmt = new char[output_format.length() + 1];
-    strcpy(O_fmt, output_format);
+    char *o_fmt = new char[output_format.length() + 1];
+    strcpy(o_fmt, output_format);
 
     String input_format_file = find_ancillary_file(dataset);
-    char *If_fmt = new char[input_format_file.length() + 1];
-    strcpy(If_fmt, input_format_file);
+    char *if_fmt = new char[input_format_file.length() + 1];
+    strcpy(if_fmt, input_format_file);
 
     // For each cadinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data
 
     if (var()->type_name() == "Byte") {
-	dods_byte *b = (dods_byte *)new char[width()]; // `+1' hack for FreeForm
-	long bytes = read_ff(ds, if_f, o_f, (char *)b, width());
+	// `+1' hack for FreeForm
+	dods_byte *b = (dods_byte *)new char[width()]; 
+	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)b, width());
 
 	if (bytes == -1)
 	    status = false;
 	else{ 
-	  //    seq2vects(b, *this); Used for sequence to array
+	  // seq2vects(b, *this); Used for sequence to array.
 	  set_read_p(true);
 	  val2buf((void *) b);
 	}
@@ -299,7 +286,7 @@ FFArray::read(const String &dataset, int &)
     }
     else if (var()->type_name() == "Int32") {
 	dods_int32 *i = (dods_int32 *)new char[width()];
-	long bytes = read_ff(ds, if_f, o_f, (char *)i, width());
+	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)i, width());
 
 	if (bytes == -1)
 	    status = false;
@@ -313,7 +300,7 @@ FFArray::read(const String &dataset, int &)
     }
     else if (var()->type_name() == "UInt32") {
 	dods_uint32 *ui = (dods_uint32 *)new char[width()];
-	long bytes = read_ff(ds, if_f, o_f, (char *)ui, width());
+	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)ui, width());
 
 	if (bytes == -1)
 	    status = false;
@@ -327,7 +314,7 @@ FFArray::read(const String &dataset, int &)
     }
     else if (var()->type_name() == "Float64") {
 	dods_float64 *d = (dods_float64 *)new char[width()];
-	long bytes = read_ff(ds, if_f, o_f, (char *)d, width());
+	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)d, width());
 
 	if (bytes == -1)
 	    status = false;
@@ -341,19 +328,19 @@ FFArray::read(const String &dataset, int &)
     }
     else if (var()->type_name() == "Str" || var()->type_name() == "Url") {
 	cerr << "FFArray::read: Unsupported array type " << var()->type_name()
-	    << endl;
+	     << endl;
 	status = false;
     }
     else {
 	cerr << "FFArray::read: Unsupported array type " << var()->type_name()
-	    << endl;
+	     << endl;
 	status = false;
     }
 
     // clean up
     delete[] ds;		// delete temporary char * arrays
-    delete[] O_fmt;
-    delete[] If_fmt;
+    delete[] o_fmt;
+    delete[] if_fmt;
 
     return status;
 }

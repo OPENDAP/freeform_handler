@@ -40,19 +40,23 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.3  1998/04/21 17:14:09  jimg
+// Fixes for warnings, etc
+//
 // Revision 1.2  1998/04/16 18:11:24  jimg
 // Sequence support added by Reza
 //
 //
 
-static char rcsid[]={"$Id: ffdas.cc,v 1.2 1998/04/16 18:11:24 jimg Exp $"};
+#include "config_ff.h"
+
+static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.3 1998/04/21 17:14:09 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <iostream.h>
-// #include <assert.h>
 
 #include "cgi_util.h"
 #include "DAS.h"
@@ -68,7 +72,9 @@ static const char FLOAT64[]="Float64";
 
 // Used by ErrMsgT
 
+#if 0
 static char Msgt[255];
+#endif
 
 // reads the attributes and store their names and values in the attribute table.
 //
@@ -76,10 +82,12 @@ static char Msgt[255];
 // file, true otherwise. 
 
 bool
-read_attributes(char *filename, AttrTable *at, String *error1)
+read_attributes(const char *filename, AttrTable *at, String *error1)
 {
 
+#if 0
   FF_BUFSIZE_PTR bufsize = NULL;
+#endif
   
   DATA_BIN_PTR dbin = NULL;
   int error = 0;
@@ -92,9 +100,13 @@ read_attributes(char *filename, AttrTable *at, String *error1)
       exit(1);
     }
 
-  std_args->input_file = filename;
+  char *fn = new char[strlen(filename) + 1];
+  strcpy(fn, filename);
+  std_args->input_file = fn;
   String format_file = ((String) filename).before(".")+".fmt";
-  std_args->input_format_file = (const char *) format_file;
+  char *iff = new char[format_file.length() + 1];
+  strcpy(iff, (const char *) format_file),
+  std_args->input_format_file = iff;
 
   error = db_init(std_args, &dbin, NULL);
   if (error && error < ERR_WARNING_ONLY)

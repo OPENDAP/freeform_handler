@@ -1,18 +1,20 @@
-// (c) COPYRIGHT URI/MIT 1997
-// Please read the full copyright statement in the file COPYRIGHT.  
+
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
 //
 // Authors:
 //      ReZa       Reza Nekovei (reza@intcomm.net)
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.3  1998/04/21 17:14:04  jimg
+// Fixes for warnings, etc
+//
 // Revision 1.2  1998/04/16 18:11:20  jimg
 // Sequence support added by Reza
-//
-//
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.2 1998/04/16 18:11:20 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.3 1998/04/21 17:14:04 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation

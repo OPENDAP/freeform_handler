@@ -1,5 +1,10 @@
 // -*- C++ -*-
 
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors: reza (Reza Nekovei)
+
 // (c) COPYRIGHT URI/MIT 1994-1996
 // Please read the full copyright statement in the file COPYRIGH.  
 //
@@ -12,13 +17,12 @@
 //
 // ReZa 6/18/97
 
-/* $Log: FFGrid.h,v $
-/* Revision 1.2  1998/04/16 18:11:09  jimg
-/* Sequence support added by Reza
-/*
- *
-*/
-
+// $Log: FFGrid.h,v $
+// Revision 1.3  1998/04/21 17:13:51  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:11:09  jimg
+// Sequence support added by Reza
 
 #ifndef _FFGrid_h
 #define _FFGrid_h 1

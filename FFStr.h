@@ -1,10 +1,9 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1994-1996
+// (c) COPYRIGHT URI/MIT 1997-98
 // Please read the full copyright statement in the file COPYRIGH.  
 //
-// Authors:
-//      reza            Reza Nekovei (reza@intcomm.net)
+// Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
 // The files are patterned after the subcalssing examples 
@@ -12,12 +11,12 @@
 //
 // ReZa 6/18/97
 
-/* $Log: FFStr.h,v $
-/* Revision 1.2  1998/04/16 18:11:17  jimg
-/* Sequence support added by Reza
-/*
- *
-*/
+// $Log: FFStr.h,v $
+// Revision 1.3  1998/04/21 17:14:01  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:11:17  jimg
+// Sequence support added by Reza
 
 #ifndef _FFStr_h
 #define _FFStr_h 1

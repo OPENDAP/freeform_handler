@@ -1,42 +1,17 @@
-/*
-  Copyright 1997 The University of Rhode Island, The Massachusetts
-  Institute of Technology and James Gallagher.
 
-  Portions of this software were developed by the Graduate School of
-  Oceanography (GSO) at the University of Rhode Island (URI) in collaboration
-  with The Massachusetts Institute of Technology (MIT).
-
-  Access and use of this software shall impose the following obligations and
-  understandings on the user. The user is granted the right, without any fee
-  or cost, to use, copy, modify, alter, enhance and distribute this software,
-  and any derivative works thereof, and its supporting documentation for any
-  purpose whatsoever, provided that this entire notice appears in all copies
-  of the software, derivative works and supporting documentation.  Further,
-  the user agrees to credit URI/MIT in any publications that result from the
-  use of this software or in any product that includes this software. The
-  names URI, MIT and/or GSO, however, may not be used in any advertising or
-  publicity to endorse or promote any products or commercial entity unless
-  specific written permission is obtained from URI/MIT. The user also
-  understands that URI/MIT is not obligated to provide the user with any
-  support, consulting, training or assistance of any kind with regard to the
-  use, operation and performance of this software nor to provide the user
-  with any updates, revisions, new versions or "bug fixes".
-
-  THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
-  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-  EVENT SHALL URI/MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-  DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-  PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
-  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
-  OF THIS SOFTWARE.
-*/
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors: reza (Reza Nekovei)
 
 // Utility functions for the FreeForm data server.
 //
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.3  1998/04/21 17:14:10  jimg
+// Fixes for warnings, etc
+//
 // Revision 1.2  1998/04/16 18:11:26  jimg
 // Sequence support added by Reza
 //
@@ -52,9 +27,10 @@
 //
 // Revision 1.1.2.1  1996/04/10 15:51:45  jimg
 // The initial version of the FreeForm data server.
-//
 
-static char rcsid[]={"$Id: util_ff.cc,v 1.2 1998/04/16 18:11:26 jimg Exp $"};
+#include "config_ff.h"
+
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.3 1998/04/21 17:14:10 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -69,7 +45,7 @@ static char rcsid[]={"$Id: util_ff.cc,v 1.2 1998/04/16 18:11:26 jimg Exp $"};
 // Returns: a const char * if the DODS type maps into a FreeForm type,
 // otherwise NULL.
 
-static const String
+const String
 ff_types(const String &dods_type)
 {
     if (dods_type == "Byte")
@@ -97,7 +73,7 @@ ff_types(const String &dods_type)
 // Returns: a positive integer if the DODS type maps into a FreeForm type,
 // otherwise -1.
 
-static int
+int
 ff_prec(const String &dods_type)
 {
     if (dods_type == "Byte")
@@ -119,15 +95,14 @@ ff_prec(const String &dods_type)
     }
 }    
 
-/// Make a FreeForm output format specification.
-//* For the current instance of FFArray, build a FreeForm output format
-//* specification.
-//* Returns: The format string.
+/** Make a FreeForm output format specification.
+    For the current instance of FFArray, build a FreeForm output format
+    specification.
+    @return The format string. */
 
 const String
 make_output_format(const String &name, const String &type, const int width)
 {
-#if 1
     ostrstream str;
 
     str << "binary_output_data \"DODS binary output data\"" << endl;
@@ -135,21 +110,6 @@ make_output_format(const String &name, const String &type, const int width)
 	<< " " << ff_prec(type) << endl;
     
     return str.str();
-#endif
-
-#if 0
-    ofstream os;
-
-    char *c = tempnam(NULL, DODS_DATA_PRX);
-    os.open(c);
-
-    os << "binary_output_data \"DODS binary output data\"" << endl;
-    os << name << " 1 " << width << " " << ff_types(type) 
-	<< " " << ff_prec(type) << endl;
-    os.close();
-    
-    return String(c);
-#endif
 }
 
 // format for multi-dimension array (may not be able to handle Grids!!)
@@ -164,22 +124,22 @@ makeND_output_format(const String &name, const String &type, const int width,
     str << name << " 1 " << width << " ARRAY";
 
     for (int i=0; i < ndim; i++)
-      str << "[" << "\"" << dname[i] << "\" " << start[i] << " to "
-	<< start[i]+edge[i] <<" by " << stride[i] << " ]";
+	str << "[" << "\"" << dname[i] << "\" " << start[i] << " to "
+	    << start[i]+edge[i] <<" by " << stride[i] << " ]";
 
     str << " of " << ff_types(type) << " " << ff_prec(type) << endl;
     
     return str.str();
 }
 
-/// Find the format file using a delimiter character.
-//* Given a special sequence of one or more characters, use that to determine
-//* the format file name. Assume that the format file ends with EXTENSION.
-//*
-//* NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
-//* utility functions format_delimiter() and format_extension().
-//*
-//* Returns: A const String object which contains the format file name.
+/** Find the format file using a delimiter character.
+    Given a special sequence of one or more characters, use that to determine
+    the format file name. Assume that the format file ends with EXTENSION.
+
+    NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
+    utility functions format_delimiter() and format_extension().
+
+    @return A const String object which contains the format file name. */
 
 const String
 find_ancillary_file(const String &dataset, const String &delimiter,
@@ -191,11 +151,11 @@ find_ancillary_file(const String &dataset, const String &delimiter,
     return String(basename + extension);
 }
 
-/// Set or get the format file delimiter.
-//* If given no argument, return the format file basename delimiter. If given
-//* a String argument, set the format file basename delimiter to that string.
-//*
-//* Returns: A reference to the delimiter string.
+/** Set or get the format file delimiter.
+    If given no argument, return the format file basename delimiter. If given
+    a String argument, set the format file basename delimiter to that string.
+
+    @return A reference to the delimiter string. */
 
 const String &
 format_delimiter(const String &new_delimiter)
@@ -208,11 +168,11 @@ format_delimiter(const String &new_delimiter)
     return delimiter;
 }
 
-/// Set or get the format file extension.
-//* If given no argument, retrun the format file extension. If given a String
-//* argument, set the format file extension to that string.
-//* 
-//* Returns: A reference to the format file extension.
+/** Set or get the format file extension.
+    If given no argument, retrun the format file extension. If given a String
+    argument, set the format file extension to that string.
+
+    @return A reference to the format file extension. */
 
 const String &
 format_extension(const String &new_extension)
