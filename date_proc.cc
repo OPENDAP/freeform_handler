@@ -26,6 +26,9 @@
 // use in the browsed image server. That version was written in C. 
 
 // $Log: date_proc.cc,v $
+// Revision 1.3  1998/11/13 05:40:52  jimg
+// Replaced assert calls in days() static function.
+//
 // Revision 1.2  1998/11/10 17:47:43  jimg
 // Cleaned up the doc++ comments.
 //
@@ -37,7 +40,7 @@
 
 #include "config_dap.h"
 
-static char __unused__ rcsid[]={"$Id: date_proc.cc,v 1.2 1998/11/10 17:47:43 jimg Exp $"};
+static char __unused__ rcsid[]={"$Id: date_proc.cc,v 1.3 1998/11/13 05:40:52 jimg Exp $"};
 
 // You have to add one to days[1] if the year is a leap year. Since the month
 // number in a Gregorian date is ones-based, fill element zero below to
@@ -54,10 +57,8 @@ is_leap(int year)
 static inline int
 days(int year, int month)
 {
-#if 0
     assert(year > 0);
     assert(month > 0 && month < 13);
-#endif
 
     if (month == 2 && is_leap(year))
 	return 29;
