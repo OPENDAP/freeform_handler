@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.18 1999/05/05 23:34:49 edavis Exp $
+# $Id: Makefile.in,v 1.19 1999/05/06 16:36:39 jimg Exp $
 
 @SET_MAKE@
 
@@ -133,6 +133,22 @@ check: all
 	-$(RUNTEST) --tool ff_dds -srcdir ff-test
 	-$(RUNTEST) --tool ff_dods -srcdir ff-test
 
+test-coverage: clean
+	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)" check
+
+# Note that the gcov options -f and -b are useful but sometimes make looking
+# at the results of coverage analysis a little taxing. -b reports on all
+# branched and -f reports on all functions. The -l -o options summarize on a
+# per-file basis. 3/27/98 jhrg
+collect-coverage-data:
+	(cd test-coverage; \
+         cov_dat="coverage-data-`date +%m.%d.%y`"; \
+	 touch $$cov_dat; \
+	 for f in $(ALLSRCS); do \
+	     echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
+	     gcov -l -o ../ $$f >> $$cov_dat; \
+         done)
+
 test_read_ff: ff_read.c libfreeform.a libmaxmin.a
 	$(CC) -c -g -O0 $(CPPFLAGS) -DTEST -o ff_read.o ff_read.c
 	$(CC) $(LDFLAGS) ff_read.o -o test_read_ff -lfreeform -liberty -lm \
@@ -162,7 +178,7 @@ clean:
 	-cd FFND && $(MAKE) $(MFLAGS) clean
 
 distclean: clean
-	-rm -f config.status config.log config.cache
+	-rm -f config.status config.log config.cache nph-ff
 	-cd FFND && $(MAKE) $(MFLAGS) distclean
 	-rm -f test-coverage/*
 
