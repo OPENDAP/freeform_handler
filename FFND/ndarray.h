@@ -243,22 +243,30 @@ long                 ndarr_reorient(ARRAY_MAPPING_PTR amap,
  *
  * KEYWORDS: array macro
  */
-#define NDARR_GET_SEPARATION(nda_i_p, nda_l_v) {                                 \
-	int nda_t_i;                                                                 \
+#define NDARR_GET_SEPARATION(nda_i_p, nda_l_v) { \
+	int nda_t_i; \
 	nda_l_v = nda_i_p->descriptor->separation[nda_i_p->descriptor->num_dim - 1]; \
-	for(nda_t_i = nda_i_p->descriptor->num_dim - 2; nda_t_i >= 0; nda_t_i--)     \
-		if(nda_i_p->descriptor->grouping[nda_t_i + 1])                           \
-			if(!((nda_i_p->index[nda_t_i + 1] + 1) %                             \
-					nda_i_p->descriptor->grouping[nda_t_i + 1]))                 \
-				nda_l_v += nda_i_p->descriptor->separation[nda_t_i];             \
-			else                                                                 \
-				break;                                                           \
-		else{                                                                     \
-			if(((nda_i_p->index[nda_t_i + 1] + 1) ==                             \
-					nda_i_p->descriptor->dim_size[nda_t_i + 1]))                 \
-				nda_l_v += nda_i_p->descriptor->separation[nda_t_i];             \
-			else                                                                 \
-				break;}}                                                          \
+	for(nda_t_i = nda_i_p->descriptor->num_dim - 2; nda_t_i >= 0; nda_t_i--) { \
+		if(nda_i_p->descriptor->grouping[nda_t_i + 1]) { \
+			if(!((nda_i_p->index[nda_t_i + 1] + 1) % \
+			     nda_i_p->descriptor->grouping[nda_t_i + 1])) { \
+				nda_l_v += nda_i_p->descriptor->separation[nda_t_i]; \
+                        } \
+			else { \
+				break; \
+                        } \
+                } \
+		else { \
+			if(((nda_i_p->index[nda_t_i + 1] + 1) == \
+			    nda_i_p->descriptor->dim_size[nda_t_i + 1])) { \
+				nda_l_v += nda_i_p->descriptor->separation[nda_t_i]; \
+			} \
+			else { \
+				break; \
+                        } \
+                } \
+	}\
+} \
 
 
 /*

@@ -2619,7 +2619,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				bytesread += sub_array->element_size;
 									
 				/* See if we need to put out padding (or skip) for separation */
-				if(amap->subsep){
+				if(amap->subsep) {
 					NDARR_GET_SEPARATION(amap->subaindex, outoffset);
 					bytesread += outoffset;
 					/* Need to pad a little for output */
@@ -2628,7 +2628,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 							putc(paddingch, outfile);
 					}
 					else {
-						if(fseek(outfile, outoffset, SEEK_CUR)){
+						if(fseek(outfile, outoffset, SEEK_CUR)) {
 							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
 							err_push(ERR_NDARRAY, outfilename);
 
