@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.6 1998/09/02 23:00:10 jimg Exp $
+# $Id: Makefile.in,v 1.7 1998/11/13 05:44:53 jimg Exp $
 
 @SET_MAKE@
 
@@ -18,7 +18,7 @@ CFLAGS = @CFLAGS@ -Wall
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-TAGS_FLAGS = -b
+TAGS_FLAGS = 
 
 # For these files, install only locally so as to not override any other
 # version of FreeForm on this machine. 4/16/98 jhrg
@@ -46,6 +46,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
+PURIFY = purify -chain-length="10" 
 
 FF_OBJS = afm2bfm.o avlins.o avlfree.o cv_units.o dbevents.o dl_lists.o \
 	  eqn_util.o error.o eval_eqn.o ff_utils.o file2buf.o formlist.o \
@@ -74,7 +75,21 @@ $(MM_LIBRARY):	$(MM_OBJS)
 newform: newform.o $(LIBS)
 	$(CC) $(LDFLAGS) newform.o -o $@ $(LIBS) -lm
 
+newform-pure: newform.o $(LIBS)
+	$(PURIFY) $(CC) $(LDFLAGS) newform.o -o $@ $(LIBS) -lm
+	-rm newform.o
+
 newform.o: newform.c
+	$(CC) $(CPPFLAGS) -DFF_MAIN $(CFLAGS) -c $< -o $@
+
+bufform: bufform.o $(LIBS)
+	$(CC) $(LDFLAGS) bufform.o -o $@ $(LIBS) -lm
+
+bufform-pure: bufform.o $(LIBS)
+	$(PURIFY) $(CC) $(LDFLAGS) bufform.o -o $@ $(LIBS) -lm
+	-rm bufform.o
+
+bufform.o: bufform.c
 	$(CC) $(CPPFLAGS) -DFF_MAIN $(CFLAGS) -c $< -o $@
 
 readfile: readfile.o

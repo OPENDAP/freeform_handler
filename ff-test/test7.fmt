@@ -10,5 +10,5 @@ time 10 10 char 0
 DODS_URL 12 137 text 0
 
 ASCII_output_data "pathfinder_URLs"
-DODS_URL 0 124 text 0
+DODS_URL 1 126 text 0
 
