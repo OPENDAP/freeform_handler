@@ -1573,6 +1573,7 @@ void ff_destroy_data_flag(FF_DATA_FLAG_PTR);
 
 FORMAT_PTR ff_find_format(FORMAT_LIST, ...);
 FORMAT_PTR ff_afm2bfm(FORMAT_PTR, char *new_name);
+FORMAT_PTR ff_xfm2struct(FORMAT_PTR, char *new_name);
 size_t ffv_ascii_type_size(VARIABLE_PTR var);
 FORMAT_PTR ff_bfm2dfm(FORMAT_PTR format, char *new_name);
 int format_to_ISO8211DDR(FORMAT_PTR format, const char *first_fields, FF_BUFSIZE_HANDLE ddf);
