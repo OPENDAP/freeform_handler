@@ -9,6 +9,11 @@
 // Implementation of the DODS Time class
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.3  1999/01/05 00:35:55  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+//
 // Revision 1.2  1998/12/30 06:38:26  jimg
 // Define TEST to use this without the dap++ library (e.g., when testing
 // DODS_Date_Time).
@@ -19,7 +24,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.2 1998/12/30 06:38:26 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.3 1999/01/05 00:35:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -28,7 +33,6 @@ static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.2 1998/12/30 06:38:26 jim
 #include <stdio.h>
 #include <assert.h>
 
-#include <string>
 #include <String.h>
 #include <strstream.h>
 #include <iomanip.h>
@@ -51,7 +55,7 @@ compute_ssm(int hh, int mm, double ss)
     return ((hh * 60 + mm) * 60) + ss;
 }
 
-static string
+static String
 extract_argument(BaseType *arg)
 {
 #ifndef TEST
@@ -62,7 +66,7 @@ extract_argument(BaseType *arg)
     // jhrg
     String *sp = 0;
     arg->buf2val((void **)&sp);
-    string s = sp->chars();
+    String s = sp->chars();
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -91,14 +95,14 @@ DODS_Time::DODS_Time(): _hours(-1), _minutes(-1), _seconds(-1),
 {
 }
 
-DODS_Time::DODS_Time(string time_str)
+DODS_Time::DODS_Time(String time_str)
 {
-    set_time(time_str);
+    set(time_str);
 }
 
 DODS_Time::DODS_Time(BaseType *arg)
 {
-    set_time(extract_argument(arg));
+    set(extract_argument(arg));
 }
 
 DODS_Time::DODS_Time(int hh, int mm, bool gmt = false):
@@ -122,24 +126,24 @@ DODS_Time::DODS_Time(int hh, int mm, double ss, bool gmt = false):
 }
 
 void
-DODS_Time::set_time(string time)
+DODS_Time::set(String time)
 {
         // Parse the date_str.
-    istrstream iss(time.data());
+    istrstream iss(time.chars());
     char c;
     iss >> _hours;
     iss >> c;
     iss >> _minutes;
 
     // If there are two colons, assume hours:minutes:seconds.
-    if (time.find(":") != time.rfind(":")) {
+    if (time.index(":") != time.index(":", -1)) {
 	iss >> c;
 	iss >> _seconds;
     }
     
     _sec_since_midnight = compute_ssm(_hours, _minutes, _seconds);
 
-    string gmt;
+    String gmt;
     iss >> gmt;
     if (gmt == "GMT" || gmt == "gmt" || gmt == "UTC" || gmt == "utc")
 	_gmt = true;
@@ -153,19 +157,19 @@ DODS_Time::set_time(string time)
 }    
 
 void
-DODS_Time::set_time(BaseType *arg)
+DODS_Time::set(BaseType *arg)
 {
-    set_time(extract_argument(arg));
+    set(extract_argument(arg));
 }    
 
 void 
-DODS_Time::set_time(int hh, int mm, bool gmt = false)
+DODS_Time::set(int hh, int mm, bool gmt = false)
 {
-    set_time(hh, mm, 0, gmt);
+    set(hh, mm, 0, gmt);
 }
 
 void 
-DODS_Time::set_time(int hh, int mm, double ss, bool gmt = false)
+DODS_Time::set(int hh, int mm, double ss, bool gmt = false)
 {
    _hours = hh;
    _minutes = mm;
@@ -262,8 +266,8 @@ DODS_Time::gmt() const
     return _gmt;
 }
 
-string
-DODS_Time::string_rep(bool gmt) const
+String
+DODS_Time::get(bool gmt) const
 {
     ostrstream oss;
     // Pad with leading zeros and use fixed fields of two chars for hours and
@@ -271,14 +275,14 @@ DODS_Time::string_rep(bool gmt) const
     // require their filed to have `precision' digits if they are all zero.
     oss << setfill('0') << setw(2) << _hours << ":" 
 	<< setfill('0') << setw(2) << _minutes << ":" 
-	<< setfill('0') << setw(2) << setprecision(6) << _seconds << " ";
+	<< setfill('0') << setw(2) << setprecision(6) << _seconds;
 
     if (_gmt)
-	oss << "GMT";
+	oss << " GMT";
     
     oss << ends;
 
-    string time_str = oss.str();
+    String time_str = oss.str();
     oss.freeze(0);
 
     return time_str;

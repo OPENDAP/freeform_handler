@@ -9,6 +9,11 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.4  1999/01/05 00:34:04  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+//
 // Revision 1.3  1998/12/30 06:39:18  jimg
 // Define TEST when building the test version (also define DATE_TEST).
 //
@@ -21,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.3 1998/12/30 06:39:18 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.4 1999/01/05 00:34:04 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -41,7 +46,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.3 1998/12/30 06:39:18 jim
 
 #include "Error.h"
 
-static string
+static String
 extract_argument(BaseType *arg)
 {
 #ifndef TEST
@@ -53,7 +58,7 @@ extract_argument(BaseType *arg)
     // jhrg
     String *sp = 0;
     arg->buf2val((void **)&sp);
-    string s = sp->chars();
+    String s = sp->chars();
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -80,44 +85,44 @@ DODS_Date::DODS_Date(): _julian_day(0), _year(0), _month(0), _day(0),
 
 DODS_Date::DODS_Date(BaseType *arg)
 {
-    string s = extract_argument(arg);
-    set_date(s);
+    String s = extract_argument(arg);
+    set(s);
 }
 
-DODS_Date::DODS_Date(string date_str)
+DODS_Date::DODS_Date(String date_str)
 {
-    set_date(date_str);
+    set(date_str);
 }
 
 DODS_Date::DODS_Date(int year, int day_num)
 {
-    set_date(year, day_num);
+    set(year, day_num);
 }
 
 DODS_Date::DODS_Date(int year, int month, int day)
 {
-    set_date(year, month, day);
+    set(year, month, day);
 }    
 
 void
-DODS_Date::set_date(BaseType *arg)
+DODS_Date::set(BaseType *arg)
 {
-    string s = extract_argument(arg);
-    set_date(s);
+    String s = extract_argument(arg);
+    set(s);
 }
 
 void
-DODS_Date::set_date(string date) 
+DODS_Date::set(String date) 
 {
     // Parse the date_str.
-    istrstream iss(date.data());
+    istrstream iss(date.chars());
     char c;
     iss >> _year;
     iss >> c;
     iss >> _month;
 
     // If there are two slashes, assume a yyyy/mm/dd date.
-    if (date.find("/") != date.rfind("/")) {
+    if (date.index("/") != date.index("/", -1)) {
 	iss >> c;
 	iss >> _day;
 	// Convert to julian day number and record year, month, ...
@@ -136,7 +141,7 @@ DODS_Date::set_date(string date)
 }
 
 void
-DODS_Date::set_date(int year, int day_num)
+DODS_Date::set(int year, int day_num)
 {
     _year = year;
     _day_number = day_num;
@@ -147,7 +152,7 @@ DODS_Date::set_date(int year, int day_num)
 }
 
 void
-DODS_Date::set_date(int year, int month, int day)
+DODS_Date::set(int year, int month, int day)
 {
     _year = year;
     _month = month;
@@ -224,26 +229,30 @@ DODS_Date::julian_day() const
     return _julian_day;
 }
 
-string 
-DODS_Date::yd_date() const
+String 
+DODS_Date::get(date_format format) const
 {
     ostrstream oss;
-    oss << _year << "/" << _day_number << ends;
-    string yd = oss.str();
+
+    switch (format) {
+      case yd:
+	oss << _year << "/" << _day_number << ends;
+	break;
+      case ymd:
+	oss << _year << "/" << _month << "/" << _day << ends;
+	break;
+      default:
+#ifndef TEST
+	throw Error(unknown_error, "Invalid date format");
+#else
+	assert("Invalid date format" && false);
+#endif
+    }
+
+    String yd = oss.str();
     oss.freeze(0);
     return yd;
 }
-
-string 
-DODS_Date::ymd_date() const
-{
-    ostrstream oss;
-    oss << _year << "/" << _month << "/" << _day << ends;
-    string yd = oss.str();
-    oss.freeze(0);
-    return yd;
-}
-
 
 time_t
 DODS_Date::unix_time() const
@@ -266,24 +275,24 @@ DODS_Date::unix_time() const
 // If two or three args, use the yd or ymd ctor. Once built, compare to 1 Jan
 // 1970 and then call the yd_date() and ymd_date() mfuncs. 11/4/98 jhrg
 
-// Build with: `g++ -g -I../../include -DHAVE_CONFIG_H -DTEST_DATE
-// DODS_Date.cc date_proc.o'. Add: `-ftest-coverage -fprofile-arcs' for test
-// coverage. 
+// Build with: `g++ -g -I../../include -DHAVE_CONFIG_H -DTEST_DATE -TEST
+// DODS_Date.cc date_proc.o -lg++'. Add: `-ftest-coverage -fprofile-arcs' for
+// test coverage. 
 
 int main(int argc, char *argv[])
 {
-    DODS_Date epoc((string)"1970/1/1");
+    DODS_Date epoc((String)"1970/1/1");
     DODS_Date d1;
 
     switch (--argc) {
       case 1:
-	d1.set_date((string)argv[1]);
+	d1.set((String)argv[1]);
 	break;
       case 2:
-	d1.set_date(atoi(argv[1]), atoi(argv[2]));
+	d1.set(atoi(argv[1]), atoi(argv[2]));
 	break;
       case 3:
-	d1.set_date(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+	d1.set(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
 	break;
       default:
 	cerr << "Wrong number of args!" << endl;
@@ -320,8 +329,8 @@ int main(int argc, char *argv[])
     else
 	cout << "False: d1 != epoc" << endl;
 
-    cout << "YMD: " << d1.ymd_date() << endl;
-    cout << "YD: " << d1.yd_date() << endl;
+    cout << "YMD: " << d1.get() << endl;
+    cout << "YD: " << d1.get(yd) << endl;
     cout << "Julian day: " << d1.julian_day() << endl;
     cout << "Seconds: " << d1.unix_time() << endl;
 }

@@ -9,19 +9,25 @@
 // Implementation of the DODS Date/Time class
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.2  1999/01/05 00:35:35  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+//
 // Revision 1.1  1998/12/30 06:40:39  jimg
 // Initial version
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date_Time.cc,v 1.1 1998/12/30 06:40:39 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Date_Time.cc,v 1.2 1999/01/05 00:35:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdio.h>
+#include <time.h>
 #include <assert.h>
 
 #include <strstream.h>
@@ -32,7 +38,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date_Time.cc,v 1.1 1998/12/30 06:40:3
 
 #define seconds_per_day 86400.0
 
-static string
+static String
 extract_argument(BaseType *arg)
 {
 #ifndef TEST
@@ -44,7 +50,7 @@ extract_argument(BaseType *arg)
     // jhrg
     String *sp = 0;
     arg->buf2val((void **)&sp);
-    string s = sp->chars();
+    String s = sp->chars();
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -72,30 +78,30 @@ DODS_Date_Time::DODS_Date_Time(DODS_Date d, DODS_Time t) : _date(d), _time(t)
 {
 }
 
-DODS_Date_Time::DODS_Date_Time(string date_time)
+DODS_Date_Time::DODS_Date_Time(String date_time)
 {
-    set_date_time(date_time);
+    set(date_time);
 }
 
 DODS_Date_Time::DODS_Date_Time(BaseType *date_time)
 {
-    set_date_time(date_time);
+    set(date_time);
 }
 
 DODS_Date_Time::DODS_Date_Time(int y, int m, int d, int hh, int mm, 
 			       double ss, bool gmt)
 {
-    set_date_time(y, m, d, hh, mm, ss, gmt);
+    set(y, m, d, hh, mm, ss, gmt);
 }
 
 DODS_Date_Time::DODS_Date_Time(int y, int yd, int hh, int mm, double ss, 
 			       bool gmt)
 {
-    set_date_time(y, yd, hh, mm, ss, gmt);
+    set(y, yd, hh, mm, ss, gmt);
 }
 
 void
-DODS_Date_Time::set_date_time(DODS_Date d, DODS_Time t)
+DODS_Date_Time::set(DODS_Date d, DODS_Time t)
 {
     _date = d;
     _time = t;
@@ -104,41 +110,45 @@ DODS_Date_Time::set_date_time(DODS_Date d, DODS_Time t)
 }
 
 void
-DODS_Date_Time::set_date_time(string date_time)
+DODS_Date_Time::set(String date_time)
 {
     // The format for the date-time string is <date part>:<time part>.
-    int i = date_time.find(":");
-    string date_part = date_time.substr(0, i);
-    string time_part = date_time.substr(i+1);
- 
-   _date.set_date(date_part);
-    _time.set_time(time_part);
+    int i = date_time.index(":");
+    String date_part = date_time.at(0, i); 
+#if 0
+    // If using the string class... 12/31/98 jhrg
+    string date_part(date_time, 0, i);
+    date_part[i]='\0';		// Hack. Why is this necessary?
+    string time_part(date_time, i+1);
+#endif
+    String time_part = date_time.after(i);
+    
+    _date.set(date_part);
+    _time.set(time_part);
 
     assert(OK());
 }
 
 void
-DODS_Date_Time::set_date_time(BaseType *date_time)
+DODS_Date_Time::set(BaseType *date_time)
 {
-    set_date_time(extract_argument(date_time));
+    set(extract_argument(date_time));
 }
 
 void
-DODS_Date_Time::set_date_time(int y, int m, int d, int hh, int mm, double ss, 
-			      bool gmt)
+DODS_Date_Time::set(int y, int m, int d, int hh, int mm, double ss, bool gmt)
 {
-    _date.set_date(y, m, d);
-    _time.set_time(hh, mm, ss, gmt);
+    _date.set(y, m, d);
+    _time.set(hh, mm, ss, gmt);
 
     assert(OK());
 }
 
 void
-DODS_Date_Time::set_date_time(int y, int yd, int hh, int mm, double ss, 
-			      bool gmt)
+DODS_Date_Time::set(int y, int yd, int hh, int mm, double ss, bool gmt)
 {
-    _date.set_date(y, yd);
-    _time.set_time(hh, mm, ss, gmt);
+    _date.set(y, yd);
+    _time.set(hh, mm, ss, gmt);
 
     assert(OK());
 }
@@ -191,28 +201,21 @@ DODS_Date_Time::gmt() const
     return _time.gmt();
 }
 
-string
-DODS_Date_Time::yd_date() const
+String 
+DODS_Date_Time::get(date_format format, bool gmt) const
 {
-    return _date.yd_date();
-}
-
-string
-DODS_Date_Time::ymd_date() const
-{
-    return _date.ymd_date();
-}
-
-string
-DODS_Date_Time::yd_date_time() const
-{
-    return _date.yd_date() + ":" + _time.string_rep();
-}
-
-string
-DODS_Date_Time::ymd_date_time() const
-{
-    return _date.ymd_date() + ":" + _time.string_rep();
+    switch (format) {
+      case ymd:
+	return _date.get() + ":" + _time.get(gmt);
+      case yd:
+	return _date.get(yd) + ":" + _time.get(gmt);
+      default:
+#ifndef TEST
+	throw Error(unknown_error, "Invalid date format");
+#else
+	assert("Invalid date format" && false);
+#endif
+    }
 }
 
 double
@@ -263,25 +266,27 @@ operator!=(DODS_Date_Time &t1, DODS_Date_Time &t2)
 int
 operator<(DODS_Date_Time &t1, DODS_Date_Time &t2)
 {
-    return t1._date < t2._date || t1._time < t2._time;
+    return t1._date < t2._date 
+	|| (t1._date == t2._date && t1._time < t2._time);
 }
 
 int
 operator>(DODS_Date_Time &t1, DODS_Date_Time &t2)
 {
-    return t1._date > t2._date || t1._time > t2._time;
+    return t1._date > t2._date 
+	|| (t1._date == t2._date && t1._time > t2._time);
 }
 
 int
 operator<=(DODS_Date_Time &t1, DODS_Date_Time &t2)
 {
-    return t1._date < t2._date && t1._time <= t2._time;
+    return t1 == t2 || t1 < t2;
 }
 
 int
 operator>=(DODS_Date_Time &t1, DODS_Date_Time &t2)
 {
-    return t1._date > t2._date && t1._time >= t2._time;
+    return t1 == t2 || t1 > t2;
 }
 
 #ifdef DATE_TIME_TEST
@@ -360,5 +365,3 @@ main(int argc, char *argv[])
     cout << "Seconds: " << dt.unix_time() << endl;
 }
 #endif // TEST_DATE
-   
-
