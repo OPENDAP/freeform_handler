@@ -686,6 +686,42 @@ void err_disp(FF_STD_ARGS_PTR std_args)
     }
 }
 
+/*
+ * NAME:    err_get_msg 
+ *
+ * PURPOSE: To get an error message string.
+ *
+ * USAGE:   char * ffnd_error_msg(int error_defined_constant)
+ *
+ * RETURNS: A pointer to the error message string
+ *
+ * DESCRIPTION: This is a public version of err_get_msg. It is useful for
+ *              non-interactive programs. Uses int msg (error_defined
+ *              constant) to get the corresponding error message from the
+ *              local_errlist array. If the error is not a system error, a
+ *              binary search is called on the local error list. If no error
+ *              is found, "Invalid error number" is returned. System errors
+ *              are accounted for with a call to the operating system error
+ *              list.
+ *
+ * AUTHOR:  James Gallagher. jgallagher@gso.uri.edu
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * COMMENTS: Added. 10/20/98 jhrg
+ *
+ * KEYWORDS:            error system 
+ * 
+ */
+
+#undef ROUTINE_NAME
+#define ROUTINE_NAME "ffnd_error_msg"
+
+char *
+ffnd_error_msg(int msg)
+{
+    return err_get_msg(msg);
+}
 
 /*
  * NAME:    err_get_msg 

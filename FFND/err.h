@@ -152,6 +152,8 @@ void err_clear(void);
 void err_disp(FF_STD_ARGS_PTR std_args);
 void err_end(void);
 
+char *ffnd_error_msg(int);	/* Added 10/20/98 jhrg */
+
 int err_push(const int, const char *,...);
 int verr_push(const int ercode, const char *format, va_list va_args);
 
