@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.11 1999/01/05 00:43:41 jimg Exp $
+# $Id: Makefile.in,v 1.12 1999/01/08 22:09:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -12,6 +12,7 @@ INCS = -I. -I$(DODS_ROOT)/include -IFFND @INCS@
 DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 CFLAGS = @CFLAGS@ -Wall
 
 # Search in both the FFND and FFND/lib dirs for the freeform libraries.
@@ -42,6 +43,10 @@ srcdir = @srcdir@
 version = @VERSION@
 dir = ff-dods-@VERSION@
 
+# testsuite specifics
+RUNTEST = runtest
+RUNTESTFLAGS = #--all --verbose
+
 # names of key programs
 
 LN_S = @LN_S@
@@ -58,6 +63,7 @@ INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 STRIP = strip
+DOCXX = doc++
 
 FFSRC = FFArray.cc FFByte.cc FFFloat64.cc FFFunction.cc \
 	FFGrid.cc FFInt32.cc FFList.cc FFSequence.cc FFStr.cc \
@@ -82,6 +88,8 @@ DDSOBJ = ff_dds.o ffdds.o
 DASSRC = ffdas.cc ff_das.cc
 DASOBJ = ffdas.o ff_das.o
 
+ALLSRCS = $(FFSRC) $(SERVSRC) $(DDSSRC) $(DASSRC)
+
 all: $(FF_LIBS) ff_das ff_dds ff_dods
 
 ff_das: $(DASOBJ) $(FFOBJ) 
@@ -99,7 +107,10 @@ libfreeform.a:
 libmaxmin.a: 
 	cd FFND; $(MAKE) $(MFLAGS) $@
 
-check: test_read_ff
+check: all
+	$(RUNTEST) --tool ff_das -srcdir ff-test
+	$(RUNTEST) --tool ff_dds -srcdir ff-test
+	$(RUNTEST) --tool ff_dods -srcdir ff-test
 
 test_read_ff: ff_read.c libfreeform.a libmaxmin.a
 	$(CC) -c -g -O0 $(CPPFLAGS) -DTEST -o ff_read.o ff_read.c
@@ -122,13 +133,42 @@ Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
 
 clean:
-	-rm -f *.o *.sum *.log *~ core
+	-rm -f *.o *.sum *.log *~ core *.bb *.bbg *.da
 	-rm -f $(PROG) test_read_ff
 	-cd FFND && $(MAKE) $(MFLAGS) clean
 
 distclean: clean
 	-rm -f config.status config.log config.cache
 	-cd FFND && $(MAKE) $(MFLAGS) distclean
+	-rm -f test-coverage/*
+
+# In order to get the latex docs to work (compile w/latex) you need the
+# docxx.sty file where latex will find it. 9/15/98 jhrg
+.PHONY: docs
+docs:
+	@echo "Building reference documentation."
+	-mkdir docs-html;
+        # First build the HTML docs, then the tex docs.
+	$(DOCXX) -H -d docs-html -f -B /dev/null *.h
+	-mkdir docs-latex;
+	$(DOCXX) -t -o docs-latex/ff-reference.tex *.h
+
+test-coverage: clean
+	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)" \
+	CFLAGS="$(CFLAGS $(TEST_COV_FLAGS)" check
+
+# Note that the gcov options -f and -b are useful but sometimes make looking
+# at the results of coverage analysis a little taxing. -b reports on all
+# branched and -f reports on all functions. The -l -o options summarize on a
+# per-file basis. 3/27/98 jhrg
+collect-coverage-data:
+	(cd test-coverage; \
+         cov_dat="coverage-data-`date +%m.%d.%y`"; \
+	 touch $$cov_dat; \
+	 for f in $(ALLSRCS); do \
+	     echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
+	     gcov -l -o ../ $$f >> $$cov_dat; \
+         done)
 
 .PHONY: tar
 tar:
@@ -178,6 +218,3 @@ tags:
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 include dependencies
-
-
-
