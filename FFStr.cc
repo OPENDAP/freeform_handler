@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFStr.cc,v $
+// Revision 1.6  1998/11/13 05:43:08  jimg
+// Formatting changes
+//
 // Revision 1.5  1998/08/31 04:06:04  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -28,7 +31,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.5 1998/08/31 04:06:04 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.6 1998/11/13 05:43:08 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -65,37 +68,37 @@ FFStr::ptr_duplicate()
 bool
 FFStr::read(const String &dataset, int &)
 {
-  if (read_p()) // nothing to do
-    return true;
+    if (read_p())			// nothing to do
+	return true;
 
-  if (BufVal){ // Data in cache
-    char * ptr = BufVal+BufPtr;
+    if (BufVal){ // Data in cache
+	char * ptr = BufVal+BufPtr;
 
-    char *TmpBuf = new char[StrLength+1];
-    int i, j;
+	char *TmpBuf = new char[StrLength+1];
+	int i, j;
 
-    //remove trailing white space
-    for(i=StrLength-1; i>=0; i--)
-      if(!isspace(*(ptr+i)))
-	break;
+	//remove trailing white space
+	for(i=StrLength-1; i>=0; i--)
+	    if(!isspace(*(ptr+i)))
+		break;
 
-    //remove leading white space
-    for(j=0; j<i; j++)
-      if(!isspace(*(ptr+j)))
-	break;
+	//remove leading white space
+	for(j=0; j<i; j++)
+	    if(!isspace(*(ptr+j)))
+		break;
 
-    strncpy(TmpBuf, ptr+j,i-j+1);
-    TmpBuf[i-j+1]='\0';
+	strncpy(TmpBuf, ptr+j,i-j+1);
+	TmpBuf[i-j+1]='\0';
 
-    String *Nstr = new String((const char *)TmpBuf);
+	// Fix me; use _buf directly. 10/19/98 jhrg
+	String *Nstr = new String((const char *)TmpBuf);
 
-    val2buf(Nstr);
-    set_read_p(true);
+	val2buf(Nstr);
+	set_read_p(true);
 
-    BufPtr += StrLength;
-    return true;
-  }
-  else 
-    return false;
-
+	BufPtr += StrLength;
+	return true;
+    }
+    else 
+	return false;
 }
