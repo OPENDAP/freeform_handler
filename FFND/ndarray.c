@@ -323,7 +323,10 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		goto ndarr_create_from_str_exit;
 	}
 
+	skip_lead_space(pos);
+#if 0
 	pos = skip_lead_space(pos);
+#endif
 	arrd->element_size = (long)strtol(pos, &endptr, 10);
 	if (endptr && strlen(endptr))
 	{
@@ -368,7 +371,10 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		}
 
 		/* Get the starting and ending indices */
+		skip_lead_space(position);
+#if 0
 		position = skip_lead_space(position);
+#endif
 		if (dbin && IS_KEYWORDED_PARAMETER(position))
 		{
 			endptr = position + 1;
@@ -407,7 +413,10 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			goto ndarr_create_from_str_exit;
 		}
 		pos += 2;
+		skip_lead_space(pos);
+#if 0
 		pos = skip_lead_space(pos);
+#endif
 		if (dbin && IS_KEYWORDED_PARAMETER(pos))
 		{
 			endptr = pos + 1;
@@ -442,7 +451,10 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		pos = strstr(position, "by");
 		if(pos){
 			pos += 2;
+			skip_lead_space(pos);
+#if 0
 			pos = skip_lead_space(pos);
+#endif
 			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
 				endptr = pos + 1;
@@ -487,7 +499,10 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 				pos += 2;
 		}
 		if(pos){
+			skip_lead_space(pos);
+#if 0
 			pos = skip_lead_space(pos);
+#endif
 			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
 				endptr = pos + 1;
@@ -530,7 +545,10 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 				pos += 2;
 		}
 		if(pos){
+			skip_lead_space(pos);
+#if 0
 			pos = skip_lead_space(pos);
+#endif
 			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
 				endptr = pos + 1;

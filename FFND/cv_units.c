@@ -795,7 +795,12 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 			leap = 1;
 		if ((int)extra_days > 59 + (int)leap){ 	/*  month is not Jan or Feb */
 			mon_const = 1;
+			extra_days = leap;
+#if 0
+			// This looks like a bug to me... Not sure what was
+			// meant. 05/14/03 jhrg
 			extra_days = extra_days = leap;
+#endif
 		}
 		else{					/* if month is Jan or Feb, add 12 to month so
 								that Feb 29 will be last day of year */

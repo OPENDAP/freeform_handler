@@ -2128,7 +2128,16 @@ static int transmogrify
 			bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
 		}
 
+		static char tmpnam_replacement[] = {"/tmp/freeformXXXXXX"};
+		if (mkstemp(tmpnam_replacement) > -1)
+		    std_args->output_file = tmpnam_replacement;
+		else
+		    std_args->output_file = 0;
+#if 0
+		// I got tired of gcc's warnings... my fix is not
+		// thread-safe. 05/14/03 jhrg
 		std_args->output_file = tmpnam(NULL);
+#endif
 		if (!std_args->output_file)
 		{
 			error = err_push(ERR_CREATE_FILE, "Unable to create a temporary file");
