@@ -9,6 +9,10 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.9  1999/03/18 01:12:38  jimg
+// Fixed up the file_exist90 function so that it no longer does the open/close
+// thing.
+//
 // Revision 1.8  1999/03/18 00:25:38  jimg
 // Fixed find_ancillary_file(). It now works correctly for files that have .s
 // in their names (not just spearating the basename from the extension.
@@ -50,7 +54,9 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.8 1999/03/18 00:25:38 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.9 1999/03/18 01:12:38 jimg Exp $"};
+
+#include <unistd.h>
 
 #include <iostream.h>
 #include <strstream.h>
@@ -321,6 +327,8 @@ SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
 bool
 file_exist(const char * filename)
 {
+    return access(filename, F_OK) == 0;
+#if 0
   FILE *fp = fopen(filename, "r");
   if(fp){
     fclose(fp);
@@ -328,4 +336,5 @@ file_exist(const char * filename)
   }
   else 
     return false;
+#endif
 }
