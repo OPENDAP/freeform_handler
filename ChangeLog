@@ -1,3 +1,10 @@
+1999-01-20  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Updated to a new revision of the FFND library from Mark O. This
+	fixes a bug where several int32 fields and one text field in the
+	format file would cause server problems. The server would either
+	crash or return all zeros and null strings.
+
 1999-01-08  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Updated the FFND library; Mark O. Made changes and I also made a
