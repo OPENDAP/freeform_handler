@@ -4868,22 +4868,6 @@ static int create_array_pole
 		else if (!(id & (NDARRS_BUFFER | NDARRS_FILE)))
 			return(err_push(ERR_API, "Calling create_array_pole with with incorrect ID"));
 
-		(*pole_h)->bad_data = NULL;
-		if (IS_OUTPUT(format_data->format))
-		{
-			(*pole_h)->bad_data = ff_create_bufsize(1 + format_data->format->num_vars / 8);
-			if (!(*pole_h)->bad_data)
-			{
-				if ((id & NDARRS_FILE) && filename)
-					memFree((*pole_h)->connect.locus.filename, "filename");
-
-				memFree((*pole_h)->name, "(*pole_h)->name");
-				memFree(*pole_h, "*pole_h");
-				*pole_h = NULL;
-				return(err_push(ERR_MEM_LACK, NULL));
-			}
-		}
-
 		(*pole_h)->connect.array_done = 0;
 		(*pole_h)->connect.bytes_left = 0;
 		(*pole_h)->connect.bytes_done = 0;
