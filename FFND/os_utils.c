@@ -434,7 +434,7 @@ void *os_mac_load_env(char *buffer)
  *
  * GLOBALS:	
  *
- * AUTHOR:	Tom Carey, adapted from code by Theodore W. Liz‰rd
+ * AUTHOR:	Tom Carey, adapted from code by Theodore W. Lizrd
  *
  * COMMENTS: 	
  *
@@ -1069,7 +1069,6 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 {
 	char *pfname = NULL, /* file name component in path */
 	     *pfext = NULL;  /* file extension component in path */
-	int i = 0;
 	
 	if (path == NULL)
 	{
@@ -1089,8 +1088,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 		if (pfext == NULL)
 			*fileext = STR_END; /* no extension -- make NULL string */
 		else
-			for (i = 0; i <= (int)strlen(pfext); i++)
-				fileext[i] = pfext[i];
+			strcpy(fileext, pfext);
 	}
 
 	if (filename)
@@ -1100,13 +1098,10 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 		else
 		{
 			if (pfext == NULL) /* no extension; copy all *pfname */
-				for (i = 0; i <= (int)strlen(pfname); i++)
-					filename[i] = pfname[i];
+				strcpy(filename, pfname);
 			else
 			{ /* filename might not have enough storage space to include ext */
-				for (i = 0; pfname[i] != '.'; i++)
-					filename[i] = pfname[i];
-				filename[i] = STR_END;
+				strncpy(filename, pfname, FF_STRLEN(pfname) - FF_STRLEN(pfext) - (pfext && '.' == pfext[-1] ? 1 : 0));
 			}
 		}
 	}
@@ -1136,13 +1131,13 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
  *
  * DESCRIPTION:  dirpath, filename, and fileext are put together into
  * fullpath (all prior contents of fullpath are lost).  In concatenating
- * dirpath and filename, a native directory separator is interplaced if no
+ * dirpath and filename, a native directory separator is interposed if no
  * trailing separator is found in dirpath, and no leading separator is found
- * in filename.  In placing fileext a '.' is
- * interplaced if no '.' is found in filename (trailing) or fileext (leading).
- * Unless fileext is NULL, any extension in filename is overwritten with
- * fileext.  Where component arguments are NULL (but filename must be defined)
- * this indicates the absence of that particular component in constructing the
+ * in filename.  In placing fileext a '.' is interposed if no '.' is found in
+ * filename (trailing) or fileext (leading).
+ *
+ * Where component arguments are NULL (but filename must be defined) this
+ * indicates the absence of that particular component in constructing the
  * new path.
  *
  * AUTHOR:  Mark Ohrenschall, NGDC (303) 497-6124, mao@ngdc.noaa.gov
@@ -1216,18 +1211,12 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
 
 	if (ok_strlen(fileext))
 	{
-		char *dot = strrchr(filename, '.');
-			
-		if (dot && IS_A_VALID_DOT(dot))
-		{
-			dot = strrchr(temppath, '.');
-			*dot = STR_END;
-		}
-		
-		while (*fileext == '.')
+		while (*fileext == '.') /* Do we allow the perversity of .+ext (multiple adjacent dots)? */
 			fileext++;
 
-		strcat(temppath, ".");
+		if ('.' != temppath[strlen(temppath) - 1])
+			strcat(temppath, ".");
+
 		strcat(temppath, fileext);
 	}
 
