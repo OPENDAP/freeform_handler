@@ -1,57 +1,13 @@
-/*
-  Copyright 1993, 1994, 1998 University of Rhode Island
- 
-  Permission to use, copy, modify and distribute this software and its
-  documentation for any purpose is hereby granted without fee, provided that
-  the above copyright notice appear in all copies and that both that
-  copyright notice and this permission notice appear in supporting
-  documentation, and that the name of U.R.I. not be used in advertising or
-  publicity pertaining to distribution of the software without specific,
-  written prior permission.  U.R.I. makes no representations about the
-  suitability of this software for any purpose.  It is provided "as is"
-  without express or implied warranty.
- 
-  U.R.I. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL U.R.I.
-  BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
-  OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS ACTION, ARISING OUT OF OR IN 
-  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
 
 // These functions handle date translation between Julian and Gregorian
 // formats. 8/12/93 jhrg
 //
 // This code was originally copied from one of the ACM's code libraries and
-// use in the browsed image server. That version was written in C. 
-
-// $Log: date_proc.cc,v $
-// Revision 1.5  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.4.8.1  2000/08/03 20:16:27  jimg
-// The is_leap and days_in_year functions are now externally visible. This
-// should be the only place where we calculate leap year stuff.
-//
-// Revision 1.4  1999/05/04 02:55:37  jimg
-// Merge with no-gnu
-//
-// Revision 1.3.8.1  1999/05/01 04:40:29  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.3  1998/11/13 05:40:52  jimg
-// Replaced assert calls in days() static function.
-//
-// Revision 1.2  1998/11/10 17:47:43  jimg
-// Cleaned up the doc++ comments.
-//
-// Revision 1.1  1998/09/17 17:46:40  jimg
-// Created
-//
+// used in the browsed image server. That version was written in C. 
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.5 2000/08/31 22:16:55 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.6 2000/10/11 17:50:39 jimg Exp $"};
 
 #include <assert.h>
 
@@ -61,16 +17,20 @@ static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.5 2000/08/31 22:16:55 jimg
 // value is never used. 9/4/98 jhrg
 static int days_arr[13]= {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
+/** Is the given Gregorian year a leap year?
+    @return 1 if the year is a leap year, otherwise return 0. */
 int
 is_leap(int year) 
 {
-  return !( (year % 4) && (! (year % 100) || (year % 400) ) );
+  return (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0));
 }
 
+/** How many days are in the given Gregorian year?
+    @return The number of days, as a double. */
 double
 days_in_year(int year) 
 {
-    return is_leap(year) ? 366 : 365;
+    return is_leap(year) ? 366.0 : 365.0;
 }
 
 static inline int
@@ -96,7 +56,6 @@ days(int year, int month)
   @param day The day. Ones-based day number.
   @see ACM Collected algorithms.
   @return The Julian day number. */
-
 long 
 julian_day(int year, int month, int day)
 {
@@ -128,7 +87,6 @@ julian_day(int year, int month, int day)
   @param minutes The minutes. zero-based.
   @param seconds The seconds. zero-based.
   @return void */
-
 void
 gregorian_date(double jd, int *year, int *month, int *day, int *hours,
 	       int *minutes, double *seconds)
@@ -171,16 +129,13 @@ gregorian_date(double jd, int *year, int *month, int *day, int *hours,
     *seconds = tmp - *minutes * 60.0;
 }
 
-/**
-   Given the month and day numbers, return the days since the first of the
-   year. 
+/** Given the month and day numbers, return the days since the first of the
+    year. 
 
    @param year The year.
    @param month The month of the year.
    @param day The days of the month.
-   @return The days since the first of the year (ones-based).
-*/
-
+   @return The days since the first of the year (ones-based). */
 int
 month_day_to_days(int year, int month, int day)
 {
@@ -236,3 +191,31 @@ dayofweek(double j)
 
     return (jd + 1) % 7;
 }
+
+// $Log: date_proc.cc,v $
+// Revision 1.6  2000/10/11 17:50:39  jimg
+// Moved the CVS Log to the end of the file.
+// Fixed a bug i the is_leap() function.
+//
+// Revision 1.5  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.4.8.1  2000/08/03 20:16:27  jimg
+// The is_leap and days_in_year functions are now externally visible. This
+// should be the only place where we calculate leap year stuff.
+//
+// Revision 1.4  1999/05/04 02:55:37  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.3  1998/11/13 05:40:52  jimg
+// Replaced assert calls in days() static function.
+//
+// Revision 1.2  1998/11/10 17:47:43  jimg
+// Cleaned up the doc++ comments.
+//
+// Revision 1.1  1998/09/17 17:46:40  jimg
+// Created
+//
