@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.19 2003/05/14 19:30:33 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.20 2004/02/04 20:50:08 jimg Exp $"};
 
 #include <unistd.h>
 
@@ -387,7 +387,9 @@ is_integer_type(BaseType *btp)
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
+#if 0
       case dods_list_c:
+#endif
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
@@ -415,7 +417,9 @@ is_float_type(BaseType *btp)
       case dods_str_c:
       case dods_url_c:
       case dods_array_c:
+#if 0
       case dods_list_c:
+#endif
       case dods_structure_c:
       case dods_sequence_c:
       case dods_grid_c:
@@ -523,6 +527,9 @@ get_float_value(BaseType *var) throw(InternalErr)
 }
 
 // $Log: util_ff.cc,v $
+// Revision 1.20  2004/02/04 20:50:08  jimg
+// Build fixes. No longer uses Pix.
+//
 // Revision 1.19  2003/05/14 19:30:33  jimg
 // Replaced strstream with sstream
 //

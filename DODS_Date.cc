@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.14 2003/12/08 22:01:12 edavis Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.15 2004/02/04 20:50:08 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,16 +19,15 @@ static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.14 2003/12/08 22:01:12 edav
 #include <stdio.h>
 #include <assert.h>
 
-#include <strstream>
-#include <iomanip.h>
+#include <sstream>
 #include <string>
+#include <iomanip>
 
 #include "DODS_Date.h"
 #include "date_proc.h"
 #include "debug.h"
 
-using std::istrstream;
-using std::ostrstream;
+using namespace std;
 
 // The Error class is defined in the core software. For testing we don't need
 // this function and can supply a dummy version. That simplifies building the
@@ -547,6 +546,9 @@ int main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.15  2004/02/04 20:50:08  jimg
+// Build fixes. No longer uses Pix.
+//
 // Revision 1.14  2003/12/08 22:01:12  edavis
 // Merge release-3-4 into trunk
 //

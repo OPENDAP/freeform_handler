@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.9 2003/12/08 21:59:52 edavis Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.10 2004/02/04 20:50:08 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,7 +20,7 @@ static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.9 2003/12/08 21:59:52 
 #include <time.h>
 #include <assert.h>
 
-#include <strstream>
+#include <sstream>
 #include <string>
 
 #include "Error.h"
@@ -28,8 +28,7 @@ static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.9 2003/12/08 21:59:52 
 #include "date_proc.h"
 #include "debug.h" 
 
-using std::istrstream;
-using std::ostrstream;
+using namespace std;
 
 #define seconds_per_day 86400.0
 
@@ -448,6 +447,9 @@ main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.10  2004/02/04 20:50:08  jimg
+// Build fixes. No longer uses Pix.
+//
 // Revision 1.9  2003/12/08 21:59:52  edavis
 // Merge release-3-4 into trunk
 //

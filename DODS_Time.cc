@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.13 2003/12/08 21:58:52 edavis Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.14 2004/02/04 20:50:08 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,16 +19,15 @@ static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.13 2003/12/08 21:58:52 edav
 #include <assert.h>
 
 #include <string> 
-#include <strstream>
-#include <iomanip.h>
+#include <sstream>
+#include <iomanip>
 
 #include "BaseType.h"
 #include "DODS_Time.h"
 #include "debug.h" 
 #include "Error.h"
 
-using std::istrstream;
-using std::ostrstream;
+using namespace std;
 
 double DODS_Time::_eps = 1.0e-6;
 
@@ -291,6 +290,9 @@ DODS_Time::get(bool gmt) const
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.14  2004/02/04 20:50:08  jimg
+// Build fixes. No longer uses Pix.
+//
 // Revision 1.13  2003/12/08 21:58:52  edavis
 // Merge release-3-4 into trunk
 //

@@ -12,7 +12,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.16 2003/12/08 21:55:52 edavis Exp $"};
+static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.17 2004/02/04 20:50:08 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -112,7 +112,6 @@ Records(const string &filename)
     this method is called and the \e read_p property is not true, the values
     are read.
     
-    @todo Remove Pix use.
     @exception Error if the size of the returned data is zero.
     @param dataset The name of the data file. Must have a matching FreeForm
     format file.
@@ -129,83 +128,77 @@ FFSequence::read(const string &dataset)
 	return false;		// End of sequence
 
     if (!BufVal) {		// Make the cache (BufVal is global)
-	char *ds, *o_fmt, *if_fmt;
-	try {
-	    // Create the output Sequence format
-	    ostringstream str;
-	    int endbyte = 0;
-	    int stbyte = 1;
+	// Create the output Sequence format
+	ostringstream str;
+	int endbyte = 0;
+	int stbyte = 1;
 
-	    str << "binary_output_data \"DODS binary output data\"" << endl;
-	    StrCnt = 0;
-	    for(Pix p = first_var(); p; next_var(p)) {
-		if (var(p)->synthesized_p())
-		    continue;
-		if (var(p)->type() == dods_str_c) {
-		    endbyte +=StrLens[StrCnt];
-		    StrCnt++;
-		}
-		else
-		    endbyte += var(p)->width();
-	  
-		str << var(p)->name() << " " << stbyte << " " << endbyte 
-		    << " " << ff_types(var(p)->type()) 
-		    << " " << ff_prec(var(p)->type()) << endl;
-		stbyte = endbyte + 1;
+	str << "binary_output_data \"DODS binary output data\"" << endl;
+	StrCnt = 0;
+	for(Vars_iter p = var_begin(); p != var_end(); ++p) {
+	    if ((*p)->synthesized_p())
+		continue;
+	    if ((*p)->type() == dods_str_c) {
+		endbyte +=StrLens[StrCnt];
+		StrCnt++;
 	    }
-
-            DBG(cerr << str.str());
-      
-	    o_fmt = new char[str.str().length() + 1];
-	    strcpy(o_fmt, str.str().c_str());
-
-	    string input_format_file = find_ancillary_file(dataset);
-	    if_fmt = new char[input_format_file.length() + 1];
-	    strcpy(if_fmt, input_format_file.c_str());
-     
-	    // num_rec could come from DDS if sequence length was known...
-	    long num_rec = Records(dataset); 
-
-	    if (num_rec == -1)
-		return false;
-
-	    BufSiz = num_rec * (stbyte - 1);
-	    BufVal = new char[BufSiz];
-	    char *ds = new char[dataset.length() + 1];
-	    strcpy(ds, dataset.c_str());
-   
-	    long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
-	    if (bytes == -1)
-		throw Error("Could not read requested data from the dataset.");
-	    
-	    // clean up; we should use auto_ptr, but it doesn't work for
-	    // arrays... 08/29/03 jhrg
-	    delete[] ds;	       
-	    delete[] o_fmt;
-	    delete[] if_fmt;
+	    else
+		endbyte += (*p)->width();
+	  
+	    str << (*p)->name() << " " << stbyte << " " << endbyte 
+		<< " " << ff_types((*p)->type()) 
+		<< " " << ff_prec((*p)->type()) << endl;
+	    stbyte = endbyte + 1;
 	}
 
-	catch (...) {		// Catch everything, clean up and rethrow.
-	    delete[] ds;	       
-	    delete[] o_fmt;
-	    delete[] if_fmt;
-	    throw;
-	}	    
+	DBG(cerr << str.str());
+      
+	char *o_fmt = new char[str.str().length() + 1];
+	strcpy(o_fmt, str.str().c_str());
+
+	string input_format_file = find_ancillary_file(dataset);
+	char *if_fmt = new char[input_format_file.length() + 1];
+	strcpy(if_fmt, input_format_file.c_str());
+     
+	// num_rec could come from DDS if sequence length was known...
+	long num_rec = Records(dataset); 
+
+	if (num_rec == -1)
+	    return false;
+
+	BufSiz = num_rec * (stbyte - 1);
+	BufVal = new char[BufSiz];
+	char *ds = new char[dataset.length() + 1];
+	strcpy(ds, dataset.c_str());
+   
+	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
+	    
+	// clean up; we should use auto_ptr, but it doesn't work for
+	// arrays... 08/29/03 jhrg
+	delete[] ds;	       
+	delete[] o_fmt;
+	delete[] if_fmt;
+
+	if (bytes == -1)
+	    throw Error("Could not read requested data from the dataset.");
     }
 
     StrCnt = 0;
-    for (Pix p = first_var(); p; next_var(p)) {
-	if(var(p)->type()== dods_str_c){
+    for(Vars_iter p = var_begin(); p != var_end(); ++p) {
+	if((*p)->type()== dods_str_c){
 	    StrLength = StrLens[StrCnt];
 	    StrCnt++;
 	}
-	var(p)->read(dataset);
+	(*p)->read(dataset);
     }
 
     return true;
 }
 
 // $Log: FFSequence.cc,v $
+// Revision 1.17  2004/02/04 20:50:08  jimg
+// Build fixes. No longer uses Pix.
+//
 // Revision 1.16  2003/12/08 21:55:52  edavis
 // Merge release-3-4 into trunk
 //
