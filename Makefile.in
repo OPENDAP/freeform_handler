@@ -1,10 +1,10 @@
 
-# $Id: Makefile.in,v 1.3 1998/08/13 20:24:36 jimg Exp $
+# $Id: Makefile.in,v 1.4 1998/08/14 19:08:06 jimg Exp $
 
 @SET_MAKE@
 
 PROG = ff_das ff_dds ff_dods
-FF_LIBS = libfreeform.a libmemtrack.a libmaxmin.a 
+FF_LIBS = libfreeform.a libmaxmin.a 
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
@@ -20,7 +20,7 @@ CFLAGS = @CFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
-LIBS = -ldap++ -lrx -lfreeform -lmemtrack -lmaxmin @LIBS@ -lm
+LIBS = -ldap++ -lrx -lfreeform -lmaxmin @LIBS@ -lm
 TAGS_FLAGS = --include=../dap*/TAGS
 
 # Set the instalation directories; prefix can be set on the command line
@@ -89,9 +89,6 @@ ff_dods: $(SERVOBJ) $(FFOBJ)
 	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
 
 libfreeform.a: 
-	cd FFND; $(MAKE) $(MFLAGS) $@
-
-libmemtrack.a: 
 	cd FFND; $(MAKE) $(MFLAGS) $@
 
 libmaxmin.a: 
