@@ -10,3 +10,8 @@ http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html).
 
 Fix up the white paper; DODS_Date_Time attribtues are not needed.
 [open 4/20/99 jhrg]
+
+Date selection functions that should return only one hit are returning two
+(e.g.,  &date_time("1991/2/15:06:50:30","1991/2/15:06:50:30") returns two
+instances which are the same URL).
+[open 11/22/99 jhrg,dan]

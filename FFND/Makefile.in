@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.15 1999/11/05 01:00:28 jimg Exp $
+# $Id: Makefile.in,v 1.16 2000/04/20 17:25:39 jimg Exp $
 
 @SET_MAKE@
 
@@ -128,7 +128,6 @@ install: newform readfile chkform $(FF_LIBRARY)
 	$(INSTALL_PROGRAM) newform $(bindir)/newform
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 	$(INSTALL_PROGRAM) chkform $(bindir)/chkform
-	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 	$(INSTALL_PROGRAM) checkvar $(bindir)/checkvar
 
 Makefile: Makefile.in
