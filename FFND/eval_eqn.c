@@ -1820,13 +1820,13 @@ EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error)
 	for (i = 0; i < (signed int)strlen(eqn); i++) {
 		if(eqn[i] == '[') inside_variable_name = 1;
 		if(eqn[i] == ']') inside_variable_name = 0;
-		if(((isdigit(eqn[i]) != 0) || (eqn[i] == '.') || (eqn[i] == '~')) &&
+		if(((isdigit((int)eqn[i]) != 0) || (eqn[i] == '.') || (eqn[i] == '~')) &&
 				!inside_variable_name) {
 			if(eqn[i] == '~') eqn[i] = '-';
 			j = i;
 			ee_insert_char(eqn, j++, '[');
 			if(eqn[j] == '-') j++;
-			while ((isdigit(eqn[j]) != 0) || (eqn[j] == '.'))
+			while ((isdigit((int)eqn[j]) != 0) || (eqn[j] == '.'))
 				j++;
 			ee_insert_char(eqn, j, ']');
 			x = atof(eqn + i + 1);

@@ -253,12 +253,12 @@ long                 ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				nda_l_v += nda_i_p->descriptor->separation[nda_t_i];             \
 			else                                                                 \
 				break;                                                           \
-		else                                                                     \
+		else{                                                                     \
 			if(((nda_i_p->index[nda_t_i + 1] + 1) ==                             \
 					nda_i_p->descriptor->dim_size[nda_t_i + 1]))                 \
 				nda_l_v += nda_i_p->descriptor->separation[nda_t_i];             \
 			else                                                                 \
-				break;}                                                          \
+				break;}}                                                          \
 
 
 /*

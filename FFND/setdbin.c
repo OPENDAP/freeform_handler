@@ -522,7 +522,7 @@ static BOOLEAN text_delim_offset
 	
 	delim_offset = strcspn(text, delim);
 	*offset = 0;
-	while ((isprint(text[*offset]) || isspace((int)text[*offset])) &&
+	while ((isprint((int)text[*offset]) || isspace((int)text[*offset])) &&
 	       *offset < delim_offset)
 		(*offset)++;
 
@@ -631,7 +631,7 @@ static FF_TYPES_t alphanum_type
 			break;
 	
 			default:
-				if (isdigit(header[start - 1]))
+				if (isdigit((int)header[start - 1]))
 				{
 					if (status == INITIAL || status == SIGN || status == INTEGER)
 						status = INTEGER;
