@@ -8,6 +8,9 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Date.h,v $
+// Revision 1.2  1998/12/30 02:01:12  jimg
+// Added class invariant.
+//
 // Revision 1.1  1998/12/28 19:08:26  jimg
 // Initial version of the DODS_Date object
 //
@@ -49,6 +52,9 @@ private:
     int _day;
     int _day_number;
 
+    /// Class invariant.
+    bool OK() const;
+
 public:
     /** @name Constructors */
 
@@ -56,7 +62,6 @@ public:
     /** Create an empty date. Set to a date using one of the #set_date#
 	mfuncs.
 	@see set_date() */
-
     DODS_Date();
     
     /** Build a DODS\_Date by parsing the string #date_str#. If #date_str#
@@ -69,12 +74,10 @@ public:
 	to invalid dates.  
     
 	@param date_str A string containing the date. */
-
     DODS_Date(string date_str);
 
     /** @param arg A DODS String containing the date.
 	@see DODS_Date(string). */
-
     DODS_Date(BaseType *arg);
 
     /** Build a DODS\_Date using year and day-numbers values. This ctor
@@ -84,7 +87,6 @@ public:
  
 	@param year The year. `98' is 98 A.D., \emph{not} 1998. 
 	@param day_num The day-number, 1 Jan is day 1. */
-
     DODS_Date(int year, int day_num);
 
     /** Build a DODS\_Date using year, month and day numbers. Throws an Error
@@ -95,36 +97,29 @@ public:
 	to two digit years.
 	@param month The month of the year; 1 == January, ..., 12 == December.
 	@param day THe day of the month; 1, ..., {31, 30, 29, 28}. */
-
     DODS_Date(int year, int month, int day);
     //@}
 
     /** @name Assignment */
-
     //@{
     /** Parse the string and assign the value to this object. 
 	@see DODS_Date(string) */
-
     void set_date(string date);
 
     /** Parse the DODS String and assign the value to this object. 
 	@see DODS_Date(BaseType *arg) */
-
     void set_date(BaseType *arg);
 
     /** Assign the date using the two integers.
 	@see DODS_Date(int year, int day_number) */
-
     void set_date(int year, int day_number);
 
     /** Assign the date usign three integers.
 	@see DODS_Date(int year, int month, int day) */
-
     void set_date(int year, int month, int day);
     //@}
 
     /** @name Relational operators. */
-
     //@{
     /// Equality
     friend int operator==(DODS_Date &d1, DODS_Date &d2);
@@ -140,8 +135,7 @@ public:
     friend int operator>=(DODS_Date &d1, DODS_Date &d2);
     //@}
 
-    /** @name Accessor functions.*/
-
+    /** @name Access. */
     //@{
     /** @return The year in years A.D. */
     int year() const;
@@ -175,7 +169,6 @@ public:
         @see dods-limits.h
 	@see time.h
  	@see mktime(3) */
-
     time_t unix_time() const;
 };
 

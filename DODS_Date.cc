@@ -9,13 +9,16 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.2  1998/12/30 02:00:58  jimg
+// Added class invariant.
+//
 // Revision 1.1  1998/12/28 19:08:25  jimg
 // Initial version of the DODS_Date object
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.1 1998/12/28 19:08:25 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.2 1998/12/30 02:00:58 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -56,6 +59,13 @@ extract_argument(BaseType *arg)
 #else
     return "";
 #endif
+}
+
+bool
+DODS_Date::OK() const
+{
+    return _year > 0 && _month > 0 && _day > 0 && _julian_day > 0 
+	&& _day_number > 0;
 }
 
 // Public member functions.
@@ -118,6 +128,8 @@ DODS_Date::set_date(string date)
 	days_to_month_day(_year, _day_number, &_month, &_day);
 	_julian_day = ::julian_day(_year, _month, _day);
     }
+
+    assert(OK());
 }
 
 void
@@ -127,6 +139,8 @@ DODS_Date::set_date(int year, int day_num)
     _day_number = day_num;
     days_to_month_day(_year, _day_number, &_month, &_day);
     _julian_day = ::julian_day(_year, _month, _day);
+
+    assert(OK());
 }
 
 void
@@ -137,6 +151,8 @@ DODS_Date::set_date(int year, int month, int day)
     _day = day;
     _day_number = month_day_to_days(_year, _month, _day);
     _julian_day = ::julian_day(_year, _month, _day);
+
+    assert(OK());
 }
 
 int 
