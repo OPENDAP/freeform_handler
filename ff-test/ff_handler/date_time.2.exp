@@ -1,0 +1,39 @@
+
+#
+# $Id: date_time.2.exp,v 1.1 2003/05/14 18:15:06 jimg Exp $
+#
+# Tests for the date/time interface. Test mixing the interfaces.
+
+global comp_output		# contains output from ff_dods_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+source "ff-test/test-files.tcl"
+
+set test_name "Mixed Calls Tests"
+
+# The `1' in compare_stdout means call xfail if the test fails.
+
+# Test mixing the interfaces
+
+# date() with Time() and Date_time()
+ff_dods_start "$avhrr -e DODS_URL,DODS_Time(GSO_AVHRR)&date(\"1998/160\")"
+compare_stdout "ff-test/avhrr_date_time2_ce1.bin" "$test_name: date() and DODS_Time()" 0 match
+
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date_Time(GSO_AVHRR)&date(\"1998/160\")"
+compare_stdout "ff-test/avhrr_date_time2_ce2.bin" "$test_name: date() and DODS_Date_Time()" 0 match
+
+# time() with Date() and Date_Time()
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date(GSO_AVHRR)&time(\"12:00:00\",\"23:59:59\")"
+compare_stdout "ff-test/avhrr_date_time2_ce3.bin" "$test_name: time() and DODS_Date()" 0 "match"
+
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date_Time(GSO_AVHRR)&time(\"12:00:00\",\"23:59:59\")"
+compare_stdout "ff-test/avhrr_date_time2_ce4.bin" "$test_name: time() and DODS_Date_Time()" 0 "match"
+
+# Date(), Time() and Date_Time() without date() or time()
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date(GSO_AVHRR)"
+compare_stdout "ff-test/avhrr_date_time2_ce5.bin" "$test_name: DODS_Date() (all alone...)" 0 "match"
+
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date_Time(GSO_AVHRR)"
+compare_stdout "ff-test/avhrr_date_time2_ce6.bin" "$test_name: DODS_Date_Time()" 0 "match"
+
