@@ -1,0 +1,133 @@
+/*
+ * NAME: err.h
+ *              
+ * PURPOSE: contains error defined constants and prototypes for error.c 
+ *
+ * USAGE:       
+ *
+ * RETURNS:     
+ *
+ * DESCRIPTION: include file for error.c
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:  
+ *
+ * AUTHOR:      Mark Van Gorp at NGDC (based upon Ron White's version) 497-6221
+ *
+ * COMMENTS:    
+ *
+ * KEYWORDS:    
+ *
+ */
+/*
+ * HISTORY:
+ *	Rich Fozzard	7/31/95		-rf01
+ *		CodeWarrior for Mac is picky about redefines of TRUE,FALSE
+*/
+
+
+/* Avoid multiple includes */
+#ifndef ERR_H__
+#define ERR_H__
+
+#include <errno.h>
+
+/* General Errors */
+
+#define ERR_GENERAL             500
+#define ERR_OPEN_FILE           501
+#define ERR_READ_FILE           502
+#define ERR_WRITE_FILE          503
+#define ERR_MEM_LACK            505
+#define ERR_FIND_FILE           507
+#define ERR_FILE_DEFINED        508
+#define ERR_OUT_OF_RANGE        510
+#define ERR_PROCESS_DATA        515
+#define ERR_NUM_TOKENS          519
+#define ERR_FILE_EXISTS         522
+#define ERR_CREATE_FILE         523
+#define ERR_WILL_OVERWRITE_FILE 524
+#define ERR_REMOVE_FILE         525
+
+
+/* Freeform Errors */
+#define ERR_UNKNOWN_VAR_TYPE    1000
+#define ERR_CONVERT             1003
+#define ERR_MAKE_FORM           1004
+#define ERR_NO_VARIABLES        1012
+
+#define ERR_FIND_FORM           1021
+#define ERR_CONVERT_VAR         1022
+#define ERR_ORPHAN_VAR          1023
+
+/* Binview Errors */
+
+#define ERR_SET_DBIN            1509
+#define ERR_FILE_LENGTH         1517
+#define ERR_NT_DEFINE           1520
+#define ERR_UNKNOWN_FORMAT_TYPE 1525
+
+#define ERR_EQN_SET             2000
+
+/* Parameters and parsing */
+
+#define ERR_MISSING_TOKEN       4001
+#define ERR_PARAM_VALUE         4006
+#define ERR_UNKNOWN_OPTION      4013
+#define ERR_IGNORED_OPTION      4014
+#define ERR_VARIABLE_DESC       4015
+#define ERR_VARIABLE_SIZE       4016
+
+/* ADTLIB errors */
+
+#define ERR_FIND_MAX_MIN        6001
+#define ERR_PARSE_EQN           6002
+#define ERR_EE_VAR_NFOUND       6003
+#define ERR_CHAR_IN_EE          6004
+#define ERR_EE_DATA_TYPE        6005
+#define ERR_NDARRAY             6006
+#define ERR_GEN_QUERY           6007
+
+/* NAME_TABLE errors */
+
+#define ERR_EXPECTING_SECTION_START  7001
+#define ERR_EXPECTING_SECTION_END    7002
+#define ERR_MISPLACED_SECTION_START  7003
+#define ERR_MISPLACED_SECTION_END    7004
+#define ERR_NT_MERGE                 7005
+#define ERR_NT_KEYNOTDEF             7006
+
+/* FreeForm ND errors */
+#define ERR_GEN_ARRAY                7501
+
+/* internal messaging errors */
+
+#define ERR_API                      7900
+#define ERR_SWITCH_DEFAULT           7901
+#define ERR_ASSERT_FAILURE           7902
+#define ERR_NO_NAME_TABLE            7903
+
+/* Do NOT create any error codes that exceed those below */
+
+#define ERR_WARNING_ONLY             16000 /* Don't change this number either */
+
+typedef int  ERR_BOOLEAN;
+
+#ifdef TRUE /* CodeWarrior for Mac is picky about this -rf01 */
+#undef TRUE
+#endif	/* end #ifdef TRUE -rf01 */
+#define TRUE                    1
+#ifdef FALSE /* CodeWarrior for Mac is picky about this -rf01 */
+#undef FALSE
+#endif	/* end #ifdef FALSE -rf01 */
+#define FALSE                   0
+
+int   err_pop(void);
+void  err_clear(void);
+void  err_disp(FF_STD_ARGS_PTR std_args);
+void  err_end(void);
+
+int err_push(int, char *, ...);
+
+ERR_BOOLEAN err_state(void);
+
+#endif /* (NOT) ERR_H__ */

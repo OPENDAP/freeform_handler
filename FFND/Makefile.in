@@ -1,0 +1,144 @@
+
+# $Id: Makefile.in,v 1.1 1998/04/21 17:20:48 jimg Exp $
+
+@SET_MAKE@
+
+PROG = $(FF_LIBRARY) $(MEM_LIBRARY) readfile newform
+FF_LIBRARY = libfreeform.a
+MEM_LIBRARY = libmemtrack.a
+DODS_ROOT = ../../..
+
+INCS = -I.
+DEFS = @DEFS@ -DFREEFORM -DMEMTRACK=0
+# Defines that the FreeForm library responds to. 4/16/98 jhrg
+# -DDEBUG -DDLL_CHK -DDEBUG_MSG -DMEMTRACK=1 -DMEMTRACK_B -DFF_CHK_ADDR
+CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
+CFLAGS = @CFLAGS@ -Wall
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+TAGS_FLAGS = -b
+
+# For these files, install only locally so as to not override any other
+# version of FreeForm on this machine. 4/16/98 jhrg
+
+prefix = .
+exec_prefix = $(prefix)
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
+
+SHELL = /bin/sh
+srcdir = @srcdir@
+dir = @dir@
+
+# names of key programs
+
+LN_S = @LN_S@
+CP = cp
+AWK = @AWK@
+CC = @CC@
+AR = ar
+TAGS = etags
+RANLIB = @RANLIB@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+STRIP = strip
+
+FF_OBJS	= cv_units.o dbevents.o dl_lists.o eqn_util.o error.o eval_eqn.o \
+	file2buf.o formlist.o freeform.o makedbin.o makeform.o name_tab.o \
+	ndarray.o os_utils.o proclist.o setdbin.o showdbin.o 
+
+MM_OBJS = mm_make.o
+
+MEM_OBJS = memtrack.o
+
+PROG_OBJS = newform.o readfile.o
+
+FF_SRCS	= $(FF_OBJS:.o=.c)
+MEM_SRCS = $(MEM_OBJS:.o=.c)
+PROG_SRCS = $(PROG_OBJS:.o=.c)
+
+LIBS = $(FF_LIBRARY) $(MEM_LIBRARY) $(MM_LIBRARY)
+
+all: $(PROG)
+
+$(FF_LIBRARY):	$(FF_OBJS) 
+		$(AR) $(ARFLAGS) $(FF_LIBRARY) $(FF_OBJS)
+		$(RANLIB) $(FF_LIBRARY)
+
+$(MM_LIBRARY):	$(MM_OBJS) 
+		$(AR) $(ARFLAGS) $(MM_LIBRARY) $(MM_OBJS)
+		$(RANLIB) $(MM_LIBRARY)
+
+$(MEM_LIBRARY): $(MEM_OBJS)
+		$(AR) $(ARFLAGS) $(MEM_LIBRARY) $(MEM_OBJS)
+		$(RANLIB) $(MEM_LIBRARY)
+
+newform: newform.o $(LIBS)
+	$(CC) $(LDFLAGS) newform.o -o $@ $(LIBS) -lm
+
+newform.o: newform.c
+	$(CC) $(CPPFLAGS) -DFF_MAIN $(CFLAGS) -c $< -o $@
+
+readfile: readfile.o
+	$(CC) $(LDFLAGS) readfile.o -o $@
+
+clean:
+	-rm -f $(FF_OBJS) $(MM_OBJS) $(MEM_OBJS) \
+        $(FF_LIBRARY) $(MEM_LIBRARY) $(MM_LIBRARY) \
+	newform newform.o core *~ readfile.o readfile
+
+distclean:
+	-rm -f config.status config.log config.cache
+	(cd bin; rm *)
+	(cd lib; rm *)
+
+# Standard targets with some customization for das-test and dds-test
+
+install: newform readfile $(FF_LIBRARY) $(MEM_LIBRARY)
+	$(INSTALL_DATA) $(FF_LIBRARY) $(libdir)/$(FF_LIBRARY)
+	$(RANLIB) $(libdir)/$(FF_LIBRARY)
+	$(INSTALL_DATA) $(MEM_LIBRARY) $(libdir)/$(MEM_LIBRARY)
+	$(RANLIB) $(libdir)/$(MEM_LIBRARY)
+	$(INSTALL_PROGRAM) newform $(bindir)/newform
+	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
+
+Makefile: ${srcdir}/Makefile.in
+	${SHELL} ./config.status
+
+check:
+
+# This won't work without more effort. 4/16/98 jhrg
+test-coverage: clean
+	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)"
+
+# Note that the gcov options -f and -b are useful but sometimes make looking
+# at the results of coverage analysis a little taxing. -b reports on all
+# branched and -f reports on all functions. The -l -o options summarize on a
+# per-file basis. 3/27/98 jhrg
+collect-coverage-data:
+	(cd test-coverage; \
+         cov_dat="coverage-data-`date +%m.%d.%y`"; \
+	 touch $$cov_dat; \
+	 for f in $(ALLSRCS); do \
+	     echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
+	     gcov -l -o ../ $$f >> $$cov_dat; \
+         done)
+
+tags:
+	$(TAGS) $(TAGS_FLAGS) *.c *.h
+
+.PHONY: depend
+depend: 
+	> dependencies
+	@depend@ -m dependencies -- $(CPPFLAGS) -- $(FF_SRCS) $(MEM_SRCS) \
+	$(PROG_SRCS)
+
+.SUFFIXES:      .o .c
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
+
+include dependencies
