@@ -1,6 +1,6 @@
 
 // (c) COPYRIGHT URI/MIT 1998
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.  
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -9,6 +9,12 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.7  1999/05/27 17:02:21  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.6.2.1  1999/05/20 21:37:26  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
 // Revision 1.6  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -35,7 +41,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.6 1999/05/04 02:55:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.7 1999/05/27 17:02:21 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation

@@ -6,6 +6,12 @@
  * ReZa (Reza Nekovei URI/GSO) 7/10/98
 
  * $Log: FreeForm.h,v $
+ * Revision 1.5  1999/05/27 17:02:23  jimg
+ * Merge with alpha-3-0-0
+ *
+ * Revision 1.4.2.1  1999/05/20 21:42:50  edavis
+ * Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+ *
  * Revision 1.4  1999/05/04 02:55:37  jimg
  * Merge with no-gnu
  *
@@ -737,24 +743,8 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #include <string.h>
 #include <assert.h>
 
-/* Use the real assert. */
-#if 0
-#undef assert
-#endif
-
 #if defined(DEBUG) || defined(_DEBUG) && !defined(FF_DBG)
 #define FF_DBG
-#endif
-
-#if 0
-#define assert(exp) ff_err_assert(exp)
-
-#ifdef NDEBUG
-#define ff_err_assert(exp) ((void)0)
-#else /* NDEBUG */
-#define ff_err_assert(exp) ( (exp) ? (void)0 : _ff_err_assert(#exp, __FILE__, __LINE__) )
-void _ff_err_assert(char *, char *, unsigned);
-#endif /* (ELSE) NDEBUG */
 #endif
 
 /* FF_CHK_ADDR is independent of NDEBUG */

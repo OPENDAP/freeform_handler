@@ -12,6 +12,12 @@
 // ReZa 6/18/97
 
 // $Log: FFByte.cc,v $
+// Revision 1.8  1999/05/27 17:02:22  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.7.2.1  1999/05/20 21:39:27  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
 // Revision 1.7  1999/05/04 02:55:36  jimg
 // Merge with no-gnu
 //
@@ -35,7 +41,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFByte.cc,v 1.7 1999/05/04 02:55:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFByte.cc,v 1.8 1999/05/27 17:02:22 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -96,36 +102,6 @@ FFByte::read(const string &dataset, int &error)
 	return false;
     }
     else {
-#if 0
-	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, dataset.c_str());
-
-	string o_format = make_output_format(name(), type(), width());
-	char *o_f = new char[o_format.length() + 1];
-	strcpy(o_f, o_format.c_str());
-
-	string i_format_file = find_ancillary_file(dataset);
-	char *if_f = new char[i_format_file.length() + 1];
-	strcpy(if_f, i_format_file.c_str());
-
-	dods_byte *i = new dods_byte[width() + 1];
-	long bytes = read_ff(ds, if_f, o_f, (char *)i, width()+1);
-
-	if (bytes == -1) {
-	    error = 1;
-	}
-	else {
-	    set_read_p(true);
-	    val2buf(i);     
-	}
-
-	if (i)
-	    delete(i);
-
-	delete [] ds;
-	delete [] o_f;
-	delete [] if_f;
-#endif
 
 	return false;
     }

@@ -1,6 +1,6 @@
 
 // (c) COPYRIGHT URI/MIT 1998
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.  
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
@@ -9,6 +9,12 @@
 // Implementation of the DODS Time class
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.5  1999/05/27 17:02:22  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.4.2.1  1999/05/20 21:38:08  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
 // Revision 1.4  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -30,7 +36,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.4 1999/05/04 02:55:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.5 1999/05/27 17:02:22 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation

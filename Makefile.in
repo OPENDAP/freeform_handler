@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.20 1999/05/24 22:17:58 jimg Exp $
+# $Id: Makefile.in,v 1.21 1999/05/27 17:02:23 jimg Exp $
 
 @SET_MAKE@
 
@@ -45,7 +45,6 @@ version = @VERSION@
 dir = ff-dods-@VERSION@
 
 COMPONENT_NAME = DODS FreeForm Server
-AWK = @AWK@
 
 # testsuite specifics
 RUNTEST = runtest
@@ -212,9 +211,9 @@ update-version: check-version
 	  $(AWK) ' \
 	    BEGIN { found = 0 } \
 	    { if ( $$0 ~ /^$(COMPONENT_NAME):/) \
-	        { print "$(COMPONENT_NAME):", $(version); found = 1 } \
+	        { print "$(COMPONENT_NAME): $(version)"; found = 1 } \
 	      else { print $$0 } } \
-	    END { if ( ! found) { print "$(COMPONENT_NAME):", $(version) } \
+	    END { if ( ! found) { print "$(COMPONENT_NAME): $(version)" } \
 	        }' > $(DODS_ROOT)/VERSION
 
 # Compare the version encoded in this Makefile (set by configure) with the

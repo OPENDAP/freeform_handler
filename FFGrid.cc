@@ -1,6 +1,6 @@
 
 // (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.  
 //
 // Authors: reza (Reza Nekovei)
 
@@ -11,6 +11,12 @@
 // ReZa 6/18/97
 
 // $Log: FFGrid.cc,v $
+// Revision 1.7  1999/05/27 17:02:22  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.6.2.1  1999/05/20 21:41:07  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
 // Revision 1.6  1999/05/04 02:55:36  jimg
 // Merge with no-gnu
 //
@@ -28,7 +34,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: FFGrid.cc,v 1.6 1999/05/04 02:55:36 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFGrid.cc,v 1.7 1999/05/27 17:02:22 jimg Exp $"};
 
 #include "FFGrid.h"
 

@@ -1,12 +1,12 @@
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.  
 //
 // Authors: reza (Reza Nekovei)
 
 // (c) COPYRIGHT URI/MIT 1994-1996
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.  
 //
 // Authors:
 //      reza            Reza Nekovei (reza@intcomm.net)
@@ -18,6 +18,12 @@
 // ReZa 6/18/97
 
 // $Log: FFGrid.h,v $
+// Revision 1.5  1999/05/27 17:02:22  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.4.2.1  1999/05/20 21:41:12  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
 // Revision 1.4  1999/05/04 02:55:36  jimg
 // Merge with no-gnu
 //
