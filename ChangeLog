@@ -1,3 +1,11 @@
+1999-02-24  James Gallagher  <jimg@dcz.dods.org>
+
+	* Generalized the tests so that they work regardless of the server
+	version string. Really, this is a fix...
+
+	* Updated to a new version of the FFND library. This version fixes
+	the (in)famous stride bug.
+
 1999-01-20  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Updated to a new revision of the FFND library from Mark O. This
