@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.24 2000/08/31 22:16:55 jimg Exp $
+# $Id: Makefile.in,v 1.25 2000/10/02 16:50:56 jimg Exp $
 
 @SET_MAKE@
 
@@ -21,7 +21,7 @@ LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
 LIBS = -ldap++ -lfreeform -lmaxmin @LIBS@ -lm
-TAGS_FLAGS = --include=../dap/TAGS
+TAGS_FLAGS =
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -162,6 +162,8 @@ install: all
 	$(INSTALL_PROGRAM) FFND/newform $(bindir)/newform
 	$(INSTALL_PROGRAM) FFND/chkform $(bindir)/chkform
 	$(INSTALL_PROGRAM) FFND/checkvar $(bindir)/checkvar
+	$(INSTALL_PROGRAM) FFND/bufform $(bindir)/bufform
+	$(INSTALL_PROGRAM) FFND/readfile $(bindir)/readfile
 
 configure: configure.in
 	autoconf --localdir=$(DODS_ROOT)/etc
