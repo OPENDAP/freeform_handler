@@ -9,6 +9,9 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.3  1998/11/13 05:40:02  jimg
+// Added many DBG() lines.
+//
 // Revision 1.2  1998/11/10 17:53:45  jimg
 // Recoded the projection and selection date functions for jdate. Added new
 // functions for ymd dates and changed the overall organization a bit; it now
@@ -56,6 +59,8 @@ DODS_Date_jpl_pathfinder(DDS &dds)
 
     DODS_Date d(year, day_number);
 
+    DBG(cerr << "year: " << year << " day number: " << day_number << endl);
+
     return d;
 }
 
@@ -88,6 +93,9 @@ func_date(int argc, BaseType *argv[], DDS &dds)
 
     DODS_Date current = DODS_Date_jpl_pathfinder(dds);
 
+    DBG(cerr << "Comp dates: " << d1.yd_date() << " " << current.yd_date()\
+	<< " " << d2.yd_date() << endl);
+
     bool res;
     if (argc == 2)
 	res = d2 >= current && d1 <= current;
@@ -106,7 +114,7 @@ sel_dods_jdate(int argc, BaseType *argv[], DDS &dds)
 		  "Wrong number of arguments to internal selection function.\n\
 Please report this error.");
   
-    DBG(cerr << "Entering" << endl);
+    DBG2(cerr << "Entering" << endl);
 
     DODS_Date new_date = DODS_Date_jpl_pathfinder(dds);
 
@@ -115,8 +123,8 @@ Please report this error.");
     String s = new_date.yd_date().data();
     dods_jdate->val2buf(&s);
 
-    DBG(dods_jdate->print_val(cerr, "    ", true));
-    DBG(cerr << "Exiting (" << dods_jdate->name() << " [" \
+    DBG2(dods_jdate->print_val(cerr, "    ", true));
+    DBG2(cerr << "Exiting (" << dods_jdate->name() << " [" \
 	<< dods_jdate << "])" << endl);
 
     return true;
@@ -178,7 +186,7 @@ sel_dods_date(int argc, BaseType *argv[], DDS &dds)
 		  "Wrong number of arguments to internal selection function.\n\
 Please report this error.");
   
-    DBG(cerr << "Entering" << endl);
+    DBG2(cerr << "Entering" << endl);
 
     DODS_Date new_date = DODS_Date_jpl_pathfinder(dds);
 
@@ -187,8 +195,8 @@ Please report this error.");
     String s = new_date.ymd_date().data();
     dods_date->val2buf(&s);
 
-    DBG(dods_date->print_val(cerr, "    ", true));
-    DBG(cerr << "Exiting (" << dods_date->name() << " [" \
+    DBG2(dods_date->print_val(cerr, "    ", true));
+    DBG2(cerr << "Exiting (" << dods_date->name() << " [" \
 	<< dods_date << "])" << endl);
 
     return true;
