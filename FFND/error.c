@@ -1,4 +1,3 @@
-
 /* 
  * FILENAME: error.c
  *
@@ -24,155 +23,161 @@
 
 /* Local variables */
 
-typedef struct {
-    int error_number;
-    char *error_string;
+typedef struct
+{
+	int   error_number;
+	char *error_string;
 } ERROR_RECORD;
 
 
 static FF_ERROR_LIST error_list = NULL;
-#if 0
-static ERR_BOOLEAN err_stack_space = FALSE;
-#endif
-
+static ERR_BOOLEAN      err_stack_space = FALSE;
+								
 /* Local prototypes */
 static char *err_get_msg(int);
 static char *err_bin_search(int);
 
-static ERROR_RECORD local_errlist[] =
+static ERROR_RECORD local_errlist[] = 
 {
-    /* NOTE: THESE ERRORS MAY BE CROSS-LISTED
-       -- YOU MAY HAVE TO CHECK MORE THAN ONE SECTION TO FIND
-       THE APPROPRIATE ERROR DESCRIPTION */
+	/* NOTE: THESE ERRORS MAY BE CROSS-LISTED
+		-- YOU MAY HAVE TO CHECK MORE THAN ONE SECTION TO FIND
+		   THE APPROPRIATE ERROR DESCRIPTION */
 
-    /* General Errors */
-    {ERR_GENERAL, "Unable to complete requested command"},	/*500 */
-    {ERR_OPEN_FILE, "Opening file (file does not exist, or too many open files)"},	/*501 */
-    {ERR_READ_FILE, "Reading file"},	/*502 */
-    {ERR_WRITE_FILE, "Writing to file"},	/*503 */
-    {ERR_PTR_DEF, "Required internal data structure undefined"},	/*504 */
-    {ERR_MEM_LACK, "Insufficient memory (RAM)"},	/* 505 */
-    {ERR_UNKNOWN, "Undefined error"},	/*506 */
-    {ERR_FIND_FILE, "Finding file"},	/*507 */
-    {ERR_FILE_DEFINED, "File undefined"},		/*508 */
-    {ERR_OUT_OF_RANGE, "Value went out of range"},	/*510 */
-    {ERR_PROCESS_DATA, "Processing data"},	/*515 */
-    {ERR_NUM_TOKENS, "Incorrect Number of Tokens on Line"},	/* 519 */
-    {ERR_FILE_EXISTS, "File already exists (Can you delete or move the file?)"},	/* 522 */
-    {ERR_CREATE_FILE, "Creating file (Do you have write access to the file and directory?)"},	/* 523 */
-    {ERR_WILL_OVERWRITE_FILE, "File will be overwritten (Define \"nooverwrite\" keyword?)"},	/* 524 */
-    {ERR_REMOVE_FILE, "Removing file (is the file read-only?)"},	/* 525 */
-    {ERR_WONT_OVERWRITE_FILE, "File will not be overwritten (Delete file and try again)"},	/* 524 */
+	/* General Errors */
+	ERR_GENERAL,                    "Unable to complete requested command",                 /*500*/
+	ERR_OPEN_FILE,                  "Opening file (file does not exist, or too many open files)",                                 /*501*/
+	ERR_READ_FILE,                  "Reading file",                                 /*502*/
+	ERR_WRITE_FILE,                 "Writing to file",                              /*503*/
+	ERR_PTR_DEF,                    "Required internal data structure undefined",                                  /*504*/
+	ERR_MEM_LACK,                   "Insufficient memory (RAM)",                 /* 505 */
+	ERR_UNKNOWN,                    "Undefined error",                                      /*506*/
+	ERR_FIND_FILE,                  "Finding file",                                      /*507*/
+	ERR_FILE_DEFINED,               "File undefined",                                     /*508*/
+	ERR_OUT_OF_RANGE,               "Value went out of range",                     /*510*/
+	ERR_PROCESS_DATA,               "Processing data",                              /*515*/
+	ERR_NUM_TOKENS,                 "Incorrect Number of Tokens on Line",                    /* 519 */
+	ERR_FILE_EXISTS,                "File already exists (Can you delete or move the file?)",   /* 522 */
+	ERR_CREATE_FILE,                "Creating file (Do you have write access to the file and directory?)",    /* 523 */
+	ERR_WILL_OVERWRITE_FILE,        "File will be overwritten (Define \"nooverwrite\" keyword?)",  /* 524 */
+	ERR_REMOVE_FILE,                "Removing file (is the file read-only?)",                             /* 525 */
+	ERR_WONT_OVERWRITE_FILE,        "File already exists and will not be overwritten",  /* 524 */
 
-    /* Freeform Errors */
-    {ERR_UNKNOWN_VAR_TYPE, "Unknown variable type"},	/*1000 */
-    {ERR_UNKNOWN_PARAMETER, "Could not get a value for parameter or keyword"},	/*1001 */
-    {ERR_CONVERT, "Problem in conversion"},	/*1003 */
-    {ERR_MAKE_FORM, "Making format"},	/*1004 */
-    {ERR_NO_VARIABLES, "No variables found in format"},	/*1012 */
-    {ERR_FIND_FORM, "Finding the named format"},	/*1021 */
-    {ERR_CONVERT_VAR, "Could not determine type of conversion for the given variable"},	/*1022 */
-    {ERR_ORPHAN_VAR, "Output variable has no relation to input"},		/* 1023 */
-    {ERR_POSSIBLE, "Possible problem when you next use output data"},
+	/* Freeform Errors */
+	ERR_UNKNOWN_VAR_TYPE,           "Unknown variable type",                                /*1000*/
+	ERR_UNKNOWN_PARAMETER,          "Could not get a value for parameter or keyword",                  /*1001*/
+	ERR_CONVERT,                    "Problem in conversion",                                /*1003*/
+	ERR_MAKE_FORM,                  "Making format",                                /*1004*/
+	ERR_NO_VARIABLES,               "No variables found in format",                                   /*1012*/
+	ERR_FIND_FORM,                  "Finding the named format",                               /*1021*/
+	ERR_CONVERT_VAR,                "Could not determine type of conversion for the given variable",           /*1022*/
+	ERR_ORPHAN_VAR,                 "Output variable has no relation to input",                                /* 1023 */
+	ERR_POSSIBLE,                   "Possible problem when you next use output data",
 
-    /* Binview Errors */
+	/* Binview Errors */
 
-    {ERR_SET_DBIN, "Setting data bin"},	/*1509 */
-    {ERR_PARTIAL_RECORD, "Last record was incomplete and was not read"},	/*1517 */
-    {ERR_NT_DEFINE, "Defining name table"},	/*1520 */
-    {ERR_UNKNOWN_FORMAT_TYPE, "Unknown Format Type"},	/*1525 */
+	ERR_SET_DBIN,                   "Setting data bin",                             /*1509*/
+	ERR_PARTIAL_RECORD,             "Last record was incomplete and was not read",      /*1517*/
+	ERR_NT_DEFINE,                  "Defining name table",                          /*1520*/
+	ERR_UNKNOWN_FORMAT_TYPE,        "Unknown Format Type",									/*1525*/
+	
+	/* EQUATION errors */
+	ERR_EQN_SET,                 "Problem setting up equation variable",
 
-     /* EQUATION errors */
-    {ERR_EQN_SET, "Problem setting up equation variable"},
+	ERR_SDTS,          "Problem in SDTS conversion",
+	ERR_SDTS_BYE_ATTR, "GeoVu keyword will not be encoded into the SDTS transfer",
+	
+	/* String database and menu systems */
 
-    {ERR_SDTS, "Problem in SDTS conversion"},
-    {ERR_SDTS_BYE_ATTR, "GeoVu keyword will not be encoded into the SDTS transfer"},
+	ERR_MAKE_MENU_DBASE,            "Creating menu database",                       /*3000*/
+	ERR_NO_SUCH_SECTION,            "No Section with this title",                           /*3001*/
+	ERR_GETTING_SECTION,            "Getting text for section",                     /*3002*/
+	ERR_MENU,                       "Processing Menu",                              /*3003*/
 
-    /* String database and menu systems */
+	ERR_MN_BUFFER_TRUNCATED,        "Menu section buffer truncated",                        /*3500*/
+	ERR_MN_SEC_NFOUND,              "Requested menu section not found",                       /*3501*/
+	ERR_MN_FILE_CORRUPT,            "Menu file corrupt",                                    /*3502*/
+	ERR_MN_REF_FILE_NFOUND,         "Referenced file not found",                            /*3503*/
+	
+	/* Interpreter and parse errors */
 
-    {ERR_MAKE_MENU_DBASE, "Creating menu database"},	/*3000 */
-    {ERR_NO_SUCH_SECTION, "No Section with this title"},	/*3001 */
-    {ERR_GETTING_SECTION, "Getting text for section"},	/*3002 */
-    {ERR_MENU, "Processing Menu"},	/*3003 */
+	ERR_MISSING_TOKEN,              "Expected token(s) missing",                               /* 4001 */
+	ERR_PARAM_VALUE,                "Invalid parameter value",                              /* 4006 */
+	ERR_UNKNOWN_OPTION,             "Unknown option; for usage, run again without any arguments", /* 4013 */
+	ERR_IGNORED_OPTION,             "This option not used with this application",             /* 4014 */
+	ERR_VARIABLE_DESC,              "Problem with variable description line",               /* 4015 */
+	ERR_VARIABLE_SIZE,              "Incorrect field size for this variable",         /* 4016 */
+	ERR_NO_EOL,                     "Expecting an End-Of-Line marker",                        /* 4017 */
 
-    {ERR_MN_BUFFER_TRUNCATED, "Menu section buffer truncated"},	/*3500 */
-    {ERR_MN_SEC_NFOUND, "Requested menu section not found"},	/*3501 */
-    {ERR_MN_FILE_CORRUPT, "Menu file corrupt"},	/*3502 */
-    {ERR_MN_REF_FILE_NFOUND, "Referenced file not found"},	/*3503 */
+	/* ADTLIB errors */
 
-     /* Interpreter and parse errors */
+	ERR_FIND_MAX_MIN,               "Finding max and min",                          /* 6001 */
+	ERR_PARSE_EQN,                  "Parsing equation",                             /* 6002 */
+	ERR_EE_VAR_NFOUND,              "Variable in equation not found",                       /* 6003 */
+	ERR_CHAR_IN_EE,                 "Character data type in equation",                      /* 6004 */
+	ERR_EE_DATA_TYPE,               "Mismatching data types in equation",                   /* 6005 */
+	ERR_NDARRAY,                    "With N-dimensional array",                     /* 6006 */
+	ERR_GEN_QUERY,                  "Processing query",                             /* 6007 */
+	
+	/* NAME_TABLE errors */
 
-    {ERR_MISSING_TOKEN, "Expected token(s) missing"},	/* 4001 */
-    {ERR_PARAM_VALUE, "Invalid parameter value"},		/* 4006 */
-    {ERR_UNKNOWN_OPTION, "Unknown option; for usage, run again without any arguments"},	/* 4013 */
-    {ERR_IGNORED_OPTION, "This option not used with this application"},	/* 4014 */
-    {ERR_VARIABLE_DESC, "Problem with variable description line"},	/* 4015 */
-    {ERR_VARIABLE_SIZE, "Incorrect field size for this variable"},	/* 4016 */
-    {ERR_NO_EOL, "Expecting an End-Of-Line marker"},	/* 4017 */
+	ERR_EXPECTING_SECTION_START, "Expecting Section Start:",
+	ERR_EXPECTING_SECTION_END,   "Expecting Section End:",
+	ERR_MISPLACED_SECTION_START, "Badly Placed Section Start:",
+	ERR_MISPLACED_SECTION_END,   "Badly Placed Section End:",
+	ERR_NT_MERGE,                "Error in merging/copying name tables",
+	ERR_NT_KEYNOTDEF,            "Expected keyword not defined",
+	ERR_EQV_CONTEXT,             "Definition(s) in equivalence section would be out of context",
 
-    /* ADTLIB errors */
+	ERR_GEN_ARRAY, "Problem in performing array operation",
 
-    {ERR_FIND_MAX_MIN, "Finding max and min"},	/* 6001 */
-    {ERR_PARSE_EQN, "Parsing equation"},	/* 6002 */
-    {ERR_EE_VAR_NFOUND, "Variable in equation not found"},	/* 6003 */
-    {ERR_CHAR_IN_EE, "Character data type in equation"},	/* 6004 */
-    {ERR_EE_DATA_TYPE, "Mismatching data types in equation"},	/* 6005 */
-    {ERR_NDARRAY, "With N-dimensional array"},	/* 6006 */
-    {ERR_GEN_QUERY, "Processing query"},	/* 6007 */
-
-    /* NAME_TABLE errors */
-
-    {ERR_EXPECTING_SECTION_START, "Expecting Section Start:"},
-    {ERR_EXPECTING_SECTION_END, "Expecting Section End:"},
-    {ERR_MISPLACED_SECTION_START, "Badly Placed Section Start:"},
-    {ERR_MISPLACED_SECTION_END, "Badly Placed Section End:"},
-    {ERR_NT_MERGE, "Error in merging/copying name tables"},
-    {ERR_NT_KEYNOTDEF, "Expected keyword not defined"},
-    {ERR_EQV_CONTEXT, "Definition(s) in equivalence section would be out of context"},
-
-    {ERR_GEN_ARRAY, "Problem in performing array operation"},
-
-     /* Programmer's eyes only, or programmer support */
-    {ERR_API, "Error in Application Programmer Interface, contact support"},	/* 7900 */
-    {ERR_SWITCH_DEFAULT, "Unexpected default case in switch statement, contact support"},		/* 7901 */
-    {ERR_ASSERT_FAILURE, "Assertion Failure, contact support"},	/* 7902 */
-    {ERR_NO_NAME_TABLE, "Equivalence section has not been defined"},
-    {ERR_API_BUF_LOCKED, "API Error -- internal buffer is already locked"},
-    {ERR_API_BUF_NOT_LOCKED, "API Error -- internal buffer is not locked"}
+	/* Programmer's eyes only, or programmer support */
+	ERR_API,                     "Error in Application Programmer Interface, contact support",   /* 7900 */
+	ERR_SWITCH_DEFAULT,          "Unexpected default case in switch statement, contact support", /* 7901 */
+	ERR_ASSERT_FAILURE,          "Assertion Failure, contact support",                                            /* 7902 */
+	ERR_NO_NAME_TABLE,           "Equivalence section has not been defined",
+	ERR_API_BUF_LOCKED,          "API Error -- internal buffer is already locked",
+	ERR_API_BUF_NOT_LOCKED,      "API Error -- internal buffer is not locked"
 };
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "create_error"
 
-static FF_ERROR_PTR 
-create_error (int code, char *message) 
+static FF_ERROR_PTR create_error
+	(
+	 int code,
+	 char *message
+	)
 {
-    FF_ERROR_PTR error = NULL;
+	FF_ERROR_PTR error = NULL;
 
-    error = (FF_ERROR_PTR) memMalloc(sizeof(FF_ERROR), "error");
-    if (!error) {
-	assert(error);
-	return (NULL);
-    }
+	error = (FF_ERROR_PTR)memMalloc(sizeof(FF_ERROR), "error");
+	if (!error)
+	{
+		assert(error);
+		return(NULL);
+	}
+
 #ifdef FF_CHK_ADDR
-    error->check_address = error;
+	error->check_address = error;
 #endif
 
-    error->code = code;
-    error->message = (char *) memStrdup(message, "error->message");
-    if (!error->message) {
-	assert(error->message);
-	memFree(error, "error");
-	return (NULL);
-    }
-    os_str_replace_char(error->message, '\b', ':');
+	error->code = code;
+	error->message = (char *)memStrdup(message, "error->message");
+	if (!error->message)
+	{
+		assert(error->message);
+		memFree(error, "error");
+		return(NULL);
+	}
 
-    error->problem = err_get_msg(code - (code > ERR_WARNING_ONLY ? ERR_WARNING_ONLY : 0));
+	os_str_replace_char(error->message, '\b', ':');
 
-    error->warning_ord = 0;
-    error->error_ord = 0;
+	error->problem = err_get_msg(code - (code > ERR_WARNING_ONLY ? ERR_WARNING_ONLY : 0));
 
-    return (error);
+	error->warning_ord = 0;
+	error->error_ord   = 0;
+
+	return(error);
 }
 
 #undef ROUTINE_NAME
@@ -180,143 +185,162 @@ create_error (int code, char *message)
 
 void ff_destroy_error(FF_ERROR_PTR error)
 {
-    assert(error);
+	assert(error);
 
-    FF_VALIDATE(error);
+	FF_VALIDATE(error);
 #ifdef FF_CHK_ADDR
-    error->check_address = NULL;
+	error->check_address = NULL;
 #endif
 
-    error->code = 0;
+	error->code = 0;
 
-    memFree(error->message, "error->message");
-    error->message = NULL;
+	memFree(error->message, "error->message");
+	error->message = NULL;
 
-    error->problem = NULL;
+	error->problem = NULL;
 
-    error->warning_ord = 0;
-    error->error_ord = 0;
+	error->warning_ord = 0;
+	error->error_ord   = 0;
 
-    memFree(error, "error");
+	memFree(error, "error");
 }
 
 static BOOLEAN is_a_warning
- (
-     FF_ERROR_PTR error
-) {
-    FF_VALIDATE(error);
+	(
+	 FF_ERROR_PTR error
+	)
+{
+	FF_VALIDATE(error);
 
-    return ((BOOLEAN) (error->code > ERR_WARNING_ONLY));
+	return((BOOLEAN)(error->code > ERR_WARNING_ONLY));
 }
 
 static void add_error
- (
-     int code,
-     char *message
-) {
-    DLL_NODE_PTR new_error_node = NULL;
+	(
+	 int code,
+	 char *message
+	)
+{
+	DLL_NODE_PTR new_error_node = NULL;
 
-    FF_ERROR_PTR error = create_error(code, message);
+	FF_ERROR_PTR error = create_error(code, message);
 
-    if (error) {
-	if (!error_list) {
-	    error_list = dll_init();
-	    if (!error_list) {
-		assert(error_list);
-		return;
-	    }
-	}
-	if (error_list) {
-	    FF_ERROR_PTR last_error = FF_EP(dll_last(error_list));
-
-	    new_error_node = dll_add(error_list);
-	    if (new_error_node) {
-		dll_assign(error, DLL_ERR, new_error_node);
-		if (is_a_warning(error)) {
-		    error->error_ord = last_error ? last_error->error_ord : 0;
-		    error->warning_ord = 1 + (last_error ? last_error->warning_ord : 0);
-		} else {
-		    error->error_ord = 1 + (last_error ? last_error->error_ord : 0);
-		    error->warning_ord = last_error ? last_error->warning_ord : 0;
+	if (error)
+	{
+		if (!error_list)
+		{
+			error_list = dll_init();
+			if (!error_list)
+			{
+				assert(error_list);
+				return;
+			}
 		}
-	    } else {
-		assert(new_error_node);
-		ff_destroy_error(error);
-	    }
+
+		if (error_list)
+		{
+			FF_ERROR_PTR last_error = FF_EP(dll_last(error_list));
+
+			new_error_node = dll_add(error_list);
+			if (new_error_node)
+			{
+				dll_assign(error, DLL_ERR, new_error_node);
+				if (is_a_warning(error))
+				{
+					error->error_ord = last_error ? last_error->error_ord : 0;
+					error->warning_ord = 1 + (last_error ? last_error->warning_ord : 0);
+				}
+				else
+				{
+					error->error_ord = 1 + (last_error ? last_error->error_ord : 0);
+					error->warning_ord = last_error ? last_error->warning_ord : 0;
+				}
+			}
+			else
+			{
+				assert(new_error_node);
+				ff_destroy_error(error);
+			}
+		}
 	}
-    }
 }
 
 int err_count(void)
 {
-    FF_ERROR_PTR error = NULL;
-    int total = 0;
+	FF_ERROR_PTR error = NULL;
+	int total = 0;
 
-    if (error_list) {
-	error = FF_EP(dll_last(error_list));
-	if (error)
-	    total = error->error_ord + error->warning_ord;
-    }
-    return total;
+	if (error_list)
+	{
+		error = FF_EP(dll_last(error_list));
+		if (error)
+			total = error->error_ord + error->warning_ord;
+	}
+
+	return total;
 }
 
 static FF_ERROR_PTR pop_error(void)
 {
-    FF_ERROR_PTR error = NULL;
+	FF_ERROR_PTR error = NULL;
 
-    if (error_list) {
-	error = FF_EP(dll_last(error_list));
-	if (error)
-	    dll_delete_node(dll_last(error_list));
+	if (error_list)
+	{
+		error = FF_EP(dll_last(error_list));
+		if (error)
+			dll_delete_node(dll_last(error_list));
 
-	if (!FF_EP(dll_first(error_list))) {
-	    dll_free_list(error_list);
-	    error_list = NULL;
+		if (!FF_EP(dll_first(error_list)))
+		{
+			dll_free_list(error_list);
+			error_list = NULL;
+		}
 	}
-    }
-    return (error);
+
+	return(error);
 }
 
 static FF_ERROR_PTR pull_error(void)
 {
-    FF_ERROR_PTR error = NULL;
+	FF_ERROR_PTR error = NULL;
 
-    if (error_list) {
-	error = FF_EP(dll_first(error_list));
-	if (error)
-	    dll_delete_node(dll_first(error_list));
+	if (error_list)
+	{
+		error = FF_EP(dll_first(error_list));
+		if (error)
+			dll_delete_node(dll_first(error_list));
 
-	if (!FF_EP(dll_first(error_list))) {
-	    dll_free_list(error_list);
-	    error_list = NULL;
+		if (!FF_EP(dll_first(error_list)))
+		{
+			dll_free_list(error_list);
+			error_list = NULL;
+		}
 	}
-    }
-    return (error);
+
+	return(error);
 }
 
 int verr_push
- (
-     const int ercode,
-     const char *format,
-     va_list va_args
-) {
-    enum {
-	MAX_ERRSTR_SIZE = 2 * MAX_PATH
-    };
+	(
+	 const int ercode,
+	 const char *format,
+	 va_list va_args
+	)
+{
+	enum {MAX_ERRSTR_SIZE = 2 * MAX_PATH};
 
-    char message[MAX_ERRSTR_SIZE];	/* big enough? */
+	char message[MAX_ERRSTR_SIZE]; /* big enough? */
 
-#if 0
-    FF_ERROR_PTR error = NULL;
-#endif
-    assert(ercode);
-    assert(format);
+	FF_ERROR_PTR error = NULL;
 
-    vsprintf(message, format, va_args);
+	assert(ercode);
+	assert(format);
 
-    add_error(ercode, message);
+	vsprintf(message, format, va_args);
 
-    return (ercode);
+	add_error(ercode, message);
+
+	return(ercode);
 }
 
 /*
@@ -388,23 +412,24 @@ int verr_push
  */
 
 int err_push
- (
-     const int ercode,
-     const char *format,
-     ...
-) {
-    va_list va_args;
+	(
+	 const int ercode,
+	 const char *format,
+	 ...
+	)
+{
+	va_list va_args;
 
-    assert(ercode);
-    assert(format);
+	assert(ercode);
+	assert(format);
 
-    va_start(va_args, format);
+	va_start(va_args, format);
+	
+	verr_push(ercode, format, va_args);
 
-    verr_push(ercode, format, va_args);
+	va_end(va_args);
 
-    va_end(va_args);
-
-    return (ercode);
+	return(ercode);
 }
 
 /*
@@ -436,26 +461,28 @@ int err_push
 
 ERR_BOOLEAN err_state(void)
 {
-    if (error_list && FF_EP(dll_first(error_list)))
-	return (TRUE);
-    else
-	return (FALSE);
+	if (error_list && FF_EP(dll_first(error_list)))
+		return(TRUE);
+	else
+		return(FALSE);
 }
 
 int err_pop(void)
 {
-    int ercode = 0;
-    FF_ERROR_PTR error = NULL;
+	int ercode = 0;
+	FF_ERROR_PTR error = NULL;
 
-    error = pop_error();
-    if (error) {
-	FF_VALIDATE(error);
+	error = pop_error();
+	if (error)
+	{
+		FF_VALIDATE(error);
 
-	ercode = error->code;
+		ercode = error->code;
 
-	ff_destroy_error(error);
-    }
-    return (ercode);
+		ff_destroy_error(error);
+	}
+	
+	return(ercode);
 }
 
 /*
@@ -486,29 +513,34 @@ int err_pop(void)
 
 void err_clear(void)
 {
-    if (error_list) {
-	dll_free_holdings(error_list);
-	error_list = NULL;
-    }
+	if (error_list)
+	{
+		dll_free_holdings(error_list);
+		error_list = NULL;
+	}
 }
 
 static void print_error
- (
-     FILE * fp,
-     FF_ERROR_PTR error,
-     BOOLEAN error_logging,
-     BOOLEAN error_screen
-) {
-    FF_VALIDATE(error);
+	(
+	 FILE *fp,
+	 FF_ERROR_PTR error,
+	 BOOLEAN error_logging,
+	 BOOLEAN error_screen
+	)
+{
+	FF_VALIDATE(error);
 
-    if (error_logging) {
-	fprintf(fp, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_ord : error->error_ord, error->problem);
-	fprintf(fp, "\nEXPLANATION: %s\n", error->message);
-    }
-    if (error_screen) {
-	fprintf(stderr, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_ord : error->error_ord, error->problem);
-	fprintf(stderr, "\nEXPLANATION: %s\n", error->message);
-    }
+	if (error_logging)
+	{
+		fprintf(fp, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_ord : error->error_ord, error->problem);
+		fprintf(fp, "\nEXPLANATION: %s\n", error->message);
+	}
+
+	if (error_screen)
+	{
+		fprintf(stderr, "\n%s %d: %s", is_a_warning(error) ? "WARNING" : "ERROR", is_a_warning(error) ? error->warning_ord : error->error_ord, error->problem);
+		fprintf(stderr, "\nEXPLANATION: %s\n", error->message);
+	}
 }
 
 /*
@@ -518,7 +550,7 @@ static void print_error
  *
  * USAGE:   void err_disp()
  *
- * RETURNS: void 
+ * RETURNS: The lowest error value pushed on the stack
  *
  * DESCRIPTION: Err_disp() displays the top error message from the error
  *              stack and queries the user if he\she would like to see more
@@ -540,188 +572,184 @@ static void print_error
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "err_disp"
-void err_disp(FF_STD_ARGS_PTR std_args)
+int err_disp(FF_STD_ARGS_PTR std_args)
 {
-#if 0
-    char *no_error_display = NULL;
-#endif
-    char reply[4];		/* even for alignment/anal purposes */
+	int error_return = INT_MAX;
 
-    int num_warnings = 0;
-    int num_errors = 0;
+	char *no_error_display = NULL;
+	char reply[4]; /* even for alignment/anal purposes */
 
-    char num_warnings_str[10];
-    char num_errors_str[10];
+	int num_warnings = 0;
+	int num_errors = 0;
 
-    BOOLEAN user_interactive = FALSE;
-    BOOLEAN error_logging = FALSE;
-    BOOLEAN error_screen = FALSE;
+	char num_warnings_str[10];
+	char num_errors_str[10];
 
-    FILE *fp = NULL;
-    FF_ERROR_PTR error = NULL;
+	BOOLEAN user_interactive = FALSE;
+	BOOLEAN error_logging = FALSE;
+	BOOLEAN error_screen = FALSE;
 
-    if (std_args)
-	FF_VALIDATE(std_args);
+	FILE *fp = NULL;
+	FF_ERROR_PTR error = NULL;
 
-    if (!error_list)
-	return;
+	if (std_args)
+		FF_VALIDATE(std_args);
 
-    num_warnings = ((FF_ERROR_PTR) (FF_EP(dll_last(error_list))))->warning_ord;
-    num_errors = ((FF_ERROR_PTR) (FF_EP(dll_last(error_list))))->error_ord;
+	if (!error_list)
+		return 0;
 
-    error = pull_error();
-    if (!error)
-	return;
+	num_warnings = ((FF_ERROR_PTR)(FF_EP(dll_last(error_list))))->warning_ord;
+	num_errors = ((FF_ERROR_PTR)(FF_EP(dll_last(error_list))))->error_ord;
 
-    if (std_args && std_args->error_log) {
-	fp = fopen(std_args->error_log, "at");
-	if (!fp) {
-	    error_logging = FALSE;
-	    fprintf(stderr, "Cannot open %s to log errors!!!\n", std_args->error_log);
-	} else
-	    error_logging = TRUE;
-    }
-    if ((std_args && std_args->error_prompt == FALSE) || (std_args && std_args->log_file))
-	user_interactive = FALSE;
-    else if (isatty(fileno(stdin)))	/* stdin is not redirected */
-	user_interactive = TRUE;
+	error = pull_error();
+	if (error)
+		error_return = min(error_return, error->code);
+	else
+		return 0;
 
-    if (!std_args || !std_args->log_file)
-	error_screen = TRUE;
-
-    if (num_warnings)
-	sprintf(num_warnings_str, "%d", num_warnings);
-    else
-	sprintf(num_warnings_str, "no");
-
-    if (num_errors)
-	sprintf(num_errors_str, "%d", num_errors);
-    else
-	sprintf(num_errors_str, "no");
-
-    if (num_warnings && num_errors) {
-	if (error_logging) {
-	    fprintf(fp, "\nThere %s %s warning%s and %s error%s!\n",
-		    num_warnings == 1 ? "is" : "are",
-		    num_warnings_str,
-		    num_warnings == 1 ? "" : "s",
-		    num_errors_str,
-		    num_errors == 1 ? "" : "s"
-		);
+	if (std_args && std_args->error_log)
+	{
+		fp = fopen(std_args->error_log, "at");
+		if (!fp)
+		{
+			error_logging = FALSE;
+			fprintf(stderr, "Cannot open %s to log errors!!!\n", std_args->error_log);
+		}
+		else
+			error_logging = TRUE;
 	}
-	if (error_screen) {
-	    fprintf(stderr, "\nThere %s %s warning%s and %s error%s!\n",
-		    num_warnings == 1 ? "is" : "are",
-		    num_warnings_str,
-		    num_warnings == 1 ? "" : "s",
-		    num_errors_str,
-		    num_errors == 1 ? "" : "s"
-		);
-	}
-    } else if (num_warnings) {
-	if (error_logging) {
-	    fprintf(fp, "\nThere %s %s warning%s!\n",
-		    num_warnings == 1 ? "is" : "are",
-		    num_warnings_str,
-		    num_warnings == 1 ? "" : "s"
-		);
-	}
-	if (error_screen) {
-	    fprintf(stderr, "\nThere %s %s warning%s!\n",
-		    num_warnings == 1 ? "is" : "are",
-		    num_warnings_str,
-		    num_warnings == 1 ? "" : "s"
-		);
-	}
-    } else if (num_errors) {
-	if (error_logging) {
-	    fprintf(fp, "\nThere %s %s error%s!\n",
-		    num_errors == 1 ? "is" : "are",
-		    num_errors_str,
-		    num_errors == 1 ? "" : "s"
-		);
-	}
-	if (error_screen) {
-	    fprintf(stderr, "\nThere %s %s error%s!\n",
-		    num_errors == 1 ? "is" : "are",
-		    num_errors_str,
-		    num_errors == 1 ? "" : "s"
-		);
-	}
-    }
-    while (error) {
-	FF_ERROR_PTR next_error = NULL;
 
-	next_error = pull_error();
-
-	print_error(fp, error, error_logging, error_screen);
-
-	if (!next_error && user_interactive && !is_a_warning(error)) {
-	    fflush(stdin);
-	    fprintf(stderr, "\nPress Enter to Acknowledge...");
-	    fgets(reply, 2, stdin);
-	} else if (next_error && user_interactive && !is_a_warning(error)) {
-	    fflush(stdin);
-	    fprintf(stderr, "\nDisplay next message? (Y/N) : Y\b");
-	    fgets(reply, 2, stdin);
-	    if (toupper(reply[0]) != 'Y' && reply[0] != '\n') {
+	if ((std_args && std_args->error_prompt == FALSE) || (std_args && std_args->log_file))
 		user_interactive = FALSE;
-		error_screen = FALSE;
-	    }
+	else if (isatty(fileno(stdin))) /* stdin is not redirected */
+		user_interactive = TRUE;
+	
+	if (!std_args || !std_args->log_file)
+		error_screen = TRUE;
+
+	if (num_warnings)
+		sprintf(num_warnings_str, "%d", num_warnings);
+	else
+		sprintf(num_warnings_str, "no");
+
+	if (num_errors)
+		sprintf(num_errors_str, "%d", num_errors);
+	else
+		sprintf(num_errors_str, "no");
+
+	if (num_warnings && num_errors)
+	{
+		if (error_logging)
+		{
+			fprintf(fp, "\nThere %s %s warning%s and %s error%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
+
+		if (error_screen)
+		{
+			fprintf(stderr, "\nThere %s %s warning%s and %s error%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
 	}
-	ff_destroy_error(error);
+	else if (num_warnings)
+	{
+		if (error_logging)
+		{
+			fprintf(fp, "\nThere %s %s warning%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s"
+				   );
+		}
 
-	error = next_error;
-    }				/* while error */
+		if (error_screen)
+		{
+			fprintf(stderr, "\nThere %s %s warning%s!\n",
+					num_warnings == 1 ? "is" : "are",
+					num_warnings_str,
+					num_warnings == 1 ? "" : "s"
+				   );
+		}
+	}
+	else if (num_errors)
+	{
+		if (error_logging)
+		{
+			fprintf(fp, "\nThere %s %s error%s!\n",
+					num_errors == 1 ? "is" : "are",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
 
-    if (error_logging)
-	fprintf(fp, "\nNo more messages\n");
+		if (error_screen)
+		{
+			fprintf(stderr, "\nThere %s %s error%s!\n",
+					num_errors == 1 ? "is" : "are",
+					num_errors_str,
+					num_errors == 1 ? "" : "s"
+				   );
+		}
+	}
 
-    if (error_screen)
-	fprintf(stderr, "\nNo more messages\n");
+	while (error)
+	{
+		FF_ERROR_PTR next_error = NULL;
 
-    if (error_logging) {
-	fprintf(stderr, "Messages have been recorded in %s\n", std_args->error_log);
-	fclose(fp);
-    }
+		next_error = pull_error();
+
+		print_error(fp, error, error_logging, error_screen);
+
+		if (!next_error && user_interactive && !is_a_warning(error))
+		{
+			fflush(stdin);
+			fprintf(stderr, "\nPress Enter to Acknowledge...");
+			fgets(reply, 2, stdin);
+		}
+		else if (next_error && user_interactive && !is_a_warning(error))
+		{
+			fflush(stdin);
+			fprintf(stderr, "\nDisplay next message? (Y/N) : Y\b");
+			fgets(reply, 2, stdin);
+			if (toupper(reply[0]) != 'Y' && reply[0] != '\n')
+			{
+				user_interactive = FALSE;
+				error_screen = FALSE;
+			}
+		}
+
+		ff_destroy_error(error);
+
+		error = next_error;
+		if (error)
+			error_return = min(error_return, error->code);
+	} /* while error */
+
+	if (error_logging)
+		fprintf(fp, "\nNo more messages\n");
+
+	if (error_screen)
+		fprintf(stderr, "\nNo more messages\n");
+
+	if (error_logging)
+	{
+		fprintf(stderr, "Messages have been recorded in %s\n", std_args->error_log);
+		fclose(fp);
+	}
+
+	return error_return;
 }
 
-/*
- * NAME:    err_get_msg 
- *
- * PURPOSE: To get an error message string.
- *
- * USAGE:   char * ffnd_error_msg(int error_defined_constant)
- *
- * RETURNS: A pointer to the error message string
- *
- * DESCRIPTION: This is a public version of err_get_msg. It is useful for
- *              non-interactive programs. Uses int msg (error_defined
- *              constant) to get the corresponding error message from the
- *              local_errlist array. If the error is not a system error, a
- *              binary search is called on the local error list. If no error
- *              is found, "Invalid error number" is returned. System errors
- *              are accounted for with a call to the operating system error
- *              list.
- *
- * AUTHOR:  James Gallagher. jgallagher@gso.uri.edu
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * COMMENTS: Added. 10/20/98 jhrg
- *
- * KEYWORDS:            error system 
- * 
- */
-
-#undef ROUTINE_NAME
-#define ROUTINE_NAME "ffnd_error_msg"
-
-char *
-ffnd_error_msg(int msg)
-{
-    return err_get_msg(msg);
-}
 
 /*
  * NAME:    err_get_msg 
@@ -751,30 +779,30 @@ ffnd_error_msg(int msg)
  */
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "err_get_msg"
-
+		
 static char *err_get_msg(int msg)
 {
-    char *p_err_str = NULL;
+	char *p_err_str = NULL;
 
 #if FF_CC == FF_CC_MACCW || FF_CC == FF_CC_UNIX
 #define sys_nerr 400
 #endif
 
-    if (msg < sys_nerr)
+	if (msg < sys_nerr) 
 #if FF_CC == FF_CC_MACCW || FF_CC == FF_CC_UNIX
-	p_err_str = strerror(msg);
+		p_err_str = strerror(msg);
 #else
-	p_err_str = sys_errlist[msg];
+		p_err_str = sys_errlist[msg];
 #endif
-    else
-	p_err_str = err_bin_search(msg);
+	else    
+		p_err_str = err_bin_search(msg);
 
-    /* Check if no match was found */
-
-    if (!p_err_str)
-	p_err_str = "Invalid error number";
-
-    return (p_err_str);
+	/* Check if no match was found */
+		
+	if (!p_err_str)
+		p_err_str = "Invalid error number";
+		
+	return(p_err_str);
 }
 
 /*
@@ -805,40 +833,43 @@ static char *err_get_msg(int msg)
 
 static char *err_bin_search(int msg)
 {
-    int low, high, mid;
+	int low, high, mid;
 
-    low = 0;
-    high = NUM_ERROR_ENTRIES - 1;
+	low = 0;
+	high = NUM_ERROR_ENTRIES - 1;
 
-    while (low <= high) {
-	mid = (low + high) / 2;
+	while (low <= high)
+	{
+		mid = (low + high) / 2;
 
-	if (msg < local_errlist[mid].error_number)
-	    high = mid - 1;
-	else if (msg > local_errlist[mid].error_number)
-	    low = mid + 1;
-	else			/* found match */
-	    return (local_errlist[mid].error_string);
-    }
+		if (msg < local_errlist[mid].error_number)
+			high = mid - 1;
+		else if (msg > local_errlist[mid].error_number)
+			low = mid + 1;
+		else  /* found match */
+			return(local_errlist[mid].error_string);
+	}
 
-    /* No match found : Invalid error code */
+	/* No match found : Invalid error code */
 
-    return (NULL);
+	return(NULL);
 
 }
 
 void _ff_err_assert
- (
-     char *msg,
-     char *file,
-     unsigned line
-) {
-    err_push(ERR_ASSERT_FAILURE, "%s, file %s, line %u", msg, os_path_return_name(file), line);
-    err_disp(NULL);
+	(
+	 char *msg,
+	 char *file,
+	 unsigned line
+	)
+{
+	err_push(ERR_ASSERT_FAILURE, "%s, file %s, line %u", msg, os_path_return_name(file), line);
+	err_disp(NULL);
 
 #if FF_CC == FF_CC_MSVC4 || FF_CC == FF_CC_UNIX
-    abort();
+	abort();
 #else
-    memExit(EXIT_FAILURE, "err_assert");
+	memExit(EXIT_FAILURE, "err_assert");
 #endif
 }
+
