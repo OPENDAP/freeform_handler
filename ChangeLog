@@ -1,3 +1,26 @@
+2003-02-10    <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-5.
+
+2002-07-08    <jimg@dcz.dods.org>
+
+	* util_ff.cc (get_integer_value, get_float_value): Fix for bug
+	471. I goofed on 2002-01-21 when I `fixed' bug 62; that fix is now
+	fixed... 
+
+2002-04-04    <jimg@dcz.dods.org>
+
+	* ffdas.cc (get_attributes): Added add_variable_containers as a
+	fix for bug 284. Updated relevant tests in ff-test.
+
+2002-01-21  James Gallagher  <jimg@dcz.dods.org>
+
+	* It is now possible to set up DODS File Servers using types other
+	than int32 for the date and time components. While this is not a
+	particularly big deal, users won't be told that int16 isn't
+	allowed when all they want is a number that runs from 0 to 59. See
+	Bug 62. 
+
 2001-10-13  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with release-3-2-4.
