@@ -9,6 +9,9 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.10  1999/05/28 17:17:34  dan
+// Added DODS_Decimal_Year server-side definitions.
+//
 // Revision 1.9  1999/05/28 16:33:10  jimg
 // Added/fixed comments.
 //
@@ -70,6 +73,8 @@
 #include "DODS_Time_Factory.h"
 #include "DODS_Date_Time.h"
 #include "DODS_Date_Time_Factory.h"
+#include "DODS_Decimal_Year.h"
+#include "DODS_Decimal_Year_Factory.h"
 
 /** Read an instance of T using a Factory for objects of type T. The Factory
     class for T must read configuration information from the DAS.
@@ -193,6 +198,12 @@ bool
 func_date_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date_Time, DODS_Date_Time_Factory>(argc, argv, dds);
+}
+
+bool
+func_decimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Decimal_Year, DODS_Decimal_Year_Factory>(argc, argv, dds);
 }
 
 // This function is added to the selection part of the CE when the matching
@@ -353,3 +364,48 @@ Expected zero or one arguments.");
 
     dds.append_clause(sel_dods_date_time, 0); // 0 == no BaseType args
 }
+
+/*************************** Decimal/Year functions *************************/
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
+
+bool
+sel_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Decimal_Year current 
+	= get_instance<DODS_Decimal_Year, DODS_Decimal_Year_Factory>(dds);
+
+    // Stuff the yyyy/ddd string into DODS_JDate.
+    Str *dods_decimal_year = (Str*)dds.var("DODS_Decimal_Year");
+    string s = current.get().c_str();
+    dods_decimal_year->val2buf(&s);
+
+    return true;
+}
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
+
+void
+proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+"Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_Decimal_Year", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
+}
+
