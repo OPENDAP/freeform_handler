@@ -1,3 +1,14 @@
+1998-11-12  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed a problem in DODS_Date where using (mixing) String and
+	string caused odd behavior --- extra characters were added to
+	strings in odd ways. I removed, for the time being, string from
+	the code using the preprocessor (see DODS_Date.h).
+
+	* MAO Found and fixed a bug in sdbin (in the FFND code) that was
+	causing the buffer-based FF accesses to fail. The jplpath.dat file
+	in ff-tests now works correctly.
+
 1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Fixed many bugs. 
