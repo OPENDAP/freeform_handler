@@ -47,7 +47,7 @@ const char *fft_cnv_flags[FFNT_ENOTE + 1] =
 "%lu", /* uint32 */
 "?",   /* int64 */
 "?",   /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%d",  /* int32 */
 "%u",  /* uint32 */
 "%ld", /* int64 */
@@ -69,7 +69,7 @@ const char *fft_cnv_flags_width[FFNT_ENOTE + 1] =
 "%*lu", /* uint32 */
 "?",    /* int64 */
 "?",    /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%*d",  /* int32 */
 "%*u",  /* uint32 */
 "%*ld", /* int64 */
@@ -91,7 +91,7 @@ const char *fft_cnv_flags_prec[FFNT_ENOTE + 1] =
 "%.*lu", /* uint32 */
 "?",     /* int64 */
 "?",     /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%.*d",  /* int32 */
 "%.*u",  /* uint32 */
 "%.*ld", /* int64 */
@@ -113,7 +113,7 @@ const char *fft_cnv_flags_width_prec[FFNT_ENOTE + 1] =
 "%*.*lu", /* uint32 */
 "?",      /* int64 */
 "?",      /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%*.*d",  /* int32 */
 "%*.*u",  /* uint32 */
 "%*.*ld", /* int64 */
