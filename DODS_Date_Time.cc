@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.8 2003/05/14 19:23:13 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.9 2003/12/08 21:59:52 edavis Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,13 +20,16 @@ static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.8 2003/05/14 19:23:13 
 #include <time.h>
 #include <assert.h>
 
-#include <sstream>
+#include <strstream>
 #include <string>
 
 #include "Error.h"
 #include "DODS_Date_Time.h"
 #include "date_proc.h"
 #include "debug.h" 
+
+using std::istrstream;
+using std::ostrstream;
 
 #define seconds_per_day 86400.0
 
@@ -445,6 +448,13 @@ main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.9  2003/12/08 21:59:52  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.7.4.1  2003/06/29 05:37:32  rmorris
+// Include standard template libraries appropriately and add missing usage
+// statements.
+//
 // Revision 1.8  2003/05/14 19:23:13  jimg
 // Changed from strstream to sstream.
 //

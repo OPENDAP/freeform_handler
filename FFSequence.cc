@@ -12,7 +12,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.15 2003/05/14 19:28:02 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.16 2003/12/08 21:55:52 edavis Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,7 +20,8 @@ static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.15 2003/05/14 19:28:02 j
 
 #include <sstream>
 
-using namespace std;
+using std::endl;
+using std::ostringstream;
 
 #include "Error.h"
 #include "FFSequence.h"
@@ -58,7 +59,7 @@ FFSequence::~FFSequence()
 {
 }
 
-long
+static long
 Records(const string &filename)
 {
     int error = 0;
@@ -105,71 +106,91 @@ Records(const string &filename)
     return num_records;
 }
 
+/** Read a row from the Sequence.
+
+    @note Does not use either the \e in_selection or \e send_p properties. If
+    this method is called and the \e read_p property is not true, the values
+    are read.
+    
+    @todo Remove Pix use.
+    @exception Error if the size of the returned data is zero.
+    @param dataset The name of the data file. Must have a matching FreeForm
+    format file.
+    @return Always returns false. */
 bool 
 FFSequence::read(const string &dataset)
 {
+    int StrCnt = 0;
 
-  int StrCnt = 0;
+    if (read_p())		// Nothing to do
+	return false;
 
-    if (read_p())  // Nothing to do
-      return false;
+    if ((BufPtr >= BufSiz) && (BufSiz != 0))
+	return false;		// End of sequence
 
-    if((BufPtr >= BufSiz) && (BufSiz != 0))
-      return false; // End of sequence
+    if (!BufVal) {		// Make the cache (BufVal is global)
+	char *ds, *o_fmt, *if_fmt;
+	try {
+	    // Create the output Sequence format
+	    ostringstream str;
+	    int endbyte = 0;
+	    int stbyte = 1;
 
-    if (!BufVal) { // Make the cache
-	// Create the output Sequence format
-	ostringstream str;
-	int endbyte = 0;
-	int stbyte = 1;
-
-	str << "binary_output_data \"DODS binary output data\"" << endl;
-	StrCnt = 0;
-	for(Pix p = first_var(); p; next_var(p)) {
-	    if (var(p)->synthesized_p())
-		continue;
-	    if (var(p)->type() == dods_str_c) {
-		endbyte +=StrLens[StrCnt];
-		StrCnt++;
-	    }
-	    else
-		endbyte += var(p)->width();
+	    str << "binary_output_data \"DODS binary output data\"" << endl;
+	    StrCnt = 0;
+	    for(Pix p = first_var(); p; next_var(p)) {
+		if (var(p)->synthesized_p())
+		    continue;
+		if (var(p)->type() == dods_str_c) {
+		    endbyte +=StrLens[StrCnt];
+		    StrCnt++;
+		}
+		else
+		    endbyte += var(p)->width();
 	  
-	    str << var(p)->name() << " " << stbyte << " " << endbyte 
-		<< " " << ff_types(var(p)->type()) 
-		<< " " << ff_prec(var(p)->type()) << endl;
-	    stbyte = endbyte + 1;
-	}
+		str << var(p)->name() << " " << stbyte << " " << endbyte 
+		    << " " << ff_types(var(p)->type()) 
+		    << " " << ff_prec(var(p)->type()) << endl;
+		stbyte = endbyte + 1;
+	    }
 
-	DBG(cerr << str.str());
+            DBG(cerr << str.str());
       
-	char *o_fmt = new char[str.str().length() + 1];
-	strcpy(o_fmt, str.str().c_str());
+	    o_fmt = new char[str.str().length() + 1];
+	    strcpy(o_fmt, str.str().c_str());
 
-	string input_format_file = find_ancillary_file(dataset);
-	char *if_fmt = new char[input_format_file.length() + 1];
-	strcpy(if_fmt, input_format_file.c_str());
+	    string input_format_file = find_ancillary_file(dataset);
+	    if_fmt = new char[input_format_file.length() + 1];
+	    strcpy(if_fmt, input_format_file.c_str());
      
-	long num_rec = Records(dataset); // It could come from DDS if sequence length was known
+	    // num_rec could come from DDS if sequence length was known...
+	    long num_rec = Records(dataset); 
 
-	if (num_rec == -1)
-	    return false;
+	    if (num_rec == -1)
+		return false;
 
-	BufSiz = num_rec * (stbyte - 1);
-	BufVal = (char *)new char[BufSiz];
-	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, dataset.c_str());
+	    BufSiz = num_rec * (stbyte - 1);
+	    BufVal = new char[BufSiz];
+	    char *ds = new char[dataset.length() + 1];
+	    strcpy(ds, dataset.c_str());
    
-	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
-	if (bytes == -1) {
-	  throw Error(unknown_error, 
-		      "Could not read requested data from the dataset.");
-	}
+	    long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
+	    if (bytes == -1)
+		throw Error("Could not read requested data from the dataset.");
 	    
-	// clean up
-	delete[] ds;	       
-	delete[] o_fmt;
-	delete[] if_fmt;
+	    // clean up; we should use auto_ptr, but it doesn't work for
+	    // arrays... 08/29/03 jhrg
+	    delete[] ds;	       
+	    delete[] o_fmt;
+	    delete[] if_fmt;
+	}
+
+	catch (...) {		// Catch everything, clean up and rethrow.
+	    delete[] ds;	       
+	    delete[] o_fmt;
+	    delete[] if_fmt;
+	    throw;
+	}	    
     }
 
     StrCnt = 0;
@@ -185,6 +206,19 @@ FFSequence::read(const string &dataset)
 }
 
 // $Log: FFSequence.cc,v $
+// Revision 1.16  2003/12/08 21:55:52  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.14.4.2  2003/09/06 23:33:14  jimg
+// I modified the read() method implementations so that they test the new
+// in_selection property. If it is true, the methods will read values
+// even if the send_p property is not true. This is so that variables used
+// in the selection part of the CE, or as function arguments, will be read.
+// See bug 657.
+//
+// Revision 1.14.4.1  2003/06/29 05:30:36  rmorris
+// Proper Use of template library headers and missing usage statements.
+//
 // Revision 1.15  2003/05/14 19:28:02  jimg
 // Replaced strstream with sstream
 //

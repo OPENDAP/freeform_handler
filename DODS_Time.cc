@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.12 2003/05/14 19:23:13 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.13 2003/12/08 21:58:52 edavis Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,15 +19,16 @@ static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.12 2003/05/14 19:23:13 jimg
 #include <assert.h>
 
 #include <string> 
-#include <sstream>
-#include <iomanip>
+#include <strstream>
+#include <iomanip.h>
 
 #include "BaseType.h"
 #include "DODS_Time.h"
 #include "debug.h" 
 #include "Error.h"
 
-using namespace std;
+using std::istrstream;
+using std::ostrstream;
 
 double DODS_Time::_eps = 1.0e-6;
 
@@ -290,6 +291,13 @@ DODS_Time::get(bool gmt) const
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.13  2003/12/08 21:58:52  edavis
+// Merge release-3-4 into trunk
+//
+// Revision 1.11.4.1  2003/06/29 05:35:10  rmorris
+// Use standard template library headers correctly and add missing usage
+// statements.
+//
 // Revision 1.12  2003/05/14 19:23:13  jimg
 // Changed from strstream to sstream.
 //
