@@ -1,3 +1,40 @@
+2000-08-31  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-1-7. The next merge should use -j
+	release-3-1-7 -j release-3-1.
+
+	* Merged with Dan's fix for ISO8601 time specs in DODS_Time.cc
+	[This happened over onthe release-3-1 branch since the fix wound
+	here on the trunk first. I merged it onto the release-3-1 branch
+	so I could make a release without getting into the 3.2 code jhrg]
+
+	* Removed all mention of config_dap.h
+
+2000-08-03  James Gallagher  <jimg@dcz.dods.org>
+
+	* Tagged this code 3-1-6.
+
+	* Fixed a bug in the test code which made all the tests fail when
+	the CWD (.) was not in PATH.
+
+	* Removed use of the config_dap.h header; used config_ff.h in its
+	place. 
+
+	* Fixed leap year calculations and condensed then to a pair of
+	functions defined in date_proc.c. 
+
+2000-05-01  Daniel Holloway  <dholloway@gso.uri.edu>
+
+	* Added general server-side functions to support
+	date-range inventory time variables.
+	
+2000-04-20  James Gallagher  <jimg@dcz.dods.org>
+
+	* Changed the FreeForm datatype assigned to dods_byte from int8 to
+	uint8. This fixes problems in some datasets. I think, however,
+	that FF should be lacks in testing values to see if they fit into
+	a byte datatype.
+
 1999-11-04  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged: cvs update -j release-3-1-2 -j release-3-1, the next

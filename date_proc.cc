@@ -26,6 +26,13 @@
 // use in the browsed image server. That version was written in C. 
 
 // $Log: date_proc.cc,v $
+// Revision 1.5  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.4.8.1  2000/08/03 20:16:27  jimg
+// The is_leap and days_in_year functions are now externally visible. This
+// should be the only place where we calculate leap year stuff.
+//
 // Revision 1.4  1999/05/04 02:55:37  jimg
 // Merge with no-gnu
 //
@@ -42,22 +49,28 @@
 // Created
 //
 
+#include "config_ff.h"
+
+static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.5 2000/08/31 22:16:55 jimg Exp $"};
+
 #include <assert.h>
-
-#include "config_dap.h"
-
-static char not_used rcsid[]={"$Id: date_proc.cc,v 1.4 1999/05/04 02:55:37 jimg Exp $"};
 
 // You have to add one to days[1] if the year is a leap year. Since the month
 // number in a Gregorian date is ones-based, fill element zero below to
 // avoid gratuitous subtractions of the index value. Note that the fill
 // value is never used. 9/4/98 jhrg
-static int days_arr[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+static int days_arr[13]= {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-static inline int
+int
 is_leap(int year) 
 {
-    return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+  return !( (year % 4) && (! (year % 100) || (year % 400) ) );
+}
+
+double
+days_in_year(int year) 
+{
+    return is_leap(year) ? 366 : 365;
 }
 
 static inline int

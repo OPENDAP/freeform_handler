@@ -4,55 +4,52 @@
 //
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
+//      dan             Daniel Holloway (dholloway@gso.uri.edu)
 
-// Implementation of the DODS_Date_Factory class
+// Implementation of the DODS_EndDate_Factory class
 
-// $Log: DODS_Date_Factory.cc,v $
-// Revision 1.3  2000/08/31 22:16:53  jimg
+// $Log: DODS_EndDate_Factory.cc,v $
+// Revision 1.2  2000/08/31 22:16:53  jimg
 // Merged with 3.1.7
 //
-// Revision 1.2.8.1  2000/08/03 20:18:57  jimg
+// Revision 1.1.2.2  2000/08/03 20:18:57  jimg
 // Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
 // neither should be included in a header file).
 // Changed code that calculated leap year information so that it uses the
 // functions in date_proc.c/h.
 //
-// Revision 1.2  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
+// Revision 1.1.2.1  2000/05/01 21:25:45  dan
+// New server-side function to support date-range usage in time fields.
 //
-// Revision 1.1.10.1  1999/05/01 04:50:20  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.1  1999/01/22 20:44:34  jimg
-// Added
 //
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = "$Id: DODS_Date_Factory.cc,v 1.3 2000/08/31 22:16:53 jimg Exp $";
+static char rcsid[] not_used = "$Id: DODS_EndDate_Factory.cc,v 1.2 2000/08/31 22:16:53 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <stdlib.h>
+
 #include <string>
 
 #include "AttrTable.h"
 #include "Error.h"
 
-#include "DODS_Date_Factory.h"
+#include "DODS_EndDate_Factory.h"
 
-DODS_Date_Factory::DODS_Date_Factory(DDS &dds, DAS &das)
+DODS_EndDate_Factory::DODS_EndDate_Factory(DDS &dds, DAS &das)
 {
     // Read the names of the variables which encode year, month and
     // day from the DAS. These are contained in the DODS_Date attribute
     // container. 
     
-    AttrTable *at = das.get_table("DODS_Date");
+    AttrTable *at = das.get_table("DODS_EndDate");
     if (!at)
 	throw Error(unknown_error,
-"DODS_Date_Factory requires that the DODS_Date attribute be present.");
+"DODS_EndDate_Factory requires that the DODS_EndDate attribute be present.");
 
     string year_name = at->get_attr("year_variable");
     string year_base = at->get_attr("year_base");
@@ -68,7 +65,7 @@ DODS_Date_Factory::DODS_Date_Factory(DDS &dds, DAS &das)
 	_format = yd;
     else
 	throw Error(unknown_error,
-"DODS_Date_Factory requires that one, and only one, of the attributes\n\
+"DODS_EndDate_Factory requires that one, and only one, of the attributes\n\
 day_variable or year_day_variable be present.");
 
     // Extract year_base if its present, else set year base to zero.
@@ -89,18 +86,18 @@ day_variable or year_day_variable be present.");
 
     _year = dds.var(year_name);
     if (_year->type() != dods_int32_c)
-	throw Error(unknown_error, "DODS_Date_Factory: The variable used for the year must be an integer.");
+	throw Error(unknown_error, "DODS_EndDate_Factory: The variable used for the year must be an integer.");
 
     switch (_format) {
       case ymd: {
 	  _month = dds.var(month_name);
 	  if (_month->type() != dods_int32_c)
 	      throw Error(unknown_error, 
-"DODS_Date_Factory: The variable used for the month must be an integer.");
+"DODS_EndDate_Factory: The variable used for the month must be an integer.");
 	  _day = dds.var(day_name);
 	  if (_day->type() != dods_int32_c)
 	      throw Error(unknown_error, 
-"DODS_Date_Factory: The variable used for days must be an integer.");
+"DODS_EndDate_Factory: The variable used for days must be an integer.");
 	  _year_day = 0;
 	  break;
       }
@@ -111,19 +108,19 @@ day_variable or year_day_variable be present.");
 	  _year_day = dds.var(year_day_name);
 	  if (_year_day->type() != dods_int32_c)
 	      throw Error(unknown_error, 
-"DODS_Date_Factory: The variable used for the year-day must be an integer.");
+"DODS_EndDate_Factory: The variable used for the year-day must be an integer.");
 	  break;
       }
 
       default:
 	throw Error(unknown_error,
-"DODS_Date_Factory: Not able to figure out the date format.");
+"DODS_EndDate_Factory: Not able to figure out the date format.");
 	break;
     }
 }
 
 DODS_Date
-DODS_Date_Factory::get()
+DODS_EndDate_Factory::get()
 {
     int year;
     int *year_p = &year;
@@ -154,6 +151,17 @@ DODS_Date_Factory::get()
 
       default:
 	throw Error(unknown_error, 
-"DODS_Date_Factory: Unknown date format, should never get here!");
+"DODS_EndDate_Factory: Unknown date format, should never get here!");
     }
 }
+
+
+
+
+
+
+
+
+
+
+

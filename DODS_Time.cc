@@ -5,52 +5,10 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-//
 // Implementation of the DODS Time class
+#include "config_ff.h"
 
-// $Log: DODS_Time.cc,v $
-// Revision 1.7  2000/08/31 02:53:18  dan
-// Modified DODS_Time::set(time_str) to handle hours only
-// time strings.  This is part of ISO8601 time specifications
-// and how JPL stores their daily 9KM Pathfinder archives.
-//
-// Revision 1.6  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.5.2.2  1999/06/07 17:33:06  edavis
-// Changed 'data()' to 'c_str()'.
-//
-// Revision 1.5.2.1  1999/06/01 15:38:06  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.5  1999/05/27 17:02:22  jimg
-// Merge with alpha-3-0-0
-//
-// Revision 1.4.2.1  1999/05/20 21:38:08  edavis
-// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
-//
-// Revision 1.4  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.3.8.1  1999/05/01 04:40:28  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.3  1999/01/05 00:35:55  jimg
-// Removed string class; replaced with the GNU String class. It seems those
-// don't mix well.
-// Switched to simpler method names.
-//
-// Revision 1.2  1998/12/30 06:38:26  jimg
-// Define TEST to use this without the dap++ library (e.g., when testing
-// DODS_Date_Time).
-//
-// Revision 1.1  1998/12/28 19:07:33  jimg
-// Initial version of the DODS_Time object
-//
-
-#include "config_dap.h"
-
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.7 2000/08/31 02:53:18 dan Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.8 2000/08/31 22:16:54 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -332,3 +290,54 @@ DODS_Time::get(bool gmt) const
 
     return time_str;
 }
+
+// $Log: DODS_Time.cc,v $
+// Revision 1.8  2000/08/31 22:16:54  jimg
+// Merged with 3.1.7
+//
+// Revision 1.6.2.2  2000/08/31 21:31:43  jimg
+// Merged changes from the trunk (rev 1.7).
+//
+// Revision 1.7  2000/08/31 02:53:18  dan
+// Modified DODS_Time::set(time_str) to handle hours only
+// time strings.  This is part of ISO8601 time specifications
+// and how JPL stores their daily 9KM Pathfinder archives.
+//
+// Revision 1.6.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
+// Revision 1.6  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.5.2.2  1999/06/07 17:33:06  edavis
+// Changed 'data()' to 'c_str()'.
+//
+// Revision 1.5.2.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.5  1999/05/27 17:02:22  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.4.2.1  1999/05/20 21:38:08  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
+// Revision 1.4  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.8.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.3  1999/01/05 00:35:55  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+//
+// Revision 1.2  1998/12/30 06:38:26  jimg
+// Define TEST to use this without the dap++ library (e.g., when testing
+// DODS_Date_Time).
+//
+// Revision 1.1  1998/12/28 19:07:33  jimg
+// Initial version of the DODS_Time object

@@ -8,6 +8,15 @@
 // Implementation of the DODS_Date_Time_Factory class
 
 // $Log: DODS_Date_Time_Factory.cc,v $
+// Revision 1.3  2000/08/31 22:16:53  jimg
+// Merged with 3.1.7
+//
+// Revision 1.2.8.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
 // Revision 1.2  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -18,9 +27,9 @@
 // Added
 //
 
-#include "config_dap.h"
+#include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time_Factory.cc,v 1.2 1999/05/04 02:55:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time_Factory.cc,v 1.3 2000/08/31 22:16:53 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation

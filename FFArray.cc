@@ -11,6 +11,21 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.11  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.10.2.2  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
+// Revision 1.10.2.1  1999/08/28 01:18:53  jimg
+// Changed the extract_array declaration from `template <class t> bool
+// extract_array<T>(...)' to template <class t> bool extract_array(...).
+// I.E.: I removed the second <T> which was allowed by gcc 2.8.1 but was, in
+// fact, not legal C++.
+//
 // Revision 1.10  1999/07/22 21:28:09  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -49,7 +64,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.10 1999/07/22 21:28:09 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.11 2000/08/31 22:16:55 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -64,7 +79,7 @@ static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.10 1999/07/22 21:28:09 jimg 
 #include <assert.h>
 #include <string>
 
-#include "config_dap.h"
+#include "dods-datatypes.h"
 
 #include "FFArray.h"
 #include "util_ff.h"
@@ -114,12 +129,12 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 	if(start+stop+stride == 0)
 	    return -1;
 	
-	dim_nms[id] = dimname;
+	dim_nms[id]= dimname;
 	//	(void) strcpy(dim_nms[id], dimname.c_str());
 	
-	cor[id] = start;
-	step[id] = stride;
-	edg[id] = ((stop - start)/stride) + 1; // count of elements
+	cor[id]= start;
+	step[id]= stride;
+	edg[id]= ((stop - start)/stride) + 1; // count of elements
 	
 	nels *= edg[id];      // total number of values for variable
 	
@@ -149,9 +164,9 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
       if(start+stop+stride == 0)
 	return -1;
 
-      cor[id] = start;
-      step[id] = stride;
-      edg[id] = ((stop - start)/stride) + 1; // count of elements
+      cor[id]= start;
+      step[id]= stride;
+      edg[id]= ((stop - start)/stride) + 1; // count of elements
       nels *= edg[id];      // total number of values for variable
       if (stride != 1)
 	*has_stride = true;
@@ -220,7 +235,7 @@ seq2vects(T *t, FFArray &array)
     int i; Pix p;
     
     for (p = array.first_dim(), i = 0; p; array.next_dim(p), ++i)
-      dimsz[i] = array.dimension_size(p);
+      dimsz[i]= array.dimension_size(p);
     
     hyper_get(t_hs, t, array.var()->width(), ndim, 0, dimsz, start, edge);
     

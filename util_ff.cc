@@ -9,6 +9,9 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.15  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
 // Revision 1.14  2000/04/20 16:52:27  jimg
 // Merged with release-3-1-4 code.
 //
@@ -21,6 +24,7 @@
 // for the DODS type 'byte'.  This is consistent with the
 // current behavior of dods_byte but will cause FreeForm
 // datasets using the 'int8' datatype to fail.
+//
 // Revision 1.12.8.4  1999/08/28 06:35:49  jimg
 // Added debug.h include
 //
@@ -96,7 +100,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.14 2000/04/20 16:52:27 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.15 2000/08/31 22:16:55 jimg Exp $"};
 
 #include <unistd.h>
 

@@ -9,6 +9,15 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.9  2000/08/31 22:16:53  jimg
+// Merged with 3.1.7
+//
+// Revision 1.8.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
 // Revision 1.8  1999/07/22 21:28:08  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -45,9 +54,9 @@
 // Initial version of the DODS_Date object
 //
 
-#include "config_dap.h"
+#include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.8 1999/07/22 21:28:08 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.9 2000/08/31 22:16:53 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -60,6 +69,7 @@ static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.8 1999/07/22 21:28:08 jimg 
 #include <string>
 
 #include "DODS_Date.h"
+#include "date_proc.h"
 #include "debug.h" 
 
 // The Error class is defined in the core software. For testing we don't need
@@ -93,12 +103,6 @@ extract_argument(BaseType *arg)
 #else
     return "";
 #endif
-}
-
-static inline double
-days_in_year(int year) 
-{
-    return (year % 4) && !(year % 100) && (year % 400) ? 366 : 365;
 }
 
 bool

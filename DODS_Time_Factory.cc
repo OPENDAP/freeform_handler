@@ -8,6 +8,15 @@
 // Implementation of the DODS_Time_Factory class
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.6  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.5.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
 // Revision 1.5  1999/07/22 21:28:09  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -33,15 +42,15 @@
 // Initial version of the DODS_Time factory object. This is a test implementation.
 //
 
-#include <string>
+#include "config_ff.h"
 
-#include "config_dap.h"
-
-static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.5 1999/07/22 21:28:09 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.6 2000/08/31 22:16:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
+
+#include <string>
 
 #include "AttrTable.h"
 #include "Error.h"

@@ -9,6 +9,12 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.13  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.12.2.1  2000/05/01 21:35:05  dan
+// Added modules for date-range server side functions
+//
 // Revision 1.12  1999/07/22 21:28:09  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -97,10 +103,16 @@
 #include "date_proc.h"
 #include "DODS_Date.h"
 #include "DODS_Date_Factory.h"
+#include "DODS_StartDate_Factory.h"
+#include "DODS_EndDate_Factory.h"
 #include "DODS_Time.h"
 #include "DODS_Time_Factory.h"
+#include "DODS_StartTime_Factory.h"
+#include "DODS_EndTime_Factory.h"
 #include "DODS_Date_Time.h"
 #include "DODS_Date_Time_Factory.h"
+#include "DODS_StartDate_Time_Factory.h"
+#include "DODS_EndDate_Time_Factory.h"
 #if 0
 #include "DODS_Decimal_Year.h"
 #include "DODS_Decimal_Year_Factory.h"
@@ -162,6 +174,38 @@ comparison(int argc, BaseType *argv[], DDS &dds)
 	return (t1 == current);
 }
 
+/** Compare an instance of T read from the dataset with the strings in one or
+    two DODS Str variables. The Strs are passed into the function using
+    BaseType pointers since that is how the constraint expression evaluator
+    passes arguments to functions.
+
+    @param argc The number of elements in argv[].
+    @param argv[] An array of arguments.
+    @param dds The DDS for the dataset.
+    @return If one argument is given, return true if the value read from the
+    dataset matches the argument value. If two arguments are given, return
+    true if the value read from the dataset falls within (inclusive) of the
+    two arguments given. */
+
+template<class T1, class T1_Factory, class T2, class T2_Factory>
+bool
+range_comparison(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 2)
+	throw Error(malformed_expr,
+		    "Wrong number of arguments to a constraint expression function.");
+
+    T1 t1(argv[0]);
+    T2 t2(argv[1]);
+
+    T1 current_start = get_instance<T1, T1_Factory>(dds);
+    T2 current_end = get_instance<T2, T2_Factory>(dds);
+
+    return (((current_start >= t1) && (current_start <= t2)) ||
+	    ((current_end >= t1) && (current_end <= t2)) ||
+	    ((current_start <= t1) && ( current_end >= t2)));
+}
+
 /** Load a new Str variable into the DDS. If position is given, then insert
     the new Str variable into that Structure or Sequence. If position is
     given and is not a Structure or Sequence, throw an exception.
@@ -219,9 +263,39 @@ func_date(int argc, BaseType *argv[], DDS &dds)
 }
 
 bool
+func_startdate(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Date, DODS_StartDate_Factory>(argc, argv, dds);
+}
+
+bool
+func_enddate(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Date, DODS_EndDate_Factory>(argc, argv, dds);
+}
+
+bool
+func_date_range(int argc, BaseType *argv[], DDS &dds)
+{
+    return range_comparison<DODS_Date, DODS_StartDate_Factory, DODS_Date, DODS_EndDate_Factory>(argc, argv, dds);
+}
+
+bool
 func_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Time, DODS_Time_Factory>(argc, argv, dds);
+}
+
+bool
+func_starttime(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Time, DODS_StartTime_Factory>(argc, argv, dds);
+}
+
+bool
+func_endtime(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Time, DODS_EndTime_Factory>(argc, argv, dds);
 }
 
 // This comparision function should be used for decimal dates. 5/29/99 jhrg
@@ -230,6 +304,18 @@ bool
 func_date_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date_Time, DODS_Date_Time_Factory>(argc, argv, dds);
+}
+
+bool
+func_startdate_time(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Date_Time, DODS_StartDate_Time_Factory>(argc, argv, dds);
+}
+
+bool
+func_enddate_time(int argc, BaseType *argv[], DDS &dds)
+{
+    return comparison<DODS_Date_Time, DODS_EndDate_Time_Factory>(argc, argv, dds);
 }
 
 #if 0
@@ -497,3 +583,330 @@ Expected zero or one arguments.");
 
     dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
 }
+
+
+/*************************** Decimal/Year functions *************************/
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
+
+bool
+sel_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date_Time current 
+	= get_instance<DODS_Date_Time, DODS_StartDate_Time_Factory>(dds);
+
+    // Stuff the yyyy/ddd string into DODS_JDate.
+    Str *dods_decimal_year = (Str*)dds.var("DODS_StartDecimal_Year");
+    string s = current.get(decimal);
+    dods_decimal_year->val2buf(&s);
+
+    return true;
+}
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
+
+void
+proj_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+"Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_StartDecimal_Year", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_startdecimal_year, 0); // 0 == no BaseType args
+}
+
+/*************************** Decimal/Year functions *************************/
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
+
+bool
+sel_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date_Time current 
+	= get_instance<DODS_Date_Time, DODS_EndDate_Time_Factory>(dds);
+
+    // Stuff the yyyy/ddd string into DODS_JDate.
+    Str *dods_decimal_year = (Str*)dds.var("DODS_EndDecimal_Year");
+    string s = current.get(decimal);
+    dods_decimal_year->val2buf(&s);
+
+    return true;
+}
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
+
+void
+proj_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+"Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_EndDecimal_Year", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_enddecimal_year, 0); // 0 == no BaseType args
+}
+
+/************************ DODS_StartDate functions *************************/
+
+bool
+sel_dods_startdate(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date current = get_instance<DODS_Date, DODS_StartDate_Factory>(dds);
+
+    // Stuff the yyyy/ddd string into DODS_StartDate.
+    Str *dods_date = (Str*)dds.var("DODS_StartDate");
+    // Calling the regular form of DODS_Date::get() returns the data in y/m/d
+    // format. 5/27/99 jhrg
+    string s = current.get().c_str();
+    dods_date->val2buf(&s);
+
+    return true;
+}
+
+void
+proj_dods_startdate(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    new_string_variable("DODS_StartDate", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_startdate, 0); // 0 == no BaseType args
+}
+
+/************************ DODS_StartTime functions *************************/
+
+bool
+sel_dods_starttime(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Time current = get_instance<DODS_Time, DODS_StartTime_Factory>(dds);
+
+    // Stuff the "hh:mm:ss" string into `DODS_Time'
+    Str *dods_time = (Str*)dds.var("DODS_StartTime");
+    string s = current.get().c_str();
+    dods_time->val2buf(&s);
+
+    return true;
+}
+
+void
+proj_dods_starttime(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_StartTime", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_starttime, 0); // 0 == no BaseType args
+}
+
+/*************************** StartDate/Time functions *************************/
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
+
+bool
+sel_dods_startdate_time(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date_Time current 
+	= get_instance<DODS_Date_Time, DODS_StartDate_Time_Factory>(dds);
+
+    Str *dods_date_time = (Str*)dds.var("DODS_StartDate_Time");
+    string s = current.get().c_str();
+    dods_date_time->val2buf(&s);
+
+    return true;
+}
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
+
+void
+proj_dods_startdate_time(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+"Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_StartDate_Time", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_startdate_time, 0); // 0 == no BaseType args
+}
+
+/************************ DODS_EndDate functions *************************/
+
+bool
+sel_dods_enddate(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date current = get_instance<DODS_Date, DODS_EndDate_Factory>(dds);
+
+    // Stuff the yyyy/ddd string into DODS_EndDate.
+    Str *dods_date = (Str*)dds.var("DODS_EndDate");
+    // Calling the regular form of DODS_Date::get() returns the data in y/m/d
+    // format. 5/27/99 jhrg
+    string s = current.get().c_str();
+    dods_date->val2buf(&s);
+
+    return true;
+}
+
+void
+proj_dods_enddate(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    new_string_variable("DODS_EndDate", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_enddate, 0); // 0 == no BaseType args
+}
+
+/************************ DODS_EndTime functions *************************/
+
+bool
+sel_dods_endtime(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Time current = get_instance<DODS_Time, DODS_EndTime_Factory>(dds);
+
+    // Stuff the "hh:mm:ss" string into `DODS_Time'
+    Str *dods_time = (Str*)dds.var("DODS_EndTime");
+    string s = current.get().c_str();
+    dods_time->val2buf(&s);
+
+    return true;
+}
+
+void
+proj_dods_endtime(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_EndTime", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_endtime, 0); // 0 == no BaseType args
+}
+
+/*************************** EndDate/Time functions *************************/
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
+
+bool
+sel_dods_enddate_time(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date_Time current 
+	= get_instance<DODS_Date_Time, DODS_EndDate_Time_Factory>(dds);
+
+    Str *dods_date_time = (Str*)dds.var("DODS_EndDate_Time");
+    string s = current.get().c_str();
+    dods_date_time->val2buf(&s);
+
+    return true;
+}
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
+
+void
+proj_dods_enddate_time(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+"Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_EndDate_Time", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_enddate_time, 0); // 0 == no BaseType args
+}
+
+
+
+

@@ -9,6 +9,15 @@
 // Implementation of the DODS Decimal_Year class
 
 // $Log: DODS_Decimal_Year.cc,v $
+// Revision 1.3  2000/08/31 22:16:53  jimg
+// Merged with 3.1.7
+//
+// Revision 1.2.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
 // Revision 1.2  1999/07/22 21:28:09  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -25,9 +34,9 @@
 // setting/getting fractional decimal_year date values.
 //
 
-#include "config_dap.h"
+#include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.2 1999/07/22 21:28:09 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.3 2000/08/31 22:16:53 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -41,6 +50,7 @@ static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.2 1999/07/22 21:28:
 
 #include "Error.h"
 #include "DODS_Decimal_Year.h"
+#include "date_proc.h"
 #include "debug.h" 
 
 #define seconds_per_day 86400.0
@@ -142,8 +152,11 @@ DODS_Decimal_Year::set(string dec_year)
     i_year = d_year * 1;
     double year_fraction = d_year - i_year;
 
+    days_in_year = days_in_year(i_year);
+#if 0
     if ( (i_year % 4 == 0) && ((i_year % 100 != 0) || (i_year % 400 == 0)) ) days_in_year = 366;
     else days_in_year = 365;
+#endif
 
     secs_in_year = days_in_year * seconds_per_day;
 
