@@ -7,6 +7,11 @@
 
 /*
  * $Log: ff_read.c,v $
+ * Revision 1.5  1998/09/08 19:19:12  jimg
+ * Changed the error reporting scheme a bit. This should actually be sending
+ * back Error objects, but that will require some doing. Maybe there is a
+ * better way to decode FF's error messages?
+ *
  * Revision 1.4  1998/08/12 21:21:13  jimg
  * Massive changes from Reza. Compatible with the new FFND library
  *
@@ -19,7 +24,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.4 1998/08/12 21:21:13 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.5 1998/09/08 19:19:12 jimg Exp $"};
 
 #include <freeform.h>
 
@@ -36,7 +41,6 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
   std_args = ff_create_std_args();
   if (!std_args)
     {
-      fprintf(stderr, "Insufficient memory -- free more memory and try again");
       error = ERR_MEM_LACK;
       goto main_exit;
     }
@@ -109,7 +113,14 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
  main_exit:
   
   if (error || err_state())
-    fprintf(stderr, "Insufficient memory -- free more memory and try again");
+      switch (error) {
+	case ERR_MEM_LACK:
+	  fprintf(stderr, "Insufficient memory!");
+	  break;
+	default:
+	  fprintf(stderr, "Unknown FreeForm error!");
+	  break;
+      }
   
   if (std_args)
     ff_destroy_std_args(std_args);
