@@ -40,6 +40,9 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.6  1998/08/14 18:26:33  reza
+// Removed embedded double quotes in attributes.
+//
 // Revision 1.5  1998/08/13 20:23:45  jimg
 // Removed the attribute about file info.
 //
@@ -56,7 +59,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.5 1998/08/13 20:23:45 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.6 1998/08/14 18:26:33 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,16 +122,16 @@ read_attributes(const char *filename, AttrTable *at, String *err_msg)
     cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
     return false;
   }
-  
-  at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
-  // at->append_attr("Title", "STRING", dbin->title);
 
-  // Add the file information back once we have code to process the string.
-  // It contains embedded double quotes that confuse the DAS parser. 8/13/98
-  // jhrg.
-#if 0
-  at->append_attr("file_information", "STRING", bufsize->buffer);
-#endif
+  at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
+
+  //fix the format of the info. string
+  String FmtInfo = (String)bufsize->buffer;
+  FmtInfo.gsub("\"","`"); 
+  FmtInfo.gsub("\n"," ");
+  FmtInfo.prepend("\"");
+  FmtInfo += "\"";
+  at->append_attr("Native_file", "STRING",(const char *)FmtInfo);
 
   return true;
 }
