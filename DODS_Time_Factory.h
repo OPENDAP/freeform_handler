@@ -8,12 +8,16 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Time_Factory.h,v $
+// Revision 1.3  1999/01/08 22:08:19  jimg
+// Fixed doc++ comments.
+//
 // Revision 1.2  1999/01/05 00:42:42  jimg
 // Switched to simpler method names.
 // Added _gmt field.
 //
 // Revision 1.1  1998/12/28 19:08:05  jimg
-// Initial version of the DODS_Time factory object. This is a test implementation.
+// Initial version of the DODS_Time factory object. This is a test
+// implementation. 
 //
 
 #ifndef _dods_time_factory_h
@@ -29,9 +33,9 @@
 #include "BaseType.h"
 
 /** Read times from datasets based on text configuration values. Times are
-    returned using DODS_Time objects.
+    returned using DODS\_Time objects.
 
-    @see DODS\_Time
+    @see DODS_Time
     @author James Gallagher */
 
 class DODS_Time_Factory {
@@ -49,22 +53,25 @@ public:
 	@name Constructors */
 
     //@{
-    /** Read the configuration information and decide how to build DODS_Time
-	objects. The DODS_Time_Factory mfunc get\_time() will return
-	DODS\_Time objects.
+    /** Read the configuration information and decide how to build DODS\_Time
+	objects. The DODS\_Time\_Factory member function #get_time()# will
+	return DODS\_Time objects.
 
-	@see get\_time()
+	@see get_time()
 	@param dds The DDS of the dataset from which times are to be read.
 	@param das The DAS of the dataset from which times are to be read. */
     
     DODS_Time_Factory(DDS &dds, DAS &das);
     //@}
 
+    /** @name Access */
+
+    //@{
     /** Read a time value from a dataset.
 
-	@return The DODS_Time object associated with the time. */
-
+	@return The DODS\_Time object associated with the time. */
     DODS_Time get();
+    //@}
 };
 
 #endif // _dods_time_factory_h 
