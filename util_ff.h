@@ -4,12 +4,14 @@
 //
 // jhrg 4/2/96
 
-// $Id: util_ff.h,v 1.4 1998/08/12 21:21:19 jimg Exp $
+// $Id: util_ff.h,v 1.5 1998/08/31 04:06:16 reza Exp $
 
 #ifndef _util_ff_h_
 #define _util_ff_h_
 
 #include "FreeForm.h"
+
+#define MaxStr 100
 
 const String ff_types(const String &dods_type);
 int ff_prec(const String &dods_type);
@@ -31,6 +33,9 @@ const String find_ancillary_file(const String &dataset,
 
 int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
 
+bool file_exist(const char * filename);
+
 extern "C" long read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer, unsigned long size);
+
 
 #endif // _util_ff_h_

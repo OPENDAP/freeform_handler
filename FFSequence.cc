@@ -10,6 +10,12 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.8  1998/08/31 04:06:03  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.7  1998/08/18 16:58:23  reza
 // Files with headers are now handled correctly
 //
@@ -45,6 +51,9 @@ extern long BufPtr;
 extern char *BufVal;
 extern long BufSiz;
 
+int StrLength = 0; // Sets string length befor reading it
+extern int StrLens[MaxStr]; // List of string length in this sequence 
+
 Sequence *
 NewSequence(const String &n)
 {
@@ -79,13 +88,16 @@ Records(const String &filename)
     PROCESS_INFO_PTR  pinfo = NULL;
     static char Msgt[255];
 
+    char * FileName = new char [filename.length()+1];
+    (void) strcpy(FileName, (const char *)filename);
+
     SetUps = ff_create_std_args();
     if (!SetUps)
 	return -1;
     
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
-    SetUps->input_file = (char *)filename; // This could be a bug 8/13/98 jhrg
+    SetUps->input_file = FileName; 
     String iff = find_ancillary_file(filename);
     char *if_f = new char[iff.length() + 1];
     strcpy(if_f, iff);
@@ -117,6 +129,8 @@ bool
 FFSequence::read(const String &dataset, int &error)
 {
 
+  int StrCnt = 0;
+
     if (read_p())  // Nothing to do
       return false;
 
@@ -133,12 +147,20 @@ FFSequence::read(const String &dataset, int &error)
 	int stbyte = 1;
 
 	str << "binary_output_data \"DODS binary output data\"" << endl;
+	StrCnt = 0;
 	for(Pix p = first_var(); p; next_var(p)) {
+	  
+	  if(var(p)->type() == dods_str_c){
+	    endbyte +=StrLens[StrCnt];
+	    StrCnt++;
+	  }
+	  else
 	    endbyte += var(p)->width();
-	    str << var(p)->name() << " " << stbyte << " " << endbyte 
-		<< " " << ff_types(var(p)->type_name()) 
-		<< " " << ff_prec(var(p)->type_name()) << endl;
-	    stbyte = endbyte + 1;
+	  
+	  str << var(p)->name() << " " << stbyte << " " << endbyte 
+	      << " " << ff_types(var(p)->type_name()) 
+	      << " " << ff_prec(var(p)->type_name()) << endl;
+	  stbyte = endbyte + 1;
 	}
 
 #ifdef TEST 
@@ -173,12 +195,16 @@ FFSequence::read(const String &dataset, int &error)
 	delete[] o_fmt;
 	delete[] if_fmt;
     }
-
+    StrCnt = 0;
     for (Pix p = first_var(); p; next_var(p)) {
+      if(var(p)->type()== dods_str_c){
+	StrLength = StrLens[StrCnt];
+	StrCnt++;
+      }
          var(p)->read(dataset, error);
 	 if (error)
 	     return false;
     }
- 
+
     return true;
 }

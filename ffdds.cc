@@ -15,6 +15,12 @@
 // ReZa 6/20/97
 
 // $Log: ffdds.cc,v $
+// Revision 1.7  1998/08/31 04:06:14  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.6  1998/08/18 16:58:25  reza
 // Files with headers are now handled correctly
 //
@@ -32,7 +38,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.6 1998/08/18 16:58:25 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.7 1998/08/31 04:06:14 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,6 +58,8 @@ static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.6 1998/08/18 16:58:25 reza E
 #include "FreeForm.h"
 #include "util_ff.h"
 
+int StrLens[MaxStr]; // List of string lengths
+
 // Used by ErrMsgT
 static char Msgt[255];
 
@@ -61,6 +69,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
     int error = 0;
     int i = 0;
     int num_names = 0;
+    int StrNum = 0;
     char **var_names_vector = NULL;
     DATA_BIN_PTR dbin = NULL;
     FF_STD_ARGS_PTR SetUps = NULL;  
@@ -72,6 +81,13 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
     bool is_array = true;
     Array *ar = NULL;
     Sequence *seq = NULL;
+
+    if(!file_exist(filename)) {
+	sprintf(Msgt, "ff_dds: Could not open %s", filename);
+	ErrMsgT(Msgt);  
+	cat((String)"\"", (String)Msgt, (String)" \"", *(err_msg));
+	return false;
+    }
 
     // Set dataset name
     dds_table.set_dataset_name(name_path(filename));
@@ -173,11 +189,6 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    var = ff_find_variable(cp, iformat);	
 	}
        
-
-
-
-
-
 	if(num_dim_names == 0) {
 	    if(newseq) {
 		newseq = false;
@@ -195,11 +206,13 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	BaseType *bt = NULL;
 	switch (FFV_DATA_TYPE(var)) {
 	  case FFV_TEXT:
-	    bt = NewByte(cp);
+	    StrLens[StrNum]=var->end_pos - var->start_pos + 1;
+	    StrNum++;	    
+	    bt = NewStr(cp);
 	    break;
 	  
 	  case FFV_INT8:
-	    bt = NewInt32(cp);
+	    bt = NewByte(cp);
 	    break;
 	  
 	  case FFV_UINT8:
@@ -239,7 +252,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    break;
 	  
 	  case FFV_ENOTE:
-	    bt = NewStr(cp);
+	    bt = NewFloat64(cp);
 	    break;
 
 	  default:

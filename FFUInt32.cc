@@ -6,6 +6,12 @@
 //      ReZa       Reza Nekovei (reza@intcomm.net)
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.6  1998/08/31 04:06:06  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.5  1998/08/13 20:24:34  jimg
 // Fixed read mfunc semantics
 //
@@ -20,7 +26,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.5 1998/08/13 20:24:34 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.6 1998/08/31 04:06:06 reza Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -57,8 +63,13 @@ FFUInt32::read(const String &dataset, int &error)
 
     if(BufVal){ // data in cache
 	char * ptr = BufVal+BufPtr;
-	val2buf((void *) ptr);
+
+	dods_uint32 align;
+	memcpy((void*)&align, (void *)ptr, width());
+
+	val2buf((void *) &align);
 	set_read_p(true);
+
 	BufPtr += width();    
 	return false;
     }

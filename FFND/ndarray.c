@@ -1,5 +1,3 @@
-
-
 /*
  * NAME:        ndarray.c
  *
@@ -508,7 +506,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 	} else
 	    grp = 0;
 
-	if (dbin) {
+	if (dbin && gran < 1) { /* to fix stride, Reza Aug98 */
 	    char grid_cell_registration[32];
 	    char data_type[32];
 

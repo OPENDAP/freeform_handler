@@ -9,6 +9,12 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.7  1998/08/31 04:06:15  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.6  1998/08/18 16:58:24  reza
 // Files with headers are now handled correctly
 //
@@ -40,7 +46,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.6 1998/08/18 16:58:24 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.7 1998/08/31 04:06:15 reza Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -60,17 +66,17 @@ const String
 ff_types(const String &dods_type)
 {
     if (dods_type == "Byte")
-	return "unsigned char";
+	return "int8";
     else if (dods_type == "Int32")
 	return "int32";
     else if (dods_type == "UInt32")
 	return "uint32";
     else if (dods_type == "Float64")
 	return "float64";
-    else if (dods_type == "Str")
-	return "char";
+    else if (dods_type == "String")
+	return "text";
     else if (dods_type == "Url")
-	return "char";
+	return "text";
     else {
 	cerr << "ff_types: DODS type " << dods_type
 	     << " does not map to a FreeForm type." << endl;
@@ -95,7 +101,7 @@ ff_prec(const String &dods_type)
 	return 0;
     else if (dods_type == "Float64")
 	return 15;
-    else if (dods_type == "Str")
+    else if (dods_type == "String")
 	return 0;
     else if (dods_type == "Url")
 	return 0;
@@ -135,12 +141,12 @@ makeND_output_format(const String &name, const String &type, const int width,
 
     for (int i=0; i < ndim; i++)
 	str << "[" << "\"" << dname[i] << "\" " << start[i]+1 << " to "
-	    << start[i]+edge[i] <<" by " << stride[i] << " ]";
+	    << start[i]+(edge[i]-1)*stride[i]+1 <<" by " << stride[i] << " ]";
 
     str << " of " << ff_types(type) << " " << ff_prec(type) << endl << "\0";
 
-#ifdef TEST    
-	 cout <<str.str();
+#ifdef TEST   
+    cout <<str.str();
 #endif   
 
     return str.str();
@@ -303,4 +309,16 @@ SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
 	sprintf(Msgt, "Error merging redundent conduits");
 	
     return(error);
+}
+
+bool
+file_exist(const char * filename)
+{
+  FILE *fp = fopen(filename, "r");
+  if(fp){
+    fclose(fp);
+    return true;
+  }
+  else 
+    return false;
 }

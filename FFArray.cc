@@ -11,6 +11,12 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.6  1998/08/31 04:05:58  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.5  1998/08/13 20:24:20  jimg
 // Fixed read mfunc semantics
 //
@@ -25,7 +31,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.5 1998/08/13 20:24:20 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.6 1998/08/31 04:05:58 reza Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -252,10 +258,12 @@ FFArray::read(const String &dataset, int &error)
     long *edge = new long[ndims];    
     long count = Arr_constraint(start, stride, edge, dname, 
      				&has_stride);    
-#if 0
-    if(!count)
-	printf("constraint returned empty dataset");
-#endif
+
+    if(!count){
+      cerr << "constraint returned empty dataset" << endl;
+      error = 1;
+      return false;
+    }
 
     String output_format =
       makeND_output_format(name(), var()->type_name(), var()->width(), 

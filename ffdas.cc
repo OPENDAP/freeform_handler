@@ -40,6 +40,12 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.7  1998/08/31 04:06:13  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.6  1998/08/14 18:26:33  reza
 // Removed embedded double quotes in attributes.
 //
@@ -59,7 +65,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.6 1998/08/14 18:26:33 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.7 1998/08/31 04:06:13 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,6 +77,8 @@ static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.6 1998/08/14 18:26:33 reza E
 #include "DAS.h"
 #include "FreeForm.h"
 #include "util_ff.h"
+
+int StrLens[MaxStr]; // List of string lengths
 
 // Used by ErrMsgT
 static char Msgt[255];
@@ -87,7 +95,14 @@ read_attributes(const char *filename, AttrTable *at, String *err_msg)
   FF_BUFSIZE_PTR bufsize = NULL;
   DATA_BIN_PTR dbin = NULL;
   FF_STD_ARGS_PTR SetUps = NULL;  
-  
+
+  if(!file_exist(filename)) {
+    sprintf(Msgt, "ff_das: Could not open %s", filename);
+    ErrMsgT(Msgt);  
+    cat((String)"\"", (String)Msgt, (String)" \"", *(err_msg));
+    return false;
+    }
+    
   SetUps = ff_create_std_args();
   if (!SetUps)
     {

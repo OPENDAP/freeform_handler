@@ -11,6 +11,12 @@
 // ReZa 6/18/97
 
 // $Log: FFStr.cc,v $
+// Revision 1.5  1998/08/31 04:06:04  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
 // Revision 1.4  1998/08/12 21:20:58  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -22,17 +28,20 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.4 1998/08/12 21:20:58 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.5 1998/08/31 04:06:04 reza Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <assert.h>
+#include <ctype.h>
+#include <strings.h>
 #include "FFStr.h"
 
-extern long BufPtr;
-extern char * BufVal;
+extern long BufPtr;   // set by read functions
+extern char * BufVal; // set by first call to sequence
+extern int StrLength; // Set by sequence before String read 
 
 // extern long Get_constraint(int num_dim,String constraint,long *cor,long *edge);
 
@@ -61,11 +70,29 @@ FFStr::read(const String &dataset, int &)
 
   if (BufVal){ // Data in cache
     char * ptr = BufVal+BufPtr;
-    String *Nstr = new String((const char *)ptr);
+
+    char *TmpBuf = new char[StrLength+1];
+    int i, j;
+
+    //remove trailing white space
+    for(i=StrLength-1; i>=0; i--)
+      if(!isspace(*(ptr+i)))
+	break;
+
+    //remove leading white space
+    for(j=0; j<i; j++)
+      if(!isspace(*(ptr+j)))
+	break;
+
+    strncpy(TmpBuf, ptr+j,i-j+1);
+    TmpBuf[i-j+1]='\0';
+
+    String *Nstr = new String((const char *)TmpBuf);
+
     val2buf(Nstr);
     set_read_p(true);
 
-    BufPtr += Nstr->length()+1;
+    BufPtr += StrLength;
     return true;
   }
   else 
