@@ -6,6 +6,15 @@ Content-Description: dods_das
 Attributes {
     FF_GLOBAL {
         String Server "DODS FreeFrom based on FFND release 4.*";
-        String Native_file " (ff-test/test9.fmt) ASCII_input_file_header	`ISEE3_header` File ff-test/test9.dat contains 1 header record (241 bytes) Each record contains 11 fields and is 241 characters long.  (ff-test/test9.fmt) ASCII_input_data	`ISEE3` File ff-test/test9.dat contains 20 data records (1520 bytes) Each record contains 6 fields and is 76 characters long. ";
+        Int16 iyr 79;
+        Int16 iday 1;
+        String isc 3;
+        Float64 traj1 1356310000.000000;
+        Float64 traj2 637963000.000000;
+        Float64 traj3 1716290.000000;
+        Float64 traj4 0.000000;
+        Float64 traj5 0.000000;
+        Float64 traj6 0.000000;
+        String text "I,S COORDINATES 800102  2.5                                                     TRAJCOR     AVEDT 800207";
     }
 }

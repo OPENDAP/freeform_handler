@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.9 2000/10/11 19:37:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.10 2001/09/28 23:19:43 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,7 +20,7 @@ static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.9 2000/10/11 19:37:55 jimg 
 
 #include <string> 
 #include <strstream.h>
-#include <iomanip>
+#include <iomanip.h>
 
 #include "BaseType.h"
 #include "DODS_Time.h"
@@ -293,6 +293,13 @@ DODS_Time::get(bool gmt) const
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.10  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.9.2.1  2001/05/23 18:26:31  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
 // Revision 1.9  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.16 2000/04/20 17:25:39 jimg Exp $
+# $Id: Makefile.in,v 1.17 2001/09/28 23:19:43 jimg Exp $
 
 @SET_MAKE@
 
@@ -133,13 +133,13 @@ install: newform readfile chkform $(FF_LIBRARY)
 Makefile: Makefile.in
 	if [ -x ../config.status ]; \
 	then \
-	    ${SHELL} ../config.status; \
+	    (cd .. && ${SHELL} ./config.status;) \
 	else \
-	    ../configure; \
+	    (cd .. && ./configure;) \
 	fi
 
 check: newform readfile
-	cd testsuite; test_newform
+	(cd testsuite && ./test_newform)
 
 test-coverage: clean
 	$(MAKE) $(MFLAGS) CFLAGS="$(CFLAGS) $(TEST_COV_FLAGS)" check

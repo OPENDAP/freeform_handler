@@ -1,5 +1,3 @@
-
-
 // (c) COPYRIGHT URI/MIT 1997-98
 // Please read the full copyright statement in the file COPYRIGHT.  
 //
@@ -14,7 +12,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.13 2000/10/12 18:11:45 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.14 2001/09/28 23:19:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,86 +38,29 @@ static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.13 2000/10/12 18:11:45 jimg E
 
 int StrLens[MaxStr]; // List of string lengths, used by FFSequence. 
 
-// reads the attributes and store their names and values in the attribute
-// table. 
-//
-// Returns: false if an error was detected reading from the freeform format
-// file, true otherwise. 
+// Read header information and populate an AttrTable with the information.
 
-void
-read_attributes(string filename, AttrTable *at) throw(Error)
+static void
+header_to_attributes(AttrTable *at, DATA_BIN_PTR dbin) throw(Error)
 {
-    int error = 0;
-    FF_BUFSIZE_PTR bufsize = NULL;
-    DATA_BIN_PTR dbin = NULL;
-    FF_STD_ARGS_PTR SetUps = NULL;  
-
-    if (!file_exist(filename.c_str())) {
-      string msg = (string)"ff_das: Could not open " + filename.c_str();
-      throw Error(msg);
-    }
-    
-    SetUps = ff_create_std_args();
-    if (!SetUps) {
-      string msg = "ff_das: Insufficient memory";
-      throw Error(msg);
-    }
-    
-    /** set the structure values to create the FreeForm DB**/
-    SetUps->user.is_stdin_redirected = 0;
-
-    SetUps->input_file = new char[filename.length() + 1];
-    strcpy(SetUps->input_file, filename.c_str());
-
-    string iff = find_ancillary_file(filename);
-    SetUps->input_format_file = new char[iff.length() + 1];
-    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
-    SetUps->output_file = NULL;
-
-    char Msgt[255];
-    error = SetDodsDB(SetUps, &dbin, Msgt);
-    if (error && error < ERR_WARNING_ONLY) {
-	db_destroy(dbin);
-	throw Error(Msgt);
-    }
-
-    error = db_ask(dbin,DBASK_FORMAT_SUMMARY,FFF_INPUT, &bufsize);
-    if (error) {
-      string msg = (string)"Cannot get Format Summary. FreeForm error code: ";
-      append_long_to_string((long)error, 10, msg);
-      throw Error(msg);
-    }
-
-    at->append_attr("Server", "STRING", 
-		    "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
-
-    //fix the format of the info. string
-    // I removed this since it makes the DAS much harder to read and I'm not
-    // sure how it is to be used. Clients should not know where on the
-    // server's file system a dataset is located. Of course, there are other
-    // ways to limit access to that information... 10/11/2000 jhrg
-#if 0
-    string fmt_info = bufsize->buffer;
-    while ((pos = fmt_info.find('"')) < fmt_info.size()) 
-	fmt_info.replace(pos, 1, '`');
-    while ((pos = fmt_info.find('\n')) < fmt_info.size()) 
-	fmt_info.replace(pos, 1, ' ');
-    fmt_info = "\"" + fmt_info + "\"";
-    at->append_attr("Native_file", "STRING", fmt_info);
-#endif
-
     PROCESS_INFO_LIST pinfo_list = NULL;
     PROCESS_INFO_PTR hd_pinfo = NULL;
 
     char text[256];
 
-    error = db_ask(dbin, DBASK_PROCESS_INFO, 
-		   FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
+    int error = db_ask(dbin, DBASK_PROCESS_INFO, 
+		       FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
+    // A general error indicates that the dataset does not have a header.
+    // Anything else is bad news. 1/29/2001 jhrg
     if (error) {
-      string msg = (string)"Cannot get Format Summary. FreeForm error code: ";
-      append_long_to_string((long)error, 10, msg);
-      throw Error(msg);
-    }
+	if (error == ERR_GENERAL)
+	    return;
+	else {
+	    string msg = "Cannot get attribute values. FreeForm error code: ";
+	    append_long_to_string((long)error, 10, msg);
+	    throw Error(msg);
+	}
+    }    
 
     pinfo_list = dll_first(pinfo_list);
     hd_pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
@@ -141,7 +82,14 @@ read_attributes(string filename, AttrTable *at) throw(Error)
 	switch (FFV_DATA_TYPE(var)) {
           case FFV_TEXT:
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_TEXT, text);
-	    at->append_attr(var->name, "STRING", text);
+	    // Multiword strings must be quoted.
+	    if (strpbrk(text, " \r\t")) {// Any whitespace?
+		string quoted_text;
+		quoted_text = (string)"\"" + text + "\"";
+		at->append_attr(var->name, "STRING", quoted_text.c_str());
+	    }
+	    else
+		at->append_attr(var->name, "STRING", text);
 	    break;
 
 	  case FFV_INT8:
@@ -230,6 +178,66 @@ read_attributes(string filename, AttrTable *at) throw(Error)
     }
 }
 
+// reads the attributes and store their names and values in the attribute
+// table. 
+//
+// Returns: false if an error was detected reading from the freeform format
+// file, true otherwise. 
+
+void
+read_attributes(string filename, AttrTable *at) throw(Error)
+{
+    int error = 0;
+    FF_BUFSIZE_PTR bufsize = NULL;
+    DATA_BIN_PTR dbin = NULL;
+    FF_STD_ARGS_PTR SetUps = NULL;  
+
+    if (!file_exist(filename.c_str())) {
+      string msg = (string)"ff_das: Could not open file " + 
+	path_to_filename(filename) + ".";
+      throw Error(msg);
+    }
+  
+    SetUps = ff_create_std_args();
+    if (!SetUps) {
+      string msg = "ff_das: Insufficient memory";
+      throw Error(msg);
+    }
+    
+    /** set the structure values to create the FreeForm DB**/
+    SetUps->user.is_stdin_redirected = 0;
+
+    SetUps->input_file = new char[filename.length() + 1];
+    strcpy(SetUps->input_file, filename.c_str());
+
+#ifdef TEST
+    string iff = find_ancillary_file(filename);
+    SetUps->input_format_file = new char[iff.length() + 1];
+    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+#endif
+
+    SetUps->output_file = NULL;
+
+    char Msgt[255];
+    error = SetDodsDB(SetUps, &dbin, Msgt);
+    if (error && error < ERR_WARNING_ONLY) {
+	db_destroy(dbin);
+	throw Error(Msgt);
+    }
+
+    error = db_ask(dbin,DBASK_FORMAT_SUMMARY,FFF_INPUT, &bufsize);
+    if (error) {
+      string msg = (string)"Cannot get Format Summary. FreeForm error code: ";
+      append_long_to_string((long)error, 10, msg);
+      throw Error(msg);
+    }
+
+    at->append_attr("Server", "STRING", 
+		    "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
+
+    header_to_attributes(at, dbin); // throws Error
+}
+
 // Given a reference to an instance of class DAS and a filename that refers
 // to a freefrom file, read the format file and extract the existing
 // attributes and add them to the instance of DAS.
@@ -269,6 +277,27 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: ffdas.cc,v $
+// Revision 1.14  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.13.4.4  2001/09/17 06:41:29  reza
+// Fixed error reporting bugs.
+//
+// Revision 1.13.4.3  2001/05/23 20:24:35  dan
+// Removed calls to find_ancillary_files to locate format
+// descriptor files.  Use the functions in the FreeForm
+// code to perform this function (which happens anyways).
+//
+// Revision 1.13.4.2  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
+// Revision 1.13.4.1  2001/01/30 01:07:43  jimg
+// Factored out the code in read_attributes that extracts attributes from data
+// file headers. I also added error trapping so that files without headers won't
+// crash the server(!). Also, I modified the code which adds the attributes to
+// quote any multiword String attributes (using space, \r and \t as separators).
+//
 // Revision 1.13  2000/10/12 18:11:45  jimg
 // Added more exception stuff. Reworked the get/read_description() functions
 // so they throw Error and InternalErr instead of returning codes.
@@ -278,6 +307,15 @@ main(int argc, char *argv[])
 // Changed the definition of the read method to match the dap library.
 // Added exception handling.
 // Added exceptions to the read methods.
+//
+// Revision 1.11.2.1  1999/08/28 01:25:53  jimg
+// Modified the code which reads header variables and loads them into the DAS
+// in read_attributes(). When the second FF db_ask(...) call returns an error
+// this code should assume that there are no header variables, not that a
+// fatal error was detected. This assumes that the previous db_ask(...) call
+// was successful. Since there are no header variables when the second
+// db_ask(...) call returns an error, make sure not to access the pinfo_list
+// data structure.
 //
 // Revision 1.11  1999/07/22 21:28:10  jimg
 // Merged changes from the release-3-0-2 branch

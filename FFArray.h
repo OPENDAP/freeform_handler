@@ -44,11 +44,24 @@ public:
 };
 
 // $Log: FFArray.h,v $
+// Revision 1.9  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.8.2.1  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
 // Revision 1.8  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.
 // Added exception handling.
 // Added exceptions to the read methods.
+//
+// Revision 1.7.4.1  1999/08/28 01:19:05  jimg
+// Changed the extract_array declaration from `template <class t> bool
+// extract_array<T>(...)' to template <class t> bool extract_array(...).
+// I.E.: I removed the second <T> which was allowed by gcc 2.8.1 but was, in
+// fact, not legal C++.
 //
 // Revision 1.7  1999/05/27 17:02:22  jimg
 // Merge with alpha-3-0-0

@@ -4,6 +4,10 @@
    [open 9/17/98 jhrg]
    [closed ? jhrg]
 
+The FF conventions for file names are not being followed. Given X.Y, Y.fmt
+and Y.das should work.
+[open 8/25/99 jhrg]
+
 Switch DODS_Date, _Time and _Date_Time so that they recognize ISO8601 (see
 http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html).
 [open 1/8/99 jhrg}

@@ -142,6 +142,7 @@ int os_path_cmp_paths(char *s, char *t);
 BOOLEAN os_path_is_native(char *path);
 char *os_path_make_native(char *native_path, char *path);
 void os_path_find_parts(char *path, char **pathname, char **filename, char **fileext);
+void os_path_find_parent(char *path, char **parentdir);
 char *os_path_return_ext(char *pfname);
 char *os_path_return_name(char *pfname);
 char *os_path_return_path(char *pfname);

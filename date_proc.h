@@ -7,7 +7,6 @@
 
 int is_leap(int year);
 double days_in_year(int year);
-
 long julian_day(int year, int month, int day);
 void gregorian_date(double jd, int *year, int *month, int *day, int *hours,
 		    int *minutes, double *sec);
@@ -15,8 +14,20 @@ int month_day_to_days(int year, int month, int day);
 void days_to_month_day(int year, int ddd, int *month, int *day);
 
 int dayofweek(double j);
+int days_in_month(int year, int month);
 
 // $Log: date_proc.h,v $
+// Revision 1.5  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.4.2.2  2001/05/23 20:11:22  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
+// Revision 1.4.2.1  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
 // Revision 1.4  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

@@ -1,4 +1,4 @@
-#!/usr/bin/csh
+#!/bin/csh
 
 # this file calls all the freeform testing batch files for freeform
 #

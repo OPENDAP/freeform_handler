@@ -1,4 +1,3 @@
-
 // (c) COPYRIGHT URI/MIT 1997-99
 // Please read the full copyright statement in the file COPYRIGHT.
 //
@@ -16,7 +15,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.11 2000/10/12 18:11:45 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.12 2001/09/28 23:19:43 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,7 +67,7 @@ read_descriptors(DDS &dds_table, const string &filename) throw (Error)
   Sequence *seq = NULL;
 
   if (!file_exist(filename.c_str())) {
-    string msg = (string)"Could not open " + path_to_filename(filename) 
+    string msg = (string)"ff_dds: Could not open file " + path_to_filename(filename) 
       + ".";
     throw Error(msg);
   }
@@ -88,9 +87,12 @@ read_descriptors(DDS &dds_table, const string &filename) throw (Error)
   SetUps->input_file = new char[filename.length() + 1];
   strcpy(SetUps->input_file, filename.c_str());
 
+#ifdef TEST
   string iff = find_ancillary_file(filename);
   SetUps->input_format_file = new char[iff.length() + 1];
   strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+#endif
+
   SetUps->output_file = NULL;
   
   char Msgt[255];
@@ -317,6 +319,17 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: ffdds.cc,v $
+// Revision 1.12  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.11.4.2  2001/09/17 06:41:29  reza
+// Fixed error reporting bugs.
+//
+// Revision 1.11.4.1  2001/05/23 20:12:34  dan
+// Removed calls to find_ancillary_files to locate format
+// descriptor files.  Use the functions in the FreeForm
+// code to perform this function (which happens anyways).
+//
 // Revision 1.11  2000/10/12 18:11:45  jimg
 // Added more exception stuff. Reworked the get/read_description() functions
 // so they throw Error and InternalErr instead of returning codes.

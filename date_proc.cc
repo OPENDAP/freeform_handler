@@ -5,11 +5,14 @@
 // This code was originally copied from one of the ACM's code libraries and
 // used in the browsed image server. That version was written in C. 
 
+
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.7 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.8 2001/09/28 23:19:43 jimg Exp $"};
 
 #include <assert.h>
+
+#include "Error.h"
 
 // You have to add one to days[1] if the year is a leap year. Since the month
 // number in a Gregorian date is ones-based, fill element zero below to
@@ -22,7 +25,7 @@ static int days_arr[13]= {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 int
 is_leap(int year) 
 {
-  return (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0);
+  return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
 }
 
 /** How many days are in the given Gregorian year?
@@ -36,8 +39,13 @@ days_in_year(int year)
 static inline int
 days(int year, int month)
 {
+    if (!(year > 0) && (month > 0 && month < 13))
+	throw Error(malformed_expr, "Date year or month is bad.");
+
+#if 0
     assert(year > 0);
     assert(month > 0 && month < 13);
+#endif
 
     if (month == 2 && is_leap(year))
 	return 29;
@@ -59,9 +67,16 @@ days(int year, int month)
 long 
 julian_day(int year, int month, int day)
 {
-    assert(year > 0);
-    assert(month > 0 && month < 13);
-    assert(day > 0 && day <= days(year, month));
+    if (!(year > 0))
+	throw Error(malformed_expr, 
+		    "A date's year must be greater the zero.");
+    if (!(month > 0 && month < 13))
+	throw Error(malformed_expr, 
+		    "A date's month must be between zero and thirteen.");
+
+    if (!(day > 0 && day <= days(year, month)))
+	throw Error(malformed_expr, 
+   "A date's day must be between zero and 28-31, depending on the month.");
 
     long jdn;
 
@@ -139,9 +154,16 @@ gregorian_date(double jd, int *year, int *month, int *day, int *hours,
 int
 month_day_to_days(int year, int month, int day)
 {
-    assert(year > 0);
-    assert(month > 0 && month < 13);
-    assert(day > 0 && day <= days(year, month));
+    if (!(year > 0))
+	throw Error(malformed_expr, 
+		    "A date's year must be greater the zero.");
+    if (!(month > 0 && month < 13))
+	throw Error(malformed_expr, 
+		    "A date's month must be between zero and thirteen.");
+
+    if (!(day > 0 && day <= days(year, month)))
+	throw Error(malformed_expr, 
+   "A date's day must be between zero and 28-31, depending on the month.");
 
     int ddd = day;
 
@@ -149,6 +171,46 @@ month_day_to_days(int year, int month, int day)
 	ddd += days(year, month);
 
     return ddd;
+}
+
+// Note this could be implemented using days_arr[] defined at the top of this
+// file. 5/23/2001 jhrg
+int 
+days_in_month(int year, int month)
+{
+  //int daysInYear;
+  int daysInMonth;		// ... might want to remove the temporary
+				// variable and just return the value from
+				// the switch. Although the temp makes
+				// debugging easier. 5/23/2001 jhrg
+
+  switch(month)
+    {
+    case 1:
+    case 3:
+    case 5:
+    case 7:
+    case 8:
+    case 10:
+    case 12: 
+      daysInMonth = 31;
+      break;
+    case 2:
+      //daysInYear = (year % 4) && !(year % 100) && (year % 400) ? 366 : 365;
+      daysInMonth = (is_leap(year)) ? 29 : 28;
+      break;
+    case 4:
+    case 6:
+    case 9:
+    case 11:
+      daysInMonth = 30;
+      break;
+    default:
+      // Added. 5/23/2001 jhrg
+      throw Error("Months must be numbered between 1 and 12 inclusive.");
+      break;
+    }
+  return daysInMonth;
 }
 
 /**
@@ -193,6 +255,24 @@ dayofweek(double j)
 }
 
 // $Log: date_proc.cc,v $
+// Revision 1.8  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.7.2.4  2001/09/19 22:40:06  jimg
+// Added simple error checking for malformed dates. Works sometimes... To do
+// a thorough job will take at least a day.
+//
+// Revision 1.7.2.3  2001/06/01 20:49:22  jimg
+// Added throw for dates with months outside of 1 through 12.
+//
+// Revision 1.7.2.2  2001/05/23 20:10:30  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
+// Revision 1.7.2.1  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
 // Revision 1.7  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.
@@ -201,7 +281,7 @@ dayofweek(double j)
 //
 // Revision 1.6  2000/10/11 17:50:39  jimg
 // Moved the CVS Log to the end of the file.
-// Fixed a bug i the is_leap() function.
+// Fixed a bug in the is_leap() function.
 //
 // Revision 1.5  2000/08/31 22:16:55  jimg
 // Merged with 3.1.7

@@ -2,7 +2,7 @@
 dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.12 2000/10/20 00:08:17 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.13 2001/09/28 23:19:43 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
@@ -13,9 +13,12 @@ AC_PREFIX_DEFAULT("\$(DODS_ROOT)")
 DODS_GET_DODS_ROOT
 DODS_DIRECTORY_VERSION
 
+DODS_SERVER_VERSION=\"ff-dods/$VERSION\"
+AC_DEFINE_UNQUOTED(DODS_SERVER_VERSION, $DODS_SERVER_VERSION)
+
 dnl the command to use to generate dependencies for makefiles
 
-depend=${dods_root}/etc/depend.sh
+depend=${dods_relative}/etc/depend.sh
 AC_SUBST(depend)
 
 dnl flags for the compilers and linkers - set these before locating the
@@ -64,12 +67,10 @@ AC_CHECK_FUNCS(strcspn strerror strspn strstr strtod strtol)
 DODS_CHECK_SIZES
 
 DODS_RX_LIB
-
 DODS_WWW_LIB
 DODS_COMPRESSION_LIB
-dnl DODS_TCL_LIB
-dnl DODS_TK_LIB
-DODS_GUILIBS
+
+DODS_XTRALIBS
 
 DODS_EFENCE
 

@@ -86,11 +86,16 @@ comparison(int argc, BaseType *argv[], DDS &dds)
 	t2.set(argv[1]);
 
     T current = get_instance<T, T_Factory>(dds);
+    bool te;
 
-    if (argc == 2)
-	return (t1 <= current) && (t2 >= current);
-    else
+    if (argc == 2) {
+      te = ((t1 <= current) && (t2 >= current));
+	return ((t1 <= current) && (t2 >= current));
+    }  
+    else {
+      te = (t1 == current);
 	return (t1 == current);
+    }
 }
 
 /** Compare an instance of T read from the dataset with the strings in one or
@@ -236,14 +241,6 @@ func_enddate_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date_Time, DODS_EndDate_Time_Factory>(argc, argv, dds);
 }
-
-#if 0
-bool
-func_decimal_year(int argc, BaseType *argv[], DDS &dds)
-{
-    return comparison<DODS_Decimal_Year, DODS_Decimal_Year_Factory>(argc, argv, dds);
-}
-#endif
 
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
@@ -407,58 +404,6 @@ Expected zero or one arguments.");
     dds.append_clause(sel_dods_date_time, 0); // 0 == no BaseType args
 }
 
-
-
-/*************************** Decimal/Year functions *************************/
-
-#if 0
-
-// NB: I'm not abosoutely sure which version of these we should be using.
-// I'll leave these here just in case my guess is wrong. 7/22/99 jhrg
-
-// This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
-
-bool
-sel_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
-{
-    if (argc != 0)
-	throw Error(malformed_expr,
-		  "Wrong number of arguments to internal selection function.\n\
-Please report this error.");
-  
-    DODS_Decimal_Year current 
-	= get_instance<DODS_Decimal_Year, DODS_Decimal_Year_Factory>(dds);
-
-    // Stuff the yyyy/ddd string into DODS_JDate.
-    Str *dods_decimal_year = (Str*)dds.var("DODS_Decimal_Year");
-    string s = current.get().c_str();
-    dods_decimal_year->val2buf(&s);
-
-    return true;
-}
-
-// A projection function: This adds a new variable to the DDS and arranges
-// for the matching selection function (above) to be called.
-
-void
-proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
-{
-    if (argc < 0 || argc > 1)
-	throw Error(malformed_expr,
-"Wrong number of arguments to projection function.\n\
-Expected zero or one arguments.");
-
-    // Create the new variable
-
-    new_string_variable("DODS_Decimal_Year", dds, (argc == 1) ? argv[0] : 0);
-
-    // Add the selection function to the CE
-
-    dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
-}
-#endif
-
 /*************************** Decimal/Year functions *************************/
 
 // This function is added to the selection part of the CE when the matching
@@ -502,7 +447,6 @@ Expected zero or one arguments.");
 
     dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
 }
-
 
 /*************************** Decimal/Year functions *************************/
 
@@ -827,6 +771,20 @@ Expected zero or one arguments.");
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.15  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.14.2.3  2001/09/19 22:40:25  jimg
+// Removed old code
+//
+// Revision 1.14.2.2  2001/05/23 18:31:52  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
+// Revision 1.14.2.1  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
 // Revision 1.14  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.
@@ -907,4 +865,3 @@ Expected zero or one arguments.");
 //
 // Revision 1.1  1998/09/17 17:44:14  jimg
 // Created
-//

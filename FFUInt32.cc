@@ -7,7 +7,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFUInt32.cc,v 1.9 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFUInt32.cc,v 1.10 2001/09/28 23:19:43 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -57,42 +57,18 @@ FFUInt32::read(const string &dataset)
 	return false;
     }
     else {
-#if 0
-	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, dataset.c_str());
-
-	string o_format = make_output_format(name(), type(), width());
-	char *o_f = new char[o_format.length() + 1];
-	strcpy(o_f, o_format.c_str());
-
-	string i_format_file = find_ancillary_file(dataset);
-	char *if_f = new char[i_format_file.length() + 1];
-	strcpy(if_f, i_format_file.c_str());
-
-	dods_uint32 *i = new dods_uint32[width() + 1];
-	long bytes = read_ff(ds, if_f, o_f, (char *)i, width()+1);
-
-	if (bytes == -1){
-	    error = 1;
-	}
-	else {
-	    set_read_p(true);
-	    val2buf(i);     
-	}
-
-	if (i)
-	    delete(i);
-
-	delete [] ds;
-	delete [] o_f;
-	delete [] if_f;
-#endif
-  
 	return false;
     }
 }
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.10  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.9.2.1  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
 // Revision 1.9  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

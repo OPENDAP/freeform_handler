@@ -1,10 +1,2 @@
-HTTP/1.0 200 OK
-XDODS-Server: ff/*
-Content-type: text/plain
-Content-Description: dods_error
-
-Error {
-    code = 3;
-    message = "The identifier `GSO_AVHR' is not in the dataset.";
-};
-Parse error: No such identifier in dataset.: GSO_AVHR
+\[*\] CGI: DODS server failed for (null): Constraint expression parse error: No such identifier in dataset: GSO_AVHR
+"Constraint expression parse error: No such identifier in dataset: GSO_AVHR"

@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.16 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.17 2001/09/28 23:19:43 jimg Exp $"};
 
 #include <unistd.h>
 
@@ -22,9 +22,11 @@ static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.16 2000/10/11 19:37:56 jimg 
 #include "BaseType.h"
 #include "InternalErr.h"
 #include "dods-limits.h"
+#include "debug.h"
+
 #include "FreeForm.h"
 
-extern "C" int find_format_files(DATA_BIN_PTR, char*, ...);
+extern "C" int dods_find_format_files(DATA_BIN_PTR, char*, const char*, ...);
 
 #define DODS_DATA_PRX "dods-"	// prefix for temp format file names
 
@@ -127,9 +129,10 @@ makeND_output_format(const string &name, Type type, const int width,
 	str << "[" << "\"" << dname[i] << "\" " << start[i]+1 << " to "
 	    << start[i]+(edge[i]-1)*stride[i]+1 <<" by " << stride[i] << " ]";
 
-    str << " of " << ff_types(type) << " " << ff_prec(type) << endl << "\0";
+    str << " of " << ff_types(type) << " " << ff_prec(type) << endl << ends;
 
     string ret = str.str();
+    DBG(cerr << "ND output format: " << ret << endl);
     str.freeze(0);
 	
     return ret;
@@ -295,10 +298,12 @@ find_ancillary_file(const string &dataset, const string &delimiter,
     size_t delim = dataset.find(delimiter);
     string basename = dataset.substr(0, delim);
 
+#if 0
     if (extension != ".fmt")
 	return string(basename + extension);
 
     else {
+#endif
 	// 
 	// Use the FreeForm setdbin:find_format_files() to locate
 	// the input format description file.
@@ -336,7 +341,8 @@ find_ancillary_file(const string &dataset, const string &delimiter,
 	    throw InternalErr(msg);
 	}
       
-	if (find_format_files(dbin, FileName, &formats)) {
+	if (dods_find_format_files(dbin, FileName, extension.c_str(), 
+				   &formats)) {
 	    string FormatFile = formats[0];
 	    free(formats[0]);
 	    return string(FormatFile);
@@ -349,10 +355,19 @@ find_ancillary_file(const string &dataset, const string &delimiter,
 	}
 
 	db_destroy(dbin);
+#if 0
     }
+#endif
 }
 
 // $Log: util_ff.cc,v $
+// Revision 1.17  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.16.2.1  2001/05/23 18:14:53  jimg
+// Merged with changes on the release-3-1 branch. This apparently was not
+// done corrrectly the first time around.
+//
 // Revision 1.16  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

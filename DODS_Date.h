@@ -7,6 +7,42 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
+// $Log: DODS_Date.h,v $
+// Revision 1.8  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.7.2.1  2001/05/23 18:25:49  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
+// Revision 1.6  1999/07/22 21:28:08  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.5.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.5  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.4.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.4  1999/01/08 22:08:18  jimg
+// Fixed doc++ comments.
+//
+// Revision 1.3  1999/01/05 00:34:45  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+// Added the date_format enumerated type.
+//
+// Revision 1.2  1998/12/30 02:01:12  jimg
+// Added class invariant.
+//
+// Revision 1.1  1998/12/28 19:08:26  jimg
+// Initial version of the DODS_Date object
+//
+
 #ifndef _dods_date_h
 #define _dods_date_h
 
@@ -34,7 +70,9 @@ enum date_format {
     unknown_format,
     ymd,
     yd,
-    decimal
+    ym,
+    decimal,
+    iso8601
 };
 
 /** The DODS Date object. This provides a way to translate between local
@@ -52,9 +90,11 @@ private:
     int _month;
     int _day;
     int _day_number;
+    date_format _format;
 
     void parse_fractional_time(string date);
     void parse_integer_time(string date);
+    void parse_iso8601_time(string date);
 
 public:
     /** @name Constructors */
@@ -98,6 +138,7 @@ public:
 	@param month The month of the year; 1 == January, ..., 12 == December.
 	@param day The day of the month; 1, ..., \{31, 30, 29, 28\}. */
     DODS_Date(int year, int month, int day);
+    DODS_Date(int year, int month, int day, date_format format);
     //@}
 
     /** @name Assignment */
@@ -117,6 +158,12 @@ public:
     /** Assign the date using three integers.
 	@see DODS_Date(int year, int month, int day) */
     void set(int year, int month, int day);
+
+    /** Assign the date using three integers and a date_format
+	enumeration.
+	@see DODS_Date(int year, int month, int day, date_format format) */
+    void set(int year, int month, int day, date_format format);
+
     //@}
 
     /** @name Access */
@@ -146,6 +193,9 @@ public:
 
     /** @return The Julian day number for this date. */
     long julian_day() const;
+
+    /** @return The format type. */
+    date_format format() const;
 
     /** Return the number of seconds since 00:00:00 UTC 1 Jan 1970. If the
 	date is before 1 Jan 1970, return DODS\_UINT\_MAX. If the date is too
@@ -191,40 +241,5 @@ public:
 	@return True for a valid instance, otherwise false. */
     bool OK() const;
 };
-
-// $Log: DODS_Date.h,v $
-// Revision 1.7  2000/10/11 19:37:55  jimg
-// Moved the CVS log entries to the end of files.
-// Changed the definition of the read method to match the dap library.
-// Added exception handling.
-// Added exceptions to the read methods.
-//
-// Revision 1.6  1999/07/22 21:28:08  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.5.6.1  1999/06/01 15:38:06  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.5  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.4.6.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.4  1999/01/08 22:08:18  jimg
-// Fixed doc++ comments.
-//
-// Revision 1.3  1999/01/05 00:34:45  jimg
-// Removed string class; replaced with the GNU String class. It seems those
-// don't mix well.
-// Switched to simpler method names.
-// Added the date_format enumerated type.
-//
-// Revision 1.2  1998/12/30 02:01:12  jimg
-// Added class invariant.
-//
-// Revision 1.1  1998/12/28 19:08:26  jimg
-// Initial version of the DODS_Date object
-//
 
 #endif // _dods_date_h

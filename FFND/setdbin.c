@@ -1760,6 +1760,7 @@ static int check_file_exists
 	 char *ext
 	)
 {
+
 	char trial_fname[MAX_PATH];
 	
 	(void)os_path_put_parts(trial_fname, search_dir, filebase, ext);
@@ -1767,6 +1768,45 @@ static int check_file_exists
 	{
 		*fname = memStrdup(trial_fname, "trial_fname");
 		if (*fname == NULL)
+		{
+			err_push(ERR_MEM_LACK, NULL);
+			return(0);
+		}
+		return(1);
+	}
+	else
+		return(0);
+}
+
+#ifdef ROUTINE_NAME
+#undef ROUTINE_NAME
+#endif
+#define ROUTINE_NAME "check_hidden_file_exists"
+
+static int check_hidden_file_exists
+	(
+	 char **fname,
+	 char *search_dir,
+	 char *filebase,
+	 char *ext
+	)
+{
+	char trial_fname[MAX_PATH];
+	
+	if ((search_dir) && (*search_dir != '\0')) {
+	  strcpy(trial_fname, search_dir);
+	  strcat(trial_fname, "/.");
+	}
+	else 
+	  strcpy(trial_fname, ".");
+
+	strcat(trial_fname, filebase);
+	strcat(trial_fname, ext);
+
+	if (os_file_exist(trial_fname))
+	{
+		*fname = memStrdup(trial_fname, "trial_fname");
+		if (*fname == '\0')
 		{
 			err_push(ERR_MEM_LACK, NULL);
 			return(0);
@@ -1940,15 +1980,19 @@ static int find_files
  *
  * PURPOSE:  Search the directory given by search_dir for format files
  *
- * USAGE: num_found = find_dir_format_files(input_file, format_dir, fileext, format_files);
+ * USAGE: num_found = find_dir_format_files(input_file, format_dir,
+ *                                          extension, format_files);
  *
  * RETURNS:  0, 1 -- 0: no files found, 1: filename.fmt,
  * or ext.fmt found
  *
- * DESCRIPTION:  First looks in the supplied directory for filename.fmt,
- * then for ext.fmt.  Each successive search proceeds only if the
- * previous search failed.  See the DESCRIPTION for find_format_files() for
- * more information.
+ * DESCRIPTION:  First looks in the supplied directory for 
+ * filename.<extension>, then for ext.<extension>. Each successive search
+ * proceeds only if the previous search failed.  See the DESCRIPTION for
+ * find_format_files() for more information.
+ * 
+ * Added `extension' so that this function can be used to search for other
+ * format-like files (i.e., DODS anicallry attribute files). 8/27/99 jhrg
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
@@ -1972,6 +2016,7 @@ static int find_dir_format_files
 	(
 	 char *input_file,
 	 char *search_dir,
+	 char *extension,
 	 char **targets
 	)
 {
@@ -1984,14 +2029,31 @@ static int find_dir_format_files
 		return(0);
 
 	/* Search search_dir for datafile.fmt */
-	num_found = check_file_exists(&(targets[0]), search_dir, filename, "fmt");
+	num_found = check_file_exists(&(targets[0]), search_dir, filename,
+				      extension);
 	if (num_found == 1)
 		return(1);
 	
 	/* Search search_dir for ext.fmt */
 	if (num_found == 0)
-		num_found = check_file_exists(&(targets[0]), search_dir, fileext, "fmt");
+		num_found = check_file_exists(&(targets[0]), search_dir, 
+					      fileext, extension);
+	if (num_found == 1)
+		return(1);
 
+	/* Search search_dir for <.>datafile.fmt */
+	if (num_found == 0) {
+	  num_found = check_hidden_file_exists(&(targets[0]), search_dir, 
+					       filename, extension);
+	}
+	if (num_found == 1)
+		return(1);
+
+	/* Search search_dir for <.>ext.fmt */
+	if (num_found == 0) {
+	  num_found = check_hidden_file_exists(&(targets[0]), search_dir, 
+					       fileext, extension);
+	}
 	return(num_found);
 }
 
@@ -2044,6 +2106,10 @@ static int find_dir_format_files
  * See the description for find_files() for an explanation of the parameter
  * targets.
  *
+ * Modifies to use the new version of find_dir_format_files. The function of
+ * this software is exactly the same. For a DODS version, see the following
+ * function. 8/27/99 jhrg
+ * 
  * SYSTEM DEPENDENT FUNCTIONS:  
  *
  * AUTHOR:  Mark A. Ohrenschall, NGDC, (303) 497 - 6124, mao@ngdc.noaa.gov
@@ -2069,6 +2135,8 @@ int find_format_files
 	enum {NUM_FMT_FILES = 2};
 	char home_dir[MAX_PATH];
 	char format_dir[MAX_PATH];
+	char parent_dir[MAX_PATH];
+	char *parent_dir_ptr = &parent_dir[0];
 	char *format_files[NUM_FMT_FILES] = {NULL, NULL};
 	int num_found;
 	
@@ -2091,15 +2159,119 @@ int find_format_files
 	os_path_get_parts(input_file, home_dir, NULL, NULL);
 
 	/* Search format_dir first */
-	num_found = find_dir_format_files(input_file, format_dir, format_files);
+	num_found = find_dir_format_files(input_file, format_dir, ".fmt", 
+					  format_files);
 
 	/* Search default directory second */
 	if (num_found == 0)
-		num_found = find_dir_format_files(input_file, NULL, format_files);
+		num_found = find_dir_format_files(input_file, NULL, ".fmt", 
+						  format_files);
 		
 	/* Search data file's directory last */
 	if (FF_STRLEN(home_dir) && num_found == 0)
-		num_found = find_dir_format_files(input_file, home_dir, format_files);
+		num_found = find_dir_format_files(input_file, home_dir,
+						  ".fmt", format_files);
+
+	os_path_find_parent(home_dir, &parent_dir_ptr);
+
+	/* Recurse up the data file's directory path,
+	   searching first for the ext.<extension>, and then
+	   for hidden format files .ext.<extension> */
+
+	while ((FF_STRLEN(parent_dir) && num_found == 0)) 
+	  {
+	    /* Search parent_dir first */
+	    num_found = find_dir_format_files(input_file, parent_dir, ".fmt",
+					  format_files);
+
+	    strcpy(home_dir, parent_dir);
+	    os_path_find_parent(home_dir, &parent_dir_ptr);
+	  }
+
+	if (num_found >= 1)
+		(*targets)[0] = format_files[0];
+	else
+	{
+		format_files[0] = NULL;
+		memFree(*targets, "*targets");
+	}
+
+	return(num_found);
+}
+
+/* The DODS version of find_format_files. This function applies the same
+   search alogithm as the FF library uses to search for .fmt files for files
+   that end in any (given) suffix. It takes four params (as to the original
+   function's three). 8/27/99 jhrg */
+
+#ifdef ROUTINE_NAME
+#undef ROUTINE_NAME
+#endif
+#define ROUTINE_NAME "dods_find_format_files"
+
+int dods_find_format_files
+	(
+	 DATA_BIN_PTR dbin,
+	 char *input_file,
+	 char *extension,
+	 char ***targets
+	)
+{
+	enum {NUM_FMT_FILES = 2};
+	char home_dir[MAX_PATH];
+	char format_dir[MAX_PATH];
+	char parent_dir[MAX_PATH];
+	char *parent_dir_ptr = &parent_dir[0];
+	char *format_files[NUM_FMT_FILES] = {NULL, NULL};
+	int num_found;
+	
+	assert(input_file);
+	assert(targets);
+	
+	if (!input_file || !targets)
+		return(0);
+	
+	*targets = (char **)memCalloc(NUM_FMT_FILES, sizeof(char *), "*targets");
+	if (!*targets)
+	{
+		err_push(ERR_MEM_LACK, NULL);
+		return(0);
+	}
+
+	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
+		format_dir[0] = STR_END;
+	
+	os_path_get_parts(input_file, home_dir, NULL, NULL);
+
+	/* Search format_dir first */
+	num_found = find_dir_format_files(input_file, format_dir, extension,
+					  format_files);
+
+	/* Search default directory second */
+	if (num_found == 0)
+		num_found = find_dir_format_files(input_file, NULL,
+						  extension, format_files);
+		
+	/* Search data file's directory last */
+	if (FF_STRLEN(home_dir) && num_found == 0)
+		num_found = find_dir_format_files(input_file, home_dir, 
+						  extension, format_files);
+
+	os_path_find_parent(home_dir, &parent_dir_ptr);
+
+	/* Recurse up the data file's directory path,
+	   searching first for the ext.<extension>, and then
+	   for hidden format files .ext.<extension> */
+
+	while ((FF_STRLEN(parent_dir) && num_found == 0)) 
+	  {
+	    /* Search parent_dir first */
+	    num_found = find_dir_format_files(input_file, parent_dir, extension,
+					  format_files);
+
+	    strcpy(home_dir, parent_dir);
+	    os_path_find_parent(home_dir, &parent_dir_ptr);
+	  }
 
 	if (num_found >= 1)
 		(*targets)[0] = format_files[0];

@@ -1,15 +1,14 @@
 
-# $Id: Makefile.in,v 1.27 2000/10/20 00:08:17 jimg Exp $
+# $Id: Makefile.in,v 1.28 2001/09/28 23:19:43 jimg Exp $
 
 @SET_MAKE@
 
 PROG = ff_das ff_dds ff_dods
 FF_LIBS = libfreeform.a libmaxmin.a 
 FF_TOOLS = newform bufform chkform readfile checkvar
-DODS_ROOT = ../..
+DODS_ROOT = @dods_relative@
 
-WWW_ROOT = @WWW_ROOT@
-INCS = -I. -I$(DODS_ROOT)/include -IFFND @INCS@
+INCS = -I. -IFFND @INCS@
 DEFS = @DEFS@
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
@@ -17,10 +16,11 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 CFLAGS = @CFLAGS@ -Wall
 
 # Search in both the FFND and FFND/lib dirs for the freeform libraries.
-LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND -LFFND/lib
+LDFLAGS = @LDFLAGS@ -L. -LFFND -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
 LIBS = -ldap++ -lfreeform -lmaxmin @LIBS@ -lm
+XTRALIBS = @XTRALIBS@
 TAGS_FLAGS =
 
 # Set the instalation directories; prefix can be set on the command line
@@ -28,14 +28,14 @@ TAGS_FLAGS =
 
 prefix = @prefix@
 exec_prefix = $(prefix)
-bindir = $(exec_prefix)/bin
-libdir = $(exec_prefix)/lib
-includedir = $(prefix)/include
+bindir = $(exec_prefix)bin
+libdir = $(exec_prefix)lib
+includedir = $(prefix)include
 manext = 1
-mandir = $(prefix)/man/man$(manext)
+mandir = $(prefix)man/man$(manext)
 
-src = $(DODS_ROOT)/src
-etcdir = $(DODS_ROOT)/etc
+src = $(DODS_ROOT)src
+etcdir = $(DODS_ROOT)etc
 
 INSTALLMAN = man
 
@@ -109,13 +109,13 @@ ALLSRCS = $(FFSRC) $(SERVSRC) $(DDSSRC) $(DASSRC)
 all: $(FF_LIBS) $(FF_TOOLS) ff_das ff_dds ff_dods
 
 ff_das: $(DASOBJ) $(FFOBJ) 
-	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(LIBS)
+	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(LIBS) $(XTRALIBS)
 
 ff_dds: $(DDSOBJ) $(FFOBJ)
-	$(CXX) $(LDFLAGS) -o ff_dds $(DDSOBJ) $(FFOBJ) $(LIBS)
+	$(CXX) $(LDFLAGS) -o ff_dds $(DDSOBJ) $(FFOBJ) $(LIBS) $(XTRALIBS)
 
 ff_dods: $(SERVOBJ) $(FFOBJ)
-	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(LIBS)
+	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(LIBS) $(XTRALIBS)
 
 libfreeform.a: 
 	cd FFND; $(MAKE) $(MFLAGS) $@
@@ -158,7 +158,6 @@ install: all
 	$(INSTALL_PROGRAM) -s ff_das $(etcdir)
 	$(INSTALL_PROGRAM) -s ff_dds $(etcdir)
 	$(INSTALL_PROGRAM) -s ff_dods $(etcdir)
-#	$(INSTALL_PROGRAM) nph-ff $(etcdir)
 	$(INSTALL_PROGRAM) FFND/newform $(bindir)/newform
 	$(INSTALL_PROGRAM) FFND/chkform $(bindir)/chkform
 	$(INSTALL_PROGRAM) FFND/checkvar $(bindir)/checkvar
@@ -166,7 +165,7 @@ install: all
 	$(INSTALL_PROGRAM) FFND/readfile $(bindir)/readfile
 
 configure: configure.in
-	autoconf --localdir=$(DODS_ROOT)/etc
+	autoconf --localdir=$(DODS_ROOT)etc
 
 Makefile: Makefile.in
 	if [ -x ./config.status ]; \
@@ -216,7 +215,7 @@ collect-coverage-data:
 .PHONY: tar
 tar:
 	-rm -f config.cache config.status config.log
-	cd $(DODS_ROOT)/.. && \
+	cd $(DODS_ROOT).. && \
 	$(TAR) --exclude 'old' --exclude '.#*' --exclude 'CVS' \
 	    --exclude '.flc' --exclude '.snprj' \
 	    --gzip --create --dereference --file DODS-$(dir).tar.gz \
@@ -226,9 +225,9 @@ tar:
 #
 .PHONY: binary-tar
 binary-tar:
-	cd $(DODS_ROOT)/.. && \
+	cd $(DODS_ROOT).. && \
 	$(TAR) --gzip --create --dereference \
-	    --file DODS-$(host)-ff-server-$(version).tar.gz \
+	    --file DODS-ff-server-$(version)-$(host).tar.gz \
 	    DODS/etc/ff_das \
 	    DODS/etc/ff_dds \
 	    DODS/etc/ff_dods \
@@ -243,14 +242,14 @@ update-version: check-version
 	if [ ! -d ../$(dir) ]; then \
 	    mv ../ff-dods* ../$(dir);\
 	fi
-	touch $(DODS_ROOT)/VERSION; cat $(DODS_ROOT)/VERSION | \
+	touch $(DODS_ROOT)VERSION; cat $(DODS_ROOT)VERSION | \
 	  $(AWK) ' \
 	    BEGIN { found = 0 } \
 	    { if ( $$0 ~ /^$(COMPONENT_NAME):/) \
 	        { print "$(COMPONENT_NAME): $(version)"; found = 1 } \
 	      else { print $$0 } } \
 	    END { if ( ! found) { print "$(COMPONENT_NAME): $(version)" } \
-	        }' > $(DODS_ROOT)/VERSION
+	        }' > $(DODS_ROOT)VERSION
 
 # Compare the version encoded in this Makefile (set by configure) with the
 # version in version.h. The version make variable is set up near the top of
@@ -289,172 +288,192 @@ FFArray.o: FFArray.cc config_ff.h ../../include/dods-datatypes.h \
  ../../include/Array.h ../../include/dods-limits.h \
  ../../include/Vector.h ../../include/BaseType.h ../../include/DDS.h \
  ../../include/Clause.h ../../include/expr.h ../../include/RValue.h \
- ../../include/debug.h util_ff.h FreeForm.h
+ util_ff.h FreeForm.h
 FFByte.o: FFByte.cc config_ff.h FFByte.h ../../include/Byte.h \
- ../../include/dods-datatypes.h ../../include/BaseType.h util_ff.h \
+ ../../include/dods-datatypes.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h util_ff.h \
  FreeForm.h
 FFFloat64.o: FFFloat64.cc config_ff.h FFFloat64.h \
  ../../include/Float64.h ../../include/dods-datatypes.h \
- ../../include/BaseType.h util_ff.h FreeForm.h
+ ../../include/BaseType.h ../../include/InternalErr.h \
+ ../../include/Error.h util_ff.h FreeForm.h
 FFGrid.o: FFGrid.cc config_ff.h FFGrid.h ../../include/Grid.h \
- ../../include/BaseType.h
+ ../../include/BaseType.h ../../include/InternalErr.h \
+ ../../include/Error.h ../../include/Constructor.h
 FFInt32.o: FFInt32.cc config_ff.h FFInt32.h ../../include/Int32.h \
- ../../include/dods-datatypes.h ../../include/BaseType.h util_ff.h \
+ ../../include/dods-datatypes.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h util_ff.h \
  FreeForm.h
 FFList.o: FFList.cc config_ff.h ../../include/InternalErr.h \
  ../../include/Error.h FFList.h ../../include/List.h \
  ../../include/dods-limits.h ../../include/Vector.h \
  ../../include/BaseType.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h
+ ../../include/expr.h ../../include/RValue.h
 FFSequence.o: FFSequence.cc config_ff.h ../../include/Error.h \
  FFSequence.h ../../include/Sequence.h ../../include/BaseType.h \
- util_ff.h FreeForm.h ../../include/debug.h
+ ../../include/InternalErr.h ../../include/Constructor.h util_ff.h \
+ FreeForm.h ../../include/debug.h
 FFStr.o: FFStr.cc config_ff.h FFStr.h ../../include/Str.h \
- ../../include/dods-limits.h ../../include/BaseType.h
+ ../../include/dods-limits.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h
 FFUInt32.o: FFUInt32.cc config_ff.h FFUInt32.h ../../include/UInt32.h \
- ../../include/dods-datatypes.h ../../include/BaseType.h util_ff.h \
+ ../../include/dods-datatypes.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h util_ff.h \
  FreeForm.h
 FFStructure.o: FFStructure.cc config_ff.h ../../include/InternalErr.h \
  ../../include/Error.h FFStructure.h ../../include/Structure.h \
- ../../include/BaseType.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h
+ ../../include/BaseType.h ../../include/Constructor.h \
+ ../../include/DDS.h ../../include/Clause.h ../../include/expr.h \
+ ../../include/RValue.h
 FFUrl.o: FFUrl.cc config_ff.h ../../include/InternalErr.h \
  ../../include/Error.h FFUrl.h ../../include/Url.h \
  ../../include/dods-limits.h ../../include/BaseType.h \
  ../../include/Str.h
 util_ff.o: util_ff.cc config_ff.h ../../include/BaseType.h \
  ../../include/InternalErr.h ../../include/Error.h \
- ../../include/dods-limits.h FreeForm.h
+ ../../include/dods-limits.h ../../include/debug.h FreeForm.h
 ff_read.o: ff_read.c config_ff.h ../../include/debug.h
 FFInt16.o: FFInt16.cc config_ff.h FFInt16.h ../../include/Int16.h \
- ../../include/dods-datatypes.h ../../include/BaseType.h util_ff.h \
+ ../../include/dods-datatypes.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h util_ff.h \
  FreeForm.h
 FFUInt16.o: FFUInt16.cc config_ff.h FFUInt16.h ../../include/UInt16.h \
- ../../include/dods-datatypes.h ../../include/BaseType.h util_ff.h \
+ ../../include/dods-datatypes.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h util_ff.h \
  FreeForm.h
 FFFloat32.o: FFFloat32.cc config_ff.h FFFloat32.h \
  ../../include/Float32.h ../../include/dods-datatypes.h \
- ../../include/BaseType.h util_ff.h FreeForm.h
+ ../../include/BaseType.h ../../include/InternalErr.h \
+ ../../include/Error.h util_ff.h FreeForm.h
 ce_functions.o: ce_functions.cc ../../include/BaseType.h \
- ../../include/Str.h ../../include/dods-limits.h \
- ../../include/Structure.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- ../../include/Sequence.h ../../include/Error.h ../../include/util.h \
+ ../../include/InternalErr.h ../../include/Error.h ../../include/Str.h \
+ ../../include/dods-limits.h ../../include/Structure.h \
+ ../../include/Constructor.h ../../include/DDS.h \
+ ../../include/Clause.h ../../include/expr.h ../../include/RValue.h \
+ ../../include/Sequence.h ../../include/util.h ../../include/Byte.h \
+ ../../include/dods-datatypes.h ../../include/Int16.h \
+ ../../include/UInt16.h ../../include/Int32.h ../../include/UInt32.h \
+ ../../include/Float32.h ../../include/Float64.h ../../include/Url.h \
+ ../../include/Array.h ../../include/Vector.h ../../include/List.h \
+ ../../include/Grid.h ../../include/cgi_util.h ../../include/Connect.h \
+ ../../include/DAS.h ../../include/AttrTable.h ../../include/debug.h \
+ date_proc.h DODS_Date.h DODS_Date_Factory.h DODS_StartDate_Factory.h \
+ DODS_EndDate_Factory.h DODS_Time.h DODS_Time_Factory.h \
+ DODS_StartTime_Factory.h DODS_EndTime_Factory.h DODS_Date_Time.h \
+ DODS_Date_Time_Factory.h DODS_StartDate_Time_Factory.h \
+ DODS_EndDate_Time_Factory.h
+date_proc.o: date_proc.cc config_ff.h ../../include/Error.h
+DODS_Date.o: DODS_Date.cc config_ff.h DODS_Date.h \
+ ../../include/BaseType.h ../../include/InternalErr.h \
+ ../../include/Error.h date_proc.h ../../include/debug.h
+DODS_Time.o: DODS_Time.cc config_ff.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Error.h DODS_Time.h \
+ ../../include/debug.h
+DODS_Time_Factory.o: DODS_Time_Factory.cc config_ff.h \
+ ../../include/AttrTable.h ../../include/Error.h ../../include/util.h \
+ ../../include/BaseType.h ../../include/InternalErr.h \
  ../../include/Byte.h ../../include/dods-datatypes.h \
  ../../include/Int16.h ../../include/UInt16.h ../../include/Int32.h \
  ../../include/UInt32.h ../../include/Float32.h \
- ../../include/Float64.h ../../include/Url.h ../../include/Array.h \
- ../../include/Vector.h ../../include/List.h ../../include/Grid.h \
- ../../include/cgi_util.h ../../include/Connect.h ../../include/DAS.h \
- ../../include/AttrTable.h date_proc.h DODS_Date.h DODS_Date_Factory.h \
- DODS_StartDate_Factory.h DODS_EndDate_Factory.h DODS_Time.h \
- DODS_Time_Factory.h DODS_StartTime_Factory.h DODS_EndTime_Factory.h \
- DODS_Date_Time.h DODS_Date_Time_Factory.h \
- DODS_StartDate_Time_Factory.h DODS_EndDate_Time_Factory.h
-date_proc.o: date_proc.cc config_ff.h
-DODS_Date.o: DODS_Date.cc config_ff.h DODS_Date.h \
- ../../include/BaseType.h date_proc.h ../../include/debug.h \
- ../../include/Error.h
-DODS_Time.o: DODS_Time.cc config_ff.h ../../include/BaseType.h \
- DODS_Time.h ../../include/debug.h ../../include/Error.h
-DODS_Time_Factory.o: DODS_Time_Factory.cc config_ff.h \
- ../../include/AttrTable.h ../../include/Error.h ../../include/util.h \
- ../../include/BaseType.h ../../include/Byte.h \
- ../../include/dods-datatypes.h ../../include/Int16.h \
- ../../include/UInt16.h ../../include/Int32.h ../../include/UInt32.h \
- ../../include/Float32.h ../../include/Float64.h ../../include/Str.h \
+ ../../include/Float64.h ../../include/Str.h \
  ../../include/dods-limits.h ../../include/Url.h ../../include/Array.h \
  ../../include/Vector.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- ../../include/List.h ../../include/Structure.h \
+ ../../include/expr.h ../../include/RValue.h ../../include/List.h \
+ ../../include/Structure.h ../../include/Constructor.h \
  ../../include/Sequence.h ../../include/Grid.h DODS_Time_Factory.h \
  DODS_Time.h ../../include/DAS.h
 DODS_Date_Factory.o: DODS_Date_Factory.cc config_ff.h \
  ../../include/AttrTable.h ../../include/Error.h DODS_Date_Factory.h \
- DODS_Date.h ../../include/BaseType.h date_proc.h ../../include/DAS.h \
- ../../include/DDS.h ../../include/Clause.h ../../include/expr.h \
- ../../include/RValue.h ../../include/debug.h
+ DODS_Date.h ../../include/BaseType.h ../../include/InternalErr.h \
+ date_proc.h ../../include/DAS.h ../../include/DDS.h \
+ ../../include/Clause.h ../../include/expr.h ../../include/RValue.h
 DODS_Date_Time.o: DODS_Date_Time.cc config_ff.h ../../include/Error.h \
- DODS_Date_Time.h DODS_Date.h ../../include/BaseType.h date_proc.h \
- DODS_Time.h ../../include/debug.h
+ DODS_Date_Time.h DODS_Date.h ../../include/BaseType.h \
+ ../../include/InternalErr.h date_proc.h DODS_Time.h \
+ ../../include/debug.h
 DODS_Date_Time_Factory.o: DODS_Date_Time_Factory.cc config_ff.h \
  ../../include/Error.h DODS_Date_Time_Factory.h DODS_Date_Time.h \
- DODS_Date.h ../../include/BaseType.h date_proc.h DODS_Time.h \
- DODS_Date_Factory.h ../../include/DAS.h ../../include/AttrTable.h \
- ../../include/DDS.h ../../include/Clause.h ../../include/expr.h \
- ../../include/RValue.h ../../include/debug.h DODS_Time_Factory.h
+ DODS_Date.h ../../include/BaseType.h ../../include/InternalErr.h \
+ date_proc.h DODS_Time.h DODS_Date_Factory.h ../../include/DAS.h \
+ ../../include/AttrTable.h ../../include/DDS.h ../../include/Clause.h \
+ ../../include/expr.h ../../include/RValue.h DODS_Time_Factory.h
 DODS_StartDate_Factory.o: DODS_StartDate_Factory.cc config_ff.h \
  ../../include/AttrTable.h ../../include/Error.h \
  DODS_StartDate_Factory.h DODS_Date.h ../../include/BaseType.h \
- date_proc.h ../../include/DAS.h ../../include/DDS.h \
- ../../include/Clause.h ../../include/expr.h ../../include/RValue.h \
- ../../include/debug.h
+ ../../include/InternalErr.h date_proc.h ../../include/DAS.h \
+ ../../include/DDS.h ../../include/Clause.h ../../include/expr.h \
+ ../../include/RValue.h
 DODS_StartTime_Factory.o: DODS_StartTime_Factory.cc config_ff.h \
  ../../include/AttrTable.h ../../include/Error.h ../../include/util.h \
- ../../include/BaseType.h ../../include/Byte.h \
- ../../include/dods-datatypes.h ../../include/Int16.h \
- ../../include/UInt16.h ../../include/Int32.h ../../include/UInt32.h \
- ../../include/Float32.h ../../include/Float64.h ../../include/Str.h \
+ ../../include/BaseType.h ../../include/InternalErr.h \
+ ../../include/Byte.h ../../include/dods-datatypes.h \
+ ../../include/Int16.h ../../include/UInt16.h ../../include/Int32.h \
+ ../../include/UInt32.h ../../include/Float32.h \
+ ../../include/Float64.h ../../include/Str.h \
  ../../include/dods-limits.h ../../include/Url.h ../../include/Array.h \
  ../../include/Vector.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- ../../include/List.h ../../include/Structure.h \
+ ../../include/expr.h ../../include/RValue.h ../../include/List.h \
+ ../../include/Structure.h ../../include/Constructor.h \
  ../../include/Sequence.h ../../include/Grid.h \
  DODS_StartTime_Factory.h DODS_Time.h ../../include/DAS.h
 DODS_StartDate_Time_Factory.o: DODS_StartDate_Time_Factory.cc \
  config_ff.h ../../include/Error.h DODS_StartDate_Time_Factory.h \
- DODS_Date_Time.h DODS_Date.h ../../include/BaseType.h date_proc.h \
- DODS_Time.h DODS_StartDate_Factory.h ../../include/DAS.h \
+ DODS_Date_Time.h DODS_Date.h ../../include/BaseType.h \
+ ../../include/InternalErr.h date_proc.h DODS_Time.h \
+ DODS_StartDate_Factory.h ../../include/DAS.h \
  ../../include/AttrTable.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- DODS_StartTime_Factory.h
+ ../../include/expr.h ../../include/RValue.h DODS_StartTime_Factory.h
 DODS_EndDate_Factory.o: DODS_EndDate_Factory.cc config_ff.h \
  ../../include/AttrTable.h ../../include/Error.h \
  DODS_EndDate_Factory.h DODS_Date.h ../../include/BaseType.h \
- date_proc.h ../../include/DAS.h ../../include/DDS.h \
- ../../include/Clause.h ../../include/expr.h ../../include/RValue.h \
- ../../include/debug.h
+ ../../include/InternalErr.h date_proc.h ../../include/DAS.h \
+ ../../include/DDS.h ../../include/Clause.h ../../include/expr.h \
+ ../../include/RValue.h
 DODS_EndTime_Factory.o: DODS_EndTime_Factory.cc config_ff.h \
  ../../include/AttrTable.h ../../include/Error.h ../../include/util.h \
- ../../include/BaseType.h ../../include/Byte.h \
- ../../include/dods-datatypes.h ../../include/Int16.h \
- ../../include/UInt16.h ../../include/Int32.h ../../include/UInt32.h \
- ../../include/Float32.h ../../include/Float64.h ../../include/Str.h \
+ ../../include/BaseType.h ../../include/InternalErr.h \
+ ../../include/Byte.h ../../include/dods-datatypes.h \
+ ../../include/Int16.h ../../include/UInt16.h ../../include/Int32.h \
+ ../../include/UInt32.h ../../include/Float32.h \
+ ../../include/Float64.h ../../include/Str.h \
  ../../include/dods-limits.h ../../include/Url.h ../../include/Array.h \
  ../../include/Vector.h ../../include/DDS.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- ../../include/List.h ../../include/Structure.h \
+ ../../include/expr.h ../../include/RValue.h ../../include/List.h \
+ ../../include/Structure.h ../../include/Constructor.h \
  ../../include/Sequence.h ../../include/Grid.h DODS_EndTime_Factory.h \
  DODS_Time.h ../../include/DAS.h
 DODS_EndDate_Time_Factory.o: DODS_EndDate_Time_Factory.cc config_ff.h \
  ../../include/Error.h DODS_EndDate_Time_Factory.h DODS_Date_Time.h \
- DODS_Date.h ../../include/BaseType.h date_proc.h DODS_Time.h \
- DODS_EndDate_Factory.h ../../include/DAS.h ../../include/AttrTable.h \
- ../../include/DDS.h ../../include/Clause.h ../../include/expr.h \
- ../../include/RValue.h ../../include/debug.h DODS_EndTime_Factory.h
+ DODS_Date.h ../../include/BaseType.h ../../include/InternalErr.h \
+ date_proc.h DODS_Time.h DODS_EndDate_Factory.h ../../include/DAS.h \
+ ../../include/AttrTable.h ../../include/DDS.h ../../include/Clause.h \
+ ../../include/expr.h ../../include/RValue.h DODS_EndTime_Factory.h
 ff_dods.o: ff_dods.cc config_ff.h ../../include/cgi_util.h \
  ../../include/Connect.h ../../include/DAS.h ../../include/AttrTable.h \
- ../../include/DDS.h ../../include/BaseType.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- ../../include/Error.h ../../include/util.h ../../include/Byte.h \
- ../../include/dods-datatypes.h ../../include/Int16.h \
- ../../include/UInt16.h ../../include/Int32.h ../../include/UInt32.h \
- ../../include/Float32.h ../../include/Float64.h ../../include/Str.h \
+ ../../include/Error.h ../../include/DDS.h ../../include/BaseType.h \
+ ../../include/InternalErr.h ../../include/Clause.h \
+ ../../include/expr.h ../../include/RValue.h ../../include/util.h \
+ ../../include/Byte.h ../../include/dods-datatypes.h \
+ ../../include/Int16.h ../../include/UInt16.h ../../include/Int32.h \
+ ../../include/UInt32.h ../../include/Float32.h \
+ ../../include/Float64.h ../../include/Str.h \
  ../../include/dods-limits.h ../../include/Url.h ../../include/Array.h \
  ../../include/Vector.h ../../include/List.h ../../include/Structure.h \
- ../../include/Sequence.h ../../include/Grid.h FFArray.h FFGrid.h \
- ../../include/DODSFilter.h ce_functions.h
+ ../../include/Constructor.h ../../include/Sequence.h \
+ ../../include/Grid.h FFArray.h FFGrid.h ../../include/DODSFilter.h \
+ ce_functions.h
 ffdds.o: ffdds.cc config_ff.h ../../include/Error.h \
  ../../include/InternalErr.h ../../include/cgi_util.h \
  ../../include/Connect.h ../../include/DAS.h ../../include/AttrTable.h \
  ../../include/DDS.h ../../include/BaseType.h ../../include/Clause.h \
- ../../include/expr.h ../../include/RValue.h ../../include/debug.h \
- ../../include/util.h ../../include/Byte.h \
- ../../include/dods-datatypes.h ../../include/Int16.h \
- ../../include/UInt16.h ../../include/Int32.h ../../include/UInt32.h \
- ../../include/Float32.h ../../include/Float64.h ../../include/Str.h \
+ ../../include/expr.h ../../include/RValue.h ../../include/util.h \
+ ../../include/Byte.h ../../include/dods-datatypes.h \
+ ../../include/Int16.h ../../include/UInt16.h ../../include/Int32.h \
+ ../../include/UInt32.h ../../include/Float32.h \
+ ../../include/Float64.h ../../include/Str.h \
  ../../include/dods-limits.h ../../include/Url.h ../../include/Array.h \
  ../../include/Vector.h ../../include/List.h ../../include/Structure.h \
- ../../include/Sequence.h ../../include/Grid.h FreeForm.h FFInt16.h \
- FFUInt16.h FFInt32.h FFUInt32.h FFFloat32.h FFFloat64.h FFByte.h \
- FFArray.h FFGrid.h FFStr.h util_ff.h
+ ../../include/Constructor.h ../../include/Sequence.h \
+ ../../include/Grid.h FreeForm.h FFInt16.h FFUInt16.h FFInt32.h \
+ FFUInt32.h FFFloat32.h FFFloat64.h FFByte.h FFArray.h FFGrid.h \
+ FFStr.h util_ff.h

@@ -11,6 +11,7 @@
  * os_get_env
  * os_path_cmp_paths
  * os_path_find_parts
+ * os_path_find_parent
  * os_path_get_parts
  * os_path_is_native
  * os_path_make_native
@@ -434,7 +435,7 @@ void *os_mac_load_env(char *buffer)
  *
  * GLOBALS:	
  *
- * AUTHOR:	Tom Carey, adapted from code by Theodore W. Lizrd
+ * AUTHOR:	Tom Carey, adapted from code by Theodore W. Liz‰rd
  *
  * COMMENTS: 	
  *
@@ -925,6 +926,44 @@ void os_path_find_parts(char *path, char **filepath, char **filename, char **fil
 	return;
 }
 
+#undef ROUTINE_NAME
+#define ROUTINE_NAME "os_path_find_parent"
+
+void os_path_find_parent(char *path, char **parentdir)
+{
+	char *temp_cp = path;
+	size_t temp_i = 0, dir_i = 0;
+	char dirpath[MAX_PATH];
+
+	if (path == NULL)
+	{
+		return;
+	}
+	
+	else
+	{
+	  /* Find last (if any) directory separator in path */
+	  strcpy(dirpath, temp_cp);
+	  temp_i = strcspn(temp_cp, UNION_DIR_SEPARATORS);
+	  if (temp_i < strlen(temp_cp))
+	    {
+	      do
+		{
+		  temp_cp += temp_i + 1;
+		  temp_i = strcspn(temp_cp, UNION_DIR_SEPARATORS);
+		  dir_i += temp_i + 1;
+		}
+	      while (temp_i < strlen(temp_cp));
+	    }
+	  dirpath[dir_i-temp_i-1] = '\0';
+	  
+	}
+	if (*parentdir)
+	  strcpy(*parentdir,dirpath);
+	
+	return;
+}
+
 char *os_path_return_ext(char *pfname)
 /*****************************************************************************
  * NAME:  os_path_return_ext()
@@ -1069,6 +1108,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 {
 	char *pfname = NULL, /* file name component in path */
 	     *pfext = NULL;  /* file extension component in path */
+	int i = 0;
 	
 	if (path == NULL)
 	{
@@ -1088,7 +1128,8 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 		if (pfext == NULL)
 			*fileext = STR_END; /* no extension -- make NULL string */
 		else
-			strcpy(fileext, pfext);
+			for (i = 0; i <= (int)strlen(pfext); i++)
+				fileext[i] = pfext[i];
 	}
 
 	if (filename)
@@ -1098,11 +1139,25 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 		else
 		{
 			if (pfext == NULL) /* no extension; copy all *pfname */
-				strcpy(filename, pfname);
+				for (i = 0; i <= (int)strlen(pfname); i++)
+					filename[i] = pfname[i];
 			else
 			{ /* filename might not have enough storage space to include ext */
-				strncpy(filename, pfname, FF_STRLEN(pfname) - FF_STRLEN(pfext) - (pfext && '.' == pfext[-1] ? 1 : 0));
-				filename[FF_STRLEN(pfname) - FF_STRLEN(pfext) - (pfext && '.' == pfext[-1] ? 1 : 0)] = STR_END;
+			  char *tmp1 = &pfname[0]; 
+			  char *tmp2 = 0;
+
+			  int i = 0;
+			  if ( (tmp2 = strrchr(pfname,'.')) ) {
+			    while ( tmp1 < tmp2 ) {
+			      filename[i] = *tmp1;
+			      i++; tmp1++;
+			    }
+			  }
+			  /*else {
+			    for (i = 0; pfname[i] != '\0'; i++)
+			      filename[i] = pfname[i];
+			      }*/
+			  filename[i] = STR_END;
 			}
 		}
 	}
@@ -1132,13 +1187,13 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
  *
  * DESCRIPTION:  dirpath, filename, and fileext are put together into
  * fullpath (all prior contents of fullpath are lost).  In concatenating
- * dirpath and filename, a native directory separator is interposed if no
+ * dirpath and filename, a native directory separator is interplaced if no
  * trailing separator is found in dirpath, and no leading separator is found
- * in filename.  In placing fileext a '.' is interposed if no '.' is found in
- * filename (trailing) or fileext (leading).
- *
- * Where component arguments are NULL (but filename must be defined) this
- * indicates the absence of that particular component in constructing the
+ * in filename.  In placing fileext a '.' is
+ * interplaced if no '.' is found in filename (trailing) or fileext (leading).
+ * Unless fileext is NULL, any extension in filename is overwritten with
+ * fileext.  Where component arguments are NULL (but filename must be defined)
+ * this indicates the absence of that particular component in constructing the
  * new path.
  *
  * AUTHOR:  Mark Ohrenschall, NGDC (303) 497-6124, mao@ngdc.noaa.gov
@@ -1212,18 +1267,26 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
 
 	if (ok_strlen(fileext))
 	{
-		while (*fileext == '.') /* Do we allow the perversity of .+ext (multiple adjacent dots)? */
+	  /*	char *dot = strrchr(filename, '.');
+			
+		if (dot && IS_A_VALID_DOT(dot))
+		{
+			dot = strrchr(temppath, '.');
+			*dot = STR_END;
+		}
+	  */
+		
+		while (*fileext == '.')
 			fileext++;
 
-		if ('.' != temppath[strlen(temppath) - 1])
-			strcat(temppath, ".");
-
+		strcat(temppath, ".");
 		strcat(temppath, fileext);
 	}
 
 	strcpy(fullpath, temppath);
 	return(fullpath);
 }
+
 
 /*
  * NAME:  os_str_replace_char()

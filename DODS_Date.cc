@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.10 2000/10/11 19:37:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.11 2001/09/28 23:19:43 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,6 +20,7 @@ static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.10 2000/10/11 19:37:55 jimg
 #include <assert.h>
 
 #include <strstream.h>
+#include <iomanip.h>
 #include <string>
 
 #include "DODS_Date.h"
@@ -94,6 +95,11 @@ DODS_Date::DODS_Date(int year, int month, int day)
     set(year, month, day);
 }    
 
+DODS_Date::DODS_Date(int year, int month, int day, date_format format)
+{
+    set(year, month, day, format);
+}    
+
 void
 DODS_Date::set(BaseType *arg)
 {
@@ -119,7 +125,13 @@ DODS_Date::parse_integer_time(string date)
     // If there are two slashes, assume a yyyy/mm/dd date.
     pos1 = date.find("/");
     pos2 = date.rfind("/");
-    if ((pos1 != date.npos) && (pos2 != date.npos) && (pos1 != pos2)) {
+    if ((pos1 == date.npos) && (pos2 == date.npos)) {
+	string msg = "I cannot understand the date string: ";
+	msg += date 
+	    + ". I expected a date formatted like yyyy/mm/dd or yyyy/ddd.";
+	throw Error(malformed_expr, msg);
+    }
+    else if ((pos1 != pos2)) {
 	iss >> c;
 	iss >> _day;
 	// Convert to julian day number and record year, month, ...
@@ -132,6 +144,50 @@ DODS_Date::parse_integer_time(string date)
 	_day_number = _month;
 	days_to_month_day(_year, _day_number, &_month, &_day);
 	_julian_day = ::julian_day(_year, _month, _day);
+    }
+}
+
+void
+DODS_Date::parse_iso8601_time(string date)
+{
+    // Parse the date_str.
+    istrstream iss(date.c_str());
+    char c;	
+    size_t pos1, pos2;
+    iss >> _year;
+    iss >> c;
+    iss >> _month;
+
+    // If there are two dashes, assume a ccyy-mm-dd date.
+    pos1 = date.find("-");
+    pos2 = date.rfind("-");
+    if ((pos1 != date.npos) && (pos2 != date.npos) && (pos1 != pos2)) {
+      iss >> c;
+      iss >> _day;
+      // Convert to julian day number and record year, month, ...
+      _julian_day = ::julian_day(_year, _month, _day);
+      _day_number = month_day_to_days(_year, _month, _day);
+      _format = ymd;
+    }
+    else if ((pos1 != date.npos) && (pos2 == date.npos) || (pos1 == pos2)) {
+      // There is one dash, assume a ccyy-mm date.
+      _day = 1;
+      _julian_day = ::julian_day(_year, _month, _day);
+      _day_number = month_day_to_days(_year, _month, _day);
+      _format = ym;
+    }
+
+    else if ((pos1 == date.npos) && (date.length() == 4)) {
+      // There are no dashes, assume a ccyy date.
+      _day = 1; _month = 1;
+      _julian_day = ::julian_day(_year, _month, _day);
+      _day_number = month_day_to_days(_year, _month, _day);
+      _format = ym;
+    }
+    else {
+	string msg = "I cannot understand the date string: ";
+	msg += date + ". I expected an iso8601 date (ccyy-mm-dd, ccyy-mm or ccyy).";
+	throw Error(malformed_expr, msg);
     }
 }
 
@@ -217,12 +273,18 @@ DODS_Date::set(string date)
 	parse_fractional_time(date);
     } else if (date.find("/") != string::npos) {
 	parse_integer_time(date);
+    } else if (date.find("-") != string::npos) {
+	parse_iso8601_time(date);	
+    } else if (date.length() == 4 ) {
+      date += "-1-1";
+      parse_iso8601_time(date);
     }
     else 
 	throw Error(malformed_expr, "Could not recognize date format");
 
     assert(OK());
 }
+
 
 void
 DODS_Date::set(int year, int day_num)
@@ -247,10 +309,29 @@ DODS_Date::set(int year, int month, int day)
     assert(OK());
 }
 
+void
+DODS_Date::set(int year, int month, int day, date_format format)
+{
+    _year = year;
+    _month = month;
+    _day = day;
+    _day_number = month_day_to_days(_year, _month, _day);
+    _julian_day = ::julian_day(_year, _month, _day);
+    _format = format;
+
+    assert(OK());
+}
+
 int 
 operator==(DODS_Date &d1, DODS_Date &d2)
 {
-    return d1._julian_day == d2._julian_day ? 1: 0;
+   if (d2.format() == ym) {
+    return ((d2._julian_day >= ::julian_day(d1.year(), d1.month(), 1)) &&
+	    (d2._julian_day <= ::julian_day(d1.year(), d1.month(), 
+					    days_in_month(d1.year(), d1.month())))) ? 1: 0;
+   }
+   else
+     return d1._julian_day == d2._julian_day ? 1: 0;
 }
 
 int
@@ -274,12 +355,19 @@ operator>(DODS_Date &d1, DODS_Date &d2)
 int
 operator<=(DODS_Date &d1, DODS_Date &d2)
 {
+  if (d2.format() == ym) 
+    return ((d2._julian_day >= ::julian_day(d1.year(), d1.month(), 1)) && true) ? 1: 0;
+  else
     return d1._julian_day <= d2._julian_day ? 1: 0;
 }
 
 int
 operator>=(DODS_Date &d1, DODS_Date &d2)
 {
+  if (d2.format() == ym) 
+    return ((d2._julian_day <= ::julian_day(d1.year(), d1.month(), 
+					    days_in_month(d1.year(), d1.month()))) && true) ? 1: 0;
+  else
     return d1._julian_day >= d2._julian_day ? 1: 0;
 }
 
@@ -315,6 +403,12 @@ DODS_Date::julian_day() const
 
 // Return the fractional part of the date. A private function.
 
+date_format
+DODS_Date::format() const
+{
+  return _format;
+}
+
 double
 DODS_Date::fraction() const
 {
@@ -333,6 +427,17 @@ DODS_Date::get(date_format format) const
       case ymd:
 	oss << _year << "/" << _month << "/" << _day << ends;
 	break;
+      case iso8601:
+	if ( _format == ym ) {
+	  oss << _year << "-" 
+	      << setfill('0') << setw(2) << _month << ends;
+	}
+	else {
+	  oss << _year << "-" 
+	      << setfill('0') << setw(2) << _month << "-" 
+	      << setfill('0') << setw(2) << _day << ends;
+	}
+	break;
       case decimal: {
 	oss.precision(14);
 	oss << fraction() << ends;
@@ -350,6 +455,7 @@ DODS_Date::get(date_format format) const
     return yd;
 }
 
+
 time_t
 DODS_Date::unix_time() const
 {
@@ -364,6 +470,7 @@ DODS_Date::unix_time() const
 
     return mktime(&tm_rec);
 }
+
 
 #ifdef TEST_DATE
 
@@ -389,6 +496,9 @@ int main(int argc, char *argv[])
 	break;
       case 3:
 	d1.set(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+	break;
+      case 4:
+	d1.set(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]), (date_format)atoi(argv[4]));
 	break;
       default:
 	cerr << "Wrong number of args!" << endl;
@@ -426,6 +536,7 @@ int main(int argc, char *argv[])
 	cout << "False: d1 != epoc" << endl;
 
     cout << "YMD: " << d1.get() << endl;
+    cout << "ISO8601: " << d1.get(iso8601) << endl;
     cout << "YD: " << d1.get(yd) << endl;
     cout << "Julian day: " << d1.julian_day() << endl;
     cout << "Seconds: " << d1.unix_time() << endl;
@@ -433,6 +544,17 @@ int main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.11  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.10.2.2  2001/09/19 22:40:06  jimg
+// Added simple error checking for malformed dates. Works sometimes... To do
+// a thorough job will take at least a day.
+//
+// Revision 1.10.2.1  2001/05/23 18:25:29  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
 // Revision 1.10  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

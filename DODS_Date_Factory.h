@@ -33,6 +33,7 @@ private:
     BaseType *_month;
     BaseType *_day;
     BaseType *_year_day;
+    int _month_day;
 
     enum date_format _format;
 
@@ -66,6 +67,13 @@ public:
 };
 
 // $Log: DODS_Date_Factory.h,v $
+// Revision 1.3  2001/09/28 23:19:43  jimg
+// Merged with 3.2.3.
+//
+// Revision 1.2.2.1  2001/05/23 18:26:06  dan
+// Modified to support year/month date representations,
+// and to support ISO8601 output formats.
+//
 // Revision 1.2  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

@@ -6,7 +6,6 @@ Content-Description: dods_das
 Attributes {
     FF_GLOBAL {
         String Server "DODS FreeFrom based on FFND release *";
-        String Native_file "*";
     }
     DODS_Date {
         String year_variable JPL_Pathfinder.year;

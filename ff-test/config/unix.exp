@@ -1,9 +1,11 @@
 
 # Tcl/Expect code for the FreeForm server tests.
 # 
-# $Id: unix.exp,v 1.3 2000/08/31 22:16:55 jimg Exp $
+# $Id: unix.exp,v 1.4 2001/09/28 23:19:45 jimg Exp $
 
 set version {ff/3.0.0a}
+
+set geturl {../../bin/geturl}
 
 # Read the common code for tests.
 
@@ -87,19 +89,20 @@ proc ff_dods_start { {args ""} {file ""}} {
     global comp_output
     global spawn_id
     global version
+    global geturl
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
 	    send_user "Testing ff_dods -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_dods -v $version $args" comp_output
+	catch "exec ./ff_dods -v $version $args | $geturl -s -" comp_output
     } else {
 	if {$verbose >= 1} {
 	    send_user "Testing ff_dods -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_dods -v $version $args >& $file" comp_output
+	catch "exec ./ff_dods -v $version $args >& $file | $geturl -s -" comp_output
     }
 }
 
