@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.7  1998/11/10 19:23:01  jimg
+// Minor formatting changes...
+//
 // Revision 1.6  1998/08/31 04:05:58  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -31,7 +34,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.6 1998/08/31 04:05:58 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.7 1998/11/10 19:23:01 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -259,7 +262,7 @@ FFArray::read(const String &dataset, int &error)
     long count = Arr_constraint(start, stride, edge, dname, 
      				&has_stride);    
 
-    if(!count){
+    if (!count) {
       cerr << "constraint returned empty dataset" << endl;
       error = 1;
       return false;
