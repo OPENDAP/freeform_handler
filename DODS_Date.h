@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Date.h,v $
+// Revision 1.3  1999/01/05 00:34:45  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+// Added the date_format enumerated type.
+//
 // Revision 1.2  1998/12/30 02:01:12  jimg
 // Added class invariant.
 //
@@ -24,18 +30,16 @@
 
 #include <time.h>
 
-#if 0
-#include <string>
-#endif
-
 #include <String.h>
-#define string String
-#define data() chars()
-#define find_first_of(x) index((x))
-#define find_last_of(x) index((x), -1)
 
 #include "BaseType.h"
 #include "date_proc.h"
+
+enum date_format {
+    unknown_format,
+    ymd,
+    yd
+};
 
 /** The DODS Date object. This provides a way to translate between local
     representations of dates and the DODS standard representation(s). The
@@ -51,9 +55,6 @@ private:
     int _month;
     int _day;
     int _day_number;
-
-    /// Class invariant.
-    bool OK() const;
 
 public:
     /** @name Constructors */
@@ -74,10 +75,10 @@ public:
 	to invalid dates.  
     
 	@param date_str A string containing the date. */
-    DODS_Date(string date_str);
+    DODS_Date(String date_str);
 
     /** @param arg A DODS String containing the date.
-	@see DODS_Date(string). */
+	@see DODS_Date(String). */
     DODS_Date(BaseType *arg);
 
     /** Build a DODS\_Date using year and day-numbers values. This ctor
@@ -104,20 +105,22 @@ public:
     //@{
     /** Parse the string and assign the value to this object. 
 	@see DODS_Date(string) */
-    void set_date(string date);
+    void set(String date);
 
     /** Parse the DODS String and assign the value to this object. 
 	@see DODS_Date(BaseType *arg) */
-    void set_date(BaseType *arg);
+    void set(BaseType *arg);
 
     /** Assign the date using the two integers.
 	@see DODS_Date(int year, int day_number) */
-    void set_date(int year, int day_number);
+    void set(int year, int day_number);
 
     /** Assign the date usign three integers.
 	@see DODS_Date(int year, int month, int day) */
-    void set_date(int year, int month, int day);
+    void set(int year, int month, int day);
     //@}
+
+    bool OK() const;
 
     /** @name Relational operators. */
     //@{
@@ -137,6 +140,15 @@ public:
 
     /** @name Access. */
     //@{
+    /** Get the string representation for this date. By default the y/m/d
+	format is used. To get the year/year-day format use `yd' for the
+	value of format.
+	
+	@param format The format of the date.
+	@see date_format.
+	@return The date's string representation. */
+    String get(date_format format = ymd) const;
+
     /** @return The year in years A.D. */
     int year() const;
 
@@ -148,12 +160,6 @@ public:
 
     /** @return The day-number of the year (1 = 1 Jan). */
     int day_number() const;
-
-    /** @return The date using the yyyy/ddd format. */
-    string yd_date() const;
-
-    /** @return The date using the yyyy/mm/dd format. */
-    string ymd_date() const;
 
     /** @return The Julian day number for this date. */
     long julian_day() const;
