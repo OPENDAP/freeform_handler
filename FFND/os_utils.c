@@ -1102,6 +1102,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 			else
 			{ /* filename might not have enough storage space to include ext */
 				strncpy(filename, pfname, FF_STRLEN(pfname) - FF_STRLEN(pfext) - (pfext && '.' == pfext[-1] ? 1 : 0));
+				filename[FF_STRLEN(pfname) - FF_STRLEN(pfext) - (pfext && '.' == pfext[-1] ? 1 : 0)] = STR_END;
 			}
 		}
 	}
