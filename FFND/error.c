@@ -123,14 +123,14 @@ static ERROR_RECORD local_errlist[] =
 	{ERR_EXPECTING_SECTION_END,   "Expecting Section End:"},
 	{ERR_MISPLACED_SECTION_START, "Badly Placed Section Start:"},
 	{ERR_MISPLACED_SECTION_END,   "Badly Placed Section End:"},
-	{ERR_NT_MERGE,                "{ERRor in merging/copying name tables"},
+	{ERR_NT_MERGE,                "Error in merging/copying name tables"},
 	{ERR_NT_KEYNOTDEF,            "Expected keyword not defined"},
 	{ERR_EQV_CONTEXT,             "Definition(s) in equivalence section would be out of context"},
 
 	{ERR_GEN_ARRAY, "Problem in performing array operation"},
 
 	/* Programmer's eyes only, or programmer support */
-	{ERR_API,                     "{ERRor in Application Programmer Interface, contact support"},   /* 7900 */
+	{ERR_API,                     "Error in Application Programmer Interface, contact support"},   /* 7900 */
 	{ERR_SWITCH_DEFAULT,          "Unexpected default case in switch statement, contact support"}, /* 7901 */
 	{ERR_ASSERT_FAILURE,          "Assertion Failure, contact support"},                                            /* 7902 */
 	{ERR_NO_NAME_TABLE,           "Equivalence section has not been defined"},
