@@ -1,0 +1,16 @@
+
+	$Id: README,v 1.1 1998/12/15 18:53:26 jimg Exp $
+
+These files comprise a small set of test dataset for the FreeForm server.
+Each of the files named test?.fmt contains a FF format description for the
+data in the data file with matching base name (test0.fmt --> test0.dat, ...).
+
+For information on the content of these files, look in the FF manual. I've
+also stuck some information in comments in the files. Note that the manual
+does not contain information about the new array features of FF.
+
+The format description files only need the *_input_data part to run with the
+DODS-FF server. However, by including an ASCII_output_data section it is
+simple to test the datasets and format descriptions themselves using
+`newform' (which can be found in the ff-dods/FFND directory). This program
+can be used to help diagnose problems with the format files.
