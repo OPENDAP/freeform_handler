@@ -1,6 +1,5 @@
-
 /* FILENAME:  checkvar.c
-
+ *
  * CONTAINS:  checkvar()
  */
 
@@ -35,92 +34,109 @@
 
 static int check_for_unused_flags(FF_STD_ARGS_PTR std_args)
 {
-    int error = 0;
+	int error = 0;
 
-    if (std_args->output_file)
-	error = err_push(ERR_IGNORED_OPTION, "output_file (Newform only)");
-
-    return (error);
+	if (std_args->output_file)
+		error = err_push(ERR_IGNORED_OPTION, "output_file (Newform only)");
+	
+	return(error);
 }
-
+	
 void main(int argc, char *argv[])
 {
-    FF_BUFSIZE_PTR checkvar_log = NULL;
+	FF_BUFSIZE_PTR checkvar_log = NULL;
 
-    char log_file_write_mode[4];
+	char log_file_write_mode[4];
+  
+	int error = 0;
+	FF_STD_ARGS_PTR std_args = NULL;
 
-    int error = 0;
-    FF_STD_ARGS_PTR std_args = NULL;
-
-    std_args = ff_create_std_args();
-    if (!std_args) {
-	error = ERR_MEM_LACK;
-	goto main_exit;
-    }
-    error = parse_command_line(argc, argv, std_args);
-    if (error)
-	goto main_exit;
-
-    if (std_args->log_file) {
-	checkvar_log = ff_create_bufsize(SCRATCH_QUANTA);
-	if (!checkvar_log) {
-	    error = err_push(ERR_MEM_LACK, "");
-	    goto main_exit;
+	std_args = ff_create_std_args();
+	if (!std_args)
+	{
+		error = ERR_MEM_LACK;
+		goto main_exit;
 	}
-    }
-    error = check_for_unused_flags(std_args);
-    if (error)
-	goto main_exit;
 
-    error = checkvar(std_args, checkvar_log, stderr);
+	error = parse_command_line(argc, argv, std_args);
+	if (error)
+		goto main_exit;
 
-    fprintf(stderr, "\n");
+	if (std_args->log_file)
+	{
+		checkvar_log = ff_create_bufsize(SCRATCH_QUANTA);
+		if (!checkvar_log)
+		{
+			error = err_push(ERR_MEM_LACK, "");
+			goto main_exit;
+		}
+	}
 
-    /* Is user asking for both error logging and a log file? */
-    if (std_args->error_log && checkvar_log) {
-	if (strcmp(std_args->error_log, std_args->log_file)) {
+	error = check_for_unused_flags(std_args);
+	if (error)
+		goto main_exit;
+
+	error = checkvar(std_args, checkvar_log, stderr);
+	
+	fprintf(stderr,"\n");
+
+	/* Is user asking for both error logging and a log file? */
+	if (std_args->error_log && checkvar_log)
+	{
+		if (strcmp(std_args->error_log, std_args->log_file))
+		{
 #if FF_OS == FF_OS_UNIX
-	    strcpy(log_file_write_mode, "w");
+			strcpy(log_file_write_mode, "w");
 #else
-	    strcpy(log_file_write_mode, "wt");
+			strcpy(log_file_write_mode, "wt");
 #endif
-	} else {
+		}
+		else
+		{
 #if FF_OS == FF_OS_UNIX
-	    strcpy(log_file_write_mode, "a");
+			strcpy(log_file_write_mode, "a");
 #else
-	    strcpy(log_file_write_mode, "at");
+			strcpy(log_file_write_mode, "at");
+#endif
+		}
+	}
+	else if (checkvar_log)
+	{
+#if FF_OS == FF_OS_UNIX
+			strcpy(log_file_write_mode, "w");
+#else
+			strcpy(log_file_write_mode, "wt");
 #endif
 	}
-    } else if (checkvar_log) {
-#if FF_OS == FF_OS_UNIX
-	strcpy(log_file_write_mode, "w");
-#else
-	strcpy(log_file_write_mode, "wt");
-#endif
-    }
-    if (checkvar_log) {
-	FILE *fp = NULL;
 
-	fp = fopen(std_args->log_file, log_file_write_mode);
-	if (fp) {
-	    size_t bytes_written = fwrite(checkvar_log->buffer, 1, (size_t) checkvar_log->bytes_used, fp);
+	if (checkvar_log)
+	{
+		FILE *fp = NULL;
 
-	    if (bytes_written != (size_t) checkvar_log->bytes_used)
-		error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", (int) bytes_written, (int) checkvar_log->bytes_used, std_args->log_file);
+		fp = fopen(std_args->log_file, log_file_write_mode);
+		if (fp)
+		{
+			size_t bytes_written = fwrite(checkvar_log->buffer, 1, (size_t)checkvar_log->bytes_used, fp);
 
-	    fclose(fp);
-	} else
-	    error = err_push(ERR_CREATE_FILE, std_args->log_file);
+			if (bytes_written != (size_t)checkvar_log->bytes_used)
+				error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", (int)bytes_written, (int)checkvar_log->bytes_used, std_args->log_file);
 
-	ff_destroy_bufsize(checkvar_log);
-    }
-  main_exit:
+			fclose(fp);
+		}
+		else
+			error = err_push(ERR_CREATE_FILE, std_args->log_file);
 
-    if (error || err_state())
-	err_disp(std_args);
+		ff_destroy_bufsize(checkvar_log);
+	}
 
-    if (std_args)
-	ff_destroy_std_args(std_args);
+main_exit:
 
-    memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main");
+	if (error || err_state())
+		err_disp(std_args);
+
+	if (std_args)
+		ff_destroy_std_args(std_args);
+	
+	memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main");
 }
+

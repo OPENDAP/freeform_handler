@@ -1,6 +1,5 @@
-
 /* FILENAME:  formlist.c
-
+ *
  * CONTAINS: 
  * Public functions:
  *
@@ -31,36 +30,35 @@
 #define WANT_FF_TYPES
 #include <freeform.h>
 
-FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES] =
-{
-    {"text", FFV_TEXT},
-    {"int8", FFV_INT8},
-    {"uint8", FFV_UINT8},
-    {"int16", FFV_INT16},
-    {"uint16", FFV_UINT16},
-    {"int32", FFV_INT32},
-    {"uint32", FFV_UINT32},
-    {"int64", FFV_INT64},
-    {"uint64", FFV_UINT64},
-    {"float32", FFV_FLOAT32},
-    {"float64", FFV_FLOAT64},
-    {"enote", FFV_ENOTE},
-    {"NEWLINE", FFV_EOL},
-    {"equation", FFV_EQN},
+FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES] = {
+	{"text",        FFV_TEXT},
+	{"int8",        FFV_INT8},
+	{"uint8",       FFV_UINT8},
+	{"int16",       FFV_INT16},
+	{"uint16",      FFV_UINT16},
+	{"int32",       FFV_INT32},
+	{"uint32",      FFV_UINT32},
+	{"int64",       FFV_INT64},
+	{"uint64",      FFV_UINT64},
+	{"float32",     FFV_FLOAT32},
+	{"float64",     FFV_FLOAT64},
+	{"enote",       FFV_ENOTE},
+	{"NEWLINE",     FFV_EOL},
+	{"equation",    FFV_EQN},
 
-    {"constant", FFV_CONSTANT},
-    {"initial", FFV_INITIAL},
+	{"constant",    FFV_CONSTANT},
+	{"initial",     FFV_INITIAL},
 
-    {"char", FFV_TEXT},		/* provided for backwards compatibility */
-    {"uchar", FFV_UINT8},	/* provided for backwards compatibility */
-    {"short", FFV_INT16},	/* provided for backwards compatibility */
-    {"ushort", FFV_UINT16},	/* provided for backwards compatibility */
-    {"long", FFV_INT32},	/* provided for backwards compatibility */
-    {"ulong", FFV_UINT32},	/* provided for backwards compatibility */
-    {"float", FFV_FLOAT32},	/* provided for backwards compatibility */
-    {"double", FFV_FLOAT64},	/* provided for backwards compatibility */
+	{"char",        FFV_TEXT},     /* provided for backwards compatibility */
+	{"uchar",       FFV_UINT8},    /* provided for backwards compatibility */
+	{"short",       FFV_INT16},    /* provided for backwards compatibility */
+	{"ushort",      FFV_UINT16},   /* provided for backwards compatibility */
+	{"long",        FFV_INT32},    /* provided for backwards compatibility */
+	{"ulong",       FFV_UINT32},   /* provided for backwards compatibility */
+	{"float",       FFV_FLOAT32},  /* provided for backwards compatibility */
+	{"double",      FFV_FLOAT64},  /* provided for backwards compatibility */
 
-    {(char *) NULL, FFV_NULL},
+	{(char *)NULL,  FFV_NULL},
 };
 
 /* Define the composite Format types */
@@ -72,9 +70,9 @@ FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES] =
 #define FFF_ASCII_INPUT_DATA    (FFF_ASCII  | FFF_DATA | FFF_INPUT)
 #define FFF_FLAT_INPUT_DATA    (FFF_FLAT  | FFF_DATA | FFF_INPUT)
 
-#define FFF_BINARY_OUTPUT_DATA  (FFF_BINARY | FFF_DATA | FFF_OUTPUT)
-#define FFF_ASCII_OUTPUT_DATA   (FFF_ASCII  | FFF_DATA | FFF_OUTPUT)
-#define FFF_FLAT_OUTPUT_DATA   (FFF_FLAT  | FFF_DATA | FFF_OUTPUT)
+#define FFF_BINARY_OUTPUT_DATA  (FFF_BINARY | FFF_DATA | FFF_OUTPUT)    
+#define FFF_ASCII_OUTPUT_DATA   (FFF_ASCII  | FFF_DATA | FFF_OUTPUT)    
+#define FFF_FLAT_OUTPUT_DATA   (FFF_FLAT  | FFF_DATA | FFF_OUTPUT)    
 
 #define FFF_BINARY_FILE_HEADER              (FFF_BINARY | FFF_FILE | FFF_HEADER)
 #define FFF_ASCII_FILE_HEADER               (FFF_ASCII  | FFF_FILE | FFF_HEADER)
@@ -134,95 +132,95 @@ FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES] =
 #define FFF_ASCII_RECORD   (FFF_RECORD | FFF_ASCII)
 #define FFF_FLAT_RECORD   (FFF_RECORD | FFF_FLAT)
 
-FFF_LOOKUP format_types[NUM_FORMAT_TYPES] =
-{
-    {"binary_data", FFF_BINARY_DATA},
-    {"binary_input_data", FFF_BINARY_INPUT_DATA},
-    {"binary_output_data", FFF_BINARY_OUTPUT_DATA},
-    {"binary_file_header", FFF_BINARY_FILE_HEADER},
-    {"binary_input_file_header", FFF_INPUT_BINARY_FILE_HEADER},
-    {"binary_output_file_header", FFF_OUTPUT_BINARY_FILE_HEADER},
-    {"binary_file_header_separate", FFF_BINARY_FILE_HEADER_SEP},
- {"binary_input_file_header_separate", FFF_INPUT_BINARY_FILE_HEADER_SEP},
-{"binary_output_file_header_separate", FFF_OUTPUT_BINARY_FILE_HEADER_SEP},
-    {"binary_record_header", FFF_BINARY_REC_HEADER},
-    {"binary_input_record_header", FFF_INPUT_BINARY_REC_HEADER},
-    {"binary_output_record_header", FFF_OUTPUT_BINARY_REC_HEADER},
-    {"binary_record_header_separate", FFF_BINARY_REC_HEADER_SEP},
-{"binary_input_record_header_separate", FFF_INPUT_BINARY_REC_HEADER_SEP},
-    {"binary_output_record_header_separate", FFF_OUTPUT_BINARY_REC_HEADER_SEP},
-    {"binary_RECORD", FFF_BINARY_RECORD},
+FFF_LOOKUP format_types[NUM_FORMAT_TYPES] = {
+	{"binary_data",        FFF_BINARY_DATA},
+	{"binary_input_data",  FFF_BINARY_INPUT_DATA},
+	{"binary_output_data", FFF_BINARY_OUTPUT_DATA},
+	{"binary_file_header",        FFF_BINARY_FILE_HEADER},
+	{"binary_input_file_header",  FFF_INPUT_BINARY_FILE_HEADER},
+	{"binary_output_file_header", FFF_OUTPUT_BINARY_FILE_HEADER},
+	{"binary_file_header_separate",        FFF_BINARY_FILE_HEADER_SEP},
+	{"binary_input_file_header_separate",  FFF_INPUT_BINARY_FILE_HEADER_SEP},
+	{"binary_output_file_header_separate",        FFF_OUTPUT_BINARY_FILE_HEADER_SEP},
+	{"binary_record_header",                      FFF_BINARY_REC_HEADER},
+	{"binary_input_record_header",    FFF_INPUT_BINARY_REC_HEADER},
+	{"binary_output_record_header",   FFF_OUTPUT_BINARY_REC_HEADER},
+	{"binary_record_header_separate", FFF_BINARY_REC_HEADER_SEP},
+	{"binary_input_record_header_separate",  FFF_INPUT_BINARY_REC_HEADER_SEP},
+	{"binary_output_record_header_separate", FFF_OUTPUT_BINARY_REC_HEADER_SEP},
+	{"binary_RECORD",  FFF_BINARY_RECORD},
 
-    {"flat_data", FFF_FLAT_DATA},
-    {"flat_input_data", FFF_FLAT_INPUT_DATA},
-    {"flat_output_data", FFF_FLAT_OUTPUT_DATA},
-    {"flat_file_header", FFF_FLAT_FILE_HEADER},
-    {"flat_input_file_header", FFF_INPUT_FLAT_FILE_HEADER},
-    {"flat_output_file_header", FFF_OUTPUT_FLAT_FILE_HEADER},
-    {"flat_file_header_separate", FFF_FLAT_FILE_HEADER_SEP},
-    {"flat_input_file_header_separate", FFF_INPUT_FLAT_FILE_HEADER_SEP},
-    {"flat_input_file_header_separate_varied", FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR},
-    {"flat_output_file_header_separate", FFF_OUTPUT_FLAT_FILE_HEADER_SEP},
-    {"flat_output_file_header_separate_varied", FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR},
-    {"flat_record_header", FFF_FLAT_REC_HEADER},
-    {"flat_input_record_header", FFF_INPUT_FLAT_REC_HEADER},
-    {"flat_output_record_header", FFF_OUTPUT_FLAT_REC_HEADER},
-    {"flat_record_header_separate", FFF_FLAT_REC_HEADER_SEP},
-    {"flat_input_record_header_separate", FFF_INPUT_FLAT_REC_HEADER_SEP},
-  {"flat_output_record_header_separate", FFF_OUTPUT_FLAT_REC_HEADER_SEP},
-    {"flat_RECORD", FFF_FLAT_RECORD},
+	{"flat_data",         FFF_FLAT_DATA},
+	{"flat_input_data",   FFF_FLAT_INPUT_DATA},
+	{"flat_output_data",  FFF_FLAT_OUTPUT_DATA},
+	{"flat_file_header",         FFF_FLAT_FILE_HEADER},
+	{"flat_input_file_header",   FFF_INPUT_FLAT_FILE_HEADER},
+	{"flat_output_file_header",           FFF_OUTPUT_FLAT_FILE_HEADER},
+	{"flat_file_header_separate",         FFF_FLAT_FILE_HEADER_SEP},
+	{"flat_input_file_header_separate",   FFF_INPUT_FLAT_FILE_HEADER_SEP},
+	{"flat_input_file_header_separate_varied",   FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"flat_output_file_header_separate",         FFF_OUTPUT_FLAT_FILE_HEADER_SEP},
+	{"flat_output_file_header_separate_varied",  FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"flat_record_header",           FFF_FLAT_REC_HEADER},
+	{"flat_input_record_header",     FFF_INPUT_FLAT_REC_HEADER},
+	{"flat_output_record_header",    FFF_OUTPUT_FLAT_REC_HEADER},
+	{"flat_record_header_separate",         FFF_FLAT_REC_HEADER_SEP},
+	{"flat_input_record_header_separate",   FFF_INPUT_FLAT_REC_HEADER_SEP},
+	{"flat_output_record_header_separate",  FFF_OUTPUT_FLAT_REC_HEADER_SEP},
+	{"flat_RECORD",   FFF_FLAT_RECORD},
 
-    {"dbase_data", FFF_FLAT_DATA},
-    {"dbase_input_data", FFF_FLAT_INPUT_DATA},
-    {"dbase_output_data", FFF_FLAT_OUTPUT_DATA},
-    {"dbase_file_header", FFF_FLAT_FILE_HEADER},
-    {"dbase_input_file_header", FFF_INPUT_FLAT_FILE_HEADER},
-    {"dbase_output_file_header", FFF_OUTPUT_FLAT_FILE_HEADER},
-    {"dbase_file_header_separate", FFF_FLAT_FILE_HEADER_SEP},
-    {"dbase_input_file_header_separate", FFF_INPUT_FLAT_FILE_HEADER_SEP},
-    {"dbase_input_file_header_separate_varied", FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR},
-  {"dbase_output_file_header_separate", FFF_OUTPUT_FLAT_FILE_HEADER_SEP},
-    {"dbase_output_file_header_separate_varied", FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR},
-    {"dbase_record_header", FFF_FLAT_REC_HEADER},
-    {"dbase_input_record_header", FFF_INPUT_FLAT_REC_HEADER},
-    {"dbase_output_record_header", FFF_OUTPUT_FLAT_REC_HEADER},
-    {"dbase_record_header_separate", FFF_FLAT_REC_HEADER_SEP},
-    {"dbase_input_record_header_separate", FFF_INPUT_FLAT_REC_HEADER_SEP},
- {"dbase_output_record_header_separate", FFF_OUTPUT_FLAT_REC_HEADER_SEP},
-    {"dbase_RECORD", FFF_FLAT_RECORD},
+	{"dbase_data",         FFF_FLAT_DATA},
+	{"dbase_input_data",   FFF_FLAT_INPUT_DATA},
+	{"dbase_output_data",  FFF_FLAT_OUTPUT_DATA},
+	{"dbase_file_header",         FFF_FLAT_FILE_HEADER},
+	{"dbase_input_file_header",   FFF_INPUT_FLAT_FILE_HEADER},
+	{"dbase_output_file_header",           FFF_OUTPUT_FLAT_FILE_HEADER},
+	{"dbase_file_header_separate",         FFF_FLAT_FILE_HEADER_SEP},
+	{"dbase_input_file_header_separate",   FFF_INPUT_FLAT_FILE_HEADER_SEP},
+	{"dbase_input_file_header_separate_varied",   FFF_INPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"dbase_output_file_header_separate",         FFF_OUTPUT_FLAT_FILE_HEADER_SEP},
+	{"dbase_output_file_header_separate_varied",  FFF_OUTPUT_FLAT_FILE_HEADER_SEP_VAR},
+	{"dbase_record_header",           FFF_FLAT_REC_HEADER},
+	{"dbase_input_record_header",     FFF_INPUT_FLAT_REC_HEADER},
+	{"dbase_output_record_header",    FFF_OUTPUT_FLAT_REC_HEADER},
+	{"dbase_record_header_separate",         FFF_FLAT_REC_HEADER_SEP},
+	{"dbase_input_record_header_separate",   FFF_INPUT_FLAT_REC_HEADER_SEP},
+	{"dbase_output_record_header_separate",  FFF_OUTPUT_FLAT_REC_HEADER_SEP},
+	{"dbase_RECORD",   FFF_FLAT_RECORD},
 
-    {"ASCII_data", FFF_ASCII_DATA},
-    {"ASCII_input_data", FFF_ASCII_INPUT_DATA},
-    {"ASCII_output_data", FFF_ASCII_OUTPUT_DATA},
-    {"ASCII_file_header", FFF_ASCII_FILE_HEADER},
-    {"ASCII_input_file_header", FFF_INPUT_ASCII_FILE_HEADER},
-    {"ASCII_output_file_header", FFF_OUTPUT_ASCII_FILE_HEADER},
-    {"ASCII_file_header_separate", FFF_ASCII_FILE_HEADER_SEP},
-    {"ASCII_input_file_header_separate", FFF_INPUT_ASCII_FILE_HEADER_SEP},
-    {"ASCII_input_file_header_separate_varied", FFF_INPUT_ASCII_FILE_HEADER_SEP_VAR},
- {"ASCII_output_file_header_separate", FFF_OUTPUT_ASCII_FILE_HEADER_SEP},
-    {"ASCII_output_file_header_separate_varied", FFF_OUTPUT_ASCII_FILE_HEADER_SEP_VAR},
-    {"ASCII_record_header", FFF_ASCII_REC_HEADER},
-    {"ASCII_input_record_header", FFF_INPUT_ASCII_REC_HEADER},
-    {"ASCII_output_record_header", FFF_OUTPUT_ASCII_REC_HEADER},
-    {"ASCII_record_header_separate", FFF_ASCII_REC_HEADER_SEP},
-  {"ASCII_input_record_header_separate", FFF_INPUT_ASCII_REC_HEADER_SEP},
-{"ASCII_output_record_header_separate", FFF_OUTPUT_ASCII_REC_HEADER_SEP},
-    {"ASCII_RECORD", FFF_ASCII_RECORD},
+	{"ASCII_data",         FFF_ASCII_DATA},
+	{"ASCII_input_data",   FFF_ASCII_INPUT_DATA},
+	{"ASCII_output_data",  FFF_ASCII_OUTPUT_DATA},
+	{"ASCII_file_header",         FFF_ASCII_FILE_HEADER},
+	{"ASCII_input_file_header",   FFF_INPUT_ASCII_FILE_HEADER},
+	{"ASCII_output_file_header",  FFF_OUTPUT_ASCII_FILE_HEADER},
+	{"ASCII_file_header_separate",         FFF_ASCII_FILE_HEADER_SEP},
+	{"ASCII_input_file_header_separate",   FFF_INPUT_ASCII_FILE_HEADER_SEP},
+	{"ASCII_input_file_header_separate_varied",   FFF_INPUT_ASCII_FILE_HEADER_SEP_VAR},
+	{"ASCII_output_file_header_separate",         FFF_OUTPUT_ASCII_FILE_HEADER_SEP},
+	{"ASCII_output_file_header_separate_varied",  FFF_OUTPUT_ASCII_FILE_HEADER_SEP_VAR},
+	{"ASCII_record_header",           FFF_ASCII_REC_HEADER},
+	{"ASCII_input_record_header",     FFF_INPUT_ASCII_REC_HEADER},
+	{"ASCII_output_record_header",    FFF_OUTPUT_ASCII_REC_HEADER},
+	{"ASCII_record_header_separate",  FFF_ASCII_REC_HEADER_SEP},
+	{"ASCII_input_record_header_separate",   FFF_INPUT_ASCII_REC_HEADER_SEP},
+	{"ASCII_output_record_header_separate",  FFF_OUTPUT_ASCII_REC_HEADER_SEP},
+	{"ASCII_RECORD",   FFF_ASCII_RECORD},
 
-    {(char *) NULL, FFF_NULL},
+	{(char *)NULL,                           FFF_NULL},
 };
 
-typedef enum sect_types_enum {
-    RESERVED = 0,
-    IN_SECT = 1,
-    FMT_SECT = 2,
-    INPUT_EQV_SECT = 3,
-    OUTPUT_EQV_SECT = 4,
-    BEGIN_CONSTANT_SECT = 5,
-    BEGIN_NAME_EQUIV_SECT = 6,
-    LAST_SECT = 7,
-    ZEROTH_SECT = 8		/* initial state before a real section is found */
+typedef enum sect_types_enum
+{
+ RESERVED              = 0,
+ IN_SECT               = 1,
+ FMT_SECT              = 2,
+ INPUT_EQV_SECT        = 3,
+ OUTPUT_EQV_SECT       = 4,
+ BEGIN_CONSTANT_SECT   = 5,
+ BEGIN_NAME_EQUIV_SECT = 6,
+ LAST_SECT             = 7,
+ ZEROTH_SECT           = 8  /* initial state before a real section is found */
 } sect_types_t;
 
 #ifdef ROUTINE_NAME
@@ -232,12 +230,12 @@ typedef enum sect_types_enum {
 
 static char *skip_lead_whitespace(char *s)
 {
-    assert(s);
+	assert(s);
 
-    while (*s && (isspace((int)*s) || *s == '\x1a') && strcspn(s, UNION_EOL_CHARS))
-	s++;
-
-    return (s);
+	while (*s && (isspace(*s) || *s == '\x1a') && strcspn(s, UNION_EOL_CHARS))
+		s++;
+	
+	return(s);
 }
 
 #define is_comment_line(str) (*(str) == '/' ? TRUE : strspn(str, UNION_EOL_CHARS) ? TRUE : FALSE)
@@ -279,39 +277,46 @@ static char *skip_lead_whitespace(char *s)
  ****************************************************************************/
 
 static char *get_token
- (
-     char *text_line,
-     char *save_char
-) {
-    char *token_start = NULL;
-    char *token_end = NULL;
+	(
+	 char *text_line,
+	 char *save_char
+	)
+{
+	char *token_start = NULL;
+	char *token_end = NULL;
 
-    assert(text_line);
+	assert(text_line);
 
-    if (*save_char) {
-	token_start = text_line + strlen(text_line);
-	RESTORE_CHAR(text_line, *save_char);
-    } else
-	token_start = text_line;
+	if (*save_char)
+	{
+		token_start = text_line + strlen(text_line);
+		RESTORE_CHAR(text_line, *save_char);
+	}
+	else
+		token_start = text_line;
 
-    while (*token_start && strspn(token_start, LINESPACE))	/* skip non-EOL whitespace */
-	++token_start;
+	while (*token_start && strspn(token_start, LINESPACE)) /* skip non-EOL whitespace */
+		++token_start;
 
-    token_end = NULL;
-    if (*token_start == '"') {
-	token_end = strchr(token_start + 1, '"');
-	if (token_end)
-	    ++token_end;
-    }
-    if (!token_end) {
-	token_end = token_start;
-	while (*token_end && strcspn(token_end, WHITESPACE))	/* scan until any whitespace */
-	    ++token_end;
-    }
-    *save_char = *token_end;
-    *token_end = STR_END;
+	token_end = NULL;
+	if (*token_start == '"')
+	{
+		token_end = strchr(token_start + 1, '"');
+		if (token_end)
+			++token_end;
+	}
 
-    return token_start;
+	if (!token_end)
+	{
+		token_end = token_start;
+		while (*token_end && strcspn(token_end, WHITESPACE)) /* scan until any whitespace */
+			++token_end;
+	}
+
+	*save_char = *token_end;
+	*token_end = STR_END;
+
+	return token_start;
 }
 
 /*****************************************************************************
@@ -340,29 +345,30 @@ static char *get_token
  ****************************************************************************/
 
 static BOOLEAN get_format_type_and_name
- (
-     char *sect_start,
-     FF_TYPES_t * fmt_type,
-     char **fmt_name
-) {
-    char *token = NULL;
-    char save_char = STR_END;
+	(
+	 char *sect_start, 
+	 FF_TYPES_t *fmt_type,
+	 char **fmt_name
+	)
+{
+	char *token = NULL;
+	char save_char = STR_END;
+	
+		/* See if a format type string is at start of line */
+		/* Parse candidate format type string into a NULL-terminated string
+		   for ff_lookup_number
+		*/
 
-    /* See if a format type string is at start of line */
-    /* Parse candidate format type string into a NULL-terminated string
-       for ff_lookup_number
-     */
+	token = sect_start;
+	token = get_token(token, &save_char);
+	*fmt_type = ff_lookup_number(format_types, token);
+	
+	token = get_token(token, &save_char);
+	*fmt_name = token;
 
-    token = sect_start;
-    token = get_token(token, &save_char);
-    *fmt_type = ff_lookup_number(format_types, token);
-
-    token = get_token(token, &save_char);
-    *fmt_name = token;
-
-    RESTORE_CHAR(token, save_char);
-
-    return ((BOOLEAN) (*fmt_type != FF_VAR_TYPE_FLAG));
+	RESTORE_CHAR(token, save_char);
+	
+	return((BOOLEAN)(*fmt_type != FF_VAR_TYPE_FLAG));
 }
 
 /*****************************************************************************
@@ -392,14 +398,14 @@ static BOOLEAN get_format_type_and_name
 
 static char *find_EOL(char *s)
 {
-    size_t spn;
+	size_t spn;
+	
+	if (!FF_STRLEN(s))
+		return(NULL);
 
-    if (!FF_STRLEN(s))
-	return (NULL);
-
-    spn = strcspn(s, UNION_EOL_CHARS);
-
-    return (s + spn);
+	spn = strcspn(s, UNION_EOL_CHARS);
+	
+	return(s + spn);
 }
 
 /*****************************************************************************
@@ -426,95 +432,97 @@ static char *find_EOL(char *s)
  * ERRORS:
  ****************************************************************************/
 
-#if 0
-static char *
-find_last_word_on_line(char *text_line)
+static char *find_last_word_on_line(char *text_line)
 {
-    short lead_count;
-    char *cp = find_EOL(text_line);
+	short lead_count;
+	char *cp = find_EOL(text_line);
+	
+	/* Does text_line begins with a newline?  If so, NULL indicates there
+	   is no last word.
+	*/
+	if (strcspn(text_line, UNION_EOL_CHARS) == 0)
+		return(NULL);
+		
+	if (cp)
+		--cp;
+	else
+		cp = text_line + strlen(text_line) - 1;
 
-    /* Does text_line begins with a newline?  If so, NULL indicates there
-       is no last word.
-     */
-    if (strcspn(text_line, UNION_EOL_CHARS) == 0)
-	return (NULL);
+	/* Now cp points to last character on the line */
+	lead_count = (short)((char HUGE *)cp - (char HUGE *)text_line);
+	assert(lead_count >= 0);
 
-    if (cp)
-	--cp;
-    else
-	cp = text_line + strlen(text_line) - 1;
-
-    /* Now cp points to last character on the line */
-    lead_count = (short) ((char HUGE *) cp - (char HUGE *) text_line);
-    assert(lead_count >= 0);
-
-    while (lead_count > 0 && isspace((int)text_line[lead_count])) {
-	lead_count--;
-	cp--;
-    }
-
-    while (lead_count > 0 && !isspace((int)text_line[lead_count])) {
-	lead_count--;
-	cp--;
-    }
-
-    return (cp);
+	while (lead_count > 0 && isspace(text_line[lead_count]))
+	{
+		lead_count--;
+		cp--;
+	}
+	
+	while (lead_count > 0 && !isspace(text_line[lead_count]))
+	{
+		lead_count--;
+		cp--;
+	}
+	
+	return(cp);
 }
-#endif
 
 static sect_types_t kind_of_equiv_section(char *text_line)
 {
-    size_t text_line_len = strlen(text_line);
+	size_t text_line_len = strlen(text_line);
 
-    if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_INPUT_EQV))
-	return (INPUT_EQV_SECT);
-    else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_OUTPUT_EQV))
-	return (OUTPUT_EQV_SECT);
-    else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_BEGIN_CONSTANT))
-	return (BEGIN_CONSTANT_SECT);
-    else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_BEGIN_NAME_EQUIV))
-	return (BEGIN_NAME_EQUIV_SECT);
-    else
-	return (0);
+	if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_INPUT_EQV))
+		return(INPUT_EQV_SECT);
+	else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_OUTPUT_EQV))
+		return(OUTPUT_EQV_SECT);
+	else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_BEGIN_CONSTANT))
+		return(BEGIN_CONSTANT_SECT);
+	else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_BEGIN_NAME_EQUIV))
+		return(BEGIN_NAME_EQUIV_SECT);
+	else
+		return(0);
 }
 
 static BOOLEAN is_equiv_section(char *text_line, sect_types_t current_sect_type)
 {
-    sect_types_t sect_type = 0;
+	sect_types_t sect_type = 0;
 
-    /* Have we encountered an input_eqv or output_eqv line followed by a begin constant
-       or begin name_equiv line?  If so, don't report the beginning of a (new) equivalence
-       section.  This would lose the output_eqv identifying type for the equivalence
-       section.
-     */
-    sect_type = kind_of_equiv_section(text_line);
-    if ((current_sect_type == INPUT_EQV_SECT || current_sect_type == OUTPUT_EQV_SECT) &&
-	(sect_type == BEGIN_CONSTANT_SECT || sect_type == BEGIN_NAME_EQUIV_SECT)
-	) {
-	return (FALSE);
-    }
-    if (sect_type)
-	return (TRUE);
-    else
-	return (FALSE);
+	/* Have we encountered an input_eqv or output_eqv line followed by a begin constant
+	   or begin name_equiv line?  If so, don't report the beginning of a (new) equivalence
+		section.  This would lose the output_eqv identifying type for the equivalence
+		section.
+	*/
+	sect_type = kind_of_equiv_section(text_line);
+	if ((current_sect_type == INPUT_EQV_SECT || current_sect_type == OUTPUT_EQV_SECT) &&
+		 (sect_type == BEGIN_CONSTANT_SECT || sect_type == BEGIN_NAME_EQUIV_SECT)
+	   )
+	{
+		return(FALSE);
+	}
+
+	if (sect_type)
+		return(TRUE);
+	else
+		return(FALSE);
 }
 
 static sect_types_t is_last_sect(char *text_line)
 {
-    return (find_EOL(text_line) ? FALSE : TRUE);
+	return(find_EOL(text_line) ? FALSE : TRUE);
 }
 
 static BOOLEAN is_format
- (
-     char *text_line
-) {
-    FF_TYPES_t fmt_type;
-    char *fmt_name;
-
-    if (get_format_type_and_name(text_line, &fmt_type, &fmt_name))
-	return (TRUE);
-    else
-	return (FALSE);
+	(
+	 char *text_line 
+	)
+{
+	FF_TYPES_t fmt_type;
+	char *fmt_name;
+	
+	if (get_format_type_and_name(text_line, &fmt_type, &fmt_name))
+		return(TRUE);
+	else
+		return(FALSE);
 }
 
 /*****************************************************************************
@@ -544,64 +552,70 @@ static BOOLEAN is_format
  ****************************************************************************/
 
 static sect_types_t get_section_type
- (
-     char *text_line,
-     sect_types_t current_section_type
-) {
-    sect_types_t sect_type;
-
-    /* The order of the first two if-tests cannot be changed! */
-    if (is_comment_line(text_line))
-	sect_type = ZEROTH_SECT;
-    else if (is_format(text_line))
-	sect_type = FMT_SECT;
-    else if (is_equiv_section(text_line, current_section_type))
-	sect_type = kind_of_equiv_section(text_line);
-    else if (is_last_sect(text_line))
-	sect_type = LAST_SECT;
-    /*
-       else if (add_your_BOOLEAN_test_here(text_line))
-       sect_type = ADD_YOUR_SECTION_TYPE_HERE;
-     */
-    else {
-	if (current_section_type == ZEROTH_SECT)
-	    sect_type = FMT_SECT;
+	(
+	 char *text_line,
+	 sect_types_t current_section_type
+	)
+{
+	sect_types_t sect_type;
+	
+	/* The order of the first two if-tests cannot be changed! */
+	if (is_comment_line(text_line))
+		sect_type = ZEROTH_SECT;
+	else if (is_format(text_line))
+		sect_type = FMT_SECT;
+	else if (is_equiv_section(text_line, current_section_type))
+		sect_type = kind_of_equiv_section(text_line);
+	else if (is_last_sect(text_line))
+		sect_type = LAST_SECT;
+	/*
+	else if (add_your_BOOLEAN_test_here(text_line))
+		sect_type = ADD_YOUR_SECTION_TYPE_HERE;
+	*/
 	else
-	    sect_type = IN_SECT;
-    }
-
-    return (sect_type);
+	{
+		if (current_section_type == ZEROTH_SECT)
+			sect_type = FMT_SECT;
+		else
+			sect_type = IN_SECT;
+	}
+	
+	return(sect_type);
 }
 
 static char *get_first_line(char *s)
 {
-    return (skip_lead_whitespace(s));
+	return(skip_lead_whitespace(s));
 }
 
 static char *get_next_line(char *s)
 {
-    char *t;
-
-    assert(s);
-
-    t = find_EOL(s);
-    if (t) {
-	t += strspn(t, UNION_EOL_CHARS);
-	t = skip_lead_whitespace(t);
-    } else
-	t = s + strlen(s);
-
-    return (t);
+	char *t;
+	
+	assert(s);
+	
+	t = find_EOL(s);
+	if (t)
+	{
+		t += strspn(t, UNION_EOL_CHARS);
+		t = skip_lead_whitespace(t);
+	}
+	else
+		t = s + strlen(s);
+	
+	return(t);
 }
 
 static void check_old_style_EOL_var
- (
-     VARIABLE_PTR var
-) {
-    if (!strcmp("EOL", var->name) && IS_CONSTANT(var)) {
-	var->type &= ~FFV_DATA_TYPES;
-	var->type |= FFV_EOL;
-    }
+	(
+	 VARIABLE_PTR var
+	)
+{
+	if (!strcmp("EOL", var->name) && IS_CONSTANT(var))
+	{
+		var->type &= ~FFV_DATA_TYPES;
+		var->type |= FFV_EOL;
+	}
 }
 
 /*****************************************************************************
@@ -631,80 +645,85 @@ static void check_old_style_EOL_var
  ****************************************************************************/
 
 static int parse_array_variable
- (
-     char **array_desc_str,
-     VARIABLE_PTR var
-) {
-    int error = 0;
-    char *token = NULL;
-    char save_char = STR_END;
-#if 0
-    char *endptr = NULL;
-#endif
-    FF_TYPES_t var_type = FFV_NULL;
+	(
+	 char **array_desc_str,
+	 VARIABLE_PTR var
+	)
+{
+	int error = 0;
+	char *token = NULL;
+	char save_char = STR_END;
+	char *endptr = NULL;
+	FF_TYPES_t var_type = FFV_NULL;
 
-    FF_VALIDATE(var);
+	FF_VALIDATE(var);
 
-    FFV_TYPE(var) = FF_ARRAY;
+	FFV_TYPE(var) = FF_ARRAY;
 
-    token = get_token(*array_desc_str, &save_char);
-    while (strlen(token) && os_strcmpi(token, "OF"))
 	token = get_token(*array_desc_str, &save_char);
+	while (strlen(token) && os_strcmpi(token, "OF"))
+		token = get_token(*array_desc_str, &save_char);
 
-    if (!strlen(token)) {
-	char *cp = strrchr(*array_desc_str, ']');
+	if (!strlen(token))
+	{
+		char *cp = strrchr(*array_desc_str, ']');
 
-	if (!cp || os_strncmpi(cp + 1, "OF", 2))
-	    return err_push(ERR_VARIABLE_DESC, "Expecting \"OF\" to end array description");
+		if (!cp || os_strncmpi(cp + 1, "OF", 2))
+			return err_push(ERR_VARIABLE_DESC, "Expecting \"OF\" to end array description");
 
-	*token = save_char;
+		*token = save_char;
 
-	token = cp + 1;
+		token = cp + 1;
 
-	save_char = token[2];
-	token[2] = STR_END;
-    }
-    *token++ = STR_END;
-    var->array_desc_str = (char *) memStrdup(*array_desc_str, "var->array_desc_str");
-    if (!var->array_desc_str)
-	return err_push(ERR_MEM_LACK, *array_desc_str);
-    else
-	os_str_trim_whitespace(var->array_desc_str, var->array_desc_str);
-
-    token = get_token(token, &save_char);
-
-    if (FF_STRLEN(token)) {
-	var_type = ff_lookup_number(variable_types, token);
-	if (var_type != FF_VAR_TYPE_FLAG)
-	    FFV_TYPE(var) |= var_type;
-	else {
-	    FFV_TYPE(var) = FFV_RECORD;		/* or assign FF_VAR_TYPE_KEYWORD? */
-
-	    /* Is the array element type a Record type? (i.e., a format description?)
-	       Assume for the time being that it is, and error-out later...
-	     */
-
-	    /* Remember the variable type, which can be a record title, keyword, or typo */
-
-	    var->record_title = (char *) memStrdup(token, "var->record_title");
-	    if (!var->record_title)
-		error = err_push(ERR_MEM_LACK, "");
-
-	    os_str_replace_char(var->record_title, '"', ' ');
-	    os_str_trim_whitespace(var->record_title, var->record_title);
+		save_char = token[2];
+		token[2] = STR_END;
 	}
-    } else {
-	error = err_push(ERR_VARIABLE_DESC, "Expecting a variable type or a record format title for \"%s\"", var->name);
-    }
 
-    token = get_token(token, &save_char);
-    RESTORE_CHAR(token, save_char);
+	*token++ = STR_END;
+	var->array_desc_str = (char *)memStrdup(*array_desc_str, "var->array_desc_str");
+	if (!var->array_desc_str)
+		return err_push(ERR_MEM_LACK, *array_desc_str);
+	else
+		os_str_trim_whitespace(var->array_desc_str, var->array_desc_str);
 
-    (*array_desc_str)[strlen(*array_desc_str)] = 'O';	/* The 'O' in "OF" */
+	token = get_token(token, &save_char);
 
-    *array_desc_str = token;
+	if (FF_STRLEN(token))
+	{
+		var_type = ff_lookup_number(variable_types, token);
+		if (var_type != FF_VAR_TYPE_FLAG)
+			FFV_TYPE(var) |= var_type;
+		else
+		{
+			FFV_TYPE(var) = FFV_RECORD; /* or assign FF_VAR_TYPE_KEYWORD? */
 
-    return (error);
+			/* Is the array element type a Record type? (i.e., a format description?)
+				Assume for the time being that it is, and error-out later...
+			*/
+
+			/* Remember the variable type, which can be a record title, keyword, or typo */
+
+			var->record_title = (char *)memStrdup(token, "var->record_title");
+			if (!var->record_title)
+				error = err_push(ERR_MEM_LACK, "");
+
+			os_str_replace_char(var->record_title, '"', ' ');
+			os_str_trim_whitespace(var->record_title, var->record_title);
+		}
+	}
+	else
+	{
+		error = err_push(ERR_VARIABLE_DESC, "Expecting a variable type or a record format title for \"%s\"", var->name);
+	}
+	
+	token = get_token(token, &save_char);
+	RESTORE_CHAR(token, save_char);
+
+	(*array_desc_str)[strlen(*array_desc_str)] = 'O'; /* The 'O' in "OF" */
+
+	*array_desc_str = token;
+
+	return(error);
 }
 
 #define NEED_TO_CHECK_VARIABLE_SIZE(format, var) \
@@ -780,192 +799,245 @@ static int parse_array_variable
 
 static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 {
-    VARIABLE_PTR var = NULL;
+	VARIABLE_PTR var = NULL;
 
-    char save_char = STR_END;
+	char save_char = STR_END;
 
-    char *token = NULL;
-    char *endptr = NULL;
+	char *token = NULL;
+	char *endptr = NULL;
 
-    int error = 0;
+	int error = 0;
 
-    if (!format->variables) {
-	format->variables = dll_init();
 	if (!format->variables)
-	    return (ERR_MEM_LACK);
-    }
-    token = text_line;
-    token = get_token(token, &save_char);
-    if (FF_STRLEN(token)) {
-	var = ff_create_variable(token);
-	if (var == NULL)
-	    error = ERR_MEM_LACK;
-
-	if (var->name[0] == '"' && var->name[strlen(var->name) - 1] == '"') {
-	    var->name[0] = ' ';
-	    var->name[strlen(var->name) - 1] = ' ';
-
-	    os_str_trim_whitespace(var->name, var->name);
+	{
+		format->variables = dll_init();
+		if (!format->variables)
+			return(ERR_MEM_LACK);
 	}
-    } else {
-	error = err_push(ERR_VARIABLE_DESC, "Expecting a variable name (\"%s\")", format->name);
-	goto add_to_variable_list_exit;
-    }
 
-    if (!dll_add(format->variables)) {
-	ff_destroy_variable(var);
-	error = ERR_MEM_LACK;
-	goto add_to_variable_list_exit;
-    }
-    dll_assign(var, DLL_VAR, dll_last(format->variables));
+	token = text_line;
+	token = get_token(token, &save_char);
+	if (FF_STRLEN(token))
+	{
+		var = ff_create_variable(token);
+		if (var == NULL)
+			error = ERR_MEM_LACK;
 
-    token = get_token(token, &save_char);
-    if (FF_STRLEN(token)) {
-	errno = 0;
-	var->start_pos = strtol(token, &endptr, 10);
-	if (errno || FF_STRLEN(endptr)) {
-	    error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable start position: %s", token);
-	    goto add_to_variable_list_exit;
-	}
-    } else {
-	error = err_push(ERR_VARIABLE_DESC, "Expecting a start position for \"%s\"", var->name);
-	goto add_to_variable_list_exit;
-    }
+		if (var->name[0] == '"' && var->name[strlen(var->name) - 1] == '"')
+		{
+			var->name[0] = ' ';
+			var->name[strlen(var->name) - 1] = ' ';
 
-    token = get_token(token, &save_char);
-    if (FF_STRLEN(token)) {
-	errno = 0;
-	var->end_pos = strtol(token, &endptr, 10);
-	if (errno || FF_STRLEN(endptr)) {
-	    error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable end position: %s", token);
-	    goto add_to_variable_list_exit;
-	}
-    } else {
-	error = err_push(ERR_VARIABLE_DESC, "Expecting an end position for \"%s\"", var->name);
-	goto add_to_variable_list_exit;
-    }
-
-    token = get_token(token, &save_char);
-    if (FF_STRLEN(token)) {
-	FFV_TYPE(var) = ff_lookup_number(variable_types, token);
-	if (FFV_TYPE(var) == FF_VAR_TYPE_FLAG) {
-	    if (os_strncmpi("ARRAY", token, 5) == 0) {
-		RESTORE_CHAR(token, save_char);
-		save_char = STR_END;
-		error = parse_array_variable(&token, var);
-		if (error)
-		    goto add_to_variable_list_exit;
-
-		format->type |= FF_ARRAY;
-	    } else {
-		/* Is this a keyworded variable type?  If so, remember name of keyword in record_title */
-		if (IS_KEYWORDED_PARAMETER(token)) {
-		    FFV_TYPE(var) = 0;
-
-		    assert(!var->record_title);
-
-		    if (var->record_title)
-			memFree(var->record_title, "var->record_title");
-
-		    var->record_title = (char *) memStrdup(token, "token");
-		    if (!var->record_title) {
-			error = err_push(ERR_MEM_LACK, "");
-			goto add_to_variable_list_exit;
-		    }
-		} else {
-		    error = err_push(ERR_UNKNOWN_VAR_TYPE, token);
-		    goto add_to_variable_list_exit;
+			os_str_trim_whitespace(var->name, var->name);
 		}
-	    }
 	}
-    } else {
-	error = err_push(ERR_VARIABLE_DESC, "Expecting a variable type or array description for \"%s\"", var->name);
-	goto add_to_variable_list_exit;
-    }
-
-    token = get_token(token, &save_char);
-    if (FF_STRLEN(token)) {
-	errno = 0;
-	var->precision = (short) strtol(token, &endptr, 10);
-	if (errno || FF_STRLEN(endptr)) {
-	    error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable precision: %s", token);
-	    goto add_to_variable_list_exit;
+	else
+	{
+		error = err_push(ERR_VARIABLE_DESC, "Expecting a variable name (\"%s\")", format->name);
+		goto add_to_variable_list_exit;
 	}
-    } else {
-	if (IS_ARRAY(var)) {
-	    error = err_push(ERR_VARIABLE_DESC, "Expecting a precision for \"%s\"", var->name);
-	    goto add_to_variable_list_exit;
+
+	if (!dll_add(format->variables))
+	{
+		ff_destroy_variable(var);
+		error = ERR_MEM_LACK;
+		goto add_to_variable_list_exit;
 	}
-    }
 
-    if (var->end_pos < var->start_pos) {
-	error = err_push(ERR_VARIABLE_DESC, "End Position < Start Position\n%s", text_line);
-	goto add_to_variable_list_exit;
-    }
-    /* Determine The Variable Type */
-    if (var->start_pos == 0 && var->end_pos == 0) {
-	if (IS_BINARY(format)) {
-	    error = err_push(ERR_UNKNOWN_FORMAT_TYPE, "Illegal to have delimited binary format");
-	    goto add_to_variable_list_exit;
-	} else if (IS_ARRAY(format)) {
-	    error = err_push(ERR_UNKNOWN_FORMAT_TYPE, "Illegal to have delimited array format");
-	    goto add_to_variable_list_exit;
+	dll_assign(var, DLL_VAR, dll_last(format->variables));
+
+	token = get_token(token, &save_char);
+	if (FF_STRLEN(token))
+	{
+		errno = 0;
+		var->start_pos = strtol(token, &endptr, 10);
+		if (errno || FF_STRLEN(endptr))
+		{
+			error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable start position: %s", token);
+			goto add_to_variable_list_exit;
+		}
 	}
-	format->type |= FFF_VARIED;
-    }
-    if (NEED_TO_CHECK_VARIABLE_SIZE(format, var)) {
-	if (ffv_type_size(var->type) != var->end_pos - var->start_pos + 1) {
-	    char save_eol_char = STR_END;
-	    char *end_of_line = find_EOL(text_line);
-
-	    if (end_of_line) {
-		save_eol_char = *end_of_line;
-		*end_of_line = STR_END;
-	    }
-	    error = err_push(ERR_VARIABLE_SIZE, "Expecting ending position for binary field %s to be %d", var->name, var->start_pos + ffv_type_size(var->type) - 1);
-
-	    if (end_of_line)
-		*end_of_line = save_eol_char;
-
-	    goto add_to_variable_list_exit;
+	else
+	{
+		error = err_push(ERR_VARIABLE_DESC, "Expecting a start position for \"%s\"", var->name);
+		goto add_to_variable_list_exit;
 	}
-    }
-    check_old_style_EOL_var(var);
 
-    /* Does length of CONSTANT variable name equal length of variable? */
-    if (IS_CONSTANT(var) && !IS_EOL(var)) {
-	if (FF_STRLEN(var->name) > FF_VAR_LENGTH(var)) {
-	    error = err_push(ERR_VARIABLE_SIZE, "Constant variable initializer (%s) is too long for field", var->name);
-
-	    goto add_to_variable_list_exit;
-	} else if (FF_STRLEN(var->name) < FF_VAR_LENGTH(var))
-	    error = err_push(ERR_WARNING_ONLY + ERR_VARIABLE_SIZE, "Constant variable initializer (%s) is shorter than field", var->name);
-    }
-    format->num_vars++;
-    format->length = max(format->length, var->end_pos);
-
-  add_to_variable_list_exit:
-
-    if (error) {
-	char *cp;
-	char EOL_char = STR_END;
-
-	/* Don't destroy variable since it will be destroyed in ff_destroy_format */
-
-	cp = find_EOL(text_line);
-	if (cp) {
-	    EOL_char = *cp;
-	    *cp = STR_END;
+	token = get_token(token, &save_char);
+	if (FF_STRLEN(token))
+	{
+		errno = 0;
+		var->end_pos = strtol(token, &endptr, 10);
+		if (errno || FF_STRLEN(endptr))
+		{
+			error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable end position: %s", token);
+			goto add_to_variable_list_exit;
+		}
 	}
-	error = err_push(ERR_VARIABLE_DESC + (error > ERR_WARNING_ONLY ? ERR_WARNING_ONLY : 0), text_line);
+	else
+	{
+		error = err_push(ERR_VARIABLE_DESC, "Expecting an end position for \"%s\"", var->name);
+		goto add_to_variable_list_exit;
+	}
 
-	if (cp)
-	    *cp = EOL_char;
+	token = get_token(token, &save_char);
+	if (FF_STRLEN(token))
+	{
+		FFV_TYPE(var) = ff_lookup_number(variable_types, token);
+		if (FFV_TYPE(var) == FF_VAR_TYPE_FLAG)
+		{
+			if (os_strncmpi("ARRAY", token, 5) == 0)
+			{
+				RESTORE_CHAR(token, save_char);
+				save_char = STR_END;
+				error = parse_array_variable(&token, var);
+				if (error)
+					goto add_to_variable_list_exit;
 
-    }
-    RESTORE_CHAR(token, save_char);
+				format->type |= FF_ARRAY;
+			}
+			else
+			{
+				/* Is this a keyworded variable type?  If so, remember name of keyword in record_title */
+				if (IS_KEYWORDED_PARAMETER(token))
+				{
+					FFV_TYPE(var) = 0;
 
-    return (error);
+					assert(!var->record_title);
+
+					if (var->record_title)
+						memFree(var->record_title, "var->record_title");
+
+					var->record_title = (char *)memStrdup(token, "token");
+					if (!var->record_title)
+					{
+						error = err_push(ERR_MEM_LACK, "");
+						goto add_to_variable_list_exit;
+					}
+				}
+				else
+				{
+					error = err_push(ERR_UNKNOWN_VAR_TYPE, token);
+					goto add_to_variable_list_exit;
+				}
+			}
+		}
+	}
+	else
+	{
+		error = err_push(ERR_VARIABLE_DESC, "Expecting a variable type or array description for \"%s\"", var->name);
+		goto add_to_variable_list_exit;
+	}
+
+	token = get_token(token, &save_char);
+	if (FF_STRLEN(token))
+	{
+		errno = 0;
+		var->precision = (short)strtol(token, &endptr, 10);
+		if (errno || FF_STRLEN(endptr))
+		{
+			error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable precision: %s", token);
+			goto add_to_variable_list_exit;
+		}
+	}
+	else
+	{
+		if (IS_ARRAY(var))
+		{
+			error = err_push(ERR_VARIABLE_DESC, "Expecting a precision for \"%s\"", var->name);
+			goto add_to_variable_list_exit;
+		}
+	}
+
+	if (var->end_pos < var->start_pos)
+	{
+		error = err_push(ERR_VARIABLE_DESC,"End Position < Start Position\n%s", text_line);
+		goto add_to_variable_list_exit;
+	}
+
+	/* Determine The Variable Type */
+	if (var->start_pos == 0 && var->end_pos == 0)
+	{
+		if (IS_BINARY(format))
+		{
+			error = err_push(ERR_UNKNOWN_FORMAT_TYPE, "Illegal to have delimited binary format");
+			goto add_to_variable_list_exit;
+		}
+		else if (IS_ARRAY(format))
+		{
+			error = err_push(ERR_UNKNOWN_FORMAT_TYPE, "Illegal to have delimited array format");
+			goto add_to_variable_list_exit;
+		}
+
+		format->type |= FFF_VARIED;
+	}
+
+	if (NEED_TO_CHECK_VARIABLE_SIZE(format, var))
+	{
+		if (ffv_type_size(var->type) != var->end_pos - var->start_pos + 1)
+		{
+			char save_eol_char = STR_END;
+			char *end_of_line = find_EOL(text_line);
+
+			if (end_of_line)
+			{
+				save_eol_char = *end_of_line;
+				*end_of_line = STR_END;
+			}
+
+			error = err_push(ERR_VARIABLE_SIZE,"Expecting ending position for binary field %s to be %d", var->name, var->start_pos + ffv_type_size(var->type) - 1);
+
+			if (end_of_line)
+				*end_of_line = save_eol_char;
+
+			goto add_to_variable_list_exit;
+		}
+	}
+
+	check_old_style_EOL_var(var);
+	
+	/* Does length of CONSTANT variable name equal length of variable? */
+	if (IS_CONSTANT(var) && !IS_EOL(var))
+	{
+		if (FF_STRLEN(var->name) > FF_VAR_LENGTH(var))
+		{
+			error = err_push(ERR_VARIABLE_SIZE, "Constant variable initializer (%s) is too long for field", var->name);
+
+			goto add_to_variable_list_exit;
+		}
+		else if (FF_STRLEN(var->name) < FF_VAR_LENGTH(var))
+			error = err_push(ERR_WARNING_ONLY + ERR_VARIABLE_SIZE, "Constant variable initializer (%s) is shorter than field", var->name);
+	}
+
+	format->num_vars++;
+	format->length = max(format->length, var->end_pos);
+
+add_to_variable_list_exit:
+
+	if (error)
+	{
+		char *cp;
+		char EOL_char = STR_END;
+
+		/* Don't destroy variable since it will be destroyed in ff_destroy_format */
+
+		cp = find_EOL(text_line);
+		if (cp)
+		{
+			EOL_char = *cp;
+			*cp = STR_END;
+		}
+
+		error = err_push(ERR_VARIABLE_DESC + (error > ERR_WARNING_ONLY ? ERR_WARNING_ONLY : 0),text_line);
+
+		if (cp)
+			*cp = EOL_char;
+
+	}
+
+	RESTORE_CHAR(token, save_char);
+
+	return(error);
 }
 
 /*****************************************************************************
@@ -994,48 +1066,48 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
  ****************************************************************************/
 
 static int append_EOL_to_format
- (
-     FORMAT_PTR format
-) {
-    VARIABLE_PTR EOL_var = NULL;
-#if 0
-    VARIABLE_LIST v_list = NULL;
-#endif
+	(
+	 FORMAT_PTR format
+	)
+{
+	VARIABLE_PTR EOL_var = NULL;
+	VARIABLE_LIST v_list = NULL;
 
-    EOL_var = ff_create_variable("EOL");
-    if (!EOL_var)
-	return (ERR_MEM_LACK);
+	EOL_var = ff_create_variable("EOL");
+	if (!EOL_var)
+		return(ERR_MEM_LACK);
 
-    if (!dll_add(format->variables)) {
-	ff_destroy_variable(EOL_var);
-	return (ERR_MEM_LACK);
-    }
-    dll_assign(EOL_var, DLL_VAR, dll_last(format->variables));
+	if (!dll_add(format->variables))
+	{
+		ff_destroy_variable(EOL_var);
+		return(ERR_MEM_LACK);
+	}
+		
+	dll_assign(EOL_var, DLL_VAR, dll_last(format->variables));
 
-    EOL_var->type = FFV_EOL;
+	EOL_var->type = FFV_EOL;
 
-    if (!IS_VARIED(format)) {
 	EOL_var->start_pos = FORMAT_LENGTH(format) + 1;
 	EOL_var->end_pos = EOL_var->start_pos;
 	format->length = EOL_var->end_pos;
-    }
-    EOL_var->precision = 0;
 
-    format->num_vars++;
+	EOL_var->precision = 0;
 
-    return (0);
+	format->num_vars++;
+
+	return(0);
 }
 
 /*
- * NAME:      make_format
+ * NAME:	make_format
  *
- * PURPOSE:     Parse variable descriptions, update format info.
+ * PURPOSE:	Parse variable descriptions, update format info.
  *
- * USAGE:       error = make_format(bufsize, format);
+ * USAGE:	error = make_format(bufsize, format);
  *
- * RETURNS:     An error code on failure, zero otherwise
+ * RETURNS:	An error code on failure, zero otherwise
  *
- * DESCRIPTION: 
+ * DESCRIPTION:	
  * A format description is a block of text whose first line is a format type,
  * one or more separating spaces, and then a quoted format title.
  * Subsequent lines are one or more variable descriptions.
@@ -1059,7 +1131,7 @@ static int append_EOL_to_format
  *
  * AUTHOR: Mark A. Ohrenschall, NGDC, (303) 497 - 6124 mao@ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:	
  *
  * ERRORS:
  *
@@ -1070,96 +1142,108 @@ static int append_EOL_to_format
  */
 
 static int make_format
- (
-     char *origin,
-     FF_BUFSIZE_PTR bufsize,
-     FORMAT_HANDLE hformat
-) {
-    char *text_line = NULL;
-    char *fmt_name;
-    int error = 0;
+	(
+	 char *origin,
+	 FF_BUFSIZE_PTR bufsize,
+	 FORMAT_HANDLE hformat
+	)
+{
+	char *text_line = NULL;
+	char *fmt_name;
+	int error = 0;
+	
+	assert(hformat);
+	assert(*hformat == NULL);
 
-    assert(hformat);
-    assert(*hformat == NULL);
+	*hformat = NULL;
 
-    *hformat = NULL;
+	text_line = get_first_line(bufsize->buffer);
 
-    text_line = get_first_line(bufsize->buffer);
+	if (!text_line)
+		return(err_push(ERR_MISSING_TOKEN, "Expecting a newline"));
+	else
+	{
+		FF_TYPES_t check_format_type;
+		
+		if (get_format_type_and_name(text_line, &check_format_type, &fmt_name))
+		{
+			char *cp;
+			char save_char = STR_END;
+			
+			cp = find_EOL(fmt_name);
+			if (cp)
+			{
+				save_char = *cp;
+				*cp = STR_END;
+			}
 
-    if (!text_line)
-	return (err_push(ERR_MISSING_TOKEN, "Expecting a newline"));
-    else {
-	FF_TYPES_t check_format_type;
+			*hformat = ff_create_format(fmt_name, origin);
+			if (!*hformat)
+				return(ERR_MEM_LACK);
+			
+			(*hformat)->type = check_format_type;
 
-	if (get_format_type_and_name(text_line, &check_format_type, &fmt_name)) {
-	    char *cp;
-	    char save_char = STR_END;
+			if (cp)
+				*cp = save_char;
 
-	    cp = find_EOL(fmt_name);
-	    if (cp) {
-		save_char = *cp;
-		*cp = STR_END;
-	    }
-	    *hformat = ff_create_format(fmt_name, origin);
-	    if (!*hformat)
-		return (ERR_MEM_LACK);
+			if ((*hformat)->name[0] == '\"')
+				(*hformat)->name[0] = ' ';
+			cp = strrchr((*hformat)->name, '\"');
+			if (cp)
+				*cp = ' ';
+			os_str_trim_whitespace((*hformat)->name, (*hformat)->name);
 
-	    (*hformat)->type = check_format_type;
+			text_line = get_next_line(text_line);
+			if (!text_line)
+				return(err_push(ERR_VARIABLE_DESC, "Expecting a variable description"));
+		}
+		else
+		{
+			char *cp;
+			char save_char = STR_END;
 
-	    if (cp)
-		*cp = save_char;
+			cp = find_EOL(text_line);
+			if (cp)
+			{
+				save_char = *cp;
+				*cp = STR_END;
+			}
 
-	    if ((*hformat)->name[0] == '\"')
-		(*hformat)->name[0] = ' ';
-	    cp = strrchr((*hformat)->name, '\"');
-	    if (cp)
-		*cp = ' ';
-	    os_str_trim_whitespace((*hformat)->name, (*hformat)->name);
+			error = err_push(ERR_UNKNOWN_FORMAT_TYPE, text_line);
 
-	    text_line = get_next_line(text_line);
-	    if (!text_line)
-		return (err_push(ERR_VARIABLE_DESC, "Expecting a variable description"));
-	} else {
-	    char *cp;
-	    char save_char = STR_END;
+			if (cp)
+				*cp = save_char;
 
-	    cp = find_EOL(text_line);
-	    if (cp) {
-		save_char = *cp;
-		*cp = STR_END;
-	    }
-	    error = err_push(ERR_UNKNOWN_FORMAT_TYPE, text_line);
-
-	    if (cp)
-		*cp = save_char;
-
-	    return (error);
+			return(error);
+		}
 	}
-    }
 
-    while (strlen(text_line)) {
-	if (!is_comment_line(text_line) && strlen(text_line)) {
-	    error = add_to_variable_list(text_line, *hformat);
-	    if (error && error < ERR_WARNING_ONLY)
-		return (error);
+	while (strlen(text_line))
+	{
+		if (!is_comment_line(text_line) && strlen(text_line))
+		{
+			error = add_to_variable_list(text_line, *hformat);
+			if (error && error < ERR_WARNING_ONLY)
+				return(error);
+		}
+					
+		text_line = get_next_line(text_line);
 	}
-	text_line = get_next_line(text_line);
-    }
 
-    if (IS_ARRAY(*hformat) && IS_RECORD_FORMAT(*hformat))
-	return (err_push(ERR_MAKE_FORM, "You cannot define a record format containing an array (%s)", (*hformat)->name));
+	if (IS_ARRAY(*hformat) && IS_RECORD_FORMAT(*hformat))
+		return(err_push(ERR_MAKE_FORM, "You cannot define a record format containing an array (%s)", (*hformat)->name));
+	
+	if (!(*hformat)->variables)
+		return(err_push(ERR_NO_VARIABLES, "%s", (*hformat)->name));
 
-    if (!(*hformat)->variables)
-	return (err_push(ERR_NO_VARIABLES, "%s", (*hformat)->name));
+	if (IS_ASCII(*hformat) && !IS_ARRAY(*hformat) && !IS_VARIED(*hformat))
+		error = append_EOL_to_format(*hformat);
 
-    if (IS_ASCII(*hformat) && !IS_ARRAY(*hformat))
-	error = append_EOL_to_format(*hformat);
+	/* experimental */
+	if (IS_ARRAY(*hformat))
+		(*hformat)->length = 0;
 
-    /* experimental */
-    if (IS_ARRAY(*hformat))
-	(*hformat)->length = 0;
-
-    return (error);
+	return(error);
 }
 
 /*****************************************************************************
@@ -1187,33 +1271,39 @@ static int make_format
  ****************************************************************************/
 
 static int update_format_list
- (
-     char *origin,
-     FF_BUFSIZE_PTR desc_buffer,
-     FORMAT_LIST_HANDLE hf_list
-) {
-    FORMAT_PTR format = NULL;
-
-    int error;
-
-    error = make_format(origin, desc_buffer, &format);
-    if (!error) {
-	if (!*hf_list) {
-	    *hf_list = dll_init();
-	    if (!*hf_list)
-		error = ERR_MEM_LACK;
+	(
+	 char *origin,
+	 FF_BUFSIZE_PTR desc_buffer,
+	 FORMAT_LIST_HANDLE hf_list
+	)
+{
+	FORMAT_PTR format = NULL;
+	
+	int error;
+	
+	error = make_format(origin, desc_buffer, &format);
+	if (!error)
+	{
+		if (!*hf_list)
+		{
+			*hf_list = dll_init();
+			if (!*hf_list)
+				error = ERR_MEM_LACK;
+		}
 	}
-    }
-    if (!error) {
-	if (dll_add(*hf_list))
-	    dll_assign(format, DLL_FMT, dll_last(*hf_list));
-	else
-	    error = ERR_MEM_LACK;
-    }
-    if (error && format)
-	ff_destroy_format(format);
 
-    return (error);
+	if (!error)
+	{
+		if (dll_add(*hf_list))
+			dll_assign(format, DLL_FMT, dll_last(*hf_list));
+		else
+			error = ERR_MEM_LACK;
+	}
+	
+	if (error && format)
+		ff_destroy_format(format);
+
+	return(error);
 }
 
 /*****************************************************************************
@@ -1241,20 +1331,21 @@ static int update_format_list
  ****************************************************************************/
 
 static int update_name_table_list
- (
-     char *origin,
-     FF_BUFSIZE_PTR nt_buffer,
-     NAME_TABLE_LIST_HANDLE hnt_list
-) {
-    NAME_TABLE_PTR nt = NULL;
+	(
+	 char *origin,
+	 FF_BUFSIZE_PTR nt_buffer,
+	 NAME_TABLE_LIST_HANDLE hnt_list
+	)
+{
+	NAME_TABLE_PTR nt = NULL;
+	
+	int error;
+	
+	error = nt_parse(origin, nt_buffer, &nt);
+	if (!error)
+		error = nt_merge_name_table(hnt_list, nt);
 
-    int error;
-
-    error = nt_parse(origin, nt_buffer, &nt);
-    if (!error)
-	error = nt_merge_name_table(hnt_list, nt);
-
-    return (error);
+	return(error);
 }
 
 #define SAME_IO_CONTEXT(sect, obj) (\
@@ -1334,120 +1425,130 @@ static int update_name_table_list
  */
 
 int ff_text_pre_parser
- (
-     char *origin,
-     FF_BUFSIZE_PTR fmt_buffer,
-     PP_OBJECT_PTR pp_object
-) {
-    BOOLEAN called_untl = FALSE;	/* called update_name_table_list */
-    int error = 0;
-    int new_error = 0;
+	(
+	 char *origin,
+	 FF_BUFSIZE_PTR fmt_buffer,
+	 PP_OBJECT_PTR pp_object
+	)
+{
+	BOOLEAN called_untl = FALSE; /* called update_name_table_list */
+	int error     = 0;
+	int new_error = 0;
 
-    char *current_sect_start;
-    char *text_line;
+	char *current_sect_start;
+	char *text_line;
+	
+	sect_types_t current_sect_type; /* type of the previous section */
+	sect_types_t sect_type;
+	BOOLEAN first_section = TRUE;
+	
+	assert(fmt_buffer);
 
-    sect_types_t current_sect_type;	/* type of the previous section */
-    sect_types_t sect_type;
-    BOOLEAN first_section = TRUE;
+	text_line = get_first_line(fmt_buffer->buffer);
 
-    assert(fmt_buffer);
+	first_section      =        TRUE;
+	current_sect_start =        NULL;
+	current_sect_type  = ZEROTH_SECT;
+	sect_type          =  !LAST_SECT;
 
-    text_line = get_first_line(fmt_buffer->buffer);
+	/* MAIN LOOP that parses each line of format buffer
+	*/
 
-    first_section = TRUE;
-    current_sect_start = NULL;
-    current_sect_type = ZEROTH_SECT;
-    sect_type = !LAST_SECT;
+	while (sect_type != LAST_SECT)
+	{
+		char save_char;
+		
+		sect_type = get_section_type(text_line, current_sect_type);
+		
+		switch (sect_type)
+		{
+			case ZEROTH_SECT:
+			case IN_SECT:
+				break;
 
-    /* MAIN LOOP that parses each line of format buffer
-     */
+			case FMT_SECT:
+			case INPUT_EQV_SECT:
+			case OUTPUT_EQV_SECT:
+			case BEGIN_CONSTANT_SECT:
+			case BEGIN_NAME_EQUIV_SECT:
+			case LAST_SECT:
+			/*
+			case ADD_YOUR_SECTION_TYPE_HERE:
+			*/
+				if (first_section)
+				{
+					first_section = FALSE;
+				}
+				else
+				{
+					FF_BUFSIZE bufsize;
 
-    while (sect_type != LAST_SECT) {
-	char save_char;
+					/* Process current (previous) section */
+					bufsize.buffer = current_sect_start;
+					bufsize.bytes_used  =
+					bufsize.total_bytes = (FF_BSS_t)((char HUGE *)text_line - (char HUGE *)current_sect_start);
+				
+					save_char = *text_line;
+					*text_line = STR_END;
+								
+					switch (current_sect_type)
+					{
+						case FMT_SECT:
+							if (pp_object->ppo_type == PPO_FORMAT_LIST)
+							{
+								error = update_format_list(origin, &bufsize, pp_object->u.hf_list);
+								new_error = error;
+							}
+						break;
+									
+						case INPUT_EQV_SECT:
+						case OUTPUT_EQV_SECT:
+						case BEGIN_CONSTANT_SECT:
+						case BEGIN_NAME_EQUIV_SECT:
+							if (pp_object->ppo_type == PPO_NT_LIST &&
+							    SAME_IO_CONTEXT(current_sect_type, pp_object)
+							   )
+							{
+								called_untl = TRUE;
+								error = update_name_table_list(origin, &bufsize, pp_object->u.nt_list.hnt_list);
+								new_error = error;
+							}
+						break;
+						
+						/*
+						case ADD_YOUR_SECTION_TYPE_HERE:
+						*/
+									
+						default:
+							assert(!ERR_SWITCH_DEFAULT);
+							return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
+					} /* switch on current section type */
+					
+					if (new_error)
+						break;
+				
+					*text_line = save_char;
+				} /* (else) if first section */
 
-	sect_type = get_section_type(text_line, current_sect_type);
-
-	switch (sect_type) {
-	case ZEROTH_SECT:
-	case IN_SECT:
-	    break;
-
-	case FMT_SECT:
-	case INPUT_EQV_SECT:
-	case OUTPUT_EQV_SECT:
-	case BEGIN_CONSTANT_SECT:
-	case BEGIN_NAME_EQUIV_SECT:
-	case LAST_SECT:
-	    /*
-	       case ADD_YOUR_SECTION_TYPE_HERE:
-	     */
-	    if (first_section) {
-		first_section = FALSE;
-	    } else {
-		FF_BUFSIZE bufsize;
-
-		/* Process current (previous) section */
-		bufsize.buffer = current_sect_start;
-		bufsize.bytes_used =
-		    bufsize.total_bytes = (FF_BSS_t) ((char HUGE *) text_line - (char HUGE *) current_sect_start);
-
-		save_char = *text_line;
-		*text_line = STR_END;
-
-		switch (current_sect_type) {
-		case FMT_SECT:
-		    if (pp_object->ppo_type == PPO_FORMAT_LIST) {
-			error = update_format_list(origin, &bufsize, pp_object->u.hf_list);
-			new_error = error;
-		    }
-		    break;
-
-		case INPUT_EQV_SECT:
-		case OUTPUT_EQV_SECT:
-		case BEGIN_CONSTANT_SECT:
-		case BEGIN_NAME_EQUIV_SECT:
-		    if (pp_object->ppo_type == PPO_NT_LIST &&
-			SAME_IO_CONTEXT(current_sect_type, pp_object)
-			) {
-			called_untl = TRUE;
-			error = update_name_table_list(origin, &bufsize, pp_object->u.nt_list.hnt_list);
-			new_error = error;
-		    }
-		    break;
-
-		    /*
-		       case ADD_YOUR_SECTION_TYPE_HERE:
-		     */
-
-		default:
-		    assert(!ERR_SWITCH_DEFAULT);
-		    return (err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
-		}		/* switch on current section type */
-
+				current_sect_type  = sect_type;
+				current_sect_start = text_line;
+			break;
+			
+			default:
+				assert(!ERR_SWITCH_DEFAULT);
+				return(err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
+		} /* switch on section type */
+		
 		if (new_error)
-		    break;
+			break;
 
-		*text_line = save_char;
-	    }			/* (else) if first section */
+		if (sect_type != LAST_SECT)
+			text_line = get_next_line(text_line);
+  } /* while not the last section */
 
-	    current_sect_type = sect_type;
-	    current_sect_start = text_line;
-	    break;
+	if (pp_object->ppo_type == PPO_NT_LIST && called_untl == FALSE && !error)
+		return(ERR_NO_NAME_TABLE);
 
-	default:
-	    assert(!ERR_SWITCH_DEFAULT);
-	    return (err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__));
-	}			/* switch on section type */
-
-	if (new_error)
-	    break;
-
-	if (sect_type != LAST_SECT)
-	    text_line = get_next_line(text_line);
-    }				/* while not the last section */
-
-    if (pp_object->ppo_type == PPO_NT_LIST && called_untl == FALSE && !error)
-	return (ERR_NO_NAME_TABLE);
-
-    return (error);
+	return(error);
 }
+

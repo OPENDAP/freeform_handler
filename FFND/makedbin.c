@@ -1,4 +1,3 @@
-
 /*
  * FILENAME:  makedbin.c
  *              
@@ -69,598 +68,646 @@
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "db_make"
 
-/*static */ DATA_BIN_PTR db_make(char *title)
+/*static*/ DATA_BIN_PTR db_make(char *title)
 {
-    DATA_BIN_PTR dbin;
+	DATA_BIN_PTR dbin;
 
-    dbin = (DATA_BIN_PTR) memMalloc(sizeof(DATA_BIN), "dbin");
+	dbin = (DATA_BIN_PTR)memMalloc(sizeof(DATA_BIN), "dbin");
 
-    if (dbin == NULL) {
-	err_push(ERR_MEM_LACK, "Data Bin");
-	return (NULL);
-    }
-    /* Initialize data_bin */
+	if (dbin == NULL)
+	{
+		err_push(ERR_MEM_LACK, "Data Bin");
+		return(NULL);
+	}
+
+	/* Initialize data_bin */
 
 #ifdef FF_CHK_ADDR
-    dbin->check_address = (void *) dbin;
+	dbin->check_address = (void*)dbin;
 #endif
 
-    if (title) {
-	dbin->title = (char *) memStrdup(title, "dbin->title");		/* (char *) for Think C -rf01 */
-	if (dbin->title == NULL) {
-	    err_push(ERR_MEM_LACK, "Data Bin Title");
-	    memFree(dbin, "dbin");
-	    return (NULL);
+	if (title)
+	{
+		dbin->title = (char *)memStrdup(title, "dbin->title"); /* (char *) for Think C -rf01 */
+		if (dbin->title == NULL)
+		{
+			err_push(ERR_MEM_LACK, "Data Bin Title");
+			memFree(dbin, "dbin");
+			return(NULL);
+		}
 	}
-    } else
-	dbin->title = NULL;
+	else
+		dbin->title = NULL;
 
-    dbin->table_list = NULL;
+	dbin->table_list = NULL;
+	
+	dbin->array_conduit_list = NULL;
 
-    dbin->array_conduit_list = NULL;
+	dbin->eqn_info = NULL;
 
-    dbin->eqn_info = NULL;
-
-    return (dbin);
+	return(dbin);
 }
 
 /* The following function names have the first letter of an option
    flag.  Single letter option flags have simple functions below (e.g., -b),
    but multiple letter options flags have more complex functions with
    additional levels of switch and case statements (e.g., -ift).
-
+   
    Currently, I have broken only one level of switch and cases into "dispatch
    center" functions.  Presumably, when certain options become more complex
    (e.g., -i*, which could add another letter for header or record format,
    and title, such as -ihft) then I will have to use function calls for those.
-
+   
    In naming these functions, the number of underscores following the first
    letter of the option flag indicates the number of possible additional
    characters to follow.  For each additional character is another level of
    switches.
- */
+*/
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "parse_command_line"
 
 static int option_B(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -b? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -b? */
+	{
+		case STR_END :
+			(*i)++;
+	
+			if (!argv[*i] || argv[*i][0] == '-')
+				error = err_push(ERR_PARAM_VALUE, "Buffer size must be positive (following %s)", argv[*i - 1]);
+			else
+			{
+				char *endptr = NULL;
 
-	if (!argv[*i] || argv[*i][0] == '-')
-	    error = err_push(ERR_PARAM_VALUE, "Buffer size must be positive (following %s)", argv[*i - 1]);
-	else {
-	    char *endptr = NULL;
-
-	    errno = 0;
-	    std_args->cache_size = strtol(argv[*i], &endptr, 10);
-	    if (errno == ERANGE)
-		error = err_push(errno, argv[*i]);
-
-	    if (ok_strlen(endptr))
-		error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+				errno = 0;
+				std_args->cache_size = strtol(argv[*i], &endptr, 10);
+				if (errno == ERANGE)
+					error = err_push(errno, argv[*i]);
+				
+				if (ok_strlen(endptr))
+					error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+			}
+		break;
+	
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_C(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -c? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -c? */
+	{
+		case STR_END :
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Expecting a value for count (following %s)", argv[*i - 1]);
-	else {
-	    char *endptr = NULL;
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Expecting a value for count (following %s)", argv[*i - 1]);
+			else
+			{
+				char *endptr = NULL;
 
-	    errno = 0;
-	    std_args->records_to_read = strtol(argv[*i], &endptr, 10);
-	    if (errno == ERANGE)
-		error = err_push(errno, argv[*i]);
-
-	    if (ok_strlen(endptr))
-		error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+				errno = 0;
+				std_args->records_to_read = strtol(argv[*i], &endptr, 10);
+				if (errno == ERANGE)
+					error = err_push(errno, argv[*i]);
+			
+				if (ok_strlen(endptr))
+					error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+			}
+		break;
+							
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_D(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -c? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -c? */
+	{
+		case STR_END :
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Expecting a file name (following %s)", argv[*i - 1]);
-	else {
-	    if (!os_file_exist(argv[*i]))
-		error = err_push(ERR_OPEN_FILE, argv[*i]);
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Expecting a file name (following %s)", argv[*i - 1]);
+			else
+			{
+				if (!os_file_exist(argv[*i]))
+					error = err_push(ERR_OPEN_FILE, argv[*i]);
 
-	    std_args->input_file = argv[*i];
-	    std_args->user.is_stdin_redirected = 0;
+				std_args->input_file = argv[*i];
+				std_args->user.is_stdin_redirected = 0;
+			}
+		break;
+							
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_E_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -e? */
-    case 'P':			/* -ep? */
-	switch (toupper(argv[*i][3])) {
-	case STR_END:
-	    std_args->error_prompt = FALSE;
-	    break;
+	switch (toupper(argv[*i][2])) /* -e? */
+	{
+		case 'P' : /* -ep? */
+			switch (toupper(argv[*i][3]))
+			{
+				case STR_END:
+					std_args->error_prompt = FALSE;
+				break;
+							
+				default:
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			}
+		break;
+							
+		case 'L' : /* -el? */
+			switch (toupper(argv[*i][3]))
+			{
+				case STR_END:
+					(*i)++;
 
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Need a name for error log file (following %s)", argv[*i - 1]);
+					else
+					{
+						FILE *fp = NULL;
+
+						std_args->error_log = argv[*i];
+
+						fp = fopen(std_args->error_log, "w");
+						if (fp)
+						{
+							fclose(fp);
+							remove(std_args->error_log);
+						}
+						else
+							error = err_push(ERR_CREATE_FILE, std_args->error_log);
+					}
+				break;
+							
+				default:
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			}
+		break;
+							
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    case 'L':			/* -el? */
-	switch (toupper(argv[*i][3])) {
-	case STR_END:
-	    (*i)++;
-
-	    if (!argv[*i])
-		error = err_push(ERR_PARAM_VALUE, "Need a name for error log file (following %s)", argv[*i - 1]);
-	    else {
-		FILE *fp = NULL;
-
-		std_args->error_log = argv[*i];
-
-		fp = fopen(std_args->error_log, "w");
-		if (fp)
-		    fclose(fp);
-		else
-		    error = err_push(ERR_CREATE_FILE, std_args->error_log);
-	    }
-	    break;
-
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_F_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -f? */
-    case STR_END:		/* single format file */
-	(*i)++;
-	/* Check File */
+	switch (toupper(argv[*i][2])) /* -f? */
+	{
+		case STR_END : /* single format file */
+			(*i)++;
+			/* Check File */
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Need a name for format file (following %s)", argv[*i - 1]);
-	else {
-	    if (!os_file_exist(argv[*i]))
-		error = err_push(ERR_OPEN_FILE, argv[*i]);
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a name for format file (following %s)", argv[*i - 1]);
+			else
+			{
+				if (!os_file_exist(argv[*i]))
+					error = err_push(ERR_OPEN_FILE, argv[*i]);
+	
+				std_args->output_format_file = argv[*i];
+				std_args->input_format_file = argv[*i];
 
-	    std_args->output_format_file = argv[*i];
-	    std_args->input_format_file = argv[*i];
+				std_args->user.format_file = 1;
+			}
+		break;
+							
+		case 'T' : /* single format title */
+			switch (toupper(argv[*i][3])) /* -ft? */
+			{
+				case STR_END :
+					(*i)++;
 
-	    std_args->user.format_file = 1;
-	}
-	break;
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Need a title for formats (following %s)", argv[*i - 1]);
+					else
+					{
+						std_args->input_format_title = argv[*i];
+						std_args->output_format_title = argv[*i];
 
-    case 'T':			/* single format title */
-	switch (toupper(argv[*i][3])) {		/* -ft? */
-	case STR_END:
-	    (*i)++;
-
-	    if (!argv[*i])
-		error = err_push(ERR_PARAM_VALUE, "Need a title for formats (following %s)", argv[*i - 1]);
-	    else {
-		std_args->input_format_title = argv[*i];
-		std_args->output_format_title = argv[*i];
-
-		std_args->user.format_title = 1;
-	    }
-	    break;
-
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }				/* switch on second letter of -f flag */
-
-    return (error);
+						std_args->user.format_title = 1;
+					}
+				break;
+								
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			}
+		break;
+							
+		default :
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+	} /* switch on second letter of -f flag */
+	
+	return(error);
 }
 
 static int option_I__(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -i? */
-    case STR_END:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
+	switch (toupper(argv[*i][2])) /* -i? */
+	{
+		case STR_END:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+							
+		case 'F' :
+			switch (toupper(argv[*i][3])) /* -if? */
+			{
+				case STR_END : /* input format file */
+					(*i)++;
+					/* Check File */
 
-    case 'F':
-	switch (toupper(argv[*i][3])) {		/* -if? */
-	case STR_END:		/* input format file */
-	    (*i)++;
-	    /* Check File */
+					if (!argv[*i])
+							error = err_push(ERR_PARAM_VALUE, "Need a name for input format file (following %s)", argv[*i - 1]);
+					else
+					{
+						if (!os_file_exist(argv[*i]))
+							error = err_push(ERR_OPEN_FILE, argv[*i]);
+	
+						std_args->input_format_file = argv[*i];
+					}
+				break;
+								
+				case 'T' : /* input format title */
+					switch (toupper(argv[*i][4]))
+					{
+						case STR_END :
+							(*i)++;
 
-	    if (!argv[*i])
-		error = err_push(ERR_PARAM_VALUE, "Need a name for input format file (following %s)", argv[*i - 1]);
-	    else {
-		if (!os_file_exist(argv[*i]))
-		    error = err_push(ERR_OPEN_FILE, argv[*i]);
-
-		std_args->input_format_file = argv[*i];
-	    }
-	    break;
-
-	case 'T':		/* input format title */
-	    switch (toupper(argv[*i][4])) {
-	    case STR_END:
-		(*i)++;
-
-		if (!argv[*i])
-		    error = err_push(ERR_PARAM_VALUE, "Need a title for input format (following %s)", argv[*i - 1]);
-		else
-		    std_args->input_format_title = argv[*i];
+							if (!argv[*i])
+								error = err_push(ERR_PARAM_VALUE, "Need a title for input format (following %s)", argv[*i - 1]);
+							else
+								std_args->input_format_title = argv[*i];
+						break;
+							
+						default:
+							error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+						break;
+					}
+				break;
+									
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			} /* switch on third letter of -I flag */
 		break;
 
-	    default:
-		error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		default :
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
 		break;
-	    }
-	    break;
-
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}			/* switch on third letter of -I flag */
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }				/* switch on second letter of -I flag */
-
-    return (error);
+	} /* switch on second letter of -I flag */
+	
+	return(error);
 }
 
 static int option_M_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -m? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -m? */
+	{
+		case STR_END :
+			(*i)++;
+								
+			if (!argv[*i] || argv[*i][0] == '-')
+				error = err_push(ERR_PARAM_VALUE, "Need a positive value for maxbins (following %s)", argv[*i - 1]);
+			else
+			{
+				char *endptr = NULL;
 
-	if (!argv[*i] || argv[*i][0] == '-')
-	    error = err_push(ERR_PARAM_VALUE, "Need a positive value for maxbins (following %s)", argv[*i - 1]);
-	else {
-	    char *endptr = NULL;
+				errno = 0;
+				std_args->cv_maxbins = (int)strtod(argv[*i], &endptr);
+				if (errno == ERANGE)
+					error = err_push(errno, argv[*i]);
+			
+				if (ok_strlen(endptr))
+					error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+			}
+		break;
+							
+		case 'M' :
+			switch (toupper(argv[*i][3])) /* -mm? */
+			{
+				case STR_END:
+					std_args->cv_maxmin_only = TRUE;
+				break;
 
-	    errno = 0;
-	    std_args->cv_maxbins = (int) strtod(argv[*i], &endptr);
-	    if (errno == ERANGE)
-		error = err_push(errno, argv[*i]);
-
-	    if (ok_strlen(endptr))
-		error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
-	}
-	break;
-
-    case 'M':
-	switch (toupper(argv[*i][3])) {		/* -mm? */
-	case STR_END:
-	    std_args->cv_maxmin_only = TRUE;
-	    break;
-
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }				/* switch on second letter of -m flag */
-
-    return (error);
+				default:
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			}
+		break;
+							
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+	} /* switch on second letter of -m flag */
+	
+	return(error);
 }
 
 static int option_O__(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -o? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -o? */
+	{
+		case STR_END:
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Need a name for the output file (following %s).", argv[*i - 1]);
-	else {
-	    std_args->output_file = argv[*i];
-	    std_args->user.is_stdout_redirected = 0;
-	}
-	break;
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a name for the output file (following %s).", argv[*i - 1]);
+			else
+			{
+				std_args->output_file = argv[*i];
+				std_args->user.is_stdout_redirected = 0;
+			}
+		break;
+							
+		case 'D' :
+		
+			switch (toupper(argv[*i][3])) /* -od? */
+			{
+				case STR_END : /* output directory for variable summary files */
+					(*i)++;
+					
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Expecting a directory for variable summary files (following %s)", argv[*i - 1]);
+					else
+						std_args->cv_list_file_dir = argv[*i];
+				break;
+								
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			} /* switch on third letter of -O flag */
 
-    case 'D':
+		break;
+							
+		case 'F' :
+			switch (toupper(argv[*i][3])) /* -of? */
+			{
+				case STR_END : /* output format file */
+					(*i)++;
+					/* Check File */
 
-	switch (toupper(argv[*i][3])) {		/* -od? */
-	case STR_END:		/* output directory for variable summary files */
-	    (*i)++;
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Need a name for output format file (following %s)", argv[*i - 1]);
+					else
+					{
+						if (!os_file_exist(argv[*i]))
+							error = err_push(ERR_OPEN_FILE, argv[*i]);
+	
+						std_args->output_format_file = argv[*i];
+					}
+				break;
+								
+				case 'T' : /* output format title */
+					switch (toupper(argv[*i][4])) /* -oft? */
+					{
+						case STR_END :
+							(*i)++;
 
-	    if (!argv[*i])
-		error = err_push(ERR_PARAM_VALUE, "Expecting a directory for variable summary files (following %s)", argv[*i - 1]);
-	    else
-		std_args->cv_list_file_dir = argv[*i];
-	    break;
-
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}			/* switch on third letter of -O flag */
-
-	break;
-
-    case 'F':
-	switch (toupper(argv[*i][3])) {		/* -of? */
-	case STR_END:		/* output format file */
-	    (*i)++;
-	    /* Check File */
-
-	    if (!argv[*i])
-		error = err_push(ERR_PARAM_VALUE, "Need a name for output format file (following %s)", argv[*i - 1]);
-	    else {
-		if (!os_file_exist(argv[*i]))
-		    error = err_push(ERR_OPEN_FILE, argv[*i]);
-
-		std_args->output_format_file = argv[*i];
-	    }
-	    break;
-
-	case 'T':		/* output format title */
-	    switch (toupper(argv[*i][4])) {	/* -oft? */
-	    case STR_END:
-		(*i)++;
-
-		if (!argv[*i])
-		    error = err_push(ERR_PARAM_VALUE, "Need a title for output format (following %s)", argv[*i - 1]);
-		else
-		    std_args->output_format_title = argv[*i];
+							if (!argv[*i])
+								error = err_push(ERR_PARAM_VALUE, "Need a title for output format (following %s)", argv[*i - 1]);
+							else
+								std_args->output_format_title = argv[*i];
+						break;
+							
+						default:
+							error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+						break;
+					}
+				break;
+									
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			} /* switch on third letter of -O flag */
 		break;
 
-	    default:
-		error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		case 'L':
+			switch (toupper(argv[*i][3])) /* -ol? */
+			{
+				case STR_END : /* log file */
+					(*i)++;
+					/* Check File */
+
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Need a name for log file (following %s)", argv[*i - 1]);
+					else
+					{
+						FILE *fp;
+
+						std_args->log_file = argv[*i];
+						fp = fopen(std_args->log_file, "w");
+						if (fp)
+						{
+							fclose(fp);
+							remove(std_args->log_file);
+						}
+						else
+							error = err_push(ERR_CREATE_FILE, std_args->log_file);
+					}
+				break;
+									
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			}
+
 		break;
-	    }
-	    break;
 
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}			/* switch on third letter of -O flag */
-	break;
+		default :
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 
-    case 'L':
-	switch (toupper(argv[*i][3])) {		/* -ol? */
-	case STR_END:		/* log file */
-	    (*i)++;
-	    /* Check File */
-
-	    if (!argv[*i])
-		error = err_push(ERR_PARAM_VALUE, "Need a name for log file (following %s)", argv[*i - 1]);
-	    else {
-		FILE *fp;
-
-		std_args->log_file = argv[*i];
-		fp = fopen(std_args->log_file, "w");
-		if (fp) {
-		    fclose(fp);
-		    remove(std_args->log_file);
-		} else
-		    error = err_push(ERR_CREATE_FILE, std_args->log_file);
-	    }
-	    break;
-
-	default:
-	    error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	    break;
-	}
-
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-
-    }				/* switch on second letter of -O flag */
-
-    return (error);
+	} /* switch on second letter of -O flag */
+	
+	return(error);
 }
 
 static int option_P(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -p? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -p? */
+	{
+		case STR_END :
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Need a value for precision (following %s)", argv[*i - 1]);
-	else {
-	    char *endptr = NULL;
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a value for precision (following %s)", argv[*i - 1]);
+			else
+			{
+				char *endptr = NULL;
 
-	    std_args->user.set_cv_precision = 1;
+				std_args->user.set_cv_precision = 1;
 
-	    errno = 0;
-	    std_args->cv_precision = (int) strtod(argv[*i], &endptr);
-	    if (errno == ERANGE)
-		error = err_push(errno, argv[*i]);
+				errno = 0;
+				std_args->cv_precision = (int)strtod(argv[*i], &endptr);
+				if (errno == ERANGE)
+					error = err_push(errno, argv[*i]);
+			
+				if (ok_strlen(endptr))
+					error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+			}
+		break;
 
-	    if (ok_strlen(endptr))
-		error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_S(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -s? */
-    case STR_END:
-	std_args->cv_subset = TRUE;
-	break;
+	switch (toupper(argv[*i][2])) /* -s? */
+	{
+		case STR_END :
+			std_args->cv_subset = TRUE;
+		break;
 
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+	}
+	
+	return(error);
 }
 
 static int option_T(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -t? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -t? */
+	{
+		case STR_END :
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Need a terms file name (following %s)", argv[*i - 1]);
-	else {
-	    if (!os_file_exist(argv[*i]))
-		error = err_push(ERR_OPEN_FILE, argv[*i]);
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a terms file name (following %s)", argv[*i - 1]);
+			else
+			{
+				if (!os_file_exist(argv[*i]))
+					error = err_push(ERR_OPEN_FILE, argv[*i]);
+			
+				std_args->sdts_terms_file = argv[*i];
+			}
+		break;
 
-	    std_args->sdts_terms_file = argv[*i];
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_Q(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -q? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -q? */
+	{
+		case STR_END :
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Need a name for query file (following %s)", argv[*i - 1]);
-	else {
-	    if (!os_file_exist(argv[*i]))
-		error = err_push(ERR_OPEN_FILE, argv[*i]);
-
-	    std_args->query_file = argv[*i];
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a name for query file (following %s)", argv[*i - 1]);
+			else
+			{
+				if (!os_file_exist(argv[*i]))
+					error = err_push(ERR_OPEN_FILE, argv[*i]);
+			
+				std_args->query_file = argv[*i];
+			}
+		break;
+							
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 static int option_V(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 {
-    int error = 0;
+	int error = 0;
 
-    switch (toupper(argv[*i][2])) {	/* -v? */
-    case STR_END:
-	(*i)++;
+	switch (toupper(argv[*i][2])) /* -v? */
+	{
+		case STR_END :
+			(*i)++;
 
-	if (!argv[*i])
-	    error = err_push(ERR_PARAM_VALUE, "Need a name for variable file (following %s)", argv[*i - 1]);
-	else {
-	    if (!os_file_exist(argv[*i]))
-		error = err_push(ERR_OPEN_FILE, argv[*i]);
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a name for variable file (following %s)", argv[*i - 1]);
+			else
+			{
+				if (!os_file_exist(argv[*i]))
+					error = err_push(ERR_OPEN_FILE, argv[*i]);
+			
+				std_args->var_file = argv[*i];
+			}
+		break;
 
-	    std_args->var_file = argv[*i];
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
 	}
-	break;
-
-    default:
-	error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
-	break;
-    }
-
-    return (error);
+	
+	return(error);
 }
 
 /*
-   static int option_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
-   {
-   int error = 0;
+static int option_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
+{
+	int error = 0;
 
-
-   return(error);
-   }
- */
+	
+	return(error);
+}
+*/
 
 /*****************************************************************************
  * NAME:  is_redirecting_stdin
@@ -690,48 +737,49 @@ static int option_V(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 
 static BOOLEAN is_redirecting_stdin(void)
 {
-    BOOLEAN redirecting_stdin = FALSE;
-    char *cp = NULL;
+	BOOLEAN redirecting_stdin = FALSE;
+	char *cp = NULL;
 
-    cp = os_get_env("HTTP_HOST");
-    if (cp) {
-	memFree(cp, "cp");
-	return (FALSE);
-    }
-    if (isatty(fileno(stdin)))
-	return (FALSE);
-    else
-	return (TRUE);
+	cp = os_get_env("HTTP_HOST");
+	if (cp)
+	{
+		memFree(cp, "cp");
+		return(FALSE);
+	}
 
-    return (redirecting_stdin);
+	if (isatty(fileno(stdin)))
+		return(FALSE);
+	else
+		return(TRUE);
+
+	return(redirecting_stdin);
 }
 
 static BOOLEAN is_redirecting_stdout(void)
 {
-    BOOLEAN redirecting_stdout = FALSE;
+	BOOLEAN redirecting_stdout = FALSE;
 
-    if (isatty(fileno(stdout)))
-	return (FALSE);
-    else
-	return (TRUE);
+	if (isatty(fileno(stdout)))
+		return(FALSE);
+	else
+		return(TRUE);
 
-    return (redirecting_stdout);
+	return(redirecting_stdout);
 }
 
 void show_command_line(int argc, char *argv[])
 {
-    int i;
-    char cline[2 * MAX_PATH] =
-    {""};
+	int i;
+	char cline[2 * MAX_PATH] = {""};
 
-    sprintf(cline, "==>%s%s", argv[0], argc > 1 ? " " : "");
+	sprintf(cline, "==>%s%s", argv[0], argc > 1 ? " " : "");
 
-    for (i = 1; i < argc; i++)
-	sprintf(cline + strlen(cline), "%s%s", argv[i], i < argc - 1 ? " " : "");
+	for (i = 1; i < argc; i++)
+		sprintf(cline + strlen(cline), "%s%s", argv[i], i < argc - 1 ? " " : "");
 
-    sprintf(cline + strlen(cline), "<==");
+	sprintf(cline + strlen(cline), "<==");
 
-    err_push(ERR_GENERAL, cline);
+	err_push(ERR_GENERAL, cline);
 }
 
 /*****************************************************************************
@@ -812,322 +860,366 @@ void show_command_line(int argc, char *argv[])
 
 int parse_command_line(int argc, char *argv[], FF_STD_ARGS_PTR std_args)
 {
-    int i;
-    int error;
-    int num_flags = 0;
-    int last_error = 0;
+	int i;
+	int error;
+	int num_flags = 0;
+	int last_error = 0;
 
-    assert(std_args);
+	assert(std_args);
+	
+	if (!std_args)
+		return(err_push(ERR_MEM_LACK, "standard args structure"));
+	
+	error = 0;
 
-    if (!std_args)
-	return (err_push(ERR_MEM_LACK, "standard args structure"));
+	/* Has user specified no command line parameters but is redirecting stdin? 
+	   A format file will have to specified -- err-out when failing to create formats.
+	*/
 
-    error = 0;
+	if (argc == 1 && is_redirecting_stdin())
+		std_args->user.is_stdin_redirected = 1;
+	
+	/* Interpret the command line */
+	for (i = 1; i < argc; i++)
+	{
+		switch (argv[i][0]) /* ? */
+		{
+			case '-' :
+				num_flags++;
+				
+				switch (toupper(argv[i][1])) /* -? */
+				{
+					case 'B' : /* cache size */
+						error = option_B(argv, std_args, &i);
+					break;
+					
+					case 'C' : /* head 'n tail count */
+						error = option_C(argv, std_args, &i);
+					break;
 
-    /* Has user specified no command line parameters but is redirecting stdin? 
-       A format file will have to specified -- err-out when failing to create formats.
-     */
+					case 'D' : /* data file name */
+						error = option_D(argv, std_args, &i);
+					break;
 
-    if (argc == 1 && is_redirecting_stdin())
-	std_args->user.is_stdin_redirected = 1;
+					case 'E' : /* error logging option */
+						error = option_E_(argv, std_args, &i);
+					break;
+				
+					case 'F' : /* single format file/title */
+						error = option_F_(argv, std_args, &i);
+					break;
+					
+					case 'I' : /* input format file/title */
+						error = option_I__(argv, std_args, &i);
+					break;
+	
+					case 'M' : /* Checkvar maxbins, missing data, or max/min only */
+						error = option_M_(argv, std_args, &i);
+					break;
+					
+					case 'O' : /* output data file, or output format file/title */
+						error = option_O__(argv, std_args, &i);
+					break;
+					
+					case 'P' : /* Checkvar precision */
+						error = option_P(argv, std_args, &i);
+					break;
+					
+					case 'S' : /* Checkvar subsetting */
+						error = option_S(argv, std_args, &i);
+					break;
+					
+					case 'T' : /* FF2PSDTS terms file */
+						error = option_T(argv, std_args, &i);
+					break;
+					
+					case 'Q' : /* query file */
+						error = option_Q(argv, std_args, &i);
+					break;
+					
+					case 'V' : /* variable file */
+						error = option_V(argv, std_args, &i);
+					break;
+					
+					default :
+						error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[i]);
+					break;
+				} /* switch on flag letter code */
+				
+				if (error)
+					last_error = error;
+			break; /* case '-' */
 
-    /* Interpret the command line */
-    for (i = 1; i < argc; i++) {
-	switch (argv[i][0]) {	/* ? */
-	case '-':
-	    num_flags++;
+			default :
+		
+				/* Has user omitted the optional -D option flag? */
+				if (i == 1)
+				{
+					if (!os_file_exist(argv[1]))
+						last_error = err_push(ERR_OPEN_FILE, argv[1]);
 
-	    switch (toupper(argv[i][1])) {	/* -? */
-	    case 'B':		/* cache size */
-		error = option_B(argv, std_args, &i);
-		break;
+					std_args->input_file = argv[1];
+				}
+				else
+					last_error = err_push(ERR_UNKNOWN_OPTION, "Expecting an option flag (beginning with '-')\n==> %s <==", argv[i]);
+			break;
+		} /* switch on argv[?][0] */
+	} /* End of Command line interpretation (for loop)*/
 
-	    case 'C':		/* head 'n tail count */
-		error = option_C(argv, std_args, &i);
-		break;
+	/* Is user redirecting stdin? */
+	if (!std_args->input_file)
+	{
+		if (is_redirecting_stdin())
+			std_args->user.is_stdin_redirected = 1;
+		else if (argc > 1)
+			last_error = err_push(ERR_GENERAL, "Expecting a data file to process");
+	}
 
-	    case 'D':		/* data file name */
-		error = option_D(argv, std_args, &i);
-		break;
+	if (!std_args->output_file && is_redirecting_stdout())
+		std_args->user.is_stdout_redirected = 1;
 
-	    case 'E':		/* error logging option */
-		error = option_E_(argv, std_args, &i);
-		break;
+	if (last_error)
+		show_command_line(argc, argv);
 
-	    case 'F':		/* single format file/title */
-		error = option_F_(argv, std_args, &i);
-		break;
+	/* Has user requested a log file but not an error log?  Why make errors interactive
+	   when they are logging?  So send errors and log to the same file
+	*/
+	if (!std_args->error_log && std_args->log_file)
+		std_args->error_log = std_args->log_file;
 
-	    case 'I':		/* input format file/title */
-		error = option_I__(argv, std_args, &i);
-		break;
-
-	    case 'M':		/* Checkvar maxbins, missing data, or max/min only */
-		error = option_M_(argv, std_args, &i);
-		break;
-
-	    case 'O':		/* output data file, or output format file/title */
-		error = option_O__(argv, std_args, &i);
-		break;
-
-	    case 'P':		/* Checkvar precision */
-		error = option_P(argv, std_args, &i);
-		break;
-
-	    case 'S':		/* Checkvar subsetting */
-		error = option_S(argv, std_args, &i);
-		break;
-
-	    case 'T':		/* FF2PSDTS terms file */
-		error = option_T(argv, std_args, &i);
-		break;
-
-	    case 'Q':		/* query file */
-		error = option_Q(argv, std_args, &i);
-		break;
-
-	    case 'V':		/* variable file */
-		error = option_V(argv, std_args, &i);
-		break;
-
-	    default:
-		error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[i]);
-		break;
-	    }			/* switch on flag letter code */
-
-	    if (error)
-		last_error = error;
-	    break;		/* case '-' */
-
-	default:
-
-	    /* Has user omitted the optional -D option flag? */
-	    if (i == 1) {
-		if (!os_file_exist(argv[1]))
-		    last_error = err_push(ERR_OPEN_FILE, argv[1]);
-
-		std_args->input_file = argv[1];
-	    } else
-		last_error = err_push(ERR_UNKNOWN_OPTION, "Expecting an option flag (beginning with '-')\n==> %s <==", argv[i]);
-	    break;
-	}			/* switch on argv[?][0] */
-    }				/* End of Command line interpretation (for loop) */
-
-    /* Is user redirecting stdin? */
-    if (!std_args->input_file) {
-	if (is_redirecting_stdin())
-	    std_args->user.is_stdin_redirected = 1;
-	else if (argc > 1)
-	    last_error = err_push(ERR_GENERAL, "Expecting a data file to process");
-    }
-    if (!std_args->output_file && is_redirecting_stdout())
-	std_args->user.is_stdout_redirected = 1;
-
-    if (last_error)
-	show_command_line(argc, argv);
-
-    /* Has user requested a log file but not an error log?  Why make errors interactive
-       when they are logging?  So send errors and log to the same file
-     */
-    if (!std_args->error_log && std_args->log_file)
-	std_args->error_log = std_args->log_file;
-
-    return (last_error);
+	return(last_error);
 }
 
 static BOOLEAN cmp_array_conduit
- (
-     FF_ARRAY_CONDUIT_PTR src_conduit,
-     FF_ARRAY_CONDUIT_PTR trg_conduit
-) {
-    FF_VALIDATE(src_conduit);
-    FF_VALIDATE(trg_conduit);
+	(
+	 FF_ARRAY_CONDUIT_PTR src_conduit,
+	 FF_ARRAY_CONDUIT_PTR trg_conduit
+	)
+{
+	FF_VALIDATE(src_conduit);
+	FF_VALIDATE(trg_conduit);
 
-    if (src_conduit->input && trg_conduit->input)
-	return (ff_format_comp(src_conduit->input->fd->format, trg_conduit->input->fd->format));
-    else if (src_conduit->output && trg_conduit->output)
-	return (ff_format_comp(src_conduit->output->fd->format, trg_conduit->output->fd->format));
-    else
-	return 0;
+	if (src_conduit->input && trg_conduit->input)
+		return(ff_format_comp(src_conduit->input->fd->format, trg_conduit->input->fd->format));
+	else if (src_conduit->output && trg_conduit->output)
+		return(ff_format_comp(src_conduit->output->fd->format, trg_conduit->output->fd->format));
+	else
+		return 0;
 }
-
+	 
 static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
 {
-    int error = 0;
+	int error = 0;
 
-    error = list_replace_items((pgenobj_cmp_t) cmp_array_conduit, conduit_list);
-    return (error);
+	error = list_replace_items((pgenobj_cmp_t)cmp_array_conduit, conduit_list); 
+	return(error);
 }
 
-#ifdef ND_FP
+#ifdef ND_FP 
 static void release_file_handles
- (
-     DATA_BIN_PTR dbin,
-     FF_TYPES_t io
-) {
-    PROCESS_INFO_LIST plist = NULL;
-    PROCESS_INFO_PTR pinfo = NULL;
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_TYPES_t io
+	)
+{
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
 
-    FF_VALIDATE(dbin);
+	FF_VALIDATE(dbin);
 
-    if (!db_ask(dbin, DBASK_PROCESS_INFO, io, &plist)) {
-	plist = dll_first(plist);
-	pinfo = FF_PI(plist);
-	while (pinfo) {
-	    if (PINFO_SUPER_ARRAY(pinfo)->fp)
-		fclose(PINFO_SUPER_ARRAY(pinfo)->fp);
-	    else if (PINFO_SUB_ARRAY(pinfo)->fp)
-		fclose(PINFO_SUB_ARRAY(pinfo)->fp);
+	if (!db_ask(dbin, DBASK_PROCESS_INFO, io, &plist))
+	{
+		plist = dll_first(plist);
+		pinfo = FF_PI(plist);
+		while (pinfo)
+		{
+			if (PINFO_SUPER_ARRAY(pinfo)->fp)
+				fclose(PINFO_SUPER_ARRAY(pinfo)->fp);
+			else if (PINFO_SUB_ARRAY(pinfo)->fp)
+				fclose(PINFO_SUB_ARRAY(pinfo)->fp);
 
-	    plist = dll_next(plist);
-	    pinfo = FF_PI(plist);
+			plist = dll_next(plist);
+			pinfo = FF_PI(plist);
+		}
+
+		ff_destroy_process_info_list(plist);
 	}
-
-	ff_destroy_process_info_list(plist);
-    }
 }
 #endif
 
 static void remove_header_from_ac_list
- (
-     DATA_BIN_PTR dbin,
-     char *name
-) {
-    FF_ARRAY_CONDUIT_LIST aclist = NULL;
-    FF_ARRAY_CONDUIT_PTR acptr = NULL;
+	(
+	 DATA_BIN_PTR dbin,
+	 char *name
+	)
+{
+	FF_ARRAY_CONDUIT_LIST aclist = NULL;
+	FF_ARRAY_CONDUIT_PTR acptr = NULL;
 
-    FF_VALIDATE(dbin);
+	FF_VALIDATE(dbin);
 
-    aclist = dbin->array_conduit_list;
-    aclist = dll_next(aclist);
-    acptr = FF_AC(aclist);
-    while (acptr) {
-	FF_VALIDATE(acptr);
-
-	if (!strcmp(name, acptr->output->fd->format->name)) {
-	    ff_destroy_array_pole(acptr->output);
-
-	    if (acptr->input)
-		acptr->input->mate = NULL;
-
-	    acptr->output = NULL;
-
-	    break;
-	}
+	aclist = dbin->array_conduit_list;
 	aclist = dll_next(aclist);
 	acptr = FF_AC(aclist);
-    }
+	while (acptr)
+	{
+		FF_VALIDATE(acptr);
+
+		if (!strcmp(name, acptr->output->fd->format->name))
+		{
+			ff_destroy_array_pole(acptr->output);
+
+			if (acptr->input)
+				acptr->input->mate = NULL;
+
+			acptr->output = NULL;
+
+			break;
+		}
+
+		aclist = dll_next(aclist);
+		acptr = FF_AC(aclist);
+	}
 }
 
 static int check_file_access(DATA_BIN_PTR dbin)
 {
-    PROCESS_INFO_LIST plist = NULL;
-    PROCESS_INFO_PTR pinfo = NULL;
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
 
-    int error = 0;
+	int error = 0;
 
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &plist);
-    if (!error) {
-	BOOLEAN no_overwrite = FALSE;
-
-	if (nt_askexist(dbin, NT_ANYWHERE, "nooverwrite"))
-	    no_overwrite = TRUE;
-
-	plist = dll_first(plist);
-	pinfo = FF_PI(plist);
-	while (pinfo) {
-	    if (PINFO_IS_FILE(pinfo)) {
-		if (os_file_exist(PINFO_FNAME(pinfo))) {
-		    if (PINFO_MATE(pinfo) && PINFO_MATE_IS_FILE(pinfo) && !strcmp(PINFO_FNAME(pinfo), PINFO_MATE_FNAME(pinfo)))
-			error = err_push(ERR_GENERAL, "Input and output %s files have the same name!", IS_DATA(PINFO_FORMAT(pinfo)) ? "data" : "header");
-		    else if (!PINFO_IS_BROKEN(pinfo)) {
-			if (no_overwrite)
-			    error = err_push(ERR_FILE_EXISTS, PINFO_FNAME(pinfo));
-			else {
-			    if (IS_SEPARATE(PINFO_FORMAT(pinfo)) && IS_FILE_HEADER(PINFO_FORMAT(pinfo))) {
-				err_push(ERR_WARNING_ONLY + ERR_FILE_EXISTS, "Output header (%s) will not be overwritten", PINFO_FNAME(pinfo));
-
-				remove_header_from_ac_list(dbin, PINFO_FORMAT(pinfo)->name);
-			    } else
-				err_push(ERR_WARNING_ONLY + ERR_WILL_OVERWRITE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
-			}
-		    }
-		}
-	    }
-	    plist = dll_next(plist);
-	    pinfo = FF_PI(plist);
-	}
-
-	ff_destroy_process_info_list(plist);
 	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &plist);
-	if (!error) {
-	    plist = dll_first(plist);
-	    pinfo = FF_PI(plist);
-	    while (pinfo) {
-		if (PINFO_IS_FILE(pinfo) && !PINFO_IS_BROKEN(pinfo)) {
-		    /* Can we write to file? */
-		    if ((!error || error > ERR_WARNING_ONLY) && (!no_overwrite || !os_file_exist(PINFO_FNAME(pinfo)))) {
-#ifdef ND_FP
-			PINFO_SUB_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "w");
-			if (PINFO_SUB_ARRAY(pinfo)->fp) {
-			    fclose(PINFO_SUB_ARRAY(pinfo)->fp);
+	if (!error)
+	{
+		BOOLEAN no_overwrite = FALSE;
 
-			    PINFO_SUB_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "w+b");
-			    if (!PINFO_SUB_ARRAY(pinfo)->fp) {
-				release_file_handles(dbin, FFF_OUTPUT);
-				break;
-			    }
+		if (nt_askexist(dbin, NT_ANYWHERE, "nooverwrite"))
+			no_overwrite = TRUE;
+
+		plist = dll_first(plist);
+		pinfo = FF_PI(plist);
+		while (pinfo)
+		{
+			if (PINFO_IS_FILE(pinfo))
+			{
+				if (os_file_exist(PINFO_FNAME(pinfo)))
+				{
+					if (PINFO_MATE(pinfo) && PINFO_MATE_IS_FILE(pinfo) && !strcmp(PINFO_FNAME(pinfo), PINFO_MATE_FNAME(pinfo)))
+						error = err_push(ERR_GENERAL, "Input and output %s files have the same name!", IS_DATA(PINFO_FORMAT(pinfo)) ? "data" : "header");
+					else if (!PINFO_IS_BROKEN(pinfo))
+					{
+						if (no_overwrite)
+							error = err_push(ERR_FILE_EXISTS, PINFO_FNAME(pinfo));
+						else
+						{
+							if (IS_SEPARATE(PINFO_FORMAT(pinfo)) && IS_FILE_HEADER(PINFO_FORMAT(pinfo)))
+							{
+								/* Is this a zero length file?  If so, go ahead and overwrite it. */
+								if (os_filelength(PINFO_FNAME(pinfo)))
+								{
+									err_push(ERR_WARNING_ONLY + ERR_FILE_EXISTS, "Output header (%s) will not be overwritten", PINFO_FNAME(pinfo));
+
+									remove_header_from_ac_list(dbin, PINFO_FORMAT(pinfo)->name);
+								}
+							}
+							else
+								err_push(ERR_WARNING_ONLY + ERR_WILL_OVERWRITE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
+						}
+					}
+				}
 			}
+
+			plist = dll_next(plist);
+			pinfo = FF_PI(plist);
+		}
+
+		ff_destroy_process_info_list(plist);
+		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &plist);
+		if (!error)
+		{
+			plist = dll_first(plist);
+			pinfo = FF_PI(plist);
+			while (pinfo)
+			{
+				if (PINFO_IS_FILE(pinfo) && !PINFO_IS_BROKEN(pinfo))
+				{
+					 /* Can we write to file? */
+					if ((!error || error > ERR_WARNING_ONLY) && (!no_overwrite || !os_file_exist(PINFO_FNAME(pinfo))))
+					{
+#ifdef ND_FP 
+						PINFO_SUB_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "w");
+						if (PINFO_SUB_ARRAY(pinfo)->fp)
+						{
+							fclose(PINFO_SUB_ARRAY(pinfo)->fp);
+
+							PINFO_SUB_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "w+b");
+							if (!PINFO_SUB_ARRAY(pinfo)->fp)
+							{
+								release_file_handles(dbin, FFF_OUTPUT);
+								break;
+							}
+						}
 #else
-			FILE *fp = NULL;
+						FILE *fp = NULL;
 
-			fp = fopen(PINFO_FNAME(pinfo), "w");
-			if (fp)
-			    fclose(fp);
+						fp = fopen(PINFO_FNAME(pinfo), "w");
+						if (fp)
+							fclose(fp);
 #endif
-			else
-			    error = err_push(ERR_CREATE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
-		    }
-		}
-		plist = dll_next(plist);
-		pinfo = FF_PI(plist);
-	    }
+						else
+							error = err_push(ERR_CREATE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
+					}
+				}
 
-	    ff_destroy_process_info_list(plist);
-	} else if (error == ERR_GENERAL)
-	    error = 0;
-    } else if (error == ERR_GENERAL)
-	error = 0;
+				plist = dll_next(plist);
+				pinfo = FF_PI(plist);
+			}
 
-#ifdef ND_FP
-    if (!error) {
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
-	if (!error) {
-	    plist = dll_first(plist);
-	    pinfo = FF_PI(plist);
-	    while (pinfo) {
-		if (PINFO_IS_FILE(pinfo) && !PINFO_IS_BROKEN(pinfo)) {
-		    PINFO_SUPER_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "rb");
-		    if (!PINFO_SUPER_ARRAY(pinfo)->fp) {
-			release_file_handles(dbin, FFF_INPUT);
-			release_file_handles(dbin, FFF_OUTPUT);
-			break;
-		    }
+			ff_destroy_process_info_list(plist);
 		}
-		plist = dll_next(plist);
-		pinfo = FF_PI(plist);
-	    }
+		else if (error == ERR_GENERAL)
+			error = 0;
 	}
-	ff_destroy_process_info_list(plist);
-    }
+	else if (error == ERR_GENERAL)
+		error = 0;
+
+#ifdef ND_FP 
+	if (!error)
+	{
+		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
+		if (!error)
+		{
+			plist = dll_first(plist);
+			pinfo = FF_PI(plist);
+			while (pinfo)
+			{
+				if (PINFO_IS_FILE(pinfo) && !PINFO_IS_BROKEN(pinfo))
+				{
+					PINFO_SUPER_ARRAY(pinfo)->fp = fopen(PINFO_FNAME(pinfo), "rb");
+					if (!PINFO_SUPER_ARRAY(pinfo)->fp)
+					{
+						release_file_handles(dbin, FFF_INPUT);
+						release_file_handles(dbin, FFF_OUTPUT);
+						break;
+					}
+				}
+
+				plist = dll_next(plist);
+				pinfo = FF_PI(plist);
+			}
+		}
+
+		ff_destroy_process_info_list(plist);
+	}
 #endif
 
-    return (error);
+	return(error);
 }
 
 void fd_destroy_format_data_list(FORMAT_DATA_LIST format_data_list)
 {
-    dll_free_holdings(format_data_list);
+	dll_free_holdings(format_data_list);
 }
 
 /*
@@ -1159,36 +1251,44 @@ void fd_destroy_format_data_list(FORMAT_DATA_LIST format_data_list)
 
 void db_destroy(DATA_BIN_PTR dbin)
 {
-    FF_VALIDATE(dbin);
+	FF_VALIDATE(dbin);
+	
+	if (dbin->eqn_info)
+	{
+		ee_free_einfo(dbin->eqn_info);
+		dbin->eqn_info = NULL;
+	}
 
-    if (dbin->eqn_info) {
-	ee_free_einfo(dbin->eqn_info);
-	dbin->eqn_info = NULL;
-    }
-    if (dbin->array_conduit_list) {
-	ff_destroy_array_conduit_list(dbin->array_conduit_list);
-	dbin->array_conduit_list = NULL;
-    }
-    if (dbin->table_list) {
-	fd_destroy_format_data_list(dbin->table_list);
-	dbin->table_list = NULL;
-    }
-    if (dbin->title) {
-	memFree(dbin->title, "dbin->title");
-	dbin->title = NULL;
-    }
+	if (dbin->array_conduit_list)
+	{
+		ff_destroy_array_conduit_list(dbin->array_conduit_list);
+		dbin->array_conduit_list = NULL;
+	}
+
+	if (dbin->table_list)
+	{
+		fd_destroy_format_data_list(dbin->table_list);
+		dbin->table_list = NULL;
+	}
+
+	if (dbin->title)
+	{
+		memFree(dbin->title, "dbin->title");
+		dbin->title = NULL;
+	}
+
 #ifdef FF_CHK_ADDR
-    dbin->check_address = NULL;
+	dbin->check_address = NULL;
 #endif
+	
+	memFree(dbin, "dbin");
 
-    memFree(dbin, "dbin");
-
-    return;
+	return;
 }
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
-#endif
+#endif 
 #define ROUTINE_NAME "variable_comp"
 
 /*****************************************************************************
@@ -1217,54 +1317,55 @@ void db_destroy(DATA_BIN_PTR dbin)
  ****************************************************************************/
 
 static BOOLEAN variable_comp
- (
-     VARIABLE_PTR v1,
-     VARIABLE_PTR v2
-) {
-    FF_VALIDATE(v1);
-    FF_VALIDATE(v2);
-
-    if (!v1 || !v2)
-	return (FALSE);
-
+	(
+	 VARIABLE_PTR v1,
+	 VARIABLE_PTR v2
+	)
+{
+	FF_VALIDATE(v1);
+	FF_VALIDATE(v2);
+	
+	if (!v1 || !v2)
+		return(FALSE);
+	
 #ifdef FF_CHK_ADDR
-    if ((void *) v1 != v1->check_address)
-	return (FALSE);
-
-    if ((void *) v2 != v2->check_address)
-	return (FALSE);
-
+	if ((void *)v1 != v1->check_address)
+		return(FALSE);
+		
+	if ((void *)v2 != v2->check_address)
+		return(FALSE);
+	
 #endif
-    if (IS_ARRAY(v1) && IS_ARRAY(v2) && strcmp(v1->array_desc_str, v2->array_desc_str))
-	return (FALSE);
+	if (IS_ARRAY(v1) && IS_ARRAY(v2) && strcmp(v1->array_desc_str, v2->array_desc_str))
+		return(FALSE);
 
-    if (strcmp(v1->name, v2->name))
-	return (FALSE);
+	if (strcmp(v1->name, v2->name))
+		return(FALSE);
 
-    if (v1->type != v2->type)
-	return (FALSE);
+	if (v1->type != v2->type)
+		return(FALSE);
+		
+	if (v1->start_pos != v2->start_pos)
+		return(FALSE);
+		
+	if (v1->end_pos != v2->end_pos)
+		return(FALSE);
+	
+	if (v1->precision != v2->precision)
+		return(FALSE);
 
-    if (v1->start_pos != v2->start_pos)
-	return (FALSE);
-
-    if (v1->end_pos != v2->end_pos)
-	return (FALSE);
-
-    if (v1->precision != v2->precision)
-	return (FALSE);
-
-    assert(!IS_CONVERT(v1));
-    if (IS_CONVERT(v1) && v1->misc.cv_var_num != v2->misc.cv_var_num)
-	return (FALSE);
-    else if (IS_TRANSLATOR(v1) && !nt_comp_translator_sll(v1, v2))
-	return (FALSE);
-
-    return (TRUE);
+	assert(!IS_CONVERT(v1));
+	if (IS_CONVERT(v1) && v1->misc.cv_var_num != v2->misc.cv_var_num)
+		return(FALSE);
+	else if (IS_TRANSLATOR(v1) && !nt_comp_translator_sll(v1, v2))
+		return(FALSE);
+	
+	return(TRUE);
 }
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
-#endif
+#endif 
 #define ROUTINE_NAME "variable_list_comp"
 
 /*****************************************************************************
@@ -1293,42 +1394,44 @@ static BOOLEAN variable_comp
  ****************************************************************************/
 
 static BOOLEAN variable_list_comp
- (
-     VARIABLE_LIST vlist1,
-     VARIABLE_LIST vlist2
-) {
-    VARIABLE_PTR v1;
-    VARIABLE_PTR v2;
-
-    if (!vlist1 || !vlist2)
-	return (FALSE);
-
-    vlist1 = dll_first(vlist1);
-    v1 = FF_VARIABLE(vlist1);
-
-    vlist2 = dll_first(vlist2);
-    v2 = FF_VARIABLE(vlist2);
-
-    while (v1 || v2) {
-	if (!(v1 && v2))
-	    return (FALSE);
-
-	if (!variable_comp(v1, v2))
-	    return (FALSE);
-
-	vlist1 = dll_next(vlist1);
+	(
+	 VARIABLE_LIST vlist1,
+	 VARIABLE_LIST vlist2
+	)
+{
+	VARIABLE_PTR v1;
+	VARIABLE_PTR v2;
+	
+	if (!vlist1 || !vlist2)
+		return(FALSE);
+	
+	vlist1 = dll_first(vlist1);
 	v1 = FF_VARIABLE(vlist1);
-
-	vlist2 = dll_next(vlist2);
+	
+	vlist2 = dll_first(vlist2);
 	v2 = FF_VARIABLE(vlist2);
-    }
+	
+	while (v1 || v2)
+	{
+		if (!(v1 && v2))
+			return(FALSE);
 
-    return (TRUE);
+		if (!variable_comp(v1, v2))
+			return(FALSE);
+		
+		vlist1 = dll_next(vlist1);
+		v1 = FF_VARIABLE(vlist1);
+		
+		vlist2 = dll_next(vlist2);
+		v2 = FF_VARIABLE(vlist2);
+	}
+	
+	return(TRUE);
 }
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
-#endif
+#endif 
 #define ROUTINE_NAME "ff_format_comp"
 
 /*****************************************************************************
@@ -1358,94 +1461,100 @@ static BOOLEAN variable_list_comp
  ****************************************************************************/
 
 BOOLEAN ff_format_comp
- (
-     FORMAT_PTR f1,
-     FORMAT_PTR f2
-) {
-    FF_VALIDATE(f1);
-    FF_VALIDATE(f2);
+	(
+	 FORMAT_PTR f1,
+	 FORMAT_PTR f2
+	)
+{
+	FF_VALIDATE(f1);
+	FF_VALIDATE(f2);
+	
+	if (!f1 || !f2)
+		return(FALSE);
+	
+	if (strcmp(f1->name, f2->name))
+		return(FALSE);
 
-    if (!f1 || !f2)
-	return (FALSE);
+	if (strcmp(f1->locus, f2->locus))
+		return(FALSE);	
 
-    if (strcmp(f1->name, f2->name))
-	return (FALSE);
-
-    if (strcmp(f1->locus, f2->locus))
-	return (FALSE);
-
-    if (f1->type != f2->type)
-	return (FALSE);
-
-    if (f1->num_vars != f2->num_vars)
-	return (FALSE);
-
-    if (f1->length != f2->length)
-	return (FALSE);
-
-    if (!variable_list_comp(f1->variables, f2->variables))
-	return (FALSE);
-
-    return (TRUE);
+	if (f1->type != f2->type)
+		return(FALSE);
+	
+	if (f1->num_vars != f2->num_vars)
+		return(FALSE);
+	
+	if (f1->length != f2->length)
+		return(FALSE);
+	
+	if (!variable_list_comp(f1->variables, f2->variables))
+		return(FALSE);
+	
+	return(TRUE);
 }
 
 /* Longest: Binary Output Separate Varied Record Header */
 static int get_format_type
- (
-     FORMAT_PTR format,
-     char *title
-) {
-    FF_VALIDATE(format);
+	(
+	 FORMAT_PTR format,
+	 char *title
+	)
+{	
+	FF_VALIDATE(format);
 
-    strcpy(title, ff_lookup_string(format_types, FFF_FORMAT_TYPE(format)));
-    os_str_replace_char(title, '_', ' ');
+	strcpy(title, ff_lookup_string(format_types, FFF_FORMAT_TYPE(format)));
+	os_str_replace_char(title, '_', ' ');
 
-    strcat(title, "\b");
+	strcat(title, "\b");
 
-    return (0);
+	return(0);
 }
 
 static int make_unique_format_titles(DATA_BIN_PTR dbin)
 {
-    PROCESS_INFO_LIST plist = NULL;
-    PROCESS_INFO_PTR pinfo = NULL;
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
 
-    int error = 0;
-    int SCRATCH = strlen("Binary Output Separate Varied Record Header: ") + 1;	/* Longest */
+	int error = 0;
+	int SCRATCH = strlen("Binary Output Separate Varied Record Header: ") + 1; /* Longest */
 
-    char *cp = NULL;
+	char *cp = NULL;
 
-    FF_VALIDATE(dbin);
+	FF_VALIDATE(dbin);
 
-    db_ask(dbin, DBASK_PROCESS_INFO, 0, &plist);
+	db_ask(dbin, DBASK_PROCESS_INFO, 0, &plist);
 
-    plist = dll_first(plist);
-    pinfo = FF_PI(plist);
-    while (pinfo && !error) {
-	FF_VALIDATE(pinfo);
+	plist = dll_first(plist);
+	pinfo = FF_PI(plist);
+	while (pinfo && !error)
+	{
+		FF_VALIDATE(pinfo);
 
-	cp = (char *) memRealloc(PINFO_FORMAT(pinfo)->name, strlen(PINFO_FORMAT(pinfo)->name) + SCRATCH + 1, "PINFO_FORMAT(pinfo)->name");
-	if (cp) {
-	    PINFO_FORMAT(pinfo)->name = cp;
-	    memmove(cp + SCRATCH, cp, strlen(cp) + 1);
-	} else {
-	    error = err_push(ERR_MEM_LACK, "");
-	    break;
+		cp = (char *)memRealloc(PINFO_FORMAT(pinfo)->name, strlen(PINFO_FORMAT(pinfo)->name) + SCRATCH + 1, "PINFO_FORMAT(pinfo)->name");
+		if (cp)
+		{
+			PINFO_FORMAT(pinfo)->name = cp;
+			memmove(cp + SCRATCH, cp, strlen(cp) + 1);
+		}
+		else
+		{
+			error = err_push(ERR_MEM_LACK, "");
+			break;
+		}
+
+		error = get_format_type(PINFO_FORMAT(pinfo), cp);
+		if (error)
+			break;
+
+		memmove(cp + strlen(cp), cp + SCRATCH, strlen(cp + SCRATCH) + 1);
+
+		plist = dll_next(plist);
+		pinfo = FF_PI(plist);
 	}
 
-	error = get_format_type(PINFO_FORMAT(pinfo), cp);
-	if (error)
-	    break;
+	ff_destroy_process_info_list(plist);
 
-	memmove(cp + strlen(cp), cp + SCRATCH, strlen(cp + SCRATCH) + 1);
-
-	plist = dll_next(plist);
-	pinfo = FF_PI(plist);
-    }
-
-    ff_destroy_process_info_list(plist);
-
-    return error;
+	return error;
 }
 
 
@@ -1496,182 +1605,238 @@ static int make_unique_format_titles(DATA_BIN_PTR dbin)
  ****************************************************************************/
 
 int db_init
- (
-     FF_STD_ARGS_PTR std_args,
-     DATA_BIN_HANDLE dbin_h,
-     int (*error_cb) (int)
-) {
-    FORMAT_DATA_LIST format_data_list = NULL;
-    int error = 0;
-    int num_errors = 0;
+	(
+	 FF_STD_ARGS_PTR std_args,
+	 DATA_BIN_HANDLE dbin_h,
+	 int (*error_cb)(int)
+	)
+{
+	FORMAT_DATA_LIST format_data_list = NULL;
+	int error = 0;
+	int num_errors = 0;
+	
+	assert(dbin_h);
 
-    assert(dbin_h);
+	if (!dbin_h)
+		return(err_push(ERR_API, "NULL DATA_BIN_HANDLE in %s", ROUTINE_NAME));
 
-    if (!dbin_h)
-	return (err_push(ERR_API, "NULL DATA_BIN_HANDLE in %s", ROUTINE_NAME));
-
-    if (!*dbin_h) {
-	*dbin_h = db_make(std_args->input_file ? std_args->input_file : "Application Program");
 	if (!*dbin_h)
-	    return (err_push(ERR_MEM_LACK, "Standard Data Bin"));
-    }
-    /* Now set the formats and the auxillary files */
-
-    if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file)) {
-	err_push(ERR_SET_DBIN, "making name table for %s", std_args->input_file);
-	return (DBSET_READ_EQV);
-    }
-    if (db_set(*dbin_h,
-	       DBSET_INPUT_FORMATS,
-	       std_args->input_file,
-	       std_args->output_file,
-	       std_args->input_format_file,
-	       std_args->input_format_buffer,
-	       std_args->input_format_title,
-	       &format_data_list
-	)
-	) {
-	if (format_data_list)
-	    dll_free_holdings(format_data_list);
-
-	err_push(ERR_SET_DBIN, "setting an input format for %s", std_args->input_file);
-	return (DBSET_INPUT_FORMATS);
-    }
-    num_errors = err_count();
-
-    if (db_set(*dbin_h,
-	       DBSET_OUTPUT_FORMATS,
-	       std_args->input_file,
-	       std_args->output_file,
-	       std_args->output_format_file,
-	       std_args->output_format_buffer,
-	       std_args->output_format_title,
-	       &format_data_list
-	)
-	) {
-	if (!error_cb || (*error_cb) (DBSET_OUTPUT_FORMATS)) {
-	    dll_free_holdings(format_data_list);
-
-	    err_push(ERR_SET_DBIN, "setting an output format for %s", std_args->input_file);
-	    return (DBSET_OUTPUT_FORMATS);
-	} else {
-	    while (err_count() > num_errors)
-		err_pop();
+	{
+		*dbin_h = db_make(std_args->input_file ? std_args->input_file : "Application Program");
+		if (!*dbin_h)
+			return(err_push(ERR_MEM_LACK, "Standard Data Bin"));
 	}
-    }
-    error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
-    dll_free_holdings(format_data_list);
-    if (error) {
-	err_push(ERR_SET_DBIN, "creating array information for %s", std_args->input_file);
-	return (DBSET_CREATE_CONDUITS);
-    }
-    /* Check for variable file */
-    if (std_args->var_file) {
-	FORMAT_DATA_PTR output_fd = fd_get_data(*dbin_h, FFF_OUTPUT);
 
-	if (IS_ARRAY(output_fd->format)) {
-	    err_push(ERR_SET_DBIN, "Cannot use variable file with arrays");
-	    return (DBSET_VARIABLE_RESTRICTION);
+	/* Now set the formats and the auxillary files */
+
+	if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file))
+	{
+		err_push(ERR_SET_DBIN, "making name table for %s", std_args->input_file);
+		return(DBSET_READ_EQV);
 	}
-	if (db_set(*dbin_h, DBSET_VARIABLE_RESTRICTION, std_args->var_file, output_fd->format)) {
-	    err_push(ERR_SET_DBIN, "Unable to use variable file \"%s\"", std_args->var_file);
-	    return (DBSET_VARIABLE_RESTRICTION);
+	
+	if (db_set(*dbin_h,
+	           DBSET_INPUT_FORMATS,
+	           std_args->input_file,
+	           std_args->output_file,
+	           std_args->input_format_file,
+	           std_args->input_format_buffer,
+	           std_args->input_format_title,
+	           &format_data_list
+	          )
+	   )
+	{
+		if (format_data_list)
+			dll_free_holdings(format_data_list);
+
+		err_push(ERR_SET_DBIN, "setting an input format for %s", std_args->input_file);
+		return(DBSET_INPUT_FORMATS);
 	}
-    }
-    if (db_set(*dbin_h, DBSET_EQUATION_VARIABLES)) {
-	err_push(ERR_SET_DBIN, "setting equation variables for %s", std_args->input_file);
-	return (DBSET_EQUATION_VARIABLES);
-    }
-    if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT, std_args->input_file)) {
-	err_push(ERR_SET_DBIN, "Determining input header file names for %s", std_args->input_file);
-	return (DBSET_HEADER_FILE_NAMES);
-    }
-    num_errors = err_count();
 
-    if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_OUTPUT, std_args->output_file)) {
-	if (!error_cb || (*error_cb) (DBSET_OUTPUT_FORMATS)) {
-	    err_push(ERR_SET_DBIN, "Determining output header file names for %s", std_args->output_file);
-	    return (DBSET_HEADER_FILE_NAMES);
-	} else {
-	    while (err_count() > num_errors)
-		err_pop();
+	num_errors = err_count();
+
+	if (db_set(*dbin_h,
+				  DBSET_OUTPUT_FORMATS,
+				  std_args->input_file,
+				  std_args->output_file,
+				  std_args->output_format_file,
+				  std_args->output_format_buffer,
+				  std_args->output_format_title,
+				  &format_data_list
+				 )
+		)
+	{
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			dll_free_holdings(format_data_list);
+
+			err_push(ERR_SET_DBIN, "setting an output format for %s", std_args->input_file);
+			return(DBSET_OUTPUT_FORMATS);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
 	}
-    }
-    if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_INPUT | FFF_HEADER)) {
-	err_push(ERR_SET_DBIN, "Defining input data byte order");
-	return (DBSET_BYTE_ORDER);
-    }
-    if (db_set(*dbin_h, DBSET_HEADERS)) {
-	err_push(ERR_SET_DBIN, "getting header file for %s", std_args->input_file);
-	return (DBSET_HEADERS);
-    }
-    if (db_set(*dbin_h, DBSET_USER_UPDATE_FORMATS)) {
-	err_push(ERR_SET_DBIN, "user update of a format for %s", std_args->input_file);
-	return (DBSET_USER_UPDATE_FORMATS);
-    }
-    if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_INPUT)) {
-	err_push(ERR_SET_DBIN, "Defining input data byte order");
-	return (DBSET_BYTE_ORDER);
-    }
-    num_errors = err_count();
 
-    if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_OUTPUT)) {
-	if (!error_cb || (*error_cb) (DBSET_OUTPUT_FORMATS)) {
-	    err_push(ERR_SET_DBIN, "Defining output data byte order");
-	    return (DBSET_BYTE_ORDER);
-	} else {
-	    while (err_count() > num_errors)
-		err_pop();
+	error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
+	dll_free_holdings(format_data_list);
+	if (error)
+	{
+		err_push(ERR_SET_DBIN, "creating array information for %s", std_args->input_file);
+		return(DBSET_CREATE_CONDUITS);
 	}
-    }
-    if (std_args->cache_size == 0)
-	std_args->cache_size = DEFAULT_CACHE_SIZE;
 
-    /* Check for query file */
-    if (std_args->query_file) {
-	if (db_set(*dbin_h, DBSET_QUERY_RESTRICTION, std_args->query_file)) {
-	    err_push(ERR_GEN_QUERY, "setting query using %s", std_args->query_file);
-	    return (DBSET_QUERY_RESTRICTION);
+	/* Check for variable file */
+	if (std_args->var_file)
+	{
+		FORMAT_DATA_PTR output_fd = fd_get_data(*dbin_h, FFF_OUTPUT);
+
+		if (IS_ARRAY(output_fd->format))
+		{
+			err_push(ERR_SET_DBIN, "Cannot use variable file with arrays");
+			return(DBSET_VARIABLE_RESTRICTION);
+		}
+
+		if (db_set(*dbin_h, DBSET_VARIABLE_RESTRICTION, std_args->var_file, output_fd->format))
+		{
+			err_push(ERR_SET_DBIN, "Unable to use variable file \"%s\"", std_args->var_file);
+			return(DBSET_VARIABLE_RESTRICTION);
+		}
 	}
-    }
-    if (db_set(*dbin_h, DBSET_INIT_CONDUITS, FFF_DATA, std_args->records_to_read)) {
-	err_push(ERR_SET_DBIN, "creating array information for %s", std_args->input_file);
-	return (DBSET_INIT_CONDUITS);
-    }
-    if (error)
-	return (error);
 
-    error = merge_redundant_conduits((*dbin_h)->array_conduit_list);
-    if (error)
-	return (error);
-
-    if (fd_get_data(*dbin_h, FFF_INPUT) &&
-	db_set(*dbin_h, DBSET_CACHE_SIZE, std_args->cache_size)
-	) {
-	return (err_push(ERR_MEM_LACK, "setting data cache for %s", std_args->input_file));
-    }
-    if (db_set(*dbin_h, DBSET_FORMAT_MAPPINGS)) {
-	err_push(ERR_SET_DBIN, "mapping input to output formats for %s", std_args->input_file);
-	return (DBSET_FORMAT_MAPPINGS);
-    }
-    error = make_unique_format_titles(*dbin_h);
-    if (error)
-	return ERR_MEM_LACK;
-
-    num_errors = err_count();
-
-    if (db_set(*dbin_h, DBSET_VAR_MINMAX)) {
-	if (!error_cb || (*error_cb) (DBSET_OUTPUT_FORMATS)) {
-	    err_push(ERR_SET_DBIN, "setting variable minimums and maximums for %s", std_args->input_file);
-	    return (DBSET_VAR_MINMAX);
-	} else {
-	    while (err_count() > num_errors)
-		err_pop();
+	if (db_set(*dbin_h, DBSET_EQUATION_VARIABLES))
+	{
+		err_push(ERR_SET_DBIN, "setting equation variables for %s", std_args->input_file);
+		return(DBSET_EQUATION_VARIABLES);
 	}
-    }
-    error = check_file_access(*dbin_h);
-    if (error)
-	return error;
 
-    return (error);
+	if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT, std_args->input_file))
+	{
+		err_push(ERR_SET_DBIN, "Determining input header file names for %s", std_args->input_file);
+		return(DBSET_HEADER_FILE_NAMES);
+	}
+
+	num_errors = err_count();
+
+	if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_OUTPUT, std_args->output_file))
+	{
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			err_push(ERR_SET_DBIN, "Determining output header file names for %s", std_args->output_file);
+			return(DBSET_HEADER_FILE_NAMES);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
+	}
+
+	if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_INPUT | FFF_HEADER))
+	{
+		err_push(ERR_SET_DBIN, "Defining input data byte order");
+		return(DBSET_BYTE_ORDER);
+	}
+
+	if (db_set(*dbin_h, DBSET_HEADERS))
+	{
+		err_push(ERR_SET_DBIN, "getting header file for %s", std_args->input_file);
+		return(DBSET_HEADERS);
+	}
+	
+	if (db_set(*dbin_h, DBSET_USER_UPDATE_FORMATS))
+	{
+		err_push(ERR_SET_DBIN, "user update of a format for %s", std_args->input_file);
+		return(DBSET_USER_UPDATE_FORMATS);
+	}
+
+	if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_INPUT))
+	{
+		err_push(ERR_SET_DBIN, "Defining input data byte order");
+		return(DBSET_BYTE_ORDER);
+	}
+
+	num_errors = err_count();
+
+	if (db_set(*dbin_h, DBSET_BYTE_ORDER, FFF_OUTPUT))
+	{
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			err_push(ERR_SET_DBIN, "Defining output data byte order");
+			return(DBSET_BYTE_ORDER);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
+	}
+
+	if (std_args->cache_size == 0)
+		std_args->cache_size = DEFAULT_CACHE_SIZE;
+
+	/* Check for query file */
+	if (std_args->query_file)
+	{
+		if (db_set(*dbin_h, DBSET_QUERY_RESTRICTION, std_args->query_file))
+		{
+			err_push(ERR_GEN_QUERY, "setting query using %s", std_args->query_file);
+			return(DBSET_QUERY_RESTRICTION);
+		}
+	}
+
+	if (db_set(*dbin_h, DBSET_INIT_CONDUITS, FFF_DATA, std_args->records_to_read))
+	{
+		err_push(ERR_SET_DBIN, "creating array information for %s", std_args->input_file);
+		return(DBSET_INIT_CONDUITS);
+	}
+
+	if (error)
+		return(error);
+
+	error = merge_redundant_conduits((*dbin_h)->array_conduit_list);
+	if (error)
+		return(error);
+
+	if (fd_get_data(*dbin_h, FFF_INPUT) &&
+	    db_set(*dbin_h, DBSET_CACHE_SIZE, std_args->cache_size)
+	   )
+	{
+		return(err_push(ERR_MEM_LACK, "setting data cache for %s", std_args->input_file));
+	}
+
+	if (db_set(*dbin_h, DBSET_FORMAT_MAPPINGS))
+	{
+		err_push(ERR_SET_DBIN, "mapping input to output formats for %s", std_args->input_file);
+		return(DBSET_FORMAT_MAPPINGS);
+	}
+
+	error = make_unique_format_titles(*dbin_h);
+	if (error)
+		return ERR_MEM_LACK;
+
+	num_errors = err_count();
+
+	if (db_set(*dbin_h, DBSET_VAR_MINMAX))
+	{
+		if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
+		{
+			err_push(ERR_SET_DBIN, "setting variable minimums and maximums for %s", std_args->input_file);
+			return(DBSET_VAR_MINMAX);
+		}
+		else
+		{
+			while (err_count() > num_errors)
+				err_pop();
+		}
+	}
+			
+	error = check_file_access(*dbin_h);
+	if (error)
+		return error;
+
+	return(error);
 }
+

@@ -1,23 +1,22 @@
-
 /* 
-
+ *
  * CONTAINS:    Functions for tracking allocation of memory:
  */
 /*
  * HISTORY:
- *      r fozzard       4/21/95         -rf01 
- *              malloc.h not needed on mac?
- *              (char *) for Think C
- *              function declarations for MEMMemcpy and MEMMemmove
- *      r fozzard       7/18/95         -rf02
- *              add _fMEMMemcpy definition for mac 
- */
+ *	r fozzard	4/21/95		-rf01 
+ *		malloc.h not needed on mac?
+ * 		(char *) for Think C
+ *		function declarations for MEMMemcpy and MEMMemmove
+ *	r fozzard	7/18/95		-rf02
+ *		add _fMEMMemcpy definition for mac 
+*/
 
 #define MEM_OPEN_FILE 1
 #define MEM_PTR_DEF 2
 #define MEM_GENERAL 3
 
-#define ERR_H__			/* force not including err.h */
+#define ERR_H__ /* force not including err.h */
 #include <freeform.h>
 
 #if FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4
@@ -32,7 +31,7 @@
 #define FAR
 #endif
 
-#ifdef SUNCC			/* Let this break */
+#ifdef SUNCC /* Let this break */
 #include <unistd.h>
 #endif
 
@@ -93,7 +92,7 @@ static int MEMTrack_free(FF_MEM_LOG_PTR);
 #define BOOLEAN unsigned char
 #define TRUE 1
 #define FALSE 0
-#endif				/* BOOLEAN */
+#endif /* BOOLEAN */
 
 #ifndef MEMTRACK_B
 /*
@@ -125,39 +124,45 @@ static int MEMTrack_free(FF_MEM_LOG_PTR);
 
 static int MEMTrack_msg(char *msg, char *routine_name, char *cfile_name, int line_number)
 {
-    int error;
+	int error;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.addr = 0;
-    entry.size = 0;
+	entry.addr = 0;
+	entry.size = 0;
 
-    entry.tag = msg;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = msg;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    log.entry = &entry;
-    error = MEMTrack_fp(&log);
-    if (error == MEM_OPEN_FILE) {
-	fprintf(stderr, "%c %s %s %d %s\n", MESSAGE_LETTER, routine_name, cfile_name, line_number, msg);
-	fflush(stderr);
-	return (error);
-    } else if (error)
-	return (error);
+	log.entry = &entry;
+	error = MEMTrack_fp(&log);
+	if (error == MEM_OPEN_FILE)
+	{
+		fprintf(stderr,"%c %s %s %d %s\n", MESSAGE_LETTER, routine_name, cfile_name, line_number, msg);
+		fflush(stderr);
+		return(error);
+	}
+	else if (error)
+		return(error);
+		
+	if (fseek(log.file,0L,SEEK_END) != 0)
+	{
+		fprintf(stderr, "Cannot perform fseek operation on memory log file\n");
+		fprintf(stderr, "Called from %s %s %d (%s)\n", routine_name, os_path_return_name(cfile_name), line_number, msg);
+		exit(EXIT_FAILURE);
+	}
 
-    if (fseek(log.file, 0L, SEEK_END) != 0) {
-	fprintf(stderr, "Cannot perform fseek operation on memory log file\n");
-	fprintf(stderr, "Called from %s %s %d (%s)\n", routine_name, os_path_return_name(cfile_name), line_number, msg);
-	exit(EXIT_FAILURE);
-    }
-    if (fprintf(log.file, "%c %s %s %d %s\n", MESSAGE_LETTER, routine_name, os_path_return_name(cfile_name), line_number, msg) <= 0) {
+	if (fprintf(log.file,"%c %s %s %d %s\n", MESSAGE_LETTER, routine_name, os_path_return_name(cfile_name), line_number, msg) <= 0)
+	{
+		fclose(log.file);
+		return(1);
+	}
+
 	fclose(log.file);
-	return (1);
-    }
-    fclose(log.file);
-    return (0);
+	return(0);
 }
 #endif
 
@@ -167,48 +172,49 @@ void MEMTrace(void)
 void MEMTrace(char *msg, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.addr = 0;
-    entry.size = 0;
+	entry.addr = 0;
+	entry.size = 0;
 
 #ifndef MEMTRACK_B
-    entry.tag = msg;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = msg;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    heap_check(&log);
+	heap_check(&log);
 #ifndef MEMTRACK_B
-    MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
 #endif
 }
 
 static void MEMTrack_append_entry
- (
-     FF_MEM_LOG_PTR log
-) {
+	(
+	 FF_MEM_LOG_PTR log
+	)
+{
 #ifdef MEMTRACK_B
-    size_t num_written;
+	size_t num_written;
 #else
-    int num_written;
+	int num_written;
 #endif
 
-    fseek(log->file, 0L, SEEK_END);
+	fseek(log->file,0L,SEEK_END);
 #ifdef MEMTRACK_B
-    num_written = fwrite(log->entry, sizeof(*log->entry), 1, log->file);
-    if (num_written != 1)
-	FF_DIE
+	num_written = fwrite(log->entry, sizeof(*log->entry), 1, log->file);
+	if (num_written != 1)
+		FF_DIE
 #else
-    num_written = fprintf(log->file, "%c %lx %lu %s %s %d %s\n", (char) log->entry->state, (long) (char HUGE *) log->entry->addr, (unsigned long) log->entry->size, log->entry->routine, os_path_return_name(log->entry->file), (int) log->entry->line, log->entry->tag);
-    if (num_written <= 0)
-	FF_DIE
+	num_written = fprintf(log->file,"%c %lx %lu %s %s %d %s\n", (char)log->entry->state, (long)(char HUGE *)log->entry->addr, (unsigned long)log->entry->size, log->entry->routine, os_path_return_name(log->entry->file), (int)log->entry->line, log->entry->tag);
+	if (num_written <= 0)
+		FF_DIE
 #endif
-	    fclose(log->file);
+	fclose(log->file);
 }
 
 /*
@@ -241,51 +247,55 @@ static void MEMTrack_append_entry
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMTrack_alloc"
+#define ROUTINE_NAME "MEMTrack_alloc" 
 
 static void MEMTrack_alloc(FF_MEM_LOG_PTR log)
 {
-    int error;
+	int error;
 
-    error = MEMTrack_fp(log);
-    if (!error && log->file) {
-	log->entry->state = ALLOC;
-	MEMTrack_append_entry(log);
-    } else if (!log->file) {	/* MEMTRACK is not defined */
-    }
+	error = MEMTrack_fp(log);
+	if (!error && log->file)
+	{
+		log->entry->state = ALLOC;
+		MEMTrack_append_entry(log);
+	}
+	else if (!log->file)
+	{/* MEMTRACK is not defined */
+	}
 }
 
 static BOOLEAN MEMTrack_find_entry(FF_MEM_LOG_PTR log)
 {
 #ifndef MEMTRACK_B
-    char line[MAX_LTH];
+	char  line[MAX_LTH];
 #endif
-    BOOLEAN found = FALSE;
+	BOOLEAN found = FALSE;
 
-    FF_MEM_ENTRY file_entry;
+	FF_MEM_ENTRY file_entry;
 
-    file_entry.state = log->entry->state;
+	file_entry.state = log->entry->state;
 
 #ifdef MEMTRACK_B
-    for (log->pos = 0; fread(&file_entry, sizeof(file_entry), 1, log->file); log->pos += sizeof(file_entry))
+	for (log->pos = 0; fread(&file_entry, sizeof(file_entry), 1, log->file); log->pos += sizeof(file_entry))
 #else
-    for (log->pos = 0L; fgets(line, sizeof(line), log->file); log->pos += strlen(line))
+	for (log->pos=0L; fgets(line,sizeof(line),log->file); log->pos += strlen(line))
 #endif
-    {
+	{
 #ifndef MEMTRACK_B
-	if (line[0] != log->entry->state)
-	    continue;
+		if (line[0] != log->entry->state)
+			continue;
 
-	sscanf(line, "%*c %lx %lu", &file_entry.addr, &file_entry.size);
+		sscanf(line,"%*c %lx %lu", &file_entry.addr, &file_entry.size);
 #endif
-	/* Is addr in file the one we want?  */
-	if ((file_entry.state == log->entry->state) && ((char HUGE *) file_entry.addr - (char HUGE *) log->entry->addr == 0)) {
-	    found = TRUE;
-	    break;
+		/* Is addr in file the one we want?  */
+		if ((file_entry.state == log->entry->state) && ((char HUGE *)file_entry.addr - (char HUGE *)log->entry->addr == 0))
+		{
+			found = TRUE;
+			break;
+		}
 	}
-    }
 
-    return (found);
+	return(found);
 }
 
 /*
@@ -325,58 +335,64 @@ static BOOLEAN MEMTrack_find_entry(FF_MEM_LOG_PTR log)
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMTrack_free"
+#define ROUTINE_NAME "MEMTrack_free" 
 
 static int MEMTrack_free(FF_MEM_LOG_PTR log)
 {
-    char found = 0;
+	char  found = 0;
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
+	char  msg[MAX_LTH];
 #endif
-    int error;
+	int error = 0;
 
-    error = MEMTrack_fp(log);
-    if (error == MEM_OPEN_FILE) {	/* MEMTRACK is not defined */
-	/* do special check on freeing NULL */
-	if ((void *) log->entry->addr == NULL) {
+	error = MEMTrack_fp(log);
+	if (error == MEM_OPEN_FILE)
+	{/* MEMTRACK is not defined */
+		/* do special check on freeing NULL */
+		if ((void *)log->entry->addr == NULL)
+		{
 #ifndef MEMTRACK_B
-	    sprintf(msg, "BAD free(), NULL (%s)", log->entry->tag);
-	    MEMTrack_msg(msg, log->entry->routine, log->entry->file, log->entry->line);
+			sprintf(msg, "BAD free(), NULL (%s)", log->entry->tag);
+			MEMTrack_msg(msg, log->entry->routine, log->entry->file, log->entry->line);
 #endif
-	    FF_DIE
+			FF_DIE
+		}
+
+		return(error);
 	}
-	return (error);
-    } 
-    else if (error && error != MEM_OPEN_FILE)
-	return (error);
-    else if (log->file) {
-	log->entry->state = ALLOC;
-	found = MEMTrack_find_entry(log);
-	if (found) {
-	    fseek(log->file, log->pos, SEEK_SET);
+	else if (error && error != MEM_OPEN_FILE)
+		return(error);
+	else if (log->file)
+	{
+		log->entry->state = ALLOC;
+		found = MEMTrack_find_entry(log);
+		if (found)
+		{
+			fseek(log->file, log->pos, SEEK_SET);
 #ifdef MEMTRACK_B
-	    log->entry->state = FREE;
-	    fwrite(log->entry, sizeof(*log->entry), 1, log->file);
+			log->entry->state = FREE;
+			fwrite(log->entry, sizeof(*log->entry), 1, log->file);
 #else
-	    fputc(FREE, log->file);	/* Over-write the ALLOC tag */
+			fputc(FREE, log->file); /* Over-write the ALLOC tag */
 #endif
 
-	    fclose(log->file);
+			fclose(log->file);
 
-	    return (0);
-	} else {
-	    fclose(log->file);
+			return(0);
+		}
+		else
+		{
+			fclose(log->file);
 
 #ifndef MEMTRACK_B
-	    sprintf(msg, "BAD free(), unallocated:%lx (%s)", log->entry->addr, log->entry->tag);
-	    MEMTrack_msg(msg, log->entry->routine, log->entry->file, log->entry->line);
+			sprintf(msg, "BAD free(), unallocated:%lx (%s)", log->entry->addr, log->entry->tag);
+			MEMTrack_msg(msg, log->entry->routine, log->entry->file, log->entry->line);
 #endif
-	    FF_DIE
+			FF_DIE
+		}
 	}
-    }
 
-    /* Added because of gcc's warning. 8/12/98 jhrg */
-    return (0);
+	return error;
 }
 
 /*
@@ -408,69 +424,79 @@ static int MEMTrack_free(FF_MEM_LOG_PTR log)
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMTrack_fp"
+#define ROUTINE_NAME "MEMTrack_fp" 
 
 static int MEMTrack_fp(FF_MEM_LOG_PTR log)
 {
-    static enum {
-	first_time, enabled, disabled
-    } mem_state = first_time;
+	static enum {first_time, enabled, disabled} mem_state = first_time;
 
-    if (mem_state == first_time) {
-	mem_state = enabled;
-
-#if FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4 || FF_CC == FF_CC_MACCW
-	_fmode = O_BINARY;
-#endif
-	log->file = fopen(MEMTRACK_LOG, "r");
-	if (log->file) {
-	    fclose(log->file);
+	if (mem_state == first_time)
+	{
+		mem_state = enabled;
 
 #if FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4 || FF_CC == FF_CC_MACCW
-	    _fmode = O_BINARY;
+		_fmode = O_BINARY;
 #endif
-	    log->file = fopen(MEMTRACK_LOG, "w");
-	    if (log->file) {
-		fclose(log->file);
+		log->file = fopen(MEMTRACK_LOG,"r");
+		if (log->file)
+		{
+			fclose(log->file);
+
+#if FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4 || FF_CC == FF_CC_MACCW
+			_fmode = O_BINARY;
+#endif
+			log->file = fopen(MEMTRACK_LOG, "w");
+			if (log->file)
+			{
+				fclose(log->file);
 #ifdef MEMTRACK_B
-		fprintf(stderr, "Binary ");
+				fprintf(stderr, "Binary ");
 #else
-		fprintf(stderr, "ASCII ");
+				fprintf(stderr, "ASCII ");
 #endif
-		fprintf(stderr, "MEMTrack logging file \"%s\" enabled\n", MEMTRACK_LOG);
-	    } else {
-		fprintf(stderr, "Cannot write to Memtrack logging file \"%s\"\n", MEMTRACK_LOG);
-		exit(EXIT_FAILURE);
-	    }
-	} else {
-	    mem_state = disabled;
+				fprintf(stderr, "MEMTrack logging file \"%s\" enabled\n", MEMTRACK_LOG);
+			}
+			else
+			{
+				fprintf(stderr, "Cannot write to Memtrack logging file \"%s\"\n", MEMTRACK_LOG);
+				exit(EXIT_FAILURE);
+			}
+		}
+		else
+		{
+			mem_state = disabled;
+			
+			fprintf(stderr, "Memtrack logging file \"%s\" does not exist\n", MEMTRACK_LOG);
+			fprintf(stderr, "Memory tracking and error detection will not be enabled\n");
 
-	    fprintf(stderr, "Memtrack logging file \"%s\" does not exist\n", MEMTRACK_LOG);
-	    fprintf(stderr, "Memory tracking and error detection will not be enabled\n");
+			return(MEM_OPEN_FILE);
+		}
+	} /* if (first_time) */
 
-	    return (MEM_OPEN_FILE);
-	}
-    }				/* if (first_time) */
-    if (mem_state == enabled) {
+	if (mem_state == enabled)
+	{
 #if FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4 || FF_CC == FF_CC_MACCW
-	_fmode = O_BINARY;
+		_fmode = O_BINARY;
 #endif
-	log->file = fopen(MEMTRACK_LOG, "r+");	/* Open debugging file for append access. */
-	if (!log->file) {
-	    fprintf(stderr, "Cannot read/append to file \"%s\"\n", MEMTRACK_LOG);
+		log->file = fopen(MEMTRACK_LOG,"r+"); /* Open debugging file for append access. */
+		if (!log->file)
+		{
+			fprintf(stderr, "Cannot read/append to file \"%s\"\n", MEMTRACK_LOG);
 #ifndef MEMTRACK_B
-	    fprintf(stderr, "Called from %s %s %d (%s)\n", log->entry->routine, log->entry->file, (int) log->entry->line, log->entry->tag);
+			fprintf(stderr, "Called from %s %s %d (%s)\n", log->entry->routine, log->entry->file, (int)log->entry->line, log->entry->tag);
 #endif
-	    exit(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
+		}
+	
+		return(0);
 	}
-	return (0);
-    } else if (mem_state == disabled) {
-	log->file = NULL;
-	return (MEM_OPEN_FILE);
-    }
+	else if (mem_state == disabled)
+	{
+		log->file = NULL;
+		return(MEM_OPEN_FILE);
+	}
 
-    /* Added because of gcc's warning. 8/12/98 jhrg */
-    return (0);
+	return 0;
 }
 
 /*
@@ -517,34 +543,36 @@ void *MEMCalloc(size_t num_elems, size_t bytes_per_elem)
 void *MEMCalloc(size_t num_elems, size_t bytes_per_elem, char *tag, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    void *allocated;
+	void *allocated;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
-
-    entry.addr = 0;
-    entry.size = 0;
+	entry.addr = 0;
+	entry.size = 0;
 
 #ifndef MEMTRACK_B
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
+	
+	heap_check(&log);
 
-    heap_check(&log);
+	allocated = calloc(num_elems + BOTH_POSTS_SIZE, bytes_per_elem);
+	if (allocated)
+	{
+		log.entry->addr = (long)((char HUGE *)allocated + ONE_POST_SIZE);
+		log.entry->size = num_elems * bytes_per_elem;
 
-    allocated = calloc(num_elems + BOTH_POSTS_SIZE, bytes_per_elem);
-    if (allocated) {
-	log.entry->addr = (long) ((char HUGE *) allocated + ONE_POST_SIZE);
-	log.entry->size = num_elems * bytes_per_elem;
-
-	MEMTrack_alloc(&log);
-	set_posts(log.entry);
-    }
-    return ((void *) log.entry->addr);
+		MEMTrack_alloc(&log);
+		set_posts(log.entry);
+	}
+	
+	return((void *)log.entry->addr);
 }
 
 /*
@@ -578,7 +606,7 @@ void *MEMCalloc(size_t num_elems, size_t bytes_per_elem, char *tag, char *routin
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMFree"
+#define ROUTINE_NAME "MEMFree" 
 
 #ifdef MEMTRACK_B
 void MEMFree(void *user_block)
@@ -586,36 +614,37 @@ void MEMFree(void *user_block)
 void MEMFree(void *user_block, char *tag, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    size_t size = 0;
-    int error;
+	size_t size = 0;
+	int error;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.addr = (long) user_block;
-    entry.size = 0;
+	entry.addr = (long)user_block;
+	entry.size = 0;
 
 #ifndef MEMTRACK_B
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    heap_check(&log);
+	heap_check(&log);
 
-    error = MEMTrack_free(&log);
-    if (error != MEM_PTR_DEF) {
-	char *allocated = (char *) user_block - ONE_POST_SIZE;
+	error = MEMTrack_free(&log);
+	if (error != MEM_PTR_DEF)
+	{
+		char *allocated = (char *)user_block - ONE_POST_SIZE;
 
-	/* garbage shredding */
-	if (size)
-	    memset(allocated, FILL_CHAR, (size_t) size + BOTH_POSTS_SIZE);
+		/* garbage shredding */
+		if (size)
+			memset(allocated, FILL_CHAR, (size_t)size + BOTH_POSTS_SIZE);
 
-	free(allocated);
-    }
+		free(allocated);
+	}
 }
 
 /*
@@ -650,7 +679,7 @@ void MEMFree(void *user_block, char *tag, char *routine_name, char *cfile_name, 
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMMalloc"
+#define ROUTINE_NAME "MEMMalloc" 
 
 #ifdef MEMTRACK_B
 void *MEMMalloc(size_t bytes)
@@ -658,36 +687,38 @@ void *MEMMalloc(size_t bytes)
 void *MEMMalloc(size_t bytes, char *tag, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    void *allocated;
+	void *allocated;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.addr = 0;
-    entry.size = bytes;
+	entry.addr = 0;
+	entry.size = bytes;
 
 #ifndef MEMTRACK_B
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    heap_check(&log);
+	heap_check(&log);
 
-    allocated = malloc(bytes + BOTH_POSTS_SIZE);
-    if (allocated != NULL) {
-	log.entry->addr = (long) ((char *) allocated + ONE_POST_SIZE);
-	log.entry->size = bytes;
+	allocated = malloc(bytes + BOTH_POSTS_SIZE);
+	if (allocated != NULL)
+	{
+		log.entry->addr = (long)((char *)allocated + ONE_POST_SIZE);
+		log.entry->size = bytes;
+		
+		MEMTrack_alloc(&log);
 
-	MEMTrack_alloc(&log);
-
-	memset((void *) log.entry->addr, FILL_CHAR, bytes);
-	set_posts(log.entry);
-    }
-    return ((void *) log.entry->addr);
+		memset((void *)log.entry->addr, FILL_CHAR, bytes);
+		set_posts(log.entry);
+	}
+	
+	return((void *)log.entry->addr);
 }
 
 /*
@@ -731,52 +762,57 @@ void *MEMRealloc(void *user_block, size_t bytes)
 void *MEMRealloc(void *user_block, size_t bytes, char *tag, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    char *allocated;
-    int error;
+	char *allocated;
+	int error;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.addr = (long) user_block;
-    entry.size = 0;
+	entry.addr = (long)user_block;
+	entry.size = 0;
 
 #ifndef MEMTRACK_B
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    heap_check(&log);
+	heap_check(&log);
 
-    if (user_block) {
-	allocated = (char *) user_block - ONE_POST_SIZE;
+	if (user_block)
+	{
+		allocated = (char *)user_block - ONE_POST_SIZE;
 
-	error = MEMTrack_free(&log);
+		error = MEMTrack_free(&log);
 
-	/* garbage shredding */
-	if (!error && log.entry->size) {
-	    memset(allocated, FILL_CHAR, ONE_POST_SIZE);
-	    memset((char *) log.entry->addr + log.entry->size, FILL_CHAR, ONE_POST_SIZE);
+		/* garbage shredding */
+		if (!error && log.entry->size)
+		{
+			memset(allocated, FILL_CHAR, ONE_POST_SIZE);
+			memset((char *)log.entry->addr + log.entry->size, FILL_CHAR, ONE_POST_SIZE);
 
-	    if (bytes < (size_t) log.entry->size)
-		memset((char *) log.entry->addr + bytes, FILL_CHAR, (size_t) (log.entry->size - bytes));
+			if (bytes < (size_t)log.entry->size)
+				memset((char *)log.entry->addr + bytes, FILL_CHAR, (size_t)(log.entry->size - bytes));
+		}
 	}
-    } else
-	allocated = NULL;
+	else
+		allocated = NULL;
 
-    allocated = realloc(allocated, bytes + BOTH_POSTS_SIZE);
-    if (allocated) {
-	log.entry->addr = (long) ((char *) allocated + ONE_POST_SIZE);
-	log.entry->size = bytes;
+	allocated = realloc(allocated, bytes + BOTH_POSTS_SIZE);
+	if (allocated)
+	{
+		log.entry->addr = (long)((char *)allocated + ONE_POST_SIZE);
+		log.entry->size = bytes;
+		
+		MEMTrack_alloc(&log);
+		
+		set_posts(log.entry);
+	}
 
-	MEMTrack_alloc(&log);
-
-	set_posts(log.entry);
-    }
-    return ((void *) log.entry->addr);
+	return((void *)log.entry->addr);
 }
 
 /*
@@ -819,50 +855,51 @@ char *MEMStrdup(const char *string)
 char *MEMStrdup(const char *string, char *tag, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    char *user_block;
+	char *user_block;
 
 #if MEMTRACK == MEMTRACK_ULTRA && !defined(MEMTRACK_B)
-    int error;
+	int error;
 #endif
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
-
-    entry.addr = (long) string;
-    entry.size = 0;
+	entry.addr = (long)string;
+	entry.size = 0;
 
 #ifndef MEMTRACK_B
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    heap_check(&log);
+	heap_check(&log);
 
 #if MEMTRACK == MEMTRACK_ULTRA && !defined(MEMTRACK_B)
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	char msg[MAX_LTH];
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		char msg[MAX_LTH];
 
-	sprintf(msg, "Duplicating untracked string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+		sprintf(msg, "Duplicating untracked string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
 #ifdef MEMTRACK_B
-    user_block = MEMMalloc(strlen(string) + 1);
+	user_block = MEMMalloc(strlen(string) + 1);
 #else
-    user_block = MEMMalloc(strlen(string) + 1, tag, routine_name, cfile_name, line_number);
+	user_block = MEMMalloc(strlen(string) + 1, tag, routine_name, cfile_name, line_number);
 #endif
-    if (user_block)
-	strcpy(user_block, string);
+	if (user_block)
+		strcpy(user_block, string);
 
-    return (user_block);
+	return(user_block);
 }
 
 /*
@@ -896,26 +933,26 @@ void MEMExit(int status)
 void MEMExit(int status, char *tag, char *routine_name, char *cfile_name, int line_number)
 #endif
 {
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.state = ALLOC;
+	entry.state = ALLOC;
 
-    entry.addr = 0;
-    entry.size = 0;
+	entry.addr = 0;
+	entry.size = 0;
 
 #ifndef MEMTRACK_B
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 #endif
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    leak_test(&log);
+	leak_test(&log);
 
-    exit(status);
+	exit(status);
 }
 
 /*
@@ -928,7 +965,7 @@ void MEMExit(int status, char *tag, char *routine_name, char *cfile_name, int li
  * RETURNS: same as strcpy()
  * 
  *
- * DESCRIPTION: This function provides a wrapper around strcpy which is called only if
+ * DESCRIPTION:	This function provides a wrapper around strcpy which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of ct.
@@ -954,7 +991,7 @@ void MEMExit(int status, char *tag, char *routine_name, char *cfile_name, int li
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrcpy"
+#define ROUTINE_NAME "MEMStrcpy" 
 
 #ifdef MEMTRACK_B
 char *MEMStrcpy(char *s, const char *ct)
@@ -963,43 +1000,51 @@ char *MEMStrcpy(char *s, const char *ct, char *tag, char *routine_name, char *cf
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)s;
+	entry.size = 0;
 
-    entry.addr = (long) s;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
+	if (*ct == FILL_CHAR)
+	{
+		sprintf(msg,"copying FILL_CHAR string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+		
+	if (s == NULL)
+	{
+		sprintf(msg,"copying into NULL string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg, "copying %lu bytes into untracked string:%lx (%s)", (unsigned long)strlen(ct), (long)s, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "copying FILL_CHAR string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (s == NULL) {
-	sprintf(msg, "copying into NULL string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "copying %lu bytes into untracked string:%lx (%s)", (unsigned long) strlen(ct), (long)s, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size <= strlen(ct)) {
-	sprintf(msg, "copying %lu bytes into %lu byte buffer (%s)", (unsigned long) strlen(ct), (unsigned long) log.entry->size, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+
+	if (!error && log.entry->size && log.entry->size <= strlen(ct))
+	{
+		sprintf(msg,"copying %lu bytes into %lu byte buffer (%s)", (unsigned long)strlen(ct), (unsigned long)log.entry->size, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
-    return (strcpy(s, ct));
+	return(strcpy(s, ct));
 }
 
 /*
@@ -1012,7 +1057,7 @@ char *MEMStrcpy(char *s, const char *ct, char *tag, char *routine_name, char *cf
  * RETURNS: same as strncpy()
  * 
  *
- * DESCRIPTION: This function provides a wrapper around strncpy which is called only if
+ * DESCRIPTION:	This function provides a wrapper around strncpy which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of ct.
@@ -1038,7 +1083,7 @@ char *MEMStrcpy(char *s, const char *ct, char *tag, char *routine_name, char *cf
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrncpy"
+#define ROUTINE_NAME "MEMStrncpy" 
 
 #ifdef MEMTRACK_B
 char *MEMStrncpy(char *s, const char *ct, size_t n)
@@ -1047,44 +1092,48 @@ char *MEMStrncpy(char *s, const char *ct, size_t n, char *tag, char *routine_nam
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)s;
+	entry.size = 0;
 
-    entry.addr = (long) s;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
+	if (*ct == FILL_CHAR) {
+		sprintf(msg,"copying FILL_CHAR string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+		
+	if(s == NULL) {
+		sprintf(msg,"copying into NULL string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg,"copying %lu bytes into untracked string:%lx (%s)", (unsigned long)(n < strlen(ct) ? n : strlen(ct)), (long)s, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "copying FILL_CHAR string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (s == NULL) {
-	sprintf(msg, "copying into NULL string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "copying %lu bytes into untracked string:%lx (%s)", (unsigned long) (n < strlen(ct) ? n : strlen(ct)), (long)s, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size <= (n < strlen(ct) ? n : strlen(ct))) {
-	sprintf(msg, "copying up to %lu bytes into %lu byte buffer (%s)", (unsigned long) (n < strlen(ct) ? n : strlen(ct)), (unsigned long) log.entry->size, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if (!error && log.entry->size && log.entry->size <= (n < strlen(ct) ? n : strlen(ct))) {
+		sprintf(msg,"copying up to %lu bytes into %lu byte buffer (%s)", (unsigned long)(n < strlen(ct) ? n : strlen(ct)), (unsigned long)log.entry->size, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strncpy(s, ct, n));
+	return(strncpy(s, ct, n));
 }
 
 /*
@@ -1096,7 +1145,7 @@ char *MEMStrncpy(char *s, const char *ct, size_t n, char *tag, char *routine_nam
  *
  * RETURNS: same as strcat()
  *
- * DESCRIPTION: This function provides a wrapper around strcat which is called only if
+ * DESCRIPTION:	This function provides a wrapper around strcat which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of
@@ -1132,44 +1181,48 @@ char *MEMStrcat(char *s, const char *ct, char *tag, char *routine_name, char *cf
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)s;
+	entry.size = 0;
 
-    entry.addr = (long) s;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
+	if (*ct == FILL_CHAR) {
+		sprintf(msg,"concatenating FILL_CHAR string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+		
+	if(s == NULL) {
+		sprintf(msg,"concatentating onto NULL string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg,"concatenating %lu bytes onto untracked string:%lx (%s)", (unsigned long)strlen(ct), (long)s, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "concatenating FILL_CHAR string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (s == NULL) {
-	sprintf(msg, "concatentating onto NULL string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "concatenating %lu bytes onto untracked string:%lx (%s)", (unsigned long) strlen(ct), (long)s, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size <= strlen(ct) + strlen(s)) {
-	sprintf(msg, "concatenating %lu bytes onto %lu byte buffer from offset %lu (%s)", (unsigned long) strlen(ct), (unsigned long) log.entry->size, (unsigned long) strlen(s), tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if (!error && log.entry->size && log.entry->size <= strlen(ct) + strlen(s)) {
+		sprintf(msg,"concatenating %lu bytes onto %lu byte buffer from offset %lu (%s)", (unsigned long)strlen(ct), (unsigned long)log.entry->size, (unsigned long)strlen(s), tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strcat(s, ct));
+	return(strcat(s, ct));
 }
 
 /*
@@ -1181,7 +1234,7 @@ char *MEMStrcat(char *s, const char *ct, char *tag, char *routine_name, char *cf
  *
  * RETURNS: same as strncat()
  *
- * DESCRIPTION: This function provides a wrapper around strncat which is called only if
+ * DESCRIPTION:	This function provides a wrapper around strncat which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of
@@ -1217,44 +1270,48 @@ char *MEMStrncat(char *s, const char *ct, size_t n, char *tag, char *routine_nam
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)s;
+	entry.size = 0;
 
-    entry.addr = (long) s;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
+	if (*ct == FILL_CHAR) {
+		sprintf(msg,"concatenating FILL_CHAR string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+		
+	if(s == NULL) {
+		sprintf(msg,"concatentating onto NULL string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg,"concatenating %lu bytes onto untracked string:%lx (%s)", (unsigned long)(n < strlen(ct) ? n : strlen(ct)), (long)s, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "concatenating FILL_CHAR string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (s == NULL) {
-	sprintf(msg, "concatentating onto NULL string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "concatenating %lu bytes onto untracked string:%lx (%s)", (unsigned long) (n < strlen(ct) ? n : strlen(ct)), (long)s, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size <= (n < strlen(ct) ? n : strlen(ct)) + strlen(s)) {
-	sprintf(msg, "concatenating %lu bytes onto %lu byte buffer from offset %lu (%s)", (unsigned long) (n < strlen(ct) ? n : strlen(ct)), (unsigned long) log.entry->size, (unsigned long) strlen(s), tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if (!error && log.entry->size && log.entry->size <= (n < strlen(ct) ? n : strlen(ct)) + strlen(s)) {
+		sprintf(msg,"concatenating %lu bytes onto %lu byte buffer from offset %lu (%s)", (unsigned long)(n < strlen(ct) ? n : strlen(ct)), (unsigned long)log.entry->size, (unsigned long)strlen(s), tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strncat(s, ct, n));
+	return(strncat(s, ct, n));
 }
 
 /*
@@ -1266,9 +1323,9 @@ char *MEMStrncat(char *s, const char *ct, size_t n, char *tag, char *routine_nam
  *
  * RETURNS: Same as strcmp().
  *
- * DESCRIPTION: This function provides a wrapper around strcmp which
- *                                              is called only if MEMTRACK is defined. The wrapper checks to
- *                                              make sure that the strings being compared are allocated and filled.
+ * DESCRIPTION:	This function provides a wrapper around strcmp which
+ *						is called only if MEMTRACK is defined. The wrapper checks to
+ *						make sure that the strings being compared are allocated and filled.
  *              
  * Logs a warning if:
  * 1) cs is NULL
@@ -1289,7 +1346,7 @@ char *MEMStrncat(char *s, const char *ct, size_t n, char *tag, char *routine_nam
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrcmp"
+#define ROUTINE_NAME "MEMStrcmp" 
 
 #ifdef MEMTRACK_B
 int MEMStrcmp(const char *cs, const char *ct)
@@ -1298,27 +1355,27 @@ int MEMStrcmp(const char *cs, const char *ct, char *tag, char *routine_name, cha
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-
-    if (cs == NULL) {
-	sprintf(msg, "comparing NULL string (cs) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*cs == FILL_CHAR) {
-	sprintf(msg, "comparing FILL_CHAR string (cs) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (ct == NULL) {
-	sprintf(msg, "searching NULL string (ct) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "searching FILL_CHAR string (ct) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	char msg[MAX_LTH];
+	
+	if(cs == NULL){
+		sprintf(msg,"comparing NULL string (cs) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*cs == FILL_CHAR){
+		sprintf(msg,"comparing FILL_CHAR string (cs) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(ct == NULL){
+		sprintf(msg,"searching NULL string (ct) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*ct == FILL_CHAR){
+		sprintf(msg,"searching FILL_CHAR string (ct) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strcmp(cs, ct));
+	return(strcmp(cs, ct));
 }
 
 /*
@@ -1330,9 +1387,9 @@ int MEMStrcmp(const char *cs, const char *ct, char *tag, char *routine_name, cha
  *
  * RETURNS: Same as strncmp().
  *
- * DESCRIPTION: This function provides a wrapper around strncmp which
- *                                              is called only if MEMTRACK is defined. The wrapper checks to
- *                                              make sure that the strings being compared are allocated and filled.
+ * DESCRIPTION:	This function provides a wrapper around strncmp which
+ *						is called only if MEMTRACK is defined. The wrapper checks to
+ *						make sure that the strings being compared are allocated and filled.
  *              
  * Logs a warning if:
  * 1) cs is NULL
@@ -1353,7 +1410,7 @@ int MEMStrcmp(const char *cs, const char *ct, char *tag, char *routine_name, cha
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrncmp"
+#define ROUTINE_NAME "MEMStrncmp" 
 
 #ifdef MEMTRACK_B
 int MEMStrncmp(const char *cs, const char *ct, size_t n)
@@ -1362,27 +1419,27 @@ int MEMStrncmp(const char *cs, const char *ct, size_t n, char *tag, char *routin
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-
-    if (cs == NULL) {
-	sprintf(msg, "comparing NULL string (cs) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*cs == FILL_CHAR) {
-	sprintf(msg, "comparing FILL_CHAR string (cs) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (ct == NULL) {
-	sprintf(msg, "searching NULL string (ct) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "searching FILL_CHAR string (ct) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	char msg[MAX_LTH];
+	
+	if(cs == NULL){
+		sprintf(msg,"comparing NULL string (cs) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*cs == FILL_CHAR){
+		sprintf(msg,"comparing FILL_CHAR string (cs) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(ct == NULL){
+		sprintf(msg,"searching NULL string (ct) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*ct == FILL_CHAR){
+		sprintf(msg,"searching FILL_CHAR string (ct) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strncmp(cs, ct, n));
+	return(strncmp(cs, ct, n));
 }
 
 /*
@@ -1394,11 +1451,11 @@ int MEMStrncmp(const char *cs, const char *ct, size_t n, char *tag, char *routin
  *
  * RETURNS: same as strchr()
  *
- * DESCRIPTION: This function provides a wrapper around strchr which
- *                                              is called only if MEMTRACK is defined. The wrapper makes several
- *                                              memory checks: it checks to make sure that the string being searched
- *                                              is not NULL, and that that string is not pointing to memory
- *                                              which is allocated, but not filled.
+ * DESCRIPTION:	This function provides a wrapper around strchr which
+ *						is called only if MEMTRACK is defined. The wrapper makes several
+ *						memory checks: it checks to make sure that the string being searched
+ *						is not NULL, and that that string is not pointing to memory
+ *						which is allocated, but not filled.
  *              
  * Logs a warning if:
  * 1) cs is NULL
@@ -1417,7 +1474,7 @@ int MEMStrncmp(const char *cs, const char *ct, size_t n, char *tag, char *routin
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrchr"
+#define ROUTINE_NAME "MEMStrchr" 
 
 #ifdef MEMTRACK_B
 char *MEMStrchr(const char *cs, int c)
@@ -1426,19 +1483,19 @@ char *MEMStrchr(const char *cs, int c, char *tag, char *routine_name, char *cfil
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-
-    if (cs == NULL) {
-	sprintf(msg, "searching NULL string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*cs == FILL_CHAR) {
-	sprintf(msg, "searching FILL_CHAR string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	char msg[MAX_LTH];
+	
+	if(cs == NULL){
+		sprintf(msg,"searching NULL string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*cs == FILL_CHAR){
+		sprintf(msg,"searching FILL_CHAR string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strchr(cs, c));
+	return(strchr(cs, c));
 }
 
 /*
@@ -1450,11 +1507,11 @@ char *MEMStrchr(const char *cs, int c, char *tag, char *routine_name, char *cfil
  *
  * RETURNS: same as strrchr()
  *
- * DESCRIPTION: This function provides a wrapper around strrchr which
- *                                              is called only if MEMTRACK is defined. The wrapper makes several
- *                                              memory checks: it checks to make sure that the string being searched
- *                                              is not NULL, and that that string is not pointing to memory
- *                                              which is allocated, but not filled.
+ * DESCRIPTION:	This function provides a wrapper around strrchr which
+ *						is called only if MEMTRACK is defined. The wrapper makes several
+ *						memory checks: it checks to make sure that the string being searched
+ *						is not NULL, and that that string is not pointing to memory
+ *						which is allocated, but not filled.
  *              
  * Logs a warning if:
  * 1) cs is NULL
@@ -1473,7 +1530,7 @@ char *MEMStrchr(const char *cs, int c, char *tag, char *routine_name, char *cfil
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrrchr"
+#define ROUTINE_NAME "MEMStrrchr" 
 
 #ifdef MEMTRACK_B
 char *MEMStrrchr(const char *cs, int c)
@@ -1482,19 +1539,19 @@ char *MEMStrrchr(const char *cs, int c, char *tag, char *routine_name, char *cfi
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
+	char msg[MAX_LTH];
 
-    if (cs == NULL) {
-	sprintf(msg, "searching NULL string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*cs == FILL_CHAR) {
-	sprintf(msg, "searching FILL_CHAR string (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if(cs == NULL){
+		sprintf(msg,"searching NULL string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*cs == FILL_CHAR){
+		sprintf(msg,"searching FILL_CHAR string (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strrchr(cs, c));
+	return(strrchr(cs, c));
 }
 
 /*
@@ -1506,11 +1563,11 @@ char *MEMStrrchr(const char *cs, int c, char *tag, char *routine_name, char *cfi
  *
  * RETURNS: same as strstr()
  *
- * DESCRIPTION: This function provides a wrapper around strchr which
- *                                              is called only if MEMTRACK is defined. The wrapper makes several
- *                                              memory checks: it checks to make sure that the string being searched
- *                                              is not NULL, and that that string is not pointing to memory
- *                                              which is allocated, but not filled.
+ * DESCRIPTION:	This function provides a wrapper around strchr which
+ *						is called only if MEMTRACK is defined. The wrapper makes several
+ *						memory checks: it checks to make sure that the string being searched
+ *						is not NULL, and that that string is not pointing to memory
+ *						which is allocated, but not filled.
  *              
  * Logs a warning if:
  * 1) cs is NULL
@@ -1531,7 +1588,7 @@ char *MEMStrrchr(const char *cs, int c, char *tag, char *routine_name, char *cfi
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMStrstr"
+#define ROUTINE_NAME "MEMStrstr" 
 
 #ifdef MEMTRACK_B
 char *MEMStrstr(const char *cs, const char *ct)
@@ -1540,42 +1597,42 @@ char *MEMStrstr(const char *cs, const char *ct, char *tag, char *routine_name, c
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
+	char msg[MAX_LTH];
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)cs;
+	entry.size = 0;
 
-    entry.addr = (long) cs;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
-
-    if (cs == NULL) {
-	sprintf(msg, "searching NULL string (cs) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*cs == FILL_CHAR) {
-	sprintf(msg, "searching FILL_CHAR string (cs) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (ct == NULL) {
-	sprintf(msg, "searching NULL string (ct) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "searching FILL_CHAR string (ct) (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if(cs == NULL){
+		sprintf(msg,"searching NULL string (cs) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*cs == FILL_CHAR){
+		sprintf(msg,"searching FILL_CHAR string (cs) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(ct == NULL){
+		sprintf(msg,"searching NULL string (ct) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	if(*ct == FILL_CHAR){
+		sprintf(msg,"searching FILL_CHAR string (ct) (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
 
-    return (strstr(cs, ct));
+	return(strstr(cs, ct));
 }
 
 /*
@@ -1588,7 +1645,7 @@ char *MEMStrstr(const char *cs, const char *ct, char *tag, char *routine_name, c
  * RETURNS: same as memcpy()
  * 
  *
- * DESCRIPTION: This function provides a wrapper around memcpy which is called only if
+ * DESCRIPTION:	This function provides a wrapper around memcpy which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of ct.
@@ -1614,7 +1671,7 @@ char *MEMStrstr(const char *cs, const char *ct, char *tag, char *routine_name, c
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMMemcpy"
+#define ROUTINE_NAME "MEMMemcpy" 
 
 #ifdef MEMTRACK_B
 #if FF_CC == FF_CC_UNIX
@@ -1634,44 +1691,48 @@ void *MEMMemcpy(char *s, const char *ct, size_t n, char *tag, char *routine_name
 
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)s;
+	entry.size = 0;
 
-    entry.addr = (long) s;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
-
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "copying FILL_CHAR buffer (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (s == NULL) {
-	sprintf(msg, "copying into NULL buffer (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "copying %lu bytes into untracked buffer:%lx (%s)", (unsigned long) n, (long)s, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size < n) {
-	sprintf(msg, "copying %lu bytes into %lu byte buffer (%s)", (unsigned long) n, (unsigned long) log.entry->size, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if (*ct == FILL_CHAR) {
+		sprintf(msg,"copying FILL_CHAR buffer (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+		
+	if(s == NULL) {
+		sprintf(msg,"copying into NULL buffer (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg,"copying %lu bytes into untracked buffer:%lx (%s)", (unsigned long)n, (long)s, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	if (!error && log.entry->size && log.entry->size < n) {
+		sprintf(msg,"copying %lu bytes into %lu byte buffer (%s)", (unsigned long)n, (unsigned long)log.entry->size, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
-
-    return (memcpy(s, ct, n));
+	
+	return(memcpy(s, ct, n));
 }
 
 /*
@@ -1684,7 +1745,7 @@ void *MEMMemcpy(char *s, const char *ct, size_t n, char *tag, char *routine_name
  * RETURNS: same as memmove()
  * 
  *
- * DESCRIPTION: This function provides a wrapper around memmove which is called only if
+ * DESCRIPTION:	This function provides a wrapper around memmove which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of ct.
@@ -1710,7 +1771,7 @@ void *MEMMemcpy(char *s, const char *ct, size_t n, char *tag, char *routine_name
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMMemmove"
+#define ROUTINE_NAME "MEMMemmove" 
 
 #ifdef MEMTRACK_B
 #if FF_CC == FF_CC_UNIX
@@ -1729,44 +1790,48 @@ void *MEMMemmove(char *s, const char *ct, size_t n, char *tag, char *routine_nam
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
+	
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	entry.state = ALLOC;
 
-    entry.state = ALLOC;
+	entry.addr = (long)s;
+	entry.size = 0;
 
-    entry.addr = (long) s;
-    entry.size = 0;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	log.entry = &entry;
 
-    log.entry = &entry;
-
-    if (*ct == FILL_CHAR) {
-	sprintf(msg, "moving FILL_CHAR buffer (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (s == NULL) {
-	sprintf(msg, "moving into NULL buffer (%s)", tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "moving %lu bytes into untracked buffer:%lx (%s)", (unsigned long) n, (long)s, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size < n) {
-	sprintf(msg, "moving %lu bytes into %lu byte buffer (%s)", (unsigned long) n, (unsigned long) log.entry->size, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	if (*ct == FILL_CHAR) {
+		sprintf(msg,"moving FILL_CHAR buffer (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+		
+	if(s == NULL) {
+		sprintf(msg,"moving into NULL buffer (%s)", tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg,"moving %lu bytes into untracked buffer:%lx (%s)", (unsigned long)n, (long)s, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	if (!error && log.entry->size && log.entry->size < n) {
+		sprintf(msg,"moving %lu bytes into %lu byte buffer (%s)", (unsigned long)n, (unsigned long)log.entry->size, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
-
-    return (memmove(s, ct, n));
+	
+	return(memmove(s, ct, n));
 }
 
 /*
@@ -1779,7 +1844,7 @@ void *MEMMemmove(char *s, const char *ct, size_t n, char *tag, char *routine_nam
  * RETURNS: same as memset()
  * 
  *
- * DESCRIPTION: This function provides a wrapper around memset which is called only if
+ * DESCRIPTION:	This function provides a wrapper around memset which is called only if
  * MEMTRACK is defined.  Furthermore, checks memtrack file for previous allocation and
  * checks sizes for fit.  Warns if FILL_CHAR is first character of ct, if address of
  * cs cannot be found in memory log, or if given allocated size is less than size of ct.
@@ -1803,7 +1868,7 @@ void *MEMMemmove(char *s, const char *ct, size_t n, char *tag, char *routine_nam
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "MEMMemset"
+#define ROUTINE_NAME "MEMMemset" 
 
 #ifdef MEMTRACK_B
 void *MEMMemset(void *dest, int c, unsigned int count)
@@ -1812,36 +1877,38 @@ void *MEMMemset(void *dest, int c, unsigned int count, char *tag, char *routine_
 #endif
 {
 #ifndef MEMTRACK_B
-    char msg[MAX_LTH];
-    int error;
+	char msg[MAX_LTH];
+	int error;
 
-    FF_MEM_ENTRY entry;
-    FF_MEM_LOG log;
+	FF_MEM_ENTRY entry;
+	FF_MEM_LOG   log;
 
-    entry.state = ALLOC;
+	entry.state = ALLOC;
 
-    entry.addr = (long) dest;
-    entry.size = 0;
+	entry.addr = (long)dest;
+	entry.size = 0;
 
-    entry.tag = tag;
-    entry.routine = routine_name;
-    entry.file = cfile_name;
-    entry.line = line_number;
+	entry.tag = tag;
+	entry.routine = routine_name;
+	entry.file = cfile_name;
+	entry.line = line_number;
 
-    log.entry = &entry;
+	log.entry = &entry;
 
-    error = MEMTrack_find_entry(&log);
-    if (!error && !log.entry->size) {
-	sprintf(msg, "setting %lu bytes in untracked buffer:%lx (%s)", (unsigned long) count, (long)dest, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
-    if (!error && log.entry->size && log.entry->size < count) {
-	sprintf(msg, "setting %lu bytes in %lu byte buffer (%s)", (unsigned long) count, (unsigned long) log.entry->size, tag);
-	MEMTrack_msg(msg, routine_name, cfile_name, line_number);
-    }
+	error = MEMTrack_find_entry(&log);
+	if (!error && !log.entry->size)
+	{
+		sprintf(msg,"setting %lu bytes in untracked buffer:%lx (%s)", (unsigned long)count, (long)dest, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
+	
+	if (!error && log.entry->size && log.entry->size < count) {
+		sprintf(msg,"setting %lu bytes in %lu byte buffer (%s)", (unsigned long)count, (unsigned long)log.entry->size, tag);
+		MEMTrack_msg(msg, routine_name, cfile_name, line_number);
+	}
 #endif
-
-    return (memset(dest, c, count));
+	
+	return(memset(dest, c, count));
 }
 
 /*****************************************************************************
@@ -1870,8 +1937,8 @@ void *MEMMemset(void *dest, int c, unsigned int count, char *tag, char *routine_
 
 static void set_posts(FF_MEM_ENTRY_PTR entry)
 {
-    memcpy((char *) entry->addr + entry->size, POSTPOST, ONE_POST_SIZE);
-    memcpy((char *) entry->addr - ONE_POST_SIZE, PREPOST, ONE_POST_SIZE);
+	memcpy((char *)entry->addr + entry->size, POSTPOST, ONE_POST_SIZE);
+	memcpy((char *)entry->addr - ONE_POST_SIZE, PREPOST, ONE_POST_SIZE);
 }
 
 /*****************************************************************************
@@ -1900,102 +1967,108 @@ static void set_posts(FF_MEM_ENTRY_PTR entry)
 
 static int check_posts(FF_MEM_ENTRY_PTR entry)
 {
-    if (memcmp((char *) entry->addr + entry->size, POSTPOST, ONE_POST_SIZE))
-	return (TRUE);
-    else if (memcmp((char *) entry->addr - ONE_POST_SIZE, PREPOST, ONE_POST_SIZE))
-	return (TRUE);
-    else
-	return (FALSE);
+	if (memcmp((char *)entry->addr + entry->size, POSTPOST, ONE_POST_SIZE))
+		return(TRUE);
+	else if (memcmp((char *)entry->addr - ONE_POST_SIZE, PREPOST, ONE_POST_SIZE))
+		return(TRUE);
+	else
+		return(FALSE);
 }
 
 static int heap_check(FF_MEM_LOG_PTR log)
 {
 #ifndef MEMTRACK_B
-    char line[MAX_LTH];
+	char  line[MAX_LTH];
 #endif
-    int error;
+	int error;
 
-    error = MEMTrack_fp(log);
-    if (!error && log->file) {
-	FF_MEM_ENTRY file_entry;
-
-	file_entry.state = ALLOC;
-
-#ifdef MEMTRACK_B
-	while (fread(&file_entry, sizeof(file_entry), 1, log->file))
-#else
-	while (fgets(line, sizeof(line), log->file))
-#endif
+	error = MEMTrack_fp(log);
+	if (!error && log->file)
 	{
+		FF_MEM_ENTRY file_entry;
+
+		file_entry.state = ALLOC;
+
 #ifdef MEMTRACK_B
-	    if (ALLOC != file_entry.state)
-		continue;
+		while (fread(&file_entry, sizeof(file_entry), 1, log->file))
 #else
-	    if (line[0] != ALLOC)
-		continue;
+		while (fgets(line,sizeof(line),log->file))
+#endif
+		{
+#ifdef MEMTRACK_B
+			if (ALLOC != file_entry.state)
+				continue;
+#else
+			if (line[0] != ALLOC)
+				continue;
 
-	    sscanf(line, "%*c %lx %lu", &file_entry.addr, &file_entry.size);
+			sscanf(line,"%*c %lx %lu", &file_entry.addr, &file_entry.size);
 #endif
 
-	    if (check_posts(&file_entry)) {
+			if (check_posts(&file_entry))
+			{
 #ifndef MEMTRACK_B
-		char msg[MAX_LTH];
+				char msg[MAX_LTH];
 
-		sprintf(msg, "Memory corrupted: %lx (detected at: \"%s\")", file_entry.addr, log->entry->tag);
-		MEMTrack_msg(msg, log->entry->routine, log->entry->file, log->entry->line);
+				sprintf(msg, "Memory corrupted: %lx (detected at: \"%s\")", file_entry.addr, log->entry->tag);
+				MEMTrack_msg(msg, log->entry->routine, log->entry->file, log->entry->line);
 #endif
-		error = TRUE;
-		break;
-	    }
+				error = TRUE;
+				break;
+			}
+		}
+
+		fclose(log->file);
 	}
+	else if (error && !log->file)
+		error = 0;
+	
+	if (error)
+		FF_DIE
 
-	fclose(log->file);
-    } else if (error && !log->file)
-	error = 0;
-
-    if (error)
-	FF_DIE
-
-	    return (error);
+	return(error);
 }
 
 static int leak_test(FF_MEM_LOG_PTR log)
 {
-    int error;
-    BOOLEAN leak_found = FALSE;
+	int error;
+	BOOLEAN leak_found = FALSE;
 
-    error = MEMTrack_fp(log);
-    if (!error && log->file) {
-#ifdef MEMTRACK_B
-	FF_MEM_ENTRY file_entry;
-
-	while (fread(&file_entry, sizeof(file_entry), 1, log->file))
-#else
-	char line[MAX_LTH];
-
-	while (fgets(line, sizeof(line), log->file))
-#endif
+	error = MEMTrack_fp(log);
+	if (!error && log->file)
 	{
 #ifdef MEMTRACK_B
-	    if (ALLOC != file_entry.state)
+		FF_MEM_ENTRY file_entry;
+
+		while (fread(&file_entry, sizeof(file_entry), 1, log->file))
 #else
-	    if (ALLOC != line[0])
+		char  line[MAX_LTH];
+
+		while (fgets(line,sizeof(line),log->file))
 #endif
-		continue;
+		{
+#ifdef MEMTRACK_B
+			if (ALLOC != file_entry.state)
+#else
+			if (ALLOC != line[0])
+#endif
+				continue;
 
 #ifndef MEMTRACK_B
-	    fprintf(stderr, "%s", line);
+			fprintf(stderr, "%s", line);
 #endif
-	    leak_found = TRUE;
-	    FF_DIE
+			leak_found = TRUE;
+			FF_DIE
+		}
+
+		fclose(log->file);
 	}
-
-	fclose(log->file);
-    } else if (error && !log->file)
-	error = 0;
-
-    if (leak_found)
-	return (MEM_GENERAL);
-    else
-	return (0);
+	else if (error && !log->file)
+		error = 0;
+	
+	if (leak_found)
+		return(MEM_GENERAL);
+	else
+		return(0);
 }
+
