@@ -1,10 +1,11 @@
 
-# $Id: Makefile.in,v 1.12 1999/01/08 22:09:38 jimg Exp $
+# $Id: Makefile.in,v 1.13 1999/02/27 00:34:41 jimg Exp $
 
 @SET_MAKE@
 
 PROG = ff_das ff_dds ff_dods
 FF_LIBS = libfreeform.a libmaxmin.a 
+FF_TOOLS = newform bufform chkform readfile
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
@@ -90,7 +91,7 @@ DASOBJ = ffdas.o ff_das.o
 
 ALLSRCS = $(FFSRC) $(SERVSRC) $(DDSSRC) $(DASSRC)
 
-all: $(FF_LIBS) ff_das ff_dds ff_dods
+all: $(FF_LIBS) $(FF_TOOLS) ff_das ff_dds ff_dods
 
 ff_das: $(DASOBJ) $(FFOBJ) 
 	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(LIBS)
@@ -105,6 +106,18 @@ libfreeform.a:
 	cd FFND; $(MAKE) $(MFLAGS) $@
 
 libmaxmin.a: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
+
+chkform: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
+
+newform: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
+
+bufform: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
+
+readfile: 
 	cd FFND; $(MAKE) $(MFLAGS) $@
 
 check: all
@@ -128,6 +141,10 @@ install: all
 	$(INSTALL_PROGRAM) -s ff_dds $(etcdir)
 	$(INSTALL_PROGRAM) -s ff_dods $(etcdir)
 	$(INSTALL_PROGRAM) nph-ff $(etcdir)
+	$(INSTALL_PROGRAM) FFND/newform $(bindir)/newform
+	$(INSTALL_PROGRAM) FFND/readfile $(bindir)/readfile
+	$(INSTALL_PROGRAM) FFND/chkform $(bindir)/chkform
+	$(INSTALL_PROGRAM) FFND/readfile $(bindir)/readfile
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status

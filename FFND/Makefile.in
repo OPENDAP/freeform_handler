@@ -1,9 +1,9 @@
 
-# $Id: Makefile.in,v 1.11 1999/01/08 22:12:45 jimg Exp $
+# $Id: Makefile.in,v 1.12 1999/02/27 00:34:41 jimg Exp $
 
 @SET_MAKE@
 
-PROG = readfile newform chkform
+PROG = readfile newform chkform bufform
 FF_LIBRARY = libfreeform.a
 MM_LIBRARY = libmaxmin.a
 
@@ -125,6 +125,7 @@ install: newform readfile chkform $(FF_LIBRARY)
 	$(INSTALL_PROGRAM) newform $(bindir)/newform
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 	$(INSTALL_PROGRAM) chkform $(bindir)/chkform
+	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 
 Makefile: ${srcdir}/Makefile.in
 	cd ..; ${SHELL} ./config.status
