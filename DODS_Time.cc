@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.11 2003/02/10 23:01:52 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.12 2003/05/14 19:23:13 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,13 +19,15 @@ static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.11 2003/02/10 23:01:52 jimg
 #include <assert.h>
 
 #include <string> 
-#include <strstream.h>
-#include <iomanip.h>
+#include <sstream>
+#include <iomanip>
 
 #include "BaseType.h"
 #include "DODS_Time.h"
 #include "debug.h" 
 #include "Error.h"
+
+using namespace std;
 
 double DODS_Time::_eps = 1.0e-6;
 
@@ -120,7 +122,7 @@ void
 DODS_Time::set(string time)
 {
         // Parse the date_str.
-    istrstream iss(time.c_str());
+    istringstream iss(time.c_str());
     char c;
     size_t pos1, pos2;
     iss >> _hours;
@@ -273,7 +275,7 @@ DODS_Time::gmt() const
 string
 DODS_Time::get(bool gmt) const
 {
-    ostrstream oss;
+    ostringstream oss;
     // Pad with leading zeros and use fixed fields of two chars for hours and
     // minutes. Make sure that seconds < 10 have a leading zero but don't
     // require their filed to have `precision' digits if they are all zero.
@@ -284,15 +286,13 @@ DODS_Time::get(bool gmt) const
     if (_gmt)
 	oss << " GMT";
     
-    oss << ends;
-
-    string time_str = oss.str();
-    oss.freeze(0);
-
-    return time_str;
+    return oss.str();
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.12  2003/05/14 19:23:13  jimg
+// Changed from strstream to sstream.
+//
 // Revision 1.11  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5
 //

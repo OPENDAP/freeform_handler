@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.12 2003/02/10 23:01:52 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.13 2003/05/14 19:23:13 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,8 +19,8 @@ static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.12 2003/02/10 23:01:52 jimg
 #include <stdio.h>
 #include <assert.h>
 
-#include <strstream.h>
-#include <iomanip.h>
+#include <sstream>
+#include <iomanip>
 #include <string>
 
 #include "DODS_Date.h"
@@ -36,6 +36,8 @@ static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.12 2003/02/10 23:01:52 jimg
 // values from DODS types. 1/8/99 jhrg
 
 #include "Error.h"
+
+using namespace std;
 
 static string
 extract_argument(BaseType *arg)
@@ -115,7 +117,7 @@ void
 DODS_Date::parse_integer_time(string date)
 {
     // Parse the date_str.
-    istrstream iss(date.c_str());
+    istringstream iss(date.c_str());
     char c;	
     size_t pos1, pos2;
     iss >> _year;
@@ -151,7 +153,7 @@ void
 DODS_Date::parse_iso8601_time(string date)
 {
     // Parse the date_str.
-    istrstream iss(date.c_str());
+    istringstream iss(date.c_str());
     char c;	
     size_t pos1, pos2;
     iss >> _year;
@@ -418,29 +420,29 @@ DODS_Date::fraction() const
 string 
 DODS_Date::get(date_format format) const
 {
-    ostrstream oss;
+    ostringstream oss;
 
     switch (format) {
       case yd:
-	oss << _year << "/" << _day_number << ends;
+	oss << _year << "/" << _day_number;
 	break;
       case ymd:
-	oss << _year << "/" << _month << "/" << _day << ends;
+	oss << _year << "/" << _month << "/" << _day;
 	break;
       case iso8601:
 	if ( _format == ym ) {
 	  oss << _year << "-" 
-	      << setfill('0') << setw(2) << _month << ends;
+	      << setfill('0') << setw(2) << _month;
 	}
 	else {
 	  oss << _year << "-" 
 	      << setfill('0') << setw(2) << _month << "-" 
-	      << setfill('0') << setw(2) << _day << ends;
+	      << setfill('0') << setw(2) << _day;
 	}
 	break;
       case decimal: {
 	oss.precision(14);
-	oss << fraction() << ends;
+	oss << fraction();
       }
       default:
 #ifndef TEST
@@ -450,9 +452,7 @@ DODS_Date::get(date_format format) const
 #endif
     }
 
-    string dateString = oss.str();
-    oss.freeze(0);
-    return dateString;
+    return oss.str();
 }
 
 
@@ -544,6 +544,9 @@ int main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.13  2003/05/14 19:23:13  jimg
+// Changed from strstream to sstream.
+//
 // Revision 1.12  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5
 //

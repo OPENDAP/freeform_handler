@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.7 2003/02/10 23:01:52 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.8 2003/05/14 19:23:13 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,10 +20,8 @@ static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.7 2003/02/10 23:01:52 
 #include <time.h>
 #include <assert.h>
 
-#include <strstream.h>
+#include <sstream>
 #include <string>
-
-using std::ends ;
 
 #include "Error.h"
 #include "DODS_Date_Time.h"
@@ -31,6 +29,8 @@ using std::ends ;
 #include "debug.h" 
 
 #define seconds_per_day 86400.0
+
+using namespace std;
 
 static string
 extract_argument(BaseType *arg)
@@ -277,17 +277,15 @@ DODS_Date_Time::get(date_format format, bool gmt) const
       case yd:
 	return _date.get(yd) + ":" + _time.get(gmt);
       case decimal: {
-	  ostrstream oss;
+	  ostringstream oss;
 	  oss.precision(14);
 
 	  double decday = (_date.fraction() 
 			   + _time.fraction()/days_in_year(_date.year()));
 
-	  oss << decday << ends;
+	  oss << decday;
 
-	  string dateString = oss.str();
-	  oss.freeze(0);
-	  return dateString;
+	  return oss.str();
       }
       default:
 #ifndef TEST
@@ -447,6 +445,9 @@ main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.8  2003/05/14 19:23:13  jimg
+// Changed from strstream to sstream.
+//
 // Revision 1.7  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5
 //
