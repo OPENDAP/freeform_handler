@@ -8,5 +8,5 @@ By 31 45 double 6
 Bz 46 60 double 6
 Bx2 61 75 double 6
 
-// ASCII_output_data "ISEE3 data"
-// Bx 1 8 double 6
+ASCII_output_data "ISEE3_data"
+Bx 1 8 double 6
