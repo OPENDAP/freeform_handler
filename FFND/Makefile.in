@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.10 1999/01/05 00:54:09 jimg Exp $
+# $Id: Makefile.in,v 1.11 1999/01/08 22:12:45 jimg Exp $
 
 @SET_MAKE@
 
@@ -59,6 +59,7 @@ PROG_OBJS = newform.o readfile.o chkform.o
 
 FF_SRCS	= $(FF_OBJS:.o=.c)
 PROG_SRCS = $(PROG_OBJS:.o=.c)
+ALLSRCS = $(FF_SRCS)
 
 LIBS = $(FF_LIBRARY) $(MM_LIBRARY)
 
@@ -106,14 +107,15 @@ chkform.o: chkform.c
 	$(CC) $(CPPFLAGS) -DFF_MAIN $(CFLAGS) -c $< -o $@
 
 clean:
-	-rm -f $(FF_OBJS) $(MM_OBJS) \
-        $(FF_LIBRARY) $(MM_LIBRARY) \
-	newform newform.o core *~ readfile.o readfile chkform.o chkform
+	-rm -f $(FF_OBJS) $(MM_OBJS) $(FF_LIBRARY) $(MM_LIBRARY) \
+	newform newform.o core *~ readfile.o readfile chkform.o chkform \
+	bufform bufform.o *.bb *.bbg *.da
 
 distclean: clean
 	-rm -f config.status config.log config.cache
 	-(cd bin; rm newform readfile chkform)
 	-(cd lib; rm lib*.a)
+	-rm -f test-coverage/*
 
 install: newform readfile chkform $(FF_LIBRARY)
 	$(INSTALL_DATA) $(FF_LIBRARY) $(libdir)/$(FF_LIBRARY)
@@ -127,11 +129,12 @@ install: newform readfile chkform $(FF_LIBRARY)
 Makefile: ${srcdir}/Makefile.in
 	cd ..; ${SHELL} ./config.status
 
-check:
+check: newform readfile
+	cd testsuite; test_newform
 
-# This won't work without more effort. 4/16/98 jhrg
+
 test-coverage: clean
-	$(MAKE) $(MFLAGS) CXXFLAGS="$(CXXFLAGS) $(TEST_COV_FLAGS)"
+	$(MAKE) $(MFLAGS) CFLAGS="$(CFLAGS) $(TEST_COV_FLAGS)" check
 
 # Note that the gcov options -f and -b are useful but sometimes make looking
 # at the results of coverage analysis a little taxing. -b reports on all
