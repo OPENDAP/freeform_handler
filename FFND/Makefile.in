@@ -1,17 +1,16 @@
 
-# $Id: Makefile.in,v 1.3 1998/08/13 02:37:21 jimg Exp $
+# $Id: Makefile.in,v 1.4 1998/08/14 19:05:34 jimg Exp $
 
 @SET_MAKE@
 
 PROG = readfile newform
 FF_LIBRARY = libfreeform.a
-MEM_LIBRARY = libmemtrack.a
 MM_LIBRARY = libmaxmin.a
 
 DODS_ROOT = ../../..
 
 INCS = -I.
-DEFS = @DEFS@ -DFREEFORM -DMEMTRACK=0
+DEFS = @DEFS@
 # Defines that the FreeForm library responds to. 4/16/98 jhrg
 # -DDEBUG -DDLL_CHK -DDEBUG_MSG -DMEMTRACK=1 -DMEMTRACK_B -DFF_CHK_ADDR
 CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
@@ -55,15 +54,12 @@ FF_OBJS = afm2bfm.o avlins.o avlfree.o cv_units.o dbevents.o dl_lists.o \
 
 MM_OBJS = mm_make.o 
 
-MEM_OBJS = memtrack.o
-
 PROG_OBJS = newform.o readfile.o
 
 FF_SRCS	= $(FF_OBJS:.o=.c)
-MEM_SRCS = $(MEM_OBJS:.o=.c)
 PROG_SRCS = $(PROG_OBJS:.o=.c)
 
-LIBS = $(FF_LIBRARY) $(MEM_LIBRARY) $(MM_LIBRARY)
+LIBS = $(FF_LIBRARY) $(MM_LIBRARY)
 
 all: $(LIBS) $(PROG)
 
@@ -75,10 +71,6 @@ $(MM_LIBRARY):	$(MM_OBJS)
 		$(AR) $(ARFLAGS) $(MM_LIBRARY) $(MM_OBJS)
 		$(RANLIB) $(MM_LIBRARY)
 
-$(MEM_LIBRARY): $(MEM_OBJS)
-		$(AR) $(ARFLAGS) $(MEM_LIBRARY) $(MEM_OBJS)
-		$(RANLIB) $(MEM_LIBRARY)
-
 newform: newform.o $(LIBS)
 	$(CC) $(LDFLAGS) newform.o -o $@ $(LIBS) -lm
 
@@ -89,8 +81,8 @@ readfile: readfile.o
 	$(CC) $(LDFLAGS) readfile.o -o $@
 
 clean:
-	-rm -f $(FF_OBJS) $(MM_OBJS) $(MEM_OBJS) \
-        $(FF_LIBRARY) $(MEM_LIBRARY) $(MM_LIBRARY) \
+	-rm -f $(FF_OBJS) $(MM_OBJS) \
+        $(FF_LIBRARY) $(MM_LIBRARY) \
 	newform newform.o core *~ readfile.o readfile
 
 distclean:
@@ -98,20 +90,16 @@ distclean:
 	(cd bin; rm *)
 	(cd lib; rm *)
 
-# Standard targets with some customization for das-test and dds-test
-
-install: newform readfile $(FF_LIBRARY) $(MEM_LIBRARY)
+install: newform readfile $(FF_LIBRARY)
 	$(INSTALL_DATA) $(FF_LIBRARY) $(libdir)/$(FF_LIBRARY)
 	$(RANLIB) $(libdir)/$(FF_LIBRARY)
-	$(INSTALL_DATA) $(MEM_LIBRARY) $(libdir)/$(MEM_LIBRARY)
-	$(RANLIB) $(libdir)/$(MEM_LIBRARY)
 	$(INSTALL_DATA) $(MM_LIBRARY) $(libdir)/$(MM_LIBRARY)
 	$(RANLIB) $(libdir)/$(MM_LIBRARY)
 	$(INSTALL_PROGRAM) newform $(bindir)/newform
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 
 Makefile: ${srcdir}/Makefile.in
-	${SHELL} ./config.status
+	cd ..; ${SHELL} ./config.status
 
 check:
 
@@ -138,7 +126,7 @@ tags:
 .PHONY: depend
 depend: 
 	> dependencies
-	@depend@ -m dependencies -- $(CPPFLAGS) -- $(FF_SRCS) $(MEM_SRCS) \
+	@depend@ -m dependencies -- $(CPPFLAGS) -- $(FF_SRCS) \
 	$(PROG_SRCS)
 
 .SUFFIXES:      .o .c
