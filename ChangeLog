@@ -1,3 +1,7 @@
+1999-03-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added support for the Int16, UInt16 and Float32 datatypes.
+
 1999-03-17  James Gallagher  <jimg@dcz.dods.org>
 
 	* Format file are now found using a matching scheme that works
