@@ -14,7 +14,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.12 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.13 2000/10/12 18:11:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,11 @@ static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.12 2000/10/11 19:37:56 jimg E
 #include <string>
 
 #include "cgi_util.h"
+#include "util.h"
 #include "DAS.h"
+#include "Error.h"
+#include "InternalErr.h"
+
 // Hack. Header files from the WWW library (which are included from Connect.h
 // within cgi_util.h) also define BOOLEAN. Suppressing the definition avoids
 // a warning (g++ 2.8.1) or error (egcs). 3/26/99 jhrg
@@ -34,10 +38,7 @@ static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.12 2000/10/11 19:37:56 jimg E
 #include "util_ff.h"
 #include "freeform.h"
 
-int StrLens[MaxStr]; // List of string lengths
-
-// Used by ErrMsgT
-static char Msgt[255];
+int StrLens[MaxStr]; // List of string lengths, used by FFSequence. 
 
 // reads the attributes and store their names and values in the attribute
 // table. 
@@ -45,28 +46,23 @@ static char Msgt[255];
 // Returns: false if an error was detected reading from the freeform format
 // file, true otherwise. 
 
-bool
-read_attributes(string filename, AttrTable *at, string *err_msg)
+void
+read_attributes(string filename, AttrTable *at) throw(Error)
 {
     int error = 0;
-    size_t pos;
     FF_BUFSIZE_PTR bufsize = NULL;
     DATA_BIN_PTR dbin = NULL;
     FF_STD_ARGS_PTR SetUps = NULL;  
 
     if (!file_exist(filename.c_str())) {
-	sprintf(Msgt, "ff_das: Could not open %s", filename.c_str());
-	ErrMsgT(Msgt);  
-	*err_msg = (string)"\"" + Msgt + " \"";
-	return false;
+      string msg = (string)"ff_das: Could not open " + filename.c_str();
+      throw Error(msg);
     }
     
     SetUps = ff_create_std_args();
     if (!SetUps) {
-	sprintf(Msgt, "ff_das: Insufficient memory -- free more memory and try again");
-	ErrMsgT(Msgt);  
-	*err_msg = (string)"\"" + Msgt + " \"";
-	return false;
+      string msg = "ff_das: Insufficient memory";
+      throw Error(msg);
     }
     
     /** set the structure values to create the FreeForm DB**/
@@ -80,25 +76,29 @@ read_attributes(string filename, AttrTable *at, string *err_msg)
     strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
     SetUps->output_file = NULL;
 
+    char Msgt[255];
     error = SetDodsDB(SetUps, &dbin, Msgt);
     if (error && error < ERR_WARNING_ONLY) {
 	db_destroy(dbin);
-	ErrMsgT(Msgt);  
-	*err_msg = "\"" + (string)Msgt + " \"";
-	return false;
+	throw Error(Msgt);
     }
 
     error = db_ask(dbin,DBASK_FORMAT_SUMMARY,FFF_INPUT, &bufsize);
     if (error) {
-	sprintf(Msgt, "ff_das: db_ask can not get Format Summary");
-	ErrMsgT(Msgt);  
-	*err_msg = "\"" + (string)Msgt + " \"";
-	return false;
+      string msg = (string)"Cannot get Format Summary. FreeForm error code: ";
+      append_long_to_string((long)error, 10, msg);
+      throw Error(msg);
     }
 
-    at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
+    at->append_attr("Server", "STRING", 
+		    "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
 
     //fix the format of the info. string
+    // I removed this since it makes the DAS much harder to read and I'm not
+    // sure how it is to be used. Clients should not know where on the
+    // server's file system a dataset is located. Of course, there are other
+    // ways to limit access to that information... 10/11/2000 jhrg
+#if 0
     string fmt_info = bufsize->buffer;
     while ((pos = fmt_info.find('"')) < fmt_info.size()) 
 	fmt_info.replace(pos, 1, '`');
@@ -106,24 +106,24 @@ read_attributes(string filename, AttrTable *at, string *err_msg)
 	fmt_info.replace(pos, 1, ' ');
     fmt_info = "\"" + fmt_info + "\"";
     at->append_attr("Native_file", "STRING", fmt_info);
+#endif
 
     PROCESS_INFO_LIST pinfo_list = NULL;
     PROCESS_INFO_PTR hd_pinfo = NULL;
 
     char text[256];
 
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
+    error = db_ask(dbin, DBASK_PROCESS_INFO, 
+		   FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
     if (error) {
-	sprintf(Msgt, "ff_das: db_ask can not get Format Summary");
-	ErrMsgT(Msgt);  
-	*err_msg = "\"" + (string)Msgt + " \"";
-	return false;
+      string msg = (string)"Cannot get Format Summary. FreeForm error code: ";
+      append_long_to_string((long)error, 10, msg);
+      throw Error(msg);
     }
 
     pinfo_list = dll_first(pinfo_list);
     hd_pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
     if (hd_pinfo) {
-      
       VARIABLE_LIST vlist = NULL;
       VARIABLE_PTR var = NULL;
       
@@ -139,7 +139,6 @@ read_attributes(string filename, AttrTable *at, string *err_msg)
 	}
 
 	switch (FFV_DATA_TYPE(var)) {
-
           case FFV_TEXT:
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_TEXT, text);
 	    at->append_attr(var->name, "STRING", text);
@@ -223,14 +222,12 @@ read_attributes(string filename, AttrTable *at, string *err_msg)
 	    break;
 
           default:
-            assert("Unknown FreeForm type!" && false);
-            break;
+	    throw InternalErr(__FILE__, __LINE__, "Unknown FreeForm type!");
         }           
 	vlist = (vlist)->next;
 	var = ((VARIABLE_PTR)(vlist)->data.u.var);
       }
     }
-    return true;
 }
 
 // Given a reference to an instance of class DAS and a filename that refers
@@ -240,19 +237,14 @@ read_attributes(string filename, AttrTable *at, string *err_msg)
 // Returns: false if an error accessing the file was detected, true
 // otherwise. 
 
-bool
-get_attributes(DAS &das, string filename, string *error)
+void
+get_attributes(DAS &das, string filename) throw(Error)
 {
-
-    AttrTable *attr_table_ptr;
+    AttrTable *attr_table_p = new AttrTable;
   
-    // global attributes (no variable attributes in freefrom)
-    attr_table_ptr = das.add_table("FF_GLOBAL", new AttrTable);
-    if (!read_attributes(filename, attr_table_ptr, error))
-	return false;
+    read_attributes(filename, attr_table_p);
 
-  
-    return true;
+    (void) das.add_table("FF_GLOBAL", attr_table_p);
 }
 
 #ifdef TEST
@@ -262,15 +254,25 @@ main(int argc, char *argv[])
 {
     DAS das;
 
-    if(!get_attributes(&das, (string)argv[1], ""))
-	abort();
-
-    das.print();
+    try {
+      get_attributes(&das, (string)argv[1]);
+      das.print();
+    }
+    catch (Error &e) {
+      e.display_message();
+      return 1;
+    }
+    
+    return 0;
 }
 
 #endif
 
 // $Log: ffdas.cc,v $
+// Revision 1.13  2000/10/12 18:11:45  jimg
+// Added more exception stuff. Reworked the get/read_description() functions
+// so they throw Error and InternalErr instead of returning codes.
+//
 // Revision 1.12  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.
