@@ -43,7 +43,8 @@
  * KEYWORDS:
  *
  */
- 
+
+#define WANT_NCSA_TYPES 
 #include <freeform.h>
 
 #undef ROUTINE_NAME
@@ -526,4 +527,201 @@ int format_to_ISO8211DDR
 	error = variable_list_to_DDR(format, *ddr);
 
 	return error;
+}
+
+static int alignment(FF_TYPES_t vartype)
+{
+	int alignment = 0;
+
+	typedef struct int16_struct
+	{
+			char c;
+			int16 el;
+	} INT16_t;
+
+	typedef struct int32_struct
+	{
+			char c;
+			int32 el;
+	} INT32_t;
+
+	typedef struct float64_struct
+	{
+			char c;
+			float64 el;
+	} FLOAT64_t;
+
+	switch (ffv_type_size(vartype))
+	{
+		case 1:
+			alignment = 1;
+			break;
+
+		case 2:
+			alignment = sizeof(INT16_t) - 2;
+			break;
+
+		case 4:
+			alignment = sizeof(INT32_t) - 4;
+			break;
+
+		case 8:
+			alignment = sizeof(FLOAT64_t) - 8;
+			break;
+
+		default:
+			err_push(ERR_API, "Unexpected variable length of %d for %s", ffv_type_size(vartype));
+			break;
+	}
+
+	return alignment;
+}
+
+/*****************************************************************************
+ * NAME: ff_xfm2struct
+ *
+ * PURPOSE:  Pad a binary record description to mimic a structure
+ *
+ * USAGE:  new_format = ff_xfm2struct(format, new_title);
+ *
+ * RETURNS:  A new format with padding added, or NULL upon error
+ *
+ * DESCRIPTION:  Convert the format to binary if necessary.  For each
+ * variable except the first, insert padding to ensure that the variable
+ * begins with a start position (counting from zero) that is a multiple
+ * of a number to be determined as follows:  define a structure with a char
+ * and the variable in question and take the difference of the sizeof the
+ * structure and the sizeof the variable.
+ *
+ * After the last variable, insert padding to ensure that the first variable
+ * (in successive records) begins with a start position (counting from zero)
+ * that is a multiple of an 8-byte double determined as above.
+ *
+ * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
+ *
+ * GLOBALS:
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:
+ *
+ * ERRORS:
+ ****************************************************************************/
+
+FORMAT_PTR ff_xfm2struct
+	(
+	 FORMAT_PTR format,
+	 char *new_name
+	)
+{
+	FORMAT_PTR new_format = NULL;
+	VARIABLE_LIST vlist = NULL;
+	VARIABLE_PTR var = NULL;
+
+	int offset = 0;
+	VARIABLE_PTR new_var = NULL;
+
+	FF_VALIDATE(format);
+
+	if (!format)
+		return NULL;
+
+	if (IS_BINARY(format))
+	{
+		new_format = ff_copy_format(format);
+
+		if (new_format && new_name)
+			new_name_string__(new_name, &new_format->name);
+	}
+	else
+		new_format = ff_afm2bfm(format, new_name ? new_name : format->name);
+
+	if (!new_format)
+		return NULL;
+
+	vlist = FFV_FIRST_VARIABLE(new_format);
+	vlist = dll_next(vlist);
+	var = FF_VARIABLE(vlist);
+	while (var)
+	{
+		FF_VALIDATE(var);
+
+		offset = (var->start_pos - 1) % alignment(FFV_TYPE(var));
+		if (offset && !IS_TEXT(var))
+		{
+			offset = alignment(FFV_TYPE(var)) - offset;
+
+			if(!dll_insert(vlist))
+			{
+				err_push(ERR_MEM_LACK,"Creating New Variable List Node");
+				ff_destroy_format(new_format);
+				return(NULL);
+			}
+
+			new_var = ff_create_variable("1234567");
+			if (!new_var)
+			{
+				err_push(ERR_MEM_LACK,"");
+				ff_destroy_format(new_format);
+				return(NULL);
+			}
+
+			new_var->name[offset] = STR_END;
+			new_var->type = FFV_CONSTANT;
+
+			new_var->start_pos = var->start_pos;
+			new_var->end_pos = new_var->start_pos + offset - 1;
+
+			++new_format->num_vars;
+
+			dll_assign(new_var, DLL_VAR, dll_previous(vlist));
+
+			var->start_pos += offset;
+			update_format_var(var->type, FF_VAR_LENGTH(var) + offset, var, new_format);
+		}
+
+		vlist = dll_next(vlist);
+		var = FF_VARIABLE(vlist);
+	}
+
+	vlist = new_format->variables;
+	var = FF_VARIABLE(dll_previous(new_format->variables));
+	FF_VALIDATE(var);
+
+	offset = FORMAT_LENGTH(new_format) % alignment(FFV_FLOAT64);
+	if (offset)
+	{
+		offset = alignment(FFV_FLOAT64) - offset;
+
+		if(!dll_insert(vlist))
+		{
+			err_push(ERR_MEM_LACK,"Creating New Variable List Node");
+			ff_destroy_format(new_format);
+			return(NULL);
+		}
+
+		new_var = ff_create_variable("1234567");
+		if (!new_var)
+		{
+			err_push(ERR_MEM_LACK,"");
+			ff_destroy_format(new_format);
+			return(NULL);
+		}
+
+		new_var->name[offset] = STR_END;
+		new_var->type = FFV_CONSTANT;
+
+		new_var->start_pos = var->end_pos + 1;
+		new_var->end_pos = new_var->start_pos + offset - 1;
+
+		++new_format->num_vars;
+
+		dll_assign(new_var, DLL_VAR, dll_previous(vlist));
+
+		new_format->length += offset;
+	}
+
+	return new_format;
 }
