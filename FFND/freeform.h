@@ -12,6 +12,8 @@
 #ifndef FREEFORM_H__
 #define FREEFORM_H__
 
+#define FFND_LIB_VER "4.0.1"
+
 #ifndef FREEFORM
 #error "You must define FREEFORM as a preprocessor name."
 #error "You must do this for the benefit of files in the FreeForm project"
@@ -397,11 +399,11 @@ typedef double              float64;
 typedef double big_var_type;
 typedef big_var_type align_var_type;
 
-#define FFV_INT8_MIN    SCHAR_MIN
+#define FFV_INT8_MIN   -SCHAR_MAX
 #define FFV_INT8_MAX    SCHAR_MAX
 #define FFV_UINT8_MIN           0
 #define FFV_UINT8_MAX   UCHAR_MAX
-#define FFV_INT16_MIN    SHRT_MIN
+#define FFV_INT16_MIN   -SHRT_MAX
 #define FFV_INT16_MAX    SHRT_MAX
 #define FFV_UINT16_MIN          0
 #define FFV_UINT16_MAX  USHRT_MAX
@@ -437,7 +439,7 @@ typedef char                uint64; /* not a real type for the PC */
 
 #endif
 
-#define FFV_INT32_MIN    LONG_MIN
+#define FFV_INT32_MIN   -LONG_MAX
 #define FFV_INT32_MAX    LONG_MAX
 #define FFV_UINT32_MIN          0
 #define FFV_UINT32_MAX  ULONG_MAX
@@ -464,11 +466,11 @@ typedef unsigned long int   uint64;
 
 #endif
 
-#define FFV_INT32_MIN     INT_MIN
+#define FFV_INT32_MIN    -INT_MAX
 #define FFV_INT32_MAX     INT_MAX
 #define FFV_UINT32_MIN          0
 #define FFV_UINT32_MAX   UINT_MAX
-#define FFV_INT64_MIN    LONG_MIN
+#define FFV_INT64_MIN   -LONG_MAX
 #define FFV_INT64_MAX    LONG_MAX
 #define FFV_UINT64_MIN          0
 #define FFV_UINT64_MAX  ULONG_MAX
@@ -569,6 +571,7 @@ typedef double             ff_enote;
 
 #define IS_RECORD_VAR(v)  IS_RECORD_VAR_TYPE(FFV_TYPE(v)) 
 
+#define IS_UNSIGNED(v) (FFV_DATA_TYPE(v) & FFV_UNSIGNED)
 #define IS_INTEGER(v) (FFV_DATA_TYPE(v) & FFV_INTEGER)
 #define IS_REAL(v)    (FFV_DATA_TYPE(v) & FFV_REAL)
 
@@ -676,7 +679,6 @@ extern FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES];
 #define NUM_FORMAT_TYPES 51
 extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 
-#define FFND_LIB_VER "4.0"
 #define FF_DBG_LOG "ff_debug.log"
 #define FF_DBG_LOG_SIZE 10240
 
@@ -691,8 +693,6 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #define FF_DBG
 #endif
 
-/* I added this to suppress message about redefinition. 4/20/98 jhrg */
-#undef assert
 #define assert(exp) ff_err_assert(exp)
 
 #ifdef NDEBUG
@@ -706,7 +706,7 @@ void _ff_err_assert(char *, char *, unsigned);
 #ifdef FF_CHK_ADDR
 #define FF_VALIDATE(o) (((o) && ((void *)(o) == (o)->check_address)) ? (void)0 : _ff_err_assert(#o, __FILE__, __LINE__))
 #else
-#define FF_VALIDATE(o) /* o */
+#define FF_VALIDATE(o) 0
 #endif
 
 #include <errno.h>
@@ -781,10 +781,43 @@ typedef char **FF_STRING_HANDLE;
 #define FFF_FILE_TYPE(f) (FFF_TYPE(f) & FFF_FILE_TYPES)
 #define FD_TYPE(fd) (FFF_TYPE((fd)->format) & FD_TYPES)
 
+#define FD_IS_NATIVE_BYTE_ORDER(fd) (endian() == (BOOLEAN)(fd)->state.byte_order)
+
 #define MAX_PV_LENGTH _MAX_PATH /* Maximum parameter or parameter-value length */
 #define MAX_NAME_LENGTH MAX_PV_LENGTH
 #define TMP_BUFFER_SIZE 1024
 #define SCRATCH_QUANTA 1024U
+
+#define FMT_BUFSIZE_BUFFER_SIZE 4096 /* pick a reasonable size... */
+
+/* even though ff_bss_t is an unsigned (long, in Unix) there will be problems
+   if bytes_used or total_bytes ever takes on a value greater than LONG_MAX */
+
+#define FFBS_GRAFT 0
+
+typedef unsigned FF_BSS_t; /* FreeForm bufsize size type */
+
+/*
+ * FF_BUFSIZE
+ */
+
+typedef struct struct_ff_bufsize FF_BUFSIZE, *FF_BUFSIZE_PTR, **FF_BUFSIZE_HANDLE;
+struct struct_ff_bufsize
+{
+#ifdef FF_CHK_ADDR
+	void *check_address;
+#endif
+	char HUGE *buffer;
+	unsigned short usage;
+	FF_BSS_t  bytes_used;
+	FF_BSS_t  total_bytes;
+};
+
+#ifndef INT_MAX
+#include <limits.h>
+#endif /* INT_MAX */
+
+#define BUFSIZE_TOTAL_BYTES_UNKNOWN INT_MAX
 
 /*
  * FF_STD_ARGS
@@ -797,12 +830,13 @@ struct struct_ff_std_args
 	void *check_address;
 #endif
 	char           *input_file;           /* string: name of input file */
-	char           *input_buffer;         /* buffer containing input data */
+	FF_BUFSIZE_PTR  input_bufsize;         /* bufsize containing input data */
 	char           *input_format_file;    /* string: name of input format file */
 	char           *input_format_title;   /* string: input format title */
 	char           *input_format_buffer;  /* string: input format description */
 	char           *output_file;          /* string: name of output file */
-	char           *output_buffer;        /* buffer to contain output data */
+	char           *log_file;             /* string: name of log file */
+	FF_BUFSIZE_PTR  output_bufsize;        /* bufsize to contain output data */
 	char           *output_format_file;   /* string: name of output format file */ 
 	char           *output_format_title;  /* string: output forma title */
 	char           *output_format_buffer; /* string: output format description */
@@ -936,37 +970,6 @@ struct struct_ff_variable
 	char *record_title;     /* if type == FF_VAR_TYPE_FLAG */
 };
 
-#define FMT_BUFSIZE_BUFFER_SIZE 4096 /* pick a reasonable size... */
-
-/* even though ff_bss_t is an unsigned (long, in Unix) there will be problems
-   if bytes_used or total_bytes ever takes on a value greater than LONG_MAX */
-
-#define FFBS_GRAFT 0
-
-typedef unsigned FF_BSS_t; /* FreeForm bufsize size type */
-
-/*
- * FF_BUFSIZE
- */
-
-typedef struct struct_ff_bufsize FF_BUFSIZE, *FF_BUFSIZE_PTR, **FF_BUFSIZE_HANDLE;
-struct struct_ff_bufsize
-{
-#ifdef FF_CHK_ADDR
-	void *check_address;
-#endif
-	char HUGE *buffer;
-	unsigned short usage;
-	FF_BSS_t  bytes_used;
-	FF_BSS_t  total_bytes;
-};
-
-#ifndef INT_MAX
-#include <limits.h>
-#endif /* INT_MAX */
-
-#define BUFSIZE_TOTAL_BYTES_UNKNOWN INT_MAX
-
 /*
  * FORMAT_DATA
  */
@@ -1060,15 +1063,23 @@ struct struct_ff_array_dipole
 	struct struct_connect
 	{
 		NDARR_SOURCE id; /* NDARRS_FILE or NDARRS_BUFFER */
-		void *locus; /* file name if NDARRS_FILE, pointer if NDARRS_BUFFER */
+#ifdef _DEBUG
+		union struct_locus
+		{
+			char *filename; /* file name if NDARRS_FILE */
+			FF_BUFSIZE_PTR bufsize; /* FF_BUFSIZE_PTR if NDARRS_BUFFER */
+		} locus;
+#else
+		union union_locus
+		{
+			char *filename; /* file name if NDARRS_FILE */
+			FF_BUFSIZE_PTR bufsize; /* FF_BUFSIZE_PTR if NDARRS_BUFFER */
+		} locus;
+#endif
 		struct struct_file_info
 		{
 			unsigned long array_offset; /* file header size if NDARRS_FILE */
 		} file_info;
-		struct struct_buffer_info
-		{
-			unsigned long size; /* buffer size if NDARRS_BUFFER */
-		} buffer_info;
 		unsigned long bytes_left;
 		int array_done;
 	} connect;
@@ -1189,6 +1200,19 @@ typedef struct struct_databin
 	NAME_TABLE_LIST table_list;
 } DATA_BIN, *DATA_BIN_PTR, **DATA_BIN_HANDLE;
 
+typedef struct struct_ff_array_dim_info
+{
+#ifdef FF_CHK_ADDR
+	void *check_address;
+#endif
+	long start_index;
+	long end_index;
+	long granularity;
+	long separation;
+	long grouping;
+	long num_array_elements;
+} FF_ARRAY_DIM_INFO, *FF_ARRAY_DIM_INFO_PTR, **FF_ARRAY_DIM_INFO_HANDLE;
+
 /* Define Defaults */
 #if FF_OS == FF_OS_UNIX
 #define DEFAULT_CACHE_SIZE	2097152L
@@ -1200,33 +1224,43 @@ typedef struct struct_databin
 
 #define DBSET_INPUT_FORMATS             1
 #define DBSET_OUTPUT_FORMATS            2
-#define DBSET_INPUT_HEADER              5
-#define DBSET_READ_EQV                  6
-#define DBSET_CACHE_SIZE                8
-#define DBSET_HEADER_FILE_NAMES         9
-#define DBSET_QUERY_RESTRICTION        13
-#define DBSET_VARIABLE_RESTRICTION     15
-#define DBSET_BYTE_ORDER		         12
+#define DBSET_INPUT_HEADER              3
+#define DBSET_READ_EQV                  4
+#define DBSET_CACHE_SIZE                5
+#define DBSET_HEADER_FILE_NAMES         6
+#define DBSET_QUERY_RESTRICTION         7
+#define DBSET_VARIABLE_RESTRICTION      8
+#define DBSET_BYTE_ORDER		          9
+#define DBSET_CREATE_CONDUITS          10
+#define DBSET_USER_UPDATE_FORMATS      11
+#define DBSET_INIT_CONDUITS            12
+#define DBSET_FORMAT_MAPPINGS          13
+#define DBSET_EQUATION_VARIABLES       14
+#define DBSET_SETUP_STDIN              15
 
-#define DBASK_FORMAT_SUMMARY                3
-#define DBASK_PROCESS_INFO        18
+#define DBASK_FORMAT_SUMMARY            1
+#define DBASK_PROCESS_INFO              2
+#define DBASK_VAR_NAMES                 3
+#define DBASK_VAR_MINS                  4
+#define DBASK_VAR_MAXS                  5
+#define DBASK_VAR_UNITS                 6
+#define DBASK_VAR_FLAGS                 7
+#define DBASK_ARRAY_DIM_NAMES           8
+#define DBASK_ARRAY_DIM_INFO            9
+#define DBASK_BYTES_TO_PROCESS         10
 
-#define DBDO_READ_FORMATS                    4
-#define DBDO_WRITE_FORMATS                 7
-#define DBDO_CONVERT_DATA	          10
-#define DBDO_BYTE_SWAP               11
-#define DBDO_FILTER_ON_QUERY              14
-#define DBDO_CONVERT_FORMATS              16
-#define DBDO_PROCESS_FORMATS              17
+#define DBDO_READ_FORMATS               1
+#define DBDO_WRITE_FORMATS              2
+#define DBDO_CONVERT_DATA	             3
+#define DBDO_BYTE_SWAP                  4
+#define DBDO_FILTER_ON_QUERY            5
+#define DBDO_CONVERT_FORMATS            6
+#define DBDO_PROCESS_FORMATS            7
+#define DBDO_READ_STDIN                 8
+#define DBDO_CHECK_STDOUT               9
 
 /* not needed */
-#define DBDO_WRITE_OUTPUT_FMT_FILE        19
-
-#define DBSET_CREATE_CONDUITS             20
-#define DBSET_USER_UPDATE_FORMATS         21
-#define DBSET_INIT_CONDUITS               22
-#define DBSET_FORMAT_MAPPINGS             23
-#define DBSET_EQUATION_VARIABLES          24
+#define DBDO_WRITE_OUTPUT_FMT_FILE      255
 
 #ifdef NT_ANYWHERE
 #error "NT_ANYWHERE is already defined!"
@@ -1264,15 +1298,27 @@ typedef struct struct_databin
 #define PINFO_CACHEL(pi)        (PINFO_TOTAL_BYTES(pi) - 1)
 #define PINFO_NUMVARS(pi)       (PINFO_FORMAT(pi)->num_vars)
 #define PINFO_IS_FILE(pi)       (PINFO_POLE(pi)->connect.id & NDARRS_FILE)
-#define PINFO_FNAME(pi)         (PINFO_IS_FILE(pi) ? PINFO_POLE(pi)->connect.locus : NULL)
-#define PINFO_LOCUS(pi)         (PINFO_POLE(pi)->connect.locus)
+#define PINFO_IS_ARRAY(pi)      (IS_ARRAY(PINFO_FORMAT(pi)))
+#define PINFO_FNAME(pi)         (PINFO_POLE(pi)->connect.locus.filename)
+#define PINFO_LOCUS_BUFSIZE(pi) (PINFO_POLE(pi)->connect.locus.bufsize)
+#define PINFO_LOCUS_BUFFER(pi)  (PINFO_POLE(pi)->connect.locus.bufsize->buffer)
+#define PINFO_LOCUS_SIZE(pi)    (PINFO_POLE(pi)->connect.locus.bufsize->total_bytes)
+#define PINFO_LOCUS_FILLED(pi)  (PINFO_POLE(pi)->connect.locus.bufsize->bytes_used)
 #define PINFO_ARRAY_OFFSET(pi)  (PINFO_POLE(pi)->connect.file_info.array_offset)
 #define PINFO_ARRAY_DONE(pi)    (PINFO_POLE(pi)->connect.array_done)
 #define PINFO_BYTES_LEFT(pi)    (PINFO_POLE(pi)->connect.bytes_left)
-#define PINFO_BUFFER_SIZE(pi)   (PINFO_POLE(pi)->connect.buffer_info.size)
 #define PINFO_ARRAY_MAP(pi)     (PINFO_POLE(pi)->array_mapping)
 #define PINFO_ID(pi)            (PINFO_POLE(pi)->connect.id)
 #define PINFO_FORMAT_MAP(pi)    (PINFO_POLE(pi)->format_data_mapping)
+
+#define PINFO_NUM_DIMS(pi)      (PINFO_ARRAY_MAP(pi)->super_array->num_dim)
+
+#define PINFO_DIM_NAME(pi,i)             (PINFO_ARRAY_MAP(pi)->super_array->dim_name[i])
+#define PINFO_DIM_START_INDEX(pi, i)  (PINFO_ARRAY_MAP(pi)->super_array->start_index[i])
+#define PINFO_DIM_END_INDEX(pi, i)    (PINFO_ARRAY_MAP(pi)->super_array->end_index[i])
+#define PINFO_DIM_GRANULARITY(pi, i)  (PINFO_ARRAY_MAP(pi)->super_array->granularity[i])
+#define PINFO_DIM_SEPARATION(pi, i)   (PINFO_ARRAY_MAP(pi)->super_array->separation[i])
+#define PINFO_DIM_GROUPING(pi, i)     (PINFO_ARRAY_MAP(pi)->super_array->grouping[i])
 
 #define PINFO_MATE(pi) ((pi)->mate)
 
@@ -1476,12 +1522,12 @@ FF_CVF cv_noaa_eq;
 
 #ifdef FF_MAIN
 #ifdef TIMER
-int newform(time_t start_time, FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin);
+int newform(time_t start_time, FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin, FF_BUFSIZE_PTR log);
 #else
-int newform(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin);
+int newform(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin, FF_BUFSIZE_PTR log);
 #endif
 #else
-int newform(DATA_BIN_PTR dbin);
+int newform(DATA_BIN_PTR dbin, FF_BUFSIZE_PTR log);
 #endif
 
 

@@ -76,6 +76,7 @@
 #define ERR_IGNORED_OPTION      4014
 #define ERR_VARIABLE_DESC       4015
 #define ERR_VARIABLE_SIZE       4016
+#define ERR_NO_EOL              4017
 
 /* ADTLIB errors */
 
@@ -105,6 +106,8 @@
 #define ERR_SWITCH_DEFAULT           7901
 #define ERR_ASSERT_FAILURE           7902
 #define ERR_NO_NAME_TABLE            7903
+#define ERR_API_BUF_LOCKED           7904
+#define ERR_API_BUF_NOT_LOCKED       7905
 
 /* Do NOT create any error codes that exceed those below */
 

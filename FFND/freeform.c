@@ -110,12 +110,13 @@ BOOLEAN endian(void)
 static void init_std_args(FF_STD_ARGS_PTR std_args)
 {
 	std_args->input_file = NULL;
-	std_args->input_buffer = NULL;
+	std_args->input_bufsize = NULL;
 	std_args->input_format_file = NULL;
 	std_args->input_format_buffer = NULL;
 	std_args->input_format_title = NULL;
 	std_args->output_file = NULL;
-	std_args->output_buffer = NULL;
+	std_args->log_file = NULL;
+	std_args->output_bufsize = NULL;
 	std_args->output_format_file = NULL;
 	std_args->output_format_title = NULL;
 	std_args->output_format_buffer = NULL;
@@ -700,7 +701,8 @@ int ff_resize_bufsize(long new_size, FF_BUFSIZE_HANDLE hbufsize)
 
 	assert(hbufsize);
 	assert(new_size);
-	assert(*hbufsize);
+	FF_VALIDATE(*hbufsize);
+
 	assert((FF_BSS_t)new_size != (*hbufsize)->total_bytes);
 	assert((*hbufsize)->bytes_used <= (*hbufsize)->total_bytes);
 	
@@ -1466,8 +1468,13 @@ void ff_destroy_array_pole(FF_ARRAY_DIPOLE_PTR pole)
 			pole->fd = NULL;
 		}
 		
-		if (pole->connect.id & NDARRS_FILE && pole->connect.locus)
-			memFree(pole->connect.locus, "pole->connect.locus");
+		if (pole->connect.id & NDARRS_FILE && pole->connect.locus.filename)
+		{
+			memFree(pole->connect.locus.filename, "pole->connect.locus.filename");
+			pole->connect.locus.filename = NULL;
+		}
+
+		pole->connect.locus.bufsize = NULL;
 
 		assert(pole->name);
 		if (pole->name)
@@ -1477,7 +1484,6 @@ void ff_destroy_array_pole(FF_ARRAY_DIPOLE_PTR pole)
 		}
 	
 		pole->connect.file_info.array_offset = 0;
-		pole->connect.buffer_info.size = 0;
 
 		pole->connect.array_done = 0;
 		pole->connect.bytes_left = 0;

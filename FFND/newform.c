@@ -11,65 +11,36 @@
 
 #ifdef FF_MAIN
 
-static BOOLEAN is_separation(PROCESS_INFO_PTR finfo)
+static int send_to_log(FF_BUFSIZE_PTR log_bufsize, char *format, ...)
 {
-	FF_VALIDATE(finfo);
+	va_list va_args;
+	int bytes_written;
+	enum {MAX_LINE_LENGTH = 80};
 
-	if (PINFO_ARRAY_MAP(finfo)->subsep)
-		return(TRUE);
-	else
-		return(FALSE);
-}
-
-static BOOLEAN is_offset(PROCESS_INFO_PTR finfo)
-{
-	FF_VALIDATE(finfo);
-
-	if (PINFO_ARRAY_OFFSET(finfo) != 0)
-		return(TRUE);
-	else
-		return(FALSE);
-}
-
-/* Check to see if any fseek's will be done on output.  This will happen if an array has
-   separation or has an offset other than zero.  Basically, output formats with only a
-	single array will not require any fseek's on output.
-
-   Also check for any separate headers
-*/
-static int check_stdout_contiguity(DATA_BIN_PTR dbin)
-{
-	PROCESS_INFO_LIST finfo_list = NULL;
-	PROCESS_INFO_PTR  finfo = NULL;
-	int error = 0;
-
-	FF_VALIDATE(dbin);
-
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &finfo_list);
-	if (!error)
+	va_start(va_args, format);
+  
+	if (log_bufsize->bytes_used + MAX_LINE_LENGTH > log_bufsize->total_bytes)
 	{
-		finfo_list = dll_first(finfo_list);
-		finfo      = FF_PI(finfo_list);
-		while (finfo)
+		int error = 0;
+
+		error = ff_resize_bufsize(log_bufsize->total_bytes + MAX_LINE_LENGTH, &log_bufsize);
+		if (error)
 		{
-			FF_VALIDATE(finfo);
-
-			if (is_separation(finfo) || is_offset(finfo) || (IS_HEADER(PINFO_FORMAT(finfo)) && IS_SEPARATE(PINFO_FORMAT(finfo))))
-			{
-				error = err_push(ERR_GENERAL, "You must use -o with this output format: %s", PINFO_NAME(finfo));
-				break;
-			}
-
-			finfo_list = dll_next(finfo_list);
-			finfo      = FF_PI(finfo_list);
+			err_push(ERR_MEM_LACK, "");
+			return(0);
 		}
-
-		ff_destroy_process_info_list(finfo_list);
 	}
-	else
-		error = err_push(ERR_GENERAL, "Nothing to redirect as no output formats have been specified");
+  
+	vsprintf(log_bufsize->buffer + log_bufsize->bytes_used,
+	         format,
+	         va_args
+	        );
+	bytes_written = strlen(log_bufsize->buffer + log_bufsize->bytes_used);
+	log_bufsize->bytes_used += bytes_written;
+		
+	assert(log_bufsize->bytes_used < log_bufsize->total_bytes);
 
-	return(error);
+	return(bytes_written);
 }
 
 /*****************************************************************************
@@ -130,101 +101,6 @@ static int check_for_unused_flags(FF_STD_ARGS_PTR std_args)
 	return(error);
 }
 	
-static int setup_stdin(DATA_BIN_PTR dbin, FF_STD_ARGS_PTR std_args)
-{
-	int error = 0;
-	PROCESS_INFO_LIST plist = NULL;
-	PROCESS_INFO_PTR pinfo = NULL;
-
-	FF_VALIDATE(dbin);
-	FF_VALIDATE(std_args);
-
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
-	if (!error)
-	{
-		size_t bytes_to_read = 0;
-		size_t bytes_to_alloc = 0;
-
-		plist = dll_first(plist);
-		pinfo = FF_PI(plist);
-		while (pinfo)
-		{
-			if (IS_HEADER(PINFO_FORMAT(pinfo)) || IS_ARRAY(PINFO_FORMAT(pinfo)))
-				error = err_push(ERR_GENERAL, "\"%s\": Ineligible format when redirecting standard input", PINFO_NAME(pinfo));
-
-			bytes_to_read += PINFO_RECL(pinfo);
-
-			plist = dll_next(plist);
-			pinfo = FF_PI(plist);
-		}
-
-		if (!error)
-		{
-			if (std_args->cache_size)
-				bytes_to_alloc = max(bytes_to_read, std_args->cache_size);
-			else
-				bytes_to_alloc = max(bytes_to_read, DEFAULT_CACHE_SIZE);
-
-			std_args->input_buffer = (char *)memMalloc(bytes_to_alloc, "std_args->input_buffer");
-			if (!std_args->input_buffer)
-				error = err_push(ERR_MEM_LACK, "");
-		}
-
-		ff_destroy_process_info_list(plist);
-
-		if (!error)
-		{
-			size_t bytes_read = 0;
-
-			ff_destroy_array_conduit_list(dbin->array_conduit_list);
-			dbin->array_conduit_list = NULL;
-
-#if FF_OS == FF_OS_DOS || FF_OS == FF_OS_MACOS
-			setmode(fileno(stdin), O_BINARY);
-#endif
-			bytes_read = fread(std_args->input_buffer, 1, bytes_to_read, stdin); 
-			if (bytes_read != bytes_to_read)
-				error = err_push(ERR_READ_FILE, "...from standard input");
-			else
-			{
-				/* Was an output file created by the previous db_init? */
-				if (std_args->output_file && os_file_exist(std_args->output_file))
-					remove(std_args->output_file);
-
-				error = db_init(std_args, &dbin, NULL);
-				if (!error || error > ERR_WARNING_ONLY)
-				{
-					error = db_set(dbin, DBSET_CACHE_SIZE, (unsigned long)bytes_to_alloc);
-					if (!error)
-					{
-						error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
-						if (!error)
-						{
-							plist = dll_first(plist);
-							pinfo = FF_PI(plist);
-							while (pinfo)
-							{
-								size_t records_in_buffer = 0;
-
-								records_in_buffer = PINFO_CACHEL(pinfo) / PINFO_RECL(pinfo);
-
-								PINFO_BUFFER_SIZE(pinfo) = records_in_buffer * PINFO_RECL(pinfo);
-
-								plist = dll_next(plist);
-								pinfo = FF_PI(plist);
-							} /* while pinfo */
-
-							ff_destroy_process_info_list(plist);
-						} /* if !error (db_ask) */
-					} /* if !error (db_set) */
-				} /* if !error (db_init) */
-			} /* else (if bytes_read != bytes_to_read) */
-		} /* if not error (malloc) */
-	} /* if !error (db_ask) */
-
-	return(error);
-}
-
 static int wfprintf(FILE *stream, const char *format, ...)
 /*****************************************************************************
  * NAME: wfprintf()
@@ -258,17 +134,7 @@ static int wfprintf(FILE *stream, const char *format, ...)
 	return(vfprintf(stream, format, va_args));
 }
 
-/* messages for print_info */
-#define INFO             1
-#define GREET            2
-
-/* FUNCTION: print_info()
- *
- * PURPOSE:     display appropriate message 
- *
- * COMMENTS:
- */
-static void print_info(int message)
+void main(int argc, char *argv[])
 {
 	char *greeting = 
 {
@@ -294,26 +160,15 @@ Newform [-d data_file] [-f format_file] [-if input_format_file]\n\
                   [-v var] Process variables listed in var file, default = all\n\
                   [-o output_file] default = output to screen\n\
                   [-el error_log_file] error messages go to error_log_file\n\
-                  [-ep] passive error messages - non-interactive\n\n\
+                  [-ep] passive error messages - non-interactive\n\
+                  [-ol log] File to contain log of processing information\n\n\
 See the FreeForm User's Guide for detailed information.\n"
 };
 
-	switch(message)
-	{
-		case GREET:
-			fprintf(stderr, "%s", greeting);
-		break;
-		
-		case INFO:
-			fprintf(stderr, "%s", command_line_usage);
-		break;
-	}/* end switch */
-}/* end print_info() */
-
-/* Changed return type from void to int. */
-int main(int argc, char *argv[])
-{
 	FF_BUFSIZE_PTR bufsize = NULL;
+	FF_BUFSIZE_PTR newform_log = NULL;
+
+	char log_file_write_mode[4];
   
 	DATA_BIN_PTR dbin = NULL;
 	int error = 0;
@@ -324,7 +179,7 @@ int main(int argc, char *argv[])
 	(void)time(&start_time);
 #endif
 
-	print_info(GREET);
+	fprintf(stderr, "%s", greeting);
 	
 	std_args = ff_create_std_args();
 	if (!std_args)
@@ -332,15 +187,37 @@ int main(int argc, char *argv[])
 		error = ERR_MEM_LACK;
 		goto main_exit;
 	}
-	
+
 	error = parse_command_line(argc, argv, std_args);
 	if (error)
 		goto main_exit;
 
+if (0 && std_args->output_file == NULL && std_args->output_bufsize == NULL)
+{
+	std_args->output_bufsize = ff_create_bufsize(USHRT_MAX - 1);
+	if (!std_args->output_bufsize)
+	{
+		error = err_push(ERR_MEM_LACK, "");
+		goto main_exit;
+	}
+}
+
+	if (std_args->log_file)
+	{
+		newform_log = ff_create_bufsize(SCRATCH_QUANTA);
+		if (newform_log)
+			send_to_log(newform_log, "%s", greeting);
+		else
+		{
+			error = err_push(ERR_MEM_LACK, "");
+			goto main_exit;
+		}
+	}
+
 	/* Check number of command args */
 	if (argc == 1 && !std_args->user.is_stdin_redirected)
 	{
-		print_info(INFO);
+		fprintf(stderr, "%s", command_line_usage);
 		ff_destroy_std_args(std_args);
 	
 		memExit(EXIT_FAILURE, "main, argc<2");
@@ -358,7 +235,7 @@ int main(int argc, char *argv[])
 
 	if (std_args->user.is_stdin_redirected)
 	{
-		error = setup_stdin(dbin, std_args);
+		error = db_set(dbin, DBSET_SETUP_STDIN, std_args);
 		if (error)
 			goto main_exit;
 	}
@@ -368,30 +245,79 @@ int main(int argc, char *argv[])
 #if FF_OS == FF_OS_DOS || FF_OS == FF_OS_MACOS
 		setmode(fileno(stdout), O_BINARY);
 #endif
-		error = check_stdout_contiguity(dbin);
+		error = db_do(dbin, DBDO_CHECK_STDOUT);
 		if (error)
 			goto main_exit;
 	}
 
 	if (std_args->query_file)
+	{
 		wfprintf(stderr, "Using query file: %s\n", std_args->query_file);
+		if (newform_log)
+			send_to_log(newform_log, "Using query file: %s\n", std_args->query_file);
+	}
 
 	/* Display some information about the data, ignore errors */
 	db_ask(dbin, DBASK_FORMAT_SUMMARY, &bufsize);
-	wfprintf(stderr, "%s", bufsize->buffer);
+	wfprintf(stderr, "%s\n", bufsize->buffer);
+	if (newform_log)
+		send_to_log(newform_log, "%s\n", bufsize->buffer);
 	ff_destroy_bufsize(bufsize);
 
-	wfprintf(stderr, "\n");
+if (0)
+{
+	int error = 0;
+	int i = 0;
+	int num_names = 0;
+	char **names_vector = NULL;
+
+	error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT, &num_names, &names_vector);
+	if (error)
+		goto main_exit;
+
+	for (i = 0; i < num_names; i++)
+	{
+		int num_dim_names = 0;
+		char **dim_names_vector = NULL;
+
+		error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, names_vector[i], &num_dim_names, &dim_names_vector);
+		if (!error)
+		{
+			FF_ARRAY_DIM_INFO_PTR array_dim_info = NULL;
+			int j = 0;
+
+			for (j = 0; j < num_dim_names; j++)
+			{
+				error = db_ask(dbin, DBASK_ARRAY_DIM_INFO, names_vector[i], dim_names_vector[j], &array_dim_info);
+				if (!error)
+				{
+					printf("Array %s, dimension %s:\n", names_vector[i], dim_names_vector[j]);
+					printf("Start index is %ld\n", array_dim_info->start_index);
+					printf("End index is %ld\n", array_dim_info->end_index);
+					printf("Granularity is %ld\n", array_dim_info->granularity);
+					printf("Separation is %ld\n", array_dim_info->separation);
+					printf("Grouping is %ld\n", array_dim_info->grouping);
+					printf("Number of elements in array is %ld\n\n", array_dim_info->num_array_elements);
+
+					memFree(array_dim_info, "");
+					array_dim_info = NULL;
+				}
+			}
+			
+			memFree(dim_names_vector, "");
+			dim_names_vector = NULL;
+		}
+	}
+
+	memFree(names_vector, "");
+}
 
 #ifdef TIMER
-	error = newform(start_time, std_args, dbin);
+	error = newform(start_time, std_args, dbin, newform_log);
 #else
-	error = newform(std_args, dbin);
+	error = newform(std_args, dbin, newform_log);
 #endif
 	
-	if (std_args->user.is_stdin_redirected)
-		memFree(std_args->input_buffer, "std_args->input_buffer");
-
 	wfprintf(stderr,"\n");
 
 main_exit:
@@ -402,105 +328,68 @@ main_exit:
 	if (error || err_state())
 		err_disp(std_args);
 
+	/* Is user asking for both error logging and a log file? */
+	if (std_args->error_log && newform_log)
+	{
+		if (strcmp(std_args->error_log, std_args->log_file))
+		{
+#if FF_OS == FF_OS_UNIX
+			strcpy(log_file_write_mode, "w");
+#else
+			strcpy(log_file_write_mode, "wt");
+#endif
+		}
+		else
+		{
+#if FF_OS == FF_OS_UNIX
+			strcpy(log_file_write_mode, "a");
+#else
+			strcpy(log_file_write_mode, "at");
+#endif
+		}
+	}
+	else if (newform_log)
+	{
+#if FF_OS == FF_OS_UNIX
+			strcpy(log_file_write_mode, "w");
+#else
+			strcpy(log_file_write_mode, "wt");
+#endif
+	}
+
+	if (newform_log)
+	{
+		FILE *fp = NULL;
+
+		fp = fopen(std_args->log_file, log_file_write_mode);
+		if (fp)
+		{
+			size_t bytes_written = fwrite(newform_log->buffer, 1, (size_t)newform_log->bytes_used, fp);
+
+			if (bytes_written != (size_t)newform_log->bytes_used)
+				error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", (int)bytes_written, (int)newform_log->bytes_used, std_args->log_file);
+
+			fclose(fp);
+		}
+		else
+			error = err_push(ERR_CREATE_FILE, std_args->log_file);
+
+		ff_destroy_bufsize(newform_log);
+	}
+
+if (0 && std_args->output_file == NULL && std_args->output_bufsize)
+	ff_destroy_bufsize(std_args->output_bufsize);
+
+	if (std_args->user.is_stdin_redirected)
+		ff_destroy_bufsize(std_args->input_bufsize);
+
 	if (std_args)
 		ff_destroy_std_args(std_args);
 	
 	memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main");
 }
 
-static int check_standard_input
-	(
-	 FF_STD_ARGS_PTR std_args,
-	 DATA_BIN_PTR dbin,
-	 BOOLEAN *done_processing
-	)
-{
-	int error = 0;
-
-	FF_VALIDATE(std_args);
-	FF_VALIDATE(dbin);
-
-	if (std_args->user.is_stdin_redirected)
-	{
-		size_t bytes_read = 0;
-		size_t bytes_to_read = 0;
-		PROCESS_INFO_LIST plist = NULL;
-
-		if (feof(stdin))
-		{
-			*done_processing = TRUE;
-			return(0);
-		}
-
-		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
-		if (!error)
-		{
-			PROCESS_INFO_PTR pinfo = NULL;
-
-			plist = dll_first(plist);
-			pinfo = FF_PI(plist);
-			while (pinfo)
-			{
-				size_t records_to_read = 0;
-
-				records_to_read = PINFO_BUFFER_SIZE(pinfo) / PINFO_RECL(pinfo);
-				bytes_to_read = records_to_read * PINFO_RECL(pinfo);
-
-				bytes_read = fread(std_args->input_buffer, 1, bytes_to_read, stdin); 
-				if (bytes_read != bytes_to_read)
-				{
-					if (!feof(stdin))
-						error = err_push(ERR_READ_FILE, "...from standard input");
-				}
-				else
-					*done_processing = FALSE;
-
-				if (!error)
-				{
-					size_t records_read = 0;
-
-					records_read = bytes_read / PINFO_RECL(pinfo);
-
-					if (bytes_read % PINFO_RECL(pinfo))
-						error = err_push(ERR_FILE_LENGTH, "...from standard input");
-					else
-						error = make_tabular_format_array_mappings(pinfo, records_read, 0);
-				}
-
-				if (error)
-					break;
-
-				plist = dll_next(plist);
-				pinfo = FF_PI(plist);
-			}
-
-			ff_destroy_process_info_list(plist);
-		}
-	}
-
-	return(error);
-}
-
 #endif /* FF_MAIN */
-
-static long bytes_to_process(PROCESS_INFO_LIST finfo_list)
-{
-	long bytes_to_process = 0;
-	PROCESS_INFO_PTR finfo = NULL;
-
-	finfo_list = dll_first(finfo_list);
-	finfo      = FF_PI(finfo_list);
-	while (finfo)
-	{
-		if (PINFO_MATE(finfo))
-			bytes_to_process += PINFO_MATE_BYTES_LEFT(finfo);
-
-		finfo_list = dll_next(finfo_list);
-		finfo      = FF_PI(finfo_list);
-	}
-
-	return(bytes_to_process);
-}
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
@@ -552,12 +441,27 @@ static long bytes_to_process(PROCESS_INFO_LIST finfo_list)
 
 #ifdef FF_MAIN
 #ifdef TIMER
-int newform(time_t start_time, FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin)
+int newform
+	(
+	 time_t start_time,
+	 FF_STD_ARGS_PTR std_args,
+	 DATA_BIN_PTR dbin,
+	 FF_BUFSIZE_PTR newform_log
+	)
 #else
-int newform(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin)
+int newform
+	(
+	 FF_STD_ARGS_PTR std_args,
+	 DATA_BIN_PTR dbin,
+	 FF_BUFSIZE_PTR newform_log
+	)
 #endif
 #else
-int newform(DATA_BIN_PTR dbin)
+int newform
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_BUFSIZE_PTR newform_log
+	)
 #endif
 {
 	int error = 0;
@@ -568,24 +472,24 @@ int newform(DATA_BIN_PTR dbin)
 
 	BOOLEAN done_processing = FALSE;
 
-	PROCESS_INFO_LIST finfo_list = NULL;
+	PROCESS_INFO_LIST pinfo_list = NULL;
 
 #if defined(FF_MAIN) && defined(TIMER)
-	long elapsed_time;
-	time_t finish_time;
+	long elapsed_time = 0;
+	time_t finish_time = 0;
 #endif
 
 	FF_VALIDATE(dbin);
 	
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &finfo_list);
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
 	if (error)
 		return(error);
 	
-	total_bytes = bytes_to_process(finfo_list);
+	total_bytes = db_ask(dbin, DBASK_BYTES_TO_PROCESS, pinfo_list);
 
 	while (!error && !done_processing)
 	{
-		error = db_do(dbin, DBDO_PROCESS_FORMATS, finfo_list);
+		error = db_do(dbin, DBDO_PROCESS_FORMATS, pinfo_list);
 		if (error == EOF)
 		{
 			error = 0;
@@ -593,10 +497,10 @@ int newform(DATA_BIN_PTR dbin)
 		}
 
 		if (!error)
-			error = db_do(dbin, DBDO_WRITE_FORMATS, finfo_list);
+			error = db_do(dbin, DBDO_WRITE_FORMATS, pinfo_list);
 	
 		/* Calculate percentage left to process and display */
-		bytes_remaining = bytes_to_process(finfo_list);
+		bytes_remaining = db_ask(dbin, DBASK_BYTES_TO_PROCESS, pinfo_list);
 
 		percent_done = (int)((1 - ((float)bytes_remaining / total_bytes)) * 100);
 #ifdef FF_MAIN
@@ -614,18 +518,43 @@ int newform(DATA_BIN_PTR dbin)
 #endif /* FF_MAIN */
 
 #ifdef FF_MAIN
-		if (!error)
-			error = check_standard_input(std_args, dbin, &done_processing);
+		if (!error && std_args->user.is_stdin_redirected)
+			error = db_do(dbin, DBDO_READ_STDIN, std_args, &done_processing);
+
+		if (!error && !done_processing && std_args->user.is_stdin_redirected)
+		{
+			FF_BUFSIZE_PTR bufsize = NULL;
+
+			/* Display some information about the data, ignore errors */
+			db_ask(dbin, DBASK_FORMAT_SUMMARY, &bufsize);
+			wfprintf(stderr, "%s\n", bufsize->buffer);
+			if (newform_log)
+				send_to_log(newform_log, "%s\n", bufsize->buffer);
+			ff_destroy_bufsize(bufsize);
+		}
+
 #endif
 	}
 	
 	/* End Processing */
 	
-	bytes_remaining = bytes_to_process(finfo_list);
+	bytes_remaining = db_ask(dbin, DBASK_BYTES_TO_PROCESS, pinfo_list);
 	if (bytes_remaining)
 		error = err_push(ERR_PROCESS_DATA + ERR_WARNING_ONLY, "%ld BYTES OF DATA NOT PROCESSED.", bytes_remaining);
 
-	ff_destroy_process_info_list(finfo_list);
+#if defined(TIMER) && defined(FF_MAIN)
+	if (newform_log)
+	{
+		send_to_log(newform_log, "%3d%% processed     Elapsed time - %02d:%02d:%02d\n",
+		            percent_done,
+		            (int)(elapsed_time / (3600)),
+		            (int)((elapsed_time / 60) % 60),
+		            (int)(elapsed_time % 60)
+		           );
+	}
+#endif /* TIMER && FF_MAIN */
+
+	ff_destroy_process_info_list(pinfo_list);
 
 	return(error);
 } /* newform */

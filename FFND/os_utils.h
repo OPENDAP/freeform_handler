@@ -65,7 +65,7 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr);
 
 #ifndef ROUND
 /* usage: int_var = (int_var_type)ROUND(expr); -- expr should be floating point type */
-#define ROUND(a) ((a) < 0 ? ceil((a) - 0.5) : floor((a) + 0.5))
+#define ROUND(a) ((a) < 0 ? ceil((a) - 0.5 - DOUBLE_UP) : floor((a) + 0.5 + DOUBLE_UP))
 #else
 #error "ROUND macro is already defined -- contact support"
 #endif
@@ -76,7 +76,10 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr);
 #error "TRUNC macro is already defined -- contact support"
 #endif
 
-#define ok_strlen(a) ((a)?strlen(a):0)
+#define FF_STRLEN(a) ((a)?strlen(a):0)
+#define ok_strlen(a) FF_STRLEN(a) /* phase this out */
+
+#define FF_SUBSTRCMP(a,b) (((a)&&(b))?strncmp(a,b,min(FF_STRLEN(a),FF_STRLEN(b))):1)
 
 #define OS_ESCAPER '\\'
 #define OS_INVERSE_ESCAPE 0
@@ -102,7 +105,7 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr);
 #define _BOOLEAN_DEFINED
 
 #ifndef _WINNT_ /* specific to MSVC++ 4.0 */
-typedef short int BOOLEAN; /* Boolean type */
+typedef short BOOLEAN; /* Boolean type */
 #endif
 
 #ifdef TRUE

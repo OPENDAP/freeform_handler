@@ -45,7 +45,7 @@ static int ff_string_to_binary(char *variable_str,	/* variable string address*/
 	{
 		errno = 0;
 		double_var = strtod(variable_str, &endptr);
-		if (ok_strlen(endptr) || errno == ERANGE)
+		if (FF_STRLEN(endptr) || errno == ERANGE)
 		{
 			return(err_push(ERR_CONVERT,"ASCII to binary number conversion"));
 		}
@@ -115,13 +115,13 @@ static int nt_delete_constant(NAME_TABLE_PTR table, char *name)
 	
 	/* Variable is last in the list, or isn't */
 	
+	table->data->bytes_used -= adjustment;
+	
 	if (FF_VARIABLE(dll_next(var_node)) != NULL)
 	{ /* variable is in the middle, or start -- move it on down */
 		memmove(table->data->buffer + FF_VARIABLE(var_node)->start_pos - 1,
 		 table->data->buffer + FF_VARIABLE(var_node)->end_pos,
 		 (size_t)(table->format->length - FF_VARIABLE(var_node)->end_pos));
-		
-		table->data->bytes_used -= adjustment;
 		
 		v_list = dll_next(v_list);
 		while (FF_VARIABLE(v_list))
@@ -132,10 +132,6 @@ static int nt_delete_constant(NAME_TABLE_PTR table, char *name)
 			FF_VARIABLE(v_list)->end_pos -= adjustment;
 			v_list = dll_next(v_list);
 		}
-	}
-	else
-	{ /* variable is last in the list -- do nothing special */
-		;
 	}
 		
 	table->format->length -= adjustment;
@@ -635,7 +631,15 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 
 	/* make sure that last character is newline */
 	if (strcspn(bufsize->buffer + bufsize->bytes_used - 1, UNION_EOL_CHARS))
+	{
+		if (bufsize->bytes_used + 1 == bufsize->total_bytes)
+		{
+			if (ff_resize_bufsize(bufsize->total_bytes + 1, &bufsize))
+				return(ERR_MEM_LACK);
+		}
+
 		strcpy(bufsize->buffer + bufsize->bytes_used, "\n");
+	}
 
 	/* parse the equivalence table */
 	line = bufsize->buffer;
@@ -652,20 +656,20 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 			case NEVER_IN_TABLE:
 			case NOT_IN_TABLE:
 
-				if (!strcmp(line, NTKN_INPUT_EQV))
+				if (!FF_SUBSTRCMP(line, NTKN_INPUT_EQV))
 					break;
-				else if (!strcmp(line, NTKN_OUTPUT_EQV))
+				else if (!FF_SUBSTRCMP(line, NTKN_OUTPUT_EQV))
 				{
 					(*htable)->format->type &= ~FFF_INPUT;
 					(*htable)->format->type |= FFF_OUTPUT;
 					break;
 				}
-				else if (!strcmp(line, NTKN_BEGIN_NAME_EQUIV))
+				else if (!FF_SUBSTRCMP(line, NTKN_BEGIN_NAME_EQUIV))
 				{
 					status = IN_EQUIV_TABLE;
 					break;
 				}
-				else if (!strcmp(line, NTKN_BEGIN_CONSTANT))
+				else if (!FF_SUBSTRCMP(line, NTKN_BEGIN_CONSTANT))
 				{
 					status = IN_CONSTANT_TABLE;
 					break;
@@ -675,24 +679,24 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 			case IN_EQUIV_TABLE:	/* begin the name-equiv block */
 	
 				/* At the end ? */
-				if (!strcmp(line, NTKN_END_NAME_EQUIV))
+				if (!FF_SUBSTRCMP(line, NTKN_END_NAME_EQUIV))
 				{
 					status = NOT_IN_TABLE;
 					break;
 				}
-				else if (!strcmp(line, NTKN_END_CONSTANT))
+				else if (!FF_SUBSTRCMP(line, NTKN_END_CONSTANT))
 				{
 					fd_destroy_format_data(*htable);
 					*htable = NULL;
 					return(err_push(ERR_MISPLACED_SECTION_END, "out of place \"%s\"", NTKN_END_CONSTANT));
 				}
-				else if (!strcmp(line, NTKN_BEGIN_CONSTANT))
+				else if (!FF_SUBSTRCMP(line, NTKN_BEGIN_CONSTANT))
 				{
 					fd_destroy_format_data(*htable);
 					*htable = NULL;
 					return(err_push(ERR_MISPLACED_SECTION_START, "out of place \"%s\"", NTKN_BEGIN_CONSTANT));
 				}
-				else if (!strcmp(line, NTKN_BEGIN_NAME_EQUIV))
+				else if (!FF_SUBSTRCMP(line, NTKN_BEGIN_NAME_EQUIV))
 				{
 					fd_destroy_format_data(*htable);
 					*htable = NULL;
@@ -813,24 +817,24 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 	
 			case IN_CONSTANT_TABLE:
 				
-				if (!strcmp(line, NTKN_END_CONSTANT))
+				if (!strncmp(line, NTKN_END_CONSTANT, min(strlen(line), strlen(NTKN_END_CONSTANT))))
 				{
 					status = NOT_IN_TABLE;
 					break;
 				}
-				else if (!strcmp(line, NTKN_END_NAME_EQUIV))
+				else if (!strncmp(line, NTKN_END_NAME_EQUIV, min(strlen(line), strlen(NTKN_END_NAME_EQUIV))))
 				{
 					fd_destroy_format_data(*htable);
 					*htable = NULL;
 					return(err_push(ERR_MISPLACED_SECTION_END, "out of place \"%s\"", NTKN_END_NAME_EQUIV));
 				}
-				else if (!strcmp(line, NTKN_BEGIN_NAME_EQUIV))
+				else if (!strncmp(line, NTKN_BEGIN_NAME_EQUIV, min(strlen(line), strlen(NTKN_BEGIN_NAME_EQUIV))))
 				{
 					fd_destroy_format_data(*htable);
 					*htable = NULL;
 					return(err_push(ERR_MISPLACED_SECTION_START, "out of place \"%s\"", NTKN_BEGIN_NAME_EQUIV));
 				}
-				else if (!strcmp(line, NTKN_BEGIN_CONSTANT))
+				else if (!strncmp(line, NTKN_BEGIN_CONSTANT, min(strlen(line), strlen(NTKN_BEGIN_CONSTANT))))
 				{
 					fd_destroy_format_data(*htable);
 					*htable = NULL;
@@ -1884,9 +1888,13 @@ static int nt_merge(NAME_TABLE_PTR update_table, NAME_TABLE_HANDLE htable)
 	{
 		FF_VALIDATE(FF_VARIABLE(v_list));
 
-		error = nt_add_constant(htable, FF_VARIABLE(v_list)->name,
-		FFV_DATA_TYPE(FF_VARIABLE(v_list)),
-		(void *)(update_table->data->buffer + FF_VARIABLE(v_list)->start_pos - 1));
+		error = nt_add_constant(htable,
+		                        FF_VARIABLE(v_list)->name,
+		                        FFV_DATA_TYPE(FF_VARIABLE(v_list)),
+		                        (void *)(update_table->data->buffer +
+		                                 FF_VARIABLE(v_list)->start_pos - 1
+		                                )
+		                       );
 		if (error)
 			return(error);
 
@@ -2097,7 +2105,7 @@ static int nt_show(NAME_TABLE *table, char *buffer)
 	return(0);
 } 
 
-void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type)
+static void nt_show_section(NAME_TABLE_PTR table, char *ch, FF_TYPES_t sect_type)
 /*****************************************************************************
  * NAME:  nt_show_section()
  *

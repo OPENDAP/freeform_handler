@@ -222,15 +222,13 @@ char *os_strupr( char *string)
  *		
  * PURPOSE:		to get the file length
  *
- * USAGE:		long os_filelength(handle)
+ * USAGE:		long os_filelength(filename)
  *
  * RETURNS:	-1 on error, file size otherwise
  *
- * DESCRIPTION:	If compiled with XVT libraries (as signaled by having the
- * preprocessor macro XVT defined) then call xvt_fsys_get_file_attr() to
- * determine file length, otherwise call the stat() function.
+ * DESCRIPTION:
  *
- * SYSTEM DEPENDENT FUNCTIONS: stat()
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * GLOBALS:	
  *
@@ -241,34 +239,25 @@ char *os_strupr( char *string)
  * KEYWORDS:	
  *
  */
-/*
- * HISTORY:
- *	Rich Fozzard	12/12/95		-rf01
- *		use stat to determine length, since XVT Mac can't get size
- *		of files opened read-write (known XVT bug) The trick is that we 
- *		need to use a different "stat" when using CodeWarrior.	
-*/
-
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "os_filelength" 
 
 unsigned long os_filelength(char *filename)
 {
-#if FF_CC != FF_CC_MACCW
-	struct stat buffer;
+	unsigned long filelength = (unsigned long)-1;
+	FILE *fp = fopen(filename, "r");
 
-	if (stat(filename, &buffer) == -1)
+	if (fp)
 	{
-		return((unsigned long)-1);
-	}
-	else
-		return((unsigned long)(buffer.st_size));
+		if (!fseek(fp, 0, SEEK_END))
+			filelength = (unsigned long)ftell(fp);
 
-#else
-#error "Need to write Mac file length function"
-#endif
-}/* END OS_FILELENGTH */
+		fclose(fp);
+	}
+
+	return(filelength);
+}
 
 /*
  * NAME:		os_strcmpi

@@ -84,8 +84,9 @@ static ERROR_RECORD local_errlist[] =
 	ERR_PARAM_VALUE,                "Invalid parameter value",                              /* 4006 */
 	ERR_UNKNOWN_OPTION,             "Unknown option; for usage, run again without any arguments", /* 4013 */
 	ERR_IGNORED_OPTION,             "This option not used with this application",             /* 4014 */
-	ERR_VARIABLE_DESC,              "Bad syntax for variable description line",               /* 4015 */
-	ERR_VARIABLE_SIZE,              "Incorrect binary size for variable description",         /* 4016 */
+	ERR_VARIABLE_DESC,              "Problem with variable description line",               /* 4015 */
+	ERR_VARIABLE_SIZE,              "Incorrect field size for this variable",         /* 4016 */
+	ERR_NO_EOL,                     "Expecting an End-Of-Line marker",                        /* 4017 */
 
 	/* ADTLIB errors */
 
@@ -112,7 +113,9 @@ static ERROR_RECORD local_errlist[] =
 	ERR_API,                     "Error in Application Programmer Interface, contact support",   /* 7900 */
 	ERR_SWITCH_DEFAULT,          "Unexpected default case in switch statement, contact support", /* 7901 */
 	ERR_ASSERT_FAILURE,          "Assertion Failure",                                            /* 7902 */
-	ERR_NO_NAME_TABLE,           "Equivalence section has not been defined"
+	ERR_NO_NAME_TABLE,           "Equivalence section has not been defined",
+	ERR_API_BUF_LOCKED,          "API Error -- internal buffer is already locked",
+	ERR_API_BUF_NOT_LOCKED,      "API Error -- internal buffer is not locked"
 };
 
 #undef ROUTINE_NAME
@@ -454,7 +457,11 @@ int err_pop(void)
 
 void err_clear(void)
 {
-	dll_free_holdings(error_list);
+	if (error_list)
+	{
+		dll_free_holdings(error_list);
+		error_list = NULL;
+	}
 }
 
 static void print_error
@@ -539,7 +546,7 @@ void err_disp(FF_STD_ARGS_PTR std_args)
 		else
 		{
 			error_logging = TRUE;
-			fprintf(stderr, "Error messages have been recorded in %s", std_args->error_log);
+			fprintf(stderr, "Error messages have been recorded in %s\n", std_args->error_log);
 		}
 
 		user_interactive = FALSE;

@@ -318,22 +318,34 @@ static int ff_lock__
 	 unsigned long *pcapacity
 	)
 {
-	assert(!PINFO_LOCKED(pinfo));
-	
-	if (hbuffer)
-		*hbuffer = (char HUGE *)PINFO_BUFFER(pinfo);
-	
-	if (pused && PINFO_NEW_RECORD(pinfo))
-		*pused = (unsigned long)PINFO_BYTES_USED(pinfo);
-	else if (pused)
-		*pused = 0;
-	
-	if (pcapacity)
-		*pcapacity = (unsigned long)PINFO_TOTAL_BYTES(pinfo) - 1;
+	int error = 0;
 
-	PINFO_LOCKED(pinfo) = 1;
+	if (hbuffer)
+		*hbuffer = NULL;
+
+	if (pused)
+		*pused = 0;
+
+	if (pcapacity)
+		*pcapacity = 0;
+
+	if (PINFO_LOCKED(pinfo))
+		error = ERR_API_BUF_LOCKED;
+	else
+	{
+		if (hbuffer)
+			*hbuffer = (char HUGE *)PINFO_BUFFER(pinfo);
 		
-	return(0);
+		if (pused && PINFO_NEW_RECORD(pinfo))
+			*pused = (unsigned long)PINFO_BYTES_USED(pinfo);
+		
+		if (pcapacity)
+			*pcapacity = (unsigned long)PINFO_TOTAL_BYTES(pinfo) - 1;
+
+		PINFO_LOCKED(pinfo) = 1;
+	}
+		
+	return(error);
 }
 
 static int ff_unlock__
@@ -343,28 +355,33 @@ static int ff_unlock__
 	 long size
 	)
 {
-	assert(PINFO_LOCKED(pinfo));
+	int error = 0;
 
-	if (hbuffer)
-	{
-		assert((char HUGE *)*hbuffer == (char HUGE *)PINFO_BUFFER(pinfo));
-		*hbuffer = NULL;
-	}
-   
-	PINFO_LOCKED(pinfo) = 0;
-	
-	if (size)
-	{
-		PINFO_BYTES_USED(pinfo) = (FF_BSS_t)size;
-		PINFO_NEW_RECORD(pinfo) = 1; /* buffer has been filled */
-	}
+	if (!PINFO_LOCKED(pinfo))
+		error = ERR_API_BUF_NOT_LOCKED;
 	else
 	{
-		PINFO_BYTES_USED(pinfo) = 0;
-		PINFO_NEW_RECORD(pinfo) = 0; /* buffer has been used and discarded */
+		if (hbuffer)
+		{
+			assert((char HUGE *)*hbuffer == (char HUGE *)PINFO_BUFFER(pinfo));
+			*hbuffer = NULL;
+		}
+   
+		PINFO_LOCKED(pinfo) = 0;
+		
+		if (size)
+		{
+			PINFO_BYTES_USED(pinfo) = (FF_BSS_t)size;
+			PINFO_NEW_RECORD(pinfo) = 1; /* buffer has been filled */
+		}
+		else
+		{
+			PINFO_BYTES_USED(pinfo) = 0;
+			PINFO_NEW_RECORD(pinfo) = 0; /* buffer has been used and discarded */
+		}
 	}
 		
-	return(0);
+	return(error);
 }
 
 static int ff_unlock
@@ -379,10 +396,7 @@ static int ff_unlock
 	assert(*hbuffer);
 	
 	error = ff_unlock__(pinfo, hbuffer, 0L);
-	if (error)
-		return(error);
-		
-	return(0);
+	return(error);
 }
 
 /*****************************************************************************
@@ -435,7 +449,10 @@ static int ff_lock
 		return(error);
 	
 	if (!*psize)
+	{
+		assert(0);
 		PINFO_LOCKED(pinfo) = 0;
+	}
 		
 	return(0);
 }
@@ -507,15 +524,15 @@ static int write_formats
 			if (error)
 				return(error);
 			
-			if (PINFO_LOCUS(pinfo))
+			if (PINFO_IS_FILE(pinfo) || PINFO_LOCUS_BUFSIZE(pinfo))
 			{
 				bytes_written = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
 														 NDARRS_BUFFER,
 														 buffer,
 														 bytes_to_write,
 														 PINFO_ID(pinfo),
-														 PINFO_LOCUS(pinfo),
-														 PINFO_IS_FILE(pinfo) ? PINFO_ARRAY_OFFSET(pinfo) : PINFO_BUFFER_SIZE(pinfo),
+														 PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo),
+														 PINFO_IS_FILE(pinfo) ? PINFO_ARRAY_OFFSET(pinfo) : PINFO_LOCUS_SIZE(pinfo),
 														 &PINFO_ARRAY_DONE(pinfo)
 														);
 			}
@@ -526,7 +543,9 @@ static int write_formats
 
 			/* bytes_written might be more than bytes_to_write if separation on output */
 			if ((long)bytes_written == -1 || bytes_written < bytes_to_write)
-				error = err_push(ERR_WRITE_FILE, "Writing to \"%s\" (processing \"%s\")", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
+				error = err_push(ERR_WRITE_FILE, "Writing to \"%s\" (processing \"%s\")", PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : "buffer", PINFO_NAME(pinfo));
+			else if (!PINFO_IS_FILE(pinfo) && PINFO_LOCUS_BUFSIZE(pinfo))
+				PINFO_LOCUS_FILLED(pinfo) = bytes_written;
 
 			ff_unlock(pinfo, &buffer);
 
@@ -577,7 +596,7 @@ static int write_formats
 					if (PINFO_IS_FILE(pinfo))
 						PINFO_ARRAY_OFFSET(pinfo) += PINFO_SUB_ARRAY_BYTES(pinfo);
 					else
-						assert(PINFO_IS_FILE(pinfo));
+						/*assert(PINFO_IS_FILE(pinfo))*/;
 				}
 			} /* if IS_DATA(PINFO_FORMAT(pinfo)) && PINFO_ARRAY_DONE(pinfo) && !IS_ARRAY(PINFO_FORMAT(pinfo)) */
 		}
@@ -831,7 +850,7 @@ static int read_formats
 		
 		FF_VALIDATE(pinfo);
 		
-		if (PINFO_NEW_RECORD(pinfo) || !PINFO_LOCUS(pinfo) /* kludge */)
+		if (PINFO_NEW_RECORD(pinfo) || (!PINFO_IS_FILE(pinfo)  && !PINFO_LOCUS_BUFSIZE(pinfo)))
 		{
 			pinfo_list = dll_next(pinfo_list);
 			pinfo = FF_PI(pinfo_list);
@@ -869,7 +888,7 @@ static int read_formats
 
 			bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
 			                            PINFO_ID(pinfo),
-			                            PINFO_LOCUS(pinfo),
+												 PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo), /* dangerous -- assumes PINFO_LOCUS_BUFSIZE */
 												 PINFO_IS_FILE(pinfo) ? PINFO_ARRAY_OFFSET(pinfo) : bytes_to_read,
 			                            NDARRS_BUFFER,
 			                            buffer,
@@ -918,7 +937,7 @@ static int read_formats
 
 			bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
 			                            PINFO_ID(pinfo),
-			                            PINFO_LOCUS(pinfo),
+												 PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo),
 												 PINFO_IS_FILE(pinfo) ? PINFO_ARRAY_OFFSET(pinfo) : bytes_to_read,
 			                            NDARRS_BUFFER,
 			                            buffer,
@@ -1058,7 +1077,7 @@ static int read_formats
 
 			bytes_read = ndarr_reorient(PINFO_ARRAY_MAP(pinfo),
 			                            PINFO_ID(pinfo),
-			                            PINFO_LOCUS(pinfo),
+												 PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : PINFO_LOCUS_BUFFER(pinfo),
 												 PINFO_IS_FILE(pinfo) ? PINFO_ARRAY_OFFSET(pinfo) : bytes_to_read,
 			                            NDARRS_BUFFER,
 			                            buffer,
@@ -1068,7 +1087,7 @@ static int read_formats
 			if ((long)bytes_read <= 0)
 			{
 				if (bytes_read)
-					error = err_push(ERR_READ_FILE, "Unable to read from %s", PINFO_FNAME(pinfo));
+					error = err_push(ERR_READ_FILE, "Unable to read from %s", PINFO_IS_FILE(pinfo) ? PINFO_FNAME(pinfo) : "buffer");
 				else
 					error = err_push(ERR_READ_FILE, "Unexpected end of file processing \"%s\"", PINFO_NAME(pinfo));
 
@@ -1226,8 +1245,6 @@ static int dbdo_process_formats
 	return(error);
 }
 
-#define IS_NATIVE_BYTE_ORDER(fd) (endian() == (BOOLEAN)(fd)->state.byte_order)
-
 static int dbdo_byte_swap(FORMAT_DATA_PTR format_data)
 {
 	VARIABLE_PTR var	= NULL;
@@ -1243,7 +1260,7 @@ static int dbdo_byte_swap(FORMAT_DATA_PTR format_data)
 		return(0);
 
 	/* check whether or not data is in the native format */
-	if (IS_NATIVE_BYTE_ORDER(format_data))
+	if (FD_IS_NATIVE_BYTE_ORDER(format_data))
 		return(0);
 
 	/* Byte-swap one variable at a time, down through columns */
@@ -1349,6 +1366,143 @@ static int dbdo_filter_on_query(DATA_BIN_PTR dbin)
 	return(error);
 }
 
+static int dbdo_read_stdin
+	(
+	 DATA_BIN_PTR dbin,
+	 FF_STD_ARGS_PTR std_args,
+	 BOOLEAN *done_processing
+	)
+{
+	int error = 0;
+
+	FF_VALIDATE(std_args);
+	FF_VALIDATE(dbin);
+
+	if (std_args->user.is_stdin_redirected)
+	{
+		size_t bytes_read = 0;
+		size_t bytes_to_read = 0;
+		PROCESS_INFO_LIST plist = NULL;
+
+		if (feof(stdin))
+		{
+			*done_processing = TRUE;
+			return(0);
+		}
+
+		error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
+		if (!error)
+		{
+			PROCESS_INFO_PTR pinfo = NULL;
+
+			plist = dll_first(plist);
+			pinfo = FF_PI(plist);
+			while (pinfo)
+			{
+				size_t records_to_read = 0;
+
+				records_to_read = PINFO_LOCUS_SIZE(pinfo) / PINFO_RECL(pinfo);
+				bytes_to_read = records_to_read * PINFO_RECL(pinfo);
+
+				bytes_read = fread(std_args->input_bufsize->buffer, 1, bytes_to_read, stdin); 
+				if (bytes_read != bytes_to_read)
+				{
+					if (!feof(stdin))
+						error = err_push(ERR_READ_FILE, "...from standard input");
+				}
+				else
+					*done_processing = FALSE;
+
+				std_args->input_bufsize->bytes_used = bytes_read;
+
+				if (!error)
+				{
+					size_t records_read = 0;
+
+					records_read = bytes_read / PINFO_RECL(pinfo);
+
+					if (bytes_read % PINFO_RECL(pinfo))
+						error = err_push(ERR_FILE_LENGTH, "...from standard input");
+					else
+						error = make_tabular_format_array_mappings(pinfo, records_read, 0);
+				}
+
+				if (error)
+					break;
+
+				plist = dll_next(plist);
+				pinfo = FF_PI(plist);
+			}
+
+			ff_destroy_process_info_list(plist);
+		}
+	}
+
+	return(error);
+}
+
+/* Check to see if any fseek's will be done on output.  This will happen if an array has
+   separation or has an offset other than zero.  Basically, output formats with only a
+	single array will not require any fseek's on output.
+
+   Also check for any separate headers
+*/
+
+static BOOLEAN is_separation(PROCESS_INFO_PTR pinfo)
+{
+	FF_VALIDATE(pinfo);
+
+	if (PINFO_ARRAY_MAP(pinfo)->subsep)
+		return(TRUE);
+	else
+		return(FALSE);
+}
+
+static BOOLEAN is_offset(PROCESS_INFO_PTR pinfo)
+{
+	FF_VALIDATE(pinfo);
+
+	if (PINFO_ARRAY_OFFSET(pinfo) != 0)
+		return(TRUE);
+	else
+		return(FALSE);
+}
+
+static int dbdo_check_stdout(DATA_BIN_PTR dbin)
+{
+	PROCESS_INFO_LIST finfo_list = NULL;
+	PROCESS_INFO_PTR  finfo = NULL;
+	int error = 0;
+
+	FF_VALIDATE(dbin);
+
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &finfo_list);
+	if (!error)
+	{
+		finfo_list = dll_first(finfo_list);
+		finfo      = FF_PI(finfo_list);
+		while (finfo)
+		{
+			FF_VALIDATE(finfo);
+
+			if (is_separation(finfo) || is_offset(finfo) || (IS_HEADER(PINFO_FORMAT(finfo)) && IS_SEPARATE(PINFO_FORMAT(finfo))))
+			{
+				error = err_push(ERR_GENERAL, "You must use -o with this output format: %s", PINFO_NAME(finfo));
+				break;
+			}
+
+			finfo_list = dll_next(finfo_list);
+			finfo      = FF_PI(finfo_list);
+		}
+
+		ff_destroy_process_info_list(finfo_list);
+	}
+	else
+		error = err_push(ERR_GENERAL, "Nothing to redirect as no output formats have been specified");
+
+	return(error);
+}
+
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
@@ -1443,6 +1597,21 @@ int db_do(DATA_BIN_PTR dbin, int message, ...)
 
 			error = dbdo_filter_on_query(dbin);
 			
+		break;
+
+		case DBDO_READ_STDIN:
+		{
+			FF_STD_ARGS_PTR std_args = va_arg(args, FF_STD_ARGS_PTR);
+			BOOLEAN *done_processing = va_arg(args, BOOLEAN *);
+
+			error = dbdo_read_stdin(dbin, std_args, done_processing);
+		}
+		break;
+
+		case DBDO_CHECK_STDOUT:
+
+			error = dbdo_check_stdout(dbin);
+
 		break;
 
 #ifdef DBDO_WRITE_OUTPUT_FMT_FILE

@@ -196,13 +196,15 @@ FFF_LOOKUP format_types[NUM_FORMAT_TYPES] = {
 
 typedef enum sect_types_enum
 {
- RESERVED        = 0,
- IN_SECT         = 1,
- FMT_SECT        = 2,
- INPUT_EQV_SECT  = 3,
- OUTPUT_EQV_SECT = 4,
- LAST_SECT       = 5,
- ZEROTH_SECT     = 6  /* initial state before a real section is found */
+ RESERVED              = 0,
+ IN_SECT               = 1,
+ FMT_SECT              = 2,
+ INPUT_EQV_SECT        = 3,
+ OUTPUT_EQV_SECT       = 4,
+ BEGIN_CONSTANT_SECT   = 5,
+ BEGIN_NAME_EQUIV_SECT = 6,
+ LAST_SECT             = 7,
+ ZEROTH_SECT           = 8  /* initial state before a real section is found */
 } sect_types_t;
 
 #ifdef ROUTINE_NAME
@@ -382,7 +384,7 @@ static char *find_EOL(char *s)
 {
 	size_t spn;
 	
-	if (!ok_strlen(s))
+	if (!FF_STRLEN(s))
 		return(NULL);
 
 	spn = strcspn(s, UNION_EOL_CHARS);
@@ -453,14 +455,14 @@ static sect_types_t kind_of_equiv_section(char *text_line)
 {
 	size_t text_line_len = strlen(text_line);
 
-	if (text_line_len && !strncmp(text_line, NTKN_INPUT_EQV, min(text_line_len, strlen(NTKN_INPUT_EQV))))
+	if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_INPUT_EQV))
 		return(INPUT_EQV_SECT);
-	else if (text_line_len && !strncmp(text_line, NTKN_OUTPUT_EQV, min(text_line_len, strlen(NTKN_OUTPUT_EQV))))
+	else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_OUTPUT_EQV))
 		return(OUTPUT_EQV_SECT);
-	else if (text_line_len && !strncmp(text_line, NTKN_BEGIN_CONSTANT, min(text_line_len, strlen(NTKN_BEGIN_CONSTANT))))
-		return(INPUT_EQV_SECT);
-	else if (text_line_len && !strncmp(text_line, NTKN_BEGIN_NAME_EQUIV, min(text_line_len, strlen(NTKN_BEGIN_NAME_EQUIV))))
-		return(INPUT_EQV_SECT);
+	else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_BEGIN_CONSTANT))
+		return(BEGIN_CONSTANT_SECT);
+	else if (text_line_len && !FF_SUBSTRCMP(text_line, NTKN_BEGIN_NAME_EQUIV))
+		return(BEGIN_NAME_EQUIV_SECT);
 	else
 		return(0);
 }
@@ -474,10 +476,14 @@ static BOOLEAN is_equiv_section(char *text_line, sect_types_t current_sect_type)
 		section.  This would lose the output_eqv identifying type for the equivalence
 		section.
 	*/
-	if (current_sect_type == INPUT_EQV_SECT || current_sect_type == OUTPUT_EQV_SECT)
-		return(FALSE);
-
 	sect_type = kind_of_equiv_section(text_line);
+	if ((current_sect_type == INPUT_EQV_SECT || current_sect_type == OUTPUT_EQV_SECT) &&
+		 (sect_type == BEGIN_CONSTANT_SECT || sect_type == BEGIN_NAME_EQUIV_SECT)
+	   )
+	{
+		return(FALSE);
+	}
+
 	if (sect_type)
 		return(TRUE);
 	else
@@ -644,7 +650,7 @@ static int parse_array_variable
 		error = err_push(ERR_MEM_LACK, *array_desc_str);
 
 	token = get_token(token, &save_char);
-	if (ok_strlen(token))
+	if (FF_STRLEN(token))
 	{
 		var_type = ff_lookup_number(variable_types, token);
 		if (var_type != FF_VAR_TYPE_FLAG)
@@ -789,7 +795,7 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 
 	token = text_line;
 	token = get_token(token, &save_char);
-	if (ok_strlen(token))
+	if (FF_STRLEN(token))
 	{
 		var = ff_create_variable(token);
 		if (var == NULL)
@@ -811,11 +817,11 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 	dll_assign(var, DLL_VAR, dll_last(format->variables));
 
 	token = get_token(token, &save_char);
-	if (ok_strlen(token))
+	if (FF_STRLEN(token))
 	{
 		errno = 0;
 		var->start_pos = strtol(token, &endptr, 10);
-		if (errno || ok_strlen(endptr))
+		if (errno || FF_STRLEN(endptr))
 		{
 			error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable start position: %s", token);
 			goto add_to_variable_list_exit;
@@ -828,11 +834,11 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 	}
 
 	token = get_token(token, &save_char);
-	if (ok_strlen(token))
+	if (FF_STRLEN(token))
 	{
 		errno = 0;
 		var->end_pos = strtol(token, &endptr, 10);
-		if (errno || ok_strlen(endptr))
+		if (errno || FF_STRLEN(endptr))
 		{
 			error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable end position: %s", token);
 			goto add_to_variable_list_exit;
@@ -845,7 +851,7 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 	}
 
 	token = get_token(token, &save_char);
-	if (ok_strlen(token))
+	if (FF_STRLEN(token))
 	{
 		FFV_TYPE(var) = ff_lookup_number(variable_types, token);
 		if (FFV_TYPE(var) == FF_VAR_TYPE_FLAG)
@@ -886,11 +892,11 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 	}
 
 	token = get_token(token, &save_char);
-	if (ok_strlen(token))
+	if (FF_STRLEN(token))
 	{
 		errno = 0;
 		var->precision = (short)strtol(token, &endptr, 10);
-		if (errno || ok_strlen(endptr))
+		if (errno || FF_STRLEN(endptr))
 		{
 			error = err_push(errno ? errno : ERR_PARAM_VALUE, "Bad number for variable precision: %s", token);
 			goto add_to_variable_list_exit;
@@ -941,7 +947,7 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 				*end_of_line = STR_END;
 			}
 
-			error = err_push(ERR_VARIABLE_SIZE,"Expecting ending position to be %d\n==> %s <==", var->start_pos + ffv_type_size(var->type) - 1, os_str_trim_whitespace(text_line, text_line));
+			error = err_push(ERR_VARIABLE_SIZE,"Expecting ending position for binary field %s to be %d", var->name, var->start_pos + ffv_type_size(var->type) - 1);
 
 			if (end_of_line)
 				*end_of_line = save_eol_char;
@@ -950,11 +956,24 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 		}
 	}
 
+	check_old_style_EOL_var(var);
+	
+	/* Does length of CONSTANT variable name equal length of variable? */
+	if (IS_CONSTANT_VAR(var) && !IS_EOL_VAR(var))
+	{
+		if (FF_STRLEN(var->name) > FF_VAR_LENGTH(var))
+		{
+			error = err_push(ERR_VARIABLE_SIZE, "Constant variable initializer (%s) is too long for field", var->name);
+
+			goto add_to_variable_list_exit;
+		}
+		else if (FF_STRLEN(var->name) < FF_VAR_LENGTH(var))
+			error = err_push(ERR_WARNING_ONLY + ERR_VARIABLE_SIZE, "Constant variable initializer (%s) is shorter than field", var->name);
+	}
+
 	format->num_vars++;
 	format->length = max(format->length, var->end_pos);
 
-	check_old_style_EOL_var(var);
-	
 add_to_variable_list_exit:
 
 	if (error)
@@ -971,7 +990,7 @@ add_to_variable_list_exit:
 			*cp = STR_END;
 		}
 
-		error = err_push(ERR_VARIABLE_DESC,text_line);
+		error = err_push(ERR_VARIABLE_DESC + (error > ERR_WARNING_ONLY ? ERR_WARNING_ONLY : 0),text_line);
 
 		if (cp)
 			*cp = EOL_char;
@@ -1169,7 +1188,7 @@ static int make_format
 		if (!is_comment_line(text_line) && strlen(text_line))
 		{
 			error = add_to_variable_list(text_line, *hformat);
-			if (error)
+			if (error && error < ERR_WARNING_ONLY)
 				return(error);
 		}
 					
@@ -1417,6 +1436,8 @@ int ff_text_pre_parser
 			case FMT_SECT:
 			case INPUT_EQV_SECT:
 			case OUTPUT_EQV_SECT:
+			case BEGIN_CONSTANT_SECT:
+			case BEGIN_NAME_EQUIV_SECT:
 			case LAST_SECT:
 			/*
 			case ADD_YOUR_SECTION_TYPE_HERE:
@@ -1449,6 +1470,8 @@ int ff_text_pre_parser
 									
 						case INPUT_EQV_SECT:
 						case OUTPUT_EQV_SECT:
+						case BEGIN_CONSTANT_SECT:
+						case BEGIN_NAME_EQUIV_SECT:
 							if (pp_object->ppo_type == PPO_NT_LIST &&
 							    SAME_IO_CONTEXT(current_sect_type, pp_object)
 							   )

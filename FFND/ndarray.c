@@ -70,7 +70,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create(int numdim)
 	assert(numdim);
 
 	if(!(arrd = (ARRAY_DESCRIPTOR_PTR)memMalloc(sizeof(ARRAY_DESCRIPTOR), "arrd"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		return(NULL);
 	}
 
@@ -97,61 +97,61 @@ ARRAY_DESCRIPTOR_PTR ndarr_create(int numdim)
 
 	/* Malloc all of the arrays... */
 	if(!(arrd->dim_name = (char **)memMalloc((size_t)(sizeof(char *) * numdim), "arrd->dim_name"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->start_index = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->start_index"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->end_index = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->end_index"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->granularity = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->granularity"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->grouping = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->grouping"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->separation = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->separation"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->index_dir = (char *)memMalloc((size_t)(sizeof(char) * numdim), "arrd->index_dir"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->dim_size = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->dim_size"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
 	if(!(arrd->coeffecient = (long *)memMalloc((size_t)(sizeof(long) * numdim), "arrd->coeffecient"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		memFree(arrd->dim_name, "arrd->dim_name");
 		arrd->dim_name = NULL;
 		ndarr_free_descriptor(arrd);
@@ -257,13 +257,13 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 	}
 
 	if(j != numdim){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Mismatched '[]'");
+		err_push(ERR_NDARRAY, "Mismatched '[]'");
 		return(NULL);
 	}
 
 	pos = strrchr(arraystr, ']');
 	if(!pos){
-		NDA_ERR_PUSH(ROUTINE_NAME, "No [] to hold array description");
+		err_push(ERR_NDARRAY, "No [] to hold array description");
 		return(NULL);
 	}
 	pos++;
@@ -271,7 +271,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 	/* Allocate the descriptor struct */
 	arrd = ndarr_create(numdim);
 	if(!arrd){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Unable to allocate array descriptor");
+		err_push(ERR_NDARRAY, "Unable to allocate array descriptor");
 		return(NULL);
 	}
 
@@ -279,7 +279,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 	arrd->element_size = (long)strtol(pos, &endptr, 10);
 	if (endptr && strlen(endptr)) /* disable this for now */
 	{
-		NDA_ERR_PUSH(ROUTINE_NAME, "Internal: badly formatted element size string");
+		err_push(ERR_NDARRAY, "Internal: badly formatted element size string");
 		return(NULL);
 	}
 
@@ -298,7 +298,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 		if(pos){
 			chpos = strchr(++pos, '\"');
 			if(!chpos){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Mismatched \"\"");
+				err_push(ERR_NDARRAY, "Mismatched \"\"");
 				for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
 				memFree(arrd->dim_name, "arrd->dim_name");
 				arrd->dim_name = NULL;
@@ -308,7 +308,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			chpos[0] = '\0';
 			
 			if(ndarr_set(arrd, NDARR_DIM_NUMBER, (int)i, NDARR_DIM_NAME, pos, NDARR_END_ARGS)){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Cannot set dimension name");
+				err_push(ERR_NDARRAY, "Cannot set dimension name");
 				for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
 				memFree(arrd->dim_name, "arrd->dim_name");
 				arrd->dim_name = NULL;
@@ -323,7 +323,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			chpos[0] = ' ';
 		}
 		else{
-			NDA_ERR_PUSH(ROUTINE_NAME, "Dimension not named");
+			err_push(ERR_NDARRAY, "Dimension not named");
 			for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
 			memFree(arrd->dim_name, "arrd->dim_name");
 			arrd->dim_name = NULL;
@@ -336,7 +336,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 		start = strtol(position, &endptr, 10);
 		if (endptr && strlen(endptr) && !isspace(*endptr))
 		{
-			NDA_ERR_PUSH(ROUTINE_NAME, "Badly formatted starting index");
+			err_push(ERR_NDARRAY, "Badly formatted starting index");
 			return(NULL);
 		}
 
@@ -344,7 +344,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			position[j] = (char)tolower(position[j]);
 		pos = strstr(position, "to");
 		if(!pos){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Missing \"to\" in dimension");
+			err_push(ERR_NDARRAY, "Missing \"to\" in dimension");
 			for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
 			memFree(arrd->dim_name, "arrd->dim_name");
 			arrd->dim_name = NULL;
@@ -356,7 +356,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 		end = strtol(pos, &endptr, 10);
 		if (endptr && strlen(endptr) && !isspace(*endptr))
 		{
-			NDA_ERR_PUSH(ROUTINE_NAME, "Badly formatted ending index");
+			err_push(ERR_NDARRAY, "Badly formatted ending index");
 			return(NULL);
 		}
 
@@ -368,7 +368,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			gran = strtol(pos, &endptr, 10);
 			if (endptr && strlen(endptr) && !isspace(*endptr))
 			{
-				NDA_ERR_PUSH(ROUTINE_NAME, "Badly formatted granularity (after \"by\")");
+				err_push(ERR_NDARRAY, "Badly formatted granularity (after \"by\")");
 				return(NULL);
 			}
 		}
@@ -391,7 +391,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			sep = strtol(pos, &endptr, 10);
 			if (endptr && strlen(endptr) && !isspace(*endptr))
 			{
-				NDA_ERR_PUSH(ROUTINE_NAME, "Badly formatted separation");
+				err_push(ERR_NDARRAY, "Badly formatted separation");
 				return(NULL);
 			}
 		}
@@ -414,7 +414,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 			grp = strtol(pos, &endptr, 10);
 			if (endptr && strlen(endptr) && !isspace(*endptr))
 			{
-				NDA_ERR_PUSH(ROUTINE_NAME, "Badly formatted grouping");
+				err_push(ERR_NDARRAY, "Badly formatted grouping");
 				return(NULL);
 			}
 		}
@@ -429,7 +429,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 				NDARR_DIM_GROUPING, grp, 
 				NDARR_DIM_SEPARATION, sep,
 				NDARR_END_ARGS)){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Unable to set dimension attributes");
+			err_push(ERR_NDARRAY, "Unable to set dimension attributes");
 			for(j = 0; j < i; j++) memFree(arrd->dim_name[j], "arrd->dim_name[j]");
 			memFree(arrd->dim_name, "arrd->dim_name");
 			arrd->dim_name = NULL;
@@ -439,7 +439,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(char *arraystr)
 	}
 	
 	if(ndarr_do_calculations(arrd)){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Unable to calculate array attributes");
+		err_push(ERR_NDARRAY, "Unable to calculate array attributes");
 		ndarr_free_descriptor(arrd);
 		return(NULL);
 	}
@@ -507,24 +507,24 @@ int ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd)
 	
 	for(i = 0; i < numdim; i++){
 		if(!arrd->dim_name[i]){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Dimension not named");
+			err_push(ERR_NDARRAY, "Dimension not named");
 			return(1);
 		}
 
 		if(arrd->granularity[i] < 0)
 			arrd->granularity[i] *= -1;
 		if(arrd->granularity == 0){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Cannot have granularity of 0");
+			err_push(ERR_NDARRAY, "Cannot have granularity of 0");
 			return(1);
 		}
 
 		if(arrd->separation[i] < 0){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Cannot have negative separation");
+			err_push(ERR_NDARRAY, "Cannot have negative separation");
 			return(1);
 		}
 
 		if(arrd->grouping[i] < 0){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Cannot have negative grouping");
+			err_push(ERR_NDARRAY, "Cannot have negative grouping");
 			return(1);
 		}
 
@@ -532,7 +532,7 @@ int ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd)
 			arrd->type = NDARRT_BROKEN;
 			for(j = 0; j < i; j++){
 				if(!arrd->grouping[j]){
-                   	NDA_ERR_PUSH(ROUTINE_NAME, "Grouping in dimension without lower grouping");
+                   	err_push(ERR_NDARRAY, "Grouping in dimension without lower grouping");
 					return(1);
 				}
             }
@@ -551,7 +551,7 @@ int ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd)
 		arrd->dim_size[i] = (arrd->dim_size[i] / arrd->granularity[i]) + 1;
 		
 		if(!arrd->dim_size){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Dimension without size");
+			err_push(ERR_NDARRAY, "Dimension without size");
 			return(1);
 		}
 	}
@@ -571,7 +571,7 @@ int ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd)
 	for(i = 0; i < numdim; i++)
 		if(arrd->grouping[i])
 			if(arrd->dim_size[i] % arrd->grouping[i]){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Illegal grouping- dimension size/grouping mismatch");
+				err_push(ERR_NDARRAY, "Illegal grouping- dimension size/grouping mismatch");
 				return(1);
 			}
 
@@ -668,7 +668,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 			case NDARR_DIM_NUMBER:
 				dimnum = va_arg(args, int);
 				if((dimnum < 0) || (dimnum >= arrd->num_dim)){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Illegal dimension number");
+					err_push(ERR_NDARRAY, "Illegal dimension number");
 					return(1);
 				}
 				break;
@@ -676,15 +676,15 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 			case NDARR_DIM_NAME:
 				name = va_arg(args, char *);
 				if(dimnum < 0){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Dimension number unset");
+					err_push(ERR_NDARRAY, "Dimension number unset");
 					return(1);
 				}
 				if(!name){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Illegal dimension name");
+					err_push(ERR_NDARRAY, "Illegal dimension name");
 					return(1);
 				}                                                   
 				if(!(arrd->dim_name[dimnum] = (char *)memMalloc((size_t)(strlen(name)+5), "arrd->dim_name[dimnum]"))){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+					err_push(ERR_NDARRAY, "Out of memory");
 					return(1);
 				}
 				strcpy(arrd->dim_name[dimnum], name);				
@@ -692,7 +692,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 				
 			case NDARR_DIM_START_INDEX:
 				if(dimnum < 0){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Dimension number unset");
+					err_push(ERR_NDARRAY, "Dimension number unset");
 					return(1);
 				}
 				arrd->start_index[dimnum] = va_arg(args, long);
@@ -700,7 +700,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 				
 			case NDARR_DIM_END_INDEX:
 				if(dimnum < 0){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Dimension number unset");
+					err_push(ERR_NDARRAY, "Dimension number unset");
 					return(1);
 				}
 				arrd->end_index[dimnum] = va_arg(args, long);
@@ -708,7 +708,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 				
 			case NDARR_DIM_GRANULARITY:
 				if(dimnum < 0){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Dimension number unset");
+					err_push(ERR_NDARRAY, "Dimension number unset");
 					return(1);
 				}
 				arrd->granularity[dimnum] = va_arg(args, long);
@@ -716,7 +716,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 				
 			case NDARR_DIM_GROUPING:
 				if(dimnum < 0){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Dimension number unset");
+					err_push(ERR_NDARRAY, "Dimension number unset");
 					return(1);
 				}
 				arrd->grouping[dimnum] = va_arg(args, long);
@@ -724,7 +724,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 				
 			case NDARR_DIM_SEPARATION:
 				if(dimnum < 0){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Dimension number unset");
+					err_push(ERR_NDARRAY, "Dimension number unset");
 					return(1);
 				}
 				arrd->separation[dimnum] = va_arg(args, long);
@@ -733,7 +733,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 			case NDARR_ELEMENT_SIZE:
 				arrd->element_size = va_arg(args, long);
 				if(arrd->element_size < 1){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Illegal element size");
+					err_push(ERR_NDARRAY, "Illegal element size");
 					return(1);
 				}
 				break;
@@ -744,7 +744,7 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 					case NDARR_MAP_IN_BUFFER:
 						fnarray = va_arg(args, char **);
 						if(ndarr_create_brkn_desc(arrd, NDARR_MAP_IN_BUFFER, (void *)fnarray)){
-							NDA_ERR_PUSH(ROUTINE_NAME, "Unable to create mapping from buffer");
+							err_push(ERR_NDARRAY, "Unable to create mapping from buffer");
 							return(1);
 						}
 						break;
@@ -752,13 +752,13 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 					case NDARR_MAP_IN_FILE:
 						name = va_arg(args, char *);
 						if(ndarr_create_brkn_desc(arrd, NDARR_MAP_IN_FILE, (void *)name)){
-							NDA_ERR_PUSH(ROUTINE_NAME, "Unable to create mapping from file");
+							err_push(ERR_NDARRAY, "Unable to create mapping from file");
 							return(1);
 						}
 						break;
 						
 					default:
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unknown argument to NDARR_FILE_GROUPING");
+						err_push(ERR_NDARRAY, "Unknown argument to NDARR_FILE_GROUPING");
 						return(1);
 				}
 				break;
@@ -766,12 +766,12 @@ int ndarr_set(ARRAY_DESCRIPTOR_PTR arrd, ...)
 			case NDARR_BUFFER_GROUPING:
 				bfarray = va_arg(args, void **);
 				if(ndarr_create_brkn_desc(arrd, NDARR_BUFFER_GROUPING, (void *)bfarray)){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Unable to create mapping from buffer");
+					err_push(ERR_NDARRAY, "Unable to create mapping from buffer");
 					return(1);
 				}
 				
 			default:
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unknown argument");
+				err_push(ERR_NDARRAY, "Unknown argument");
 				return(1);
 		}
 	}	
@@ -885,11 +885,11 @@ ARRAY_INDEX_PTR ndarr_create_indices(ARRAY_DESCRIPTOR_PTR arrdesc)
 	assert(arrdesc);
 
 	if(!(aindex = (ARRAY_INDEX_PTR)memMalloc(sizeof(ARRAY_INDEX), "aindex"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		return(NULL);
 	}
 	if(!(aindex->index = (long *)memMalloc((size_t)(sizeof(long) * arrdesc->num_dim), "aindex->index"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		return(NULL);
 	}
 	aindex->descriptor = arrdesc;
@@ -1100,7 +1100,7 @@ ARRAY_INDEX_PTR ndarr_copy_indices(ARRAY_INDEX_PTR source, ARRAY_INDEX_PTR dest)
 	if(!dest){
 		dest = ndarr_create_indices(source->descriptor);
 		if(!dest){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Unable to create copy of indices");
+			err_push(ERR_NDARRAY, "Unable to create copy of indices");
 			return(NULL);
 		}
 	}
@@ -1150,13 +1150,13 @@ ARRAY_INDEX_PTR ndarr_convert_indices(ARRAY_INDEX_PTR aindex, unsigned char dire
 						aindex->descriptor->start_index[i] *
 						aindex->descriptor->index_dir[i];
 				if(aindex->index[i] % aindex->descriptor->granularity[i]){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Illegal indices- granularity mismatch");
+					err_push(ERR_NDARRAY, "Illegal indices- granularity mismatch");
 					return(NULL);
 				}
 				aindex->index[i] /= aindex->descriptor->granularity[i];
 				if((aindex->index[i] < 0) ||
 						(aindex->index[i] >= aindex->descriptor->dim_size[i])){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Indices out of bounds");
+					err_push(ERR_NDARRAY, "Indices out of bounds");
 					return(NULL);
 				}
 			}
@@ -1169,7 +1169,7 @@ ARRAY_INDEX_PTR ndarr_convert_indices(ARRAY_INDEX_PTR aindex, unsigned char dire
 						aindex->descriptor->start_index[i];
 			break;
 		default:
-			NDA_ERR_PUSH(ROUTINE_NAME, "Unknown conversion type");
+			err_push(ERR_NDARRAY, "Unknown conversion type");
 			return(NULL);
 	}
 
@@ -1209,17 +1209,17 @@ ARRAY_MAPPING_PTR ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray, ARRAY_DESC
 	assert(subarray && superarray);
 
 	if(subarray->num_dim != superarray->num_dim){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Mapping onto array of different dimension");
+		err_push(ERR_NDARRAY, "Mapping onto array of different dimension");
 		return(NULL);
 	}
 
 	if(subarray->element_size != superarray->element_size){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Mapping onto array of differing element size");
+		err_push(ERR_NDARRAY, "Mapping onto array of differing element size");
 		return(NULL);
 	}
 
 	if(!(amap = (ARRAY_MAPPING_PTR)memMalloc(sizeof(ARRAY_MAPPING), "amap"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		return(NULL);
 	}
 
@@ -1237,48 +1237,48 @@ ARRAY_MAPPING_PTR ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray, ARRAY_DESC
 
 	amap->aindex = ndarr_create_indices(superarray);
 	if(!amap->aindex){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Error creating extra indices");
+		err_push(ERR_NDARRAY, "Error creating extra indices");
 		ndarr_free_mapping(amap);
 	}
 
 	amap->subaindex = ndarr_create_indices(subarray);
 	if(!amap->subaindex){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Error creating extra indices");
+		err_push(ERR_NDARRAY, "Error creating extra indices");
 		ndarr_free_mapping(amap);
 	}
 
 	if(!(amap->dim_mapping = (int *)memMalloc((size_t)(sizeof(int) * subarray->num_dim), "amap->dim_mapping"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_mapping(amap);
 		return(NULL);
 	}
 
 	if(!(amap->index_mapping = (long *)memMalloc((size_t)(sizeof(long) * subarray->num_dim), "amap->index_mapping"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_mapping(amap);
 		return(NULL);
 	}
 
 	if(!(amap->gran_mapping = (long *)memMalloc((size_t)(sizeof(long) * subarray->num_dim), "amap->gran_mapping"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_mapping(amap);
 		return(NULL);
 	}
 
 	if(!(amap->gran_div_mapping = (long *)memMalloc((size_t)(sizeof(long) * subarray->num_dim), "amap->gran_div_mapping"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_mapping(amap);
 		return(NULL);
 	}
 
 	if(!(amap->cacheing = (long *)memMalloc((size_t)(sizeof(long) * subarray->num_dim), "amap->cacheing"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_mapping(amap);
 		return(NULL);
 	}
 
 	if(!(amap->index_dir = (char *)memMalloc((size_t)(sizeof(char) * subarray->num_dim), "amap->index_dir"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_mapping(amap);
 		return(NULL);
 	}
@@ -1289,7 +1289,7 @@ ARRAY_MAPPING_PTR ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray, ARRAY_DESC
 			if(!strcmp(subarray->dim_name[i], superarray->dim_name[j]))
 				break;
 		if(j == subarray->num_dim){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Matching dimension label not found");
+			err_push(ERR_NDARRAY, "Matching dimension label not found");
 			ndarr_free_mapping(amap);
 			return(NULL);
 		}
@@ -1309,7 +1309,7 @@ ARRAY_MAPPING_PTR ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray, ARRAY_DESC
 				(subarray->end_index[i] > superarray->end_index[j])) ||
 				((subarray->end_index[i] < superarray->start_index[j]) &&
 				(subarray->end_index[i] < superarray->end_index[j]))){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Subarray indices out of bounds");
+			err_push(ERR_NDARRAY, "Subarray indices out of bounds");
 			ndarr_free_mapping(amap);
 			return(NULL);
 		}
@@ -1323,7 +1323,7 @@ ARRAY_MAPPING_PTR ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray, ARRAY_DESC
         
         if(subarray->granularity[i] > superarray->granularity[j]){
 			if(subarray->granularity[i] % superarray->granularity[j]){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Granularity mismatch");
+				err_push(ERR_NDARRAY, "Granularity mismatch");
 				ndarr_free_mapping(amap);
 				return(NULL);
 			}
@@ -1334,7 +1334,7 @@ ARRAY_MAPPING_PTR ndarr_create_mapping(ARRAY_DESCRIPTOR_PTR subarray, ARRAY_DESC
 		}
 		else if(subarray->granularity[i] < superarray->granularity[j]){
 			if(superarray->granularity[j] % subarray->granularity[i]){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Granularity mismatch");
+				err_push(ERR_NDARRAY, "Granularity mismatch");
 				ndarr_free_mapping(amap);
 				return(NULL);
 			}
@@ -1723,14 +1723,14 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				/* Set up the GROUPMAP_FILE */
 				if(ndarr_create_brkn_desc(super_array, NDARR_MAP_IN_FILE, (void *)infilename)){
 					/* Error occured */
-					NDA_ERR_PUSH(ROUTINE_NAME, "Error attempting to create groupmap array");
+					err_push(ERR_NDARRAY, "Error attempting to create groupmap array");
 					return(-1);
 				}
 			}
 			else{
 				ingroupmap = (ARRAY_DESCRIPTOR_PTR)super_array->extra_info;
 				if(ingroupmap->type != NDARRT_GROUPMAP_FILE){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Unknown external descriptive array");
+					err_push(ERR_NDARRAY, "Unknown external descriptive array");
 					return(-1);
 				}
 			}
@@ -1738,7 +1738,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 		}
 		else{ /* The input array is contiguous */
 			if(!(infile = fopen(infilename, "rb"))){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open input file");
+				err_push(ERR_NDARRAY, "Unable to open input file");
 				return(-1);
 			}
 		}
@@ -1749,21 +1749,21 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				/* See if the GROUPMAP_BUFF array has been set up. */
 				if(super_array->extra_info == NULL){
 					if(ndarr_create_brkn_desc(sub_array, NDARR_BUFFER_GROUPING, (void *)dest)){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to create buffer groupmap");
+						err_push(ERR_NDARRAY, "Unable to create buffer groupmap");
 						return(-1);
 					}
 				}
 				else{
 					ingroupmap = (ARRAY_DESCRIPTOR_PTR)super_array->extra_info;
 					if(ingroupmap->type != NDARRT_GROUPMAP_BUFF){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unknown external descriptive array");
+						err_push(ERR_NDARRAY, "Unknown external descriptive array");
 						return(-1);
 					}
 				}
 			}
 		}
 		else{ /* Not a buffer or a file- where do we get it? */
-			NDA_ERR_PUSH(ROUTINE_NAME, "Unknown source type");
+			err_push(ERR_NDARRAY, "Unknown source type");
 			return(-1);
 		}
 	}
@@ -1782,14 +1782,14 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
     	}
     	if(destid & NDARRS_UPDATE){
     		if(fmode){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Multiple file open modes defined");
+    			err_push(ERR_NDARRAY, "Multiple file open modes defined");
 				return(-1);
 			}
     		fmode = "r+b";
     	}
     	if(destid & NDARRS_CREATE){
 			if(fmode){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Multiple file open modes defined");
+    			err_push(ERR_NDARRAY, "Multiple file open modes defined");
     			return(-1);
     		}
 			if(amap->fcreated)
@@ -1807,14 +1807,14 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				/* Set up the GROUPMAP_FILE */
 				if(ndarr_create_brkn_desc(sub_array, NDARR_MAP_IN_FILE, (void *)outfilename)){
 					/* Error occured */
-					NDA_ERR_PUSH(ROUTINE_NAME, "Error attempting to create groupmap array");
+					err_push(ERR_NDARRAY, "Error attempting to create groupmap array");
 					return(-1);
 				}
 			}
 			else{
 				outgroupmap = (ARRAY_DESCRIPTOR_PTR)sub_array->extra_info;
 				if(outgroupmap->type != NDARRT_GROUPMAP_FILE){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Unknown external descriptive array");
+					err_push(ERR_NDARRAY, "Unknown external descriptive array");
 					return(-1);
 				}
 			}
@@ -1822,7 +1822,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 		}
 		else{ /* The output file is contiguous */
     		if(!(outfile = fopen(outfilename, fmode))){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open output file");
+				err_push(ERR_NDARRAY, "Unable to open output file");
     			return(-1);
 			}
     	}
@@ -1841,7 +1841,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
     			outfilename = (char *)ndarr_get_next_group(sub_array, NDARR_GINITIAL);
     			do{
 					if(!(outfile = fopen(outfilename, fmode))){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open output file");
+						err_push(ERR_NDARRAY, "Unable to open output file");
 						return(-1);
 					}
 					/* Put out header if needed */
@@ -1863,21 +1863,21 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				/* See if the GROUPMAP_BUFF array has been set up. */
 				if(sub_array->extra_info == NULL){
 					if(ndarr_create_brkn_desc(sub_array, NDARR_BUFFER_GROUPING, (void *)dest)){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to create buffer groupmap");
+						err_push(ERR_NDARRAY, "Unable to create buffer groupmap");
 						return(-1);
 					}
 				}
 				else{
 					outgroupmap = (ARRAY_DESCRIPTOR_PTR)sub_array->extra_info;
 					if(outgroupmap->type != NDARRT_GROUPMAP_BUFF){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unknown external descriptive array");
+						err_push(ERR_NDARRAY, "Unknown external descriptive array");
 						return(-1);
 					}
 				}
 			}
 		}
 		else{ /* Not a buffer or a file- where do we put it? */
-			NDA_ERR_PUSH(ROUTINE_NAME, "Unknown destination type");
+			err_push(ERR_NDARRAY, "Unknown destination type");
 			return(-1);
 		}
 	}
@@ -1896,7 +1896,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 		*********************************************/
 
 		if(!(buffer = (char *)memMalloc((size_t)(amap->increment_block + 50), "buffer"))){
-			NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+			err_push(ERR_NDARRAY, "Out of memory");
 			if(infile)
 				fclose(infile);
 			if(outfile)
@@ -1922,8 +1922,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					infilename = newinfn;
 
 					if(!(infile = fopen(infilename, "rb"))){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open input file");
-						NDA_ERR_PUSH(ROUTINE_NAME, infilename);
+						err_push(ERR_NDARRAY, "Unable to open input file");
+						err_push(ERR_NDARRAY, infilename);
 						memFree(buffer, "buffer");
 						if(outfile)
 							fclose(outfile);
@@ -1933,8 +1933,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			}
 
 			if(fseek(infile, (long)offset, SEEK_SET)){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek in input file (file too small?)");
-				NDA_ERR_PUSH(ROUTINE_NAME, infilename);
+				err_push(ERR_NDARRAY, "Unable to seek in input file (file too small?)");
+				err_push(ERR_NDARRAY, infilename);
 				if(infile)
 					fclose(infile);
 				if(outfile)
@@ -1960,8 +1960,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				if(infile)
 					fclose(infile);
 
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to read from input file (file too small?)");
-				NDA_ERR_PUSH(ROUTINE_NAME, infilename);
+				err_push(ERR_NDARRAY, "Unable to read from input file (file too small?)");
+				err_push(ERR_NDARRAY, infilename);
 
 				return(-1);
 			}
@@ -1974,8 +1974,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 
 					outfilename = newoutfn;
 					if(!(outfile = fopen(outfilename, fmode))){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open output file");
-						NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+						err_push(ERR_NDARRAY, "Unable to open output file");
+						err_push(ERR_NDARRAY, outfilename);
 						fclose(infile);
 						memFree(buffer, "buffer");
 						return(-1);
@@ -1986,8 +1986,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
 						if(outoffset)
 							if(fseek(outfile, outoffset, SEEK_SET)){
-								NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-								NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+								err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+								err_push(ERR_NDARRAY, outfilename);
 								fclose(infile);
 								fclose(outfile);
 								memFree(buffer, "buffer");
@@ -1998,8 +1998,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			}
 			
 			if(!(fwrite(buffer, (size_t)amap->increment_block, 1, outfile))){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to write to output file");
-				NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+				err_push(ERR_NDARRAY, "Unable to write to output file");
+				err_push(ERR_NDARRAY, outfilename);
 				fclose(infile);
 				fclose(outfile);
 				memFree(buffer, "buffer");
@@ -2015,8 +2015,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						putc(paddingch, outfile);
 				else
 					if(fseek(outfile, outoffset, SEEK_CUR)){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-						NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+						err_push(ERR_NDARRAY, outfilename);
 						fclose(infile);
 						fclose(outfile);
 						memFree(buffer, "buffer");
@@ -2077,7 +2077,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					if(i == sub_array->num_dim - 1)
 						amap->increment_block = sub_array->element_size; 
 				}
-				NDA_ERR_PUSH(ROUTINE_NAME, "Buffer too small");
+				err_push(ERR_NDARRAY, "Buffer too small");
     			if(infile)
     				fclose(infile);
     			return(-1);
@@ -2086,7 +2086,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
     	
     	if(sub_array->type == NDARRT_BROKEN){
     		if(sub_array->group_size > dest_size){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Broken buffers too small for groups");
+    			err_push(ERR_NDARRAY, "Broken buffers too small for groups");
 				if(infile)
     				fclose(infile);
     			return(-1);
@@ -2108,16 +2108,16 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					infilename = newinfn;
 
 					if(!(infile = fopen(infilename, "rb"))){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open input file");
-						NDA_ERR_PUSH(ROUTINE_NAME, infilename);
+						err_push(ERR_NDARRAY, "Unable to open input file");
+						err_push(ERR_NDARRAY, infilename);
 						return(-1);
 					}
 				}
 			}
 
 			if(fseek(infile, (long)offset, SEEK_SET)){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek in input file (file too small?)");
-				NDA_ERR_PUSH(ROUTINE_NAME, infilename);
+				err_push(ERR_NDARRAY, "Unable to seek in input file (file too small?)");
+				err_push(ERR_NDARRAY, infilename);
 				fclose(infile);
 				return(-1);
 			}
@@ -2144,8 +2144,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				if(infile)
 					fclose(infile);
 
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to read from input file (file too small?)");
-				NDA_ERR_PUSH(ROUTINE_NAME, infilename);
+				err_push(ERR_NDARRAY, "Unable to read from input file (file too small?)");
+				err_push(ERR_NDARRAY, infilename);
 
 				return(-1);
 			}
@@ -2185,7 +2185,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 		/* Make sure that all the restrictions for this case have been met */
     	if(super_array->type == NDARRT_BROKEN){
     		if(super_array->group_size > (long)source_size){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Broken buffers too small for groups");
+    			err_push(ERR_NDARRAY, "Broken buffers too small for groups");
 				if(outfile)
     				fclose(outfile);
     			return(-1);
@@ -2193,7 +2193,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
     	}
     	else{
     		if((amap->necessary) && ((long)source_size < super_array->total_size)){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Input buffer must contain the entire array");
+    			err_push(ERR_API, "Input buffer (%lu bytes) must contain the entire array (%lu bytes)", (unsigned long)source_size, (unsigned long)super_array->total_size);
 				if(outfile)
     				fclose(outfile);
     			return(-1);
@@ -2220,8 +2220,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
 				if(outoffset)
 					if(fseek(outfile, outoffset, SEEK_SET)){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-						NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+						err_push(ERR_NDARRAY, outfilename);
 						fclose(outfile);
 						memFree(buffer, "buffer");
 						return(-1);							
@@ -2254,8 +2254,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 	
 						outfilename = newoutfn;
 						if(!(outfile = fopen(outfilename, fmode))){
-							NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open output file");
-							NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+							err_push(ERR_NDARRAY, "Unable to open output file");
+							err_push(ERR_NDARRAY, outfilename);
 							memFree(buffer, "buffer");
 							return(-1);
 						}
@@ -2265,8 +2265,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 							outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
 							if(outoffset)
 								if(fseek(outfile, outoffset, SEEK_SET)){
-									NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-									NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+									err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+									err_push(ERR_NDARRAY, outfilename);
 									fclose(outfile);
 									memFree(buffer, "buffer");
 									return(-1);							
@@ -2276,8 +2276,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				}
 				
 				if(!(fwrite(bufferpos, (size_t)sub_array->element_size, 1, outfile))){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Unable to write to output file");
-					NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+					err_push(ERR_NDARRAY, "Unable to write to output file");
+					err_push(ERR_NDARRAY, outfilename);
 					fclose(outfile);
 					memFree(buffer, "buffer");
 					return(-1);
@@ -2295,8 +2295,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 							putc(paddingch, outfile);
 					else
 						if(fseek(outfile, outoffset, SEEK_CUR)){
-							NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-							NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+							err_push(ERR_NDARRAY, outfilename);
 							fclose(outfile);
 							memFree(buffer, "buffer");
 							return(-1);
@@ -2340,8 +2340,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 
 					outfilename = newoutfn;
 					if(!(outfile = fopen(outfilename, fmode))){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to open output file");
-						NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+						err_push(ERR_NDARRAY, "Unable to open output file");
+						err_push(ERR_NDARRAY, outfilename);
 						memFree(buffer, "buffer");
 						return(-1);
 					}
@@ -2351,8 +2351,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						outoffset = ndarr_get_offset(amap->subaindex) + dest_size;
 						if(outoffset)
 							if(fseek(outfile, outoffset, SEEK_SET)){
-								NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-								NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+								err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+								err_push(ERR_NDARRAY, outfilename);
 								fclose(outfile);
 								memFree(buffer, "buffer");
 								return(-1);							
@@ -2362,8 +2362,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 			}
 			
 			if(!(fwrite(bufferpos, (size_t)amap->increment_block, 1, outfile))){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Unable to write to output file");
-				NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+				err_push(ERR_NDARRAY, "Unable to write to output file");
+				err_push(ERR_NDARRAY, outfilename);
 				fclose(outfile);
 				memFree(buffer, "buffer");
 				return(-1);
@@ -2381,8 +2381,8 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 						putc(paddingch, outfile);
 				else
 					if(fseek(outfile, outoffset, SEEK_CUR)){
-						NDA_ERR_PUSH(ROUTINE_NAME, "Unable to seek past separation in output file");
-						NDA_ERR_PUSH(ROUTINE_NAME, outfilename);
+						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
+						err_push(ERR_NDARRAY, outfilename);
 						fclose(outfile);
 						memFree(buffer, "buffer");
 						return(-1);
@@ -2408,13 +2408,13 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 		/* Make sure that all the restrictions for this case have been met */
     	if(super_array->type == NDARRT_BROKEN){
     		if(super_array->group_size > (long)source_size){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Broken buffers too small for groups");
+    			err_push(ERR_NDARRAY, "Broken buffers too small for groups");
     			return(-1);
     		}
     	}
     	else{
     		if((long)source_size < super_array->total_size){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Input buffer must contain the entire array");
+    			err_push(ERR_API, "Input buffer (%lu bytes) must contain the entire array (%lu bytes)", (unsigned long)source_size, (unsigned long)super_array->total_size);
     			return(-1);
     		}
     		inbuffer = (char *)source;
@@ -2422,13 +2422,13 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 
     	if(sub_array->type == NDARRT_BROKEN){
     		if(sub_array->group_size > (long)dest_size){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Broken buffers too small for groups");
+    			err_push(ERR_API, "Broken buffers too small for groups");
     			return(-1);
     		}
     	}
     	else{
     		if((long)dest_size < sub_array->total_size){
-    			NDA_ERR_PUSH(ROUTINE_NAME, "Output buffer must contain the entire array");
+    			err_push(ERR_API, "Output buffer (%lu bytes) must contain the entire array (%lu bytes)", (unsigned long)dest_size, (unsigned long)sub_array->total_size);
     			return(-1);
     		}
     		buffer = (char *)dest;
@@ -2542,7 +2542,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
     		break;
 
 	if(!(descstr = (char *)memMalloc((size_t)(gdim * 30 + 5), "descstr"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		return(1);
 	}
 
@@ -2558,13 +2558,13 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 	groupmap = ndarr_create_from_str(descstr);
 	memFree(descstr, "descstr");
 	if(!groupmap){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Creating grouping map");
+		err_push(ERR_NDARRAY, "Creating grouping map");
 		return(1);
 	}
 
 	/* Allocate the array */
 	if(!(filearray = (char **)memMalloc((size_t)groupmap->contig_size, "filearray"))){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+		err_push(ERR_NDARRAY, "Out of memory");
 		ndarr_free_descriptor(groupmap);
 		return(1);
 	}
@@ -2598,7 +2598,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 		
 				/* Store the filename away in the array */
 				if(!(filearray[i] = (char *)memMalloc((size_t)(strlen(position) + 3), "filearray[i]"))){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+					err_push(ERR_NDARRAY, "Out of memory");
 					ndarr_free_descriptor(groupmap);
 					for(i--; i >=0; i--)
 						memFree(filearray[i], "filearray[i]");
@@ -2619,7 +2619,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 			
 			/* Open the file */
 			if(!(infile = fopen(filename, "r"))){
-				NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+				err_push(ERR_NDARRAY, "Out of memory");
 				ndarr_free_descriptor(groupmap);
 				memFree(filearray, "filearray");
 				return(1);
@@ -2628,7 +2628,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 			/* Read in the filenames from the file */
 			for(i = 0; i < groupmap->total_elements; i++){
 				if(!(fgets(scratch, 300, infile))){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Unexpected End Of File- Groupmap file");
+					err_push(ERR_NDARRAY, "Unexpected End Of File- Groupmap file");
 					ndarr_free_descriptor(groupmap);
 					for(i--; i >=0; i--)
 						memFree(filearray[i], "filearray[i]");
@@ -2653,7 +2653,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 		
 				/* Store the filename away in the array */
 				if(!(filearray[i] = (char *)memMalloc((size_t)(strlen(position) + 3), "filearray[i]"))){
-					NDA_ERR_PUSH(ROUTINE_NAME, "Out of memory");
+					err_push(ERR_NDARRAY, "Out of memory");
 					ndarr_free_descriptor(groupmap);
 					for(i--; i >=0; i--)
 						memFree(filearray[i], "filearray[i]");
@@ -2666,7 +2666,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 			fclose(infile);
 			break;
 		default:
-			NDA_ERR_PUSH(ROUTINE_NAME, "Unknown mapping type");
+			err_push(ERR_NDARRAY, "Unknown mapping type");
 			ndarr_free_descriptor(groupmap);
 			return(1);
 	}
@@ -2675,7 +2675,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 
 	groupmap->extra_index = (void *)ndarr_create_indices(groupmap);
 	if(!groupmap->extra_index){
-		NDA_ERR_PUSH(ROUTINE_NAME, "Error creating indices");
+		err_push(ERR_NDARRAY, "Error creating indices");
 		ndarr_free_descriptor(groupmap);
 		return(1);
 	}

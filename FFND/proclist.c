@@ -32,7 +32,7 @@ const char *fft_cnv_flags[FFNT_ENOTE + 1] =
 "%lu", /* uint32 */
 "?",   /* int64 */
 "?",   /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%d",  /* int32 */
 "%u",  /* uint32 */
 "%ld", /* int64 */
@@ -54,7 +54,7 @@ const char *fft_cnv_flags_width[FFNT_ENOTE + 1] =
 "%*lu", /* uint32 */
 "?",    /* int64 */
 "?",    /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%*d",  /* int32 */
 "%*u",  /* uint32 */
 "%*ld", /* int64 */
@@ -76,7 +76,7 @@ const char *fft_cnv_flags_prec[FFNT_ENOTE + 1] =
 "%.*lu", /* uint32 */
 "?",     /* int64 */
 "?",     /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%.*d",  /* int32 */
 "%.*u",  /* uint32 */
 "%.*ld", /* int64 */
@@ -98,7 +98,7 @@ const char *fft_cnv_flags_width_prec[FFNT_ENOTE + 1] =
 "%*.*lu", /* uint32 */
 "?",      /* int64 */
 "?",      /* uint64 */
-#elif LONGS_ARE_64
+#elif defined(LONGS_ARE_64)
 "%*.*d",  /* int32 */
 "%*.*u",  /* uint32 */
 "%*.*ld", /* int64 */
@@ -615,6 +615,7 @@ int ff_binary_to_string(void *binary_data, FF_TYPES_t data_type, char *text_stri
 static int ff_put_binary_data
 	(
 	 void *in_data_ptr,
+	 size_t in_var_length,
 	 FF_TYPES_t in_data_type,
 	 size_t out_var_length,
 	 void *out_data_ptr,
@@ -637,10 +638,10 @@ static int ff_put_binary_data
 		if (!IS_TEXT_TYPE(out_data_type))
 			return(err_push(ERR_CONVERT, "converting between text and numeric types"));
 		
-		os_str_trim_whitespace((char *)in_data_ptr, (char *)in_data_ptr);
+		bytes_to_copy = min(in_var_length, out_var_length);
 
-		bytes_to_copy = min(strlen((char *)in_data_ptr), out_var_length);
-		byte_offset = out_var_length - bytes_to_copy;
+		byte_offset = out_var_length > in_var_length ? out_var_length - in_var_length : 0;
+
 		if (bytes_to_copy > 0)
 			memcpy((char *)out_data_ptr + byte_offset, (char *)in_data_ptr, bytes_to_copy);
 
@@ -1122,6 +1123,7 @@ int ff_process_format_data_mapping
 			} /* (else) if is text variable */
 
 			error = ff_put_binary_data(o_work_space,
+			                           IS_CONVERT_VAR(mid_var) ? FF_VAR_LENGTH(out_var) : FF_VAR_LENGTH(mid_var),
 				                        FFV_DATA_TYPE(mid_var),
 				                        FF_VAR_LENGTH(out_var),
 				                        output_ptr + out_var->start_pos - 1,
@@ -1200,8 +1202,8 @@ int ff_process_format_data_mapping
 
 int btype_to_btype(void *src_value, FF_TYPES_t src_type, void *dest_value, FF_TYPES_t dest_type)
 {
-	big_var_type   big_var;
-	align_var_type align_var;
+	big_var_type   big_var = 0;
+	align_var_type align_var = 0;
 
 	int error = 0;
 	
@@ -1746,28 +1748,13 @@ int initialize_middle_data
 	{
 		if (IS_CONSTANT_VAR(out_var))
 		{
-			if (IS_EOL_VAR(out_var))
-			{
-				assert(FF_VAR_LENGTH(out_var) <= middle->data->total_bytes -
-				                    out_var->start_pos +
-				                    1
-				      );
-				memcpy(middle->data->buffer + out_var->start_pos - 1,
-				       out_var->name,
-				       FF_VAR_LENGTH(out_var)
-				      );
-			}
-			else
-			{
-				assert(out_var->end_pos -
-				       out_var->start_pos + 1 <= middle->data->total_bytes -
-				                                 out_var->start_pos
-				      );
-				memcpy(middle->data->buffer + out_var->start_pos - 1,
-					     out_var->name,
-					     (size_t)(FF_VAR_LENGTH(out_var))
-					    );
-			}
+			char *targ = middle->data->buffer;
+			size_t bytes_to_copy = min(strlen(out_var->name), (size_t)FF_VAR_LENGTH(out_var));
+
+			targ += (out_var->start_pos - 1);
+			targ += FF_VAR_LENGTH(out_var) - bytes_to_copy;
+
+			memcpy(targ, out_var->name, bytes_to_copy);
 		}
 
 		out_v_list = dll_next(out_v_list);

@@ -885,7 +885,7 @@ static int set_var_info
 			start_pos = name_dist;
 		else if (item_name_pos)
 		{
-			start_pos = ok_strlen(item_name) + (item_name_pos - 1);
+			start_pos = FF_STRLEN(item_name) + (item_name_pos - 1);
 			if (name_terminator_str[0] != STR_END)
 			{
 				text_delim_offset(header + start_pos, name_terminator_str, &offset);
@@ -1411,9 +1411,9 @@ static int find_files
 	char *filenames[MAX_CAN_FIND] = {NULL, NULL, NULL, NULL, NULL, NULL};
 
 	assert(file_base);
-	assert(ok_strlen(file_base));
+	assert(FF_STRLEN(file_base));
 	
-	if (file_base == NULL || ok_strlen(file_base) == 0)
+	if (file_base == NULL || FF_STRLEN(file_base) == 0)
 		return(0);
 
 	/* overuse variable fileext to check out ext, which may be a filename.ext */
@@ -1423,7 +1423,7 @@ static int find_files
 
 	fileext = os_path_return_ext(file_base);
 	os_path_get_parts(file_base, home_dir, filename, NULL);
-	if (ok_strlen(filename) == 0)
+	if (FF_STRLEN(filename) == 0)
 		return(0);
 	
 	/* If first_dir is relative, check for filename.ext in directory given by
@@ -1533,7 +1533,7 @@ static int find_dir_format_files
 	char filename[_MAX_PATH];
 
 	os_path_get_parts(input_file, NULL, filename, NULL);
-	if (ok_strlen(filename) == 0)
+	if (FF_STRLEN(filename) == 0)
 		return(0);
 
 	/* Search search_dir for datafile.fmt */
@@ -1651,7 +1651,7 @@ static int find_format_files
 		num_found = find_dir_format_files(input_file, NULL, format_files);
 		
 	/* Search data file's directory last */
-	if (ok_strlen(home_dir) && num_found == 0)
+	if (FF_STRLEN(home_dir) && num_found == 0)
 		num_found = find_dir_format_files(input_file, home_dir, format_files);
 
 	if (num_found >= 1)
@@ -2162,7 +2162,7 @@ static void destroy_format_list(FORMAT_LIST f_list)
 static int dbset_cache_size
 	(
 	 DATA_BIN_PTR dbin,
-	 unsigned long cache_size
+	 unsigned long orig_cache_size
 	)
 {
 	PROCESS_INFO_LIST pinfo_list = NULL;
@@ -2171,7 +2171,7 @@ static int dbset_cache_size
 	int error = 0;
 
 	FF_VALIDATE(dbin);
-	assert(cache_size > 0);
+	assert(orig_cache_size > 0);
 
 	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &pinfo_list);
 	if (!error)
@@ -2182,14 +2182,15 @@ static int dbset_cache_size
 		pinfo      = FF_PI(pinfo_list);
 		while (pinfo)
 		{
+			unsigned long cache_size = 0;
 			unsigned long max_record_length = 0;
 
 			max_record_length = max(FORMAT_LENGTH(PINFO_FORMAT(pinfo)),
-				                     FORMAT_LENGTH(PINFO_MATE_FORMAT(pinfo))
+				                     (PINFO_MATE(pinfo) ? FORMAT_LENGTH(PINFO_MATE_FORMAT(pinfo)) : 0)
 				                    );
-			cache_size = max(cache_size, max_record_length);
+			cache_size = max(orig_cache_size, max_record_length);
 
-			if (PINFO_BYTES_LEFT(pinfo))
+			if (PINFO_MATE(pinfo) && PINFO_BYTES_LEFT(pinfo))
 			{
 				unsigned long out_fsize; /* guess output file size */
 
@@ -2344,11 +2345,11 @@ static int dbset_header_file_names
 			number = find_files(header_file_name, header_file_ext, header_file_path, &found_files);
 			if (number)
 			{
-				if (PINFO_FNAME(pinfo))
-					memFree(PINFO_LOCUS(pinfo), "PINFO_LOCUS(pinfo)");
+				if (PINFO_IS_FILE(pinfo))
+					memFree(PINFO_FNAME(pinfo), "PINFO_FNAME(pinfo)");
 
-				PINFO_LOCUS(pinfo) = (char *)memStrdup(found_files[0], "PINFO_LOCUS(pinfo)");
-				if (!PINFO_LOCUS(pinfo))
+				PINFO_FNAME(pinfo) = (char *)memStrdup(found_files[0], "PINFO_FNAME(pinfo)");
+				if (!PINFO_FNAME(pinfo))
 					error = err_push( ERR_MEM_LACK, NULL);
 
 				while (number > 0)
@@ -2369,11 +2370,11 @@ static int dbset_header_file_names
 							  header_file_ext
 							 );
 				
-			if (PINFO_FNAME(pinfo))
-				memFree(PINFO_LOCUS(pinfo), "PINFO_LOCUS(pinfo)");
+			if (PINFO_IS_FILE(pinfo) && PINFO_FNAME(pinfo))
+				memFree(PINFO_FNAME(pinfo), "PINFO_FNAME(pinfo)");
 
-			PINFO_LOCUS(pinfo) = (char *)memStrdup(header_file_name, "header_file_name");
-			if (!PINFO_LOCUS(pinfo))
+			PINFO_FNAME(pinfo) = (char *)memStrdup(header_file_name, "header_file_name");
+			if (!PINFO_FNAME(pinfo))
 				error = err_push(ERR_MEM_LACK, "");
 
 			PINFO_ID(pinfo) = NDARRS_FILE | NDARRS_UPDATE;
@@ -2973,17 +2974,12 @@ static int dbset_read_eqv
 
 			error = nt_parse(file_name, bufsize, &table);
 			ff_destroy_bufsize(bufsize);
-			if (error)
-				return(error);
-			else
-			{
+			if (!error)
 				error = nt_merge_name_table(&dbin->table_list, table);
-				if (error)
-					return(error);
-			}
 
 			while (number)
 				memFree(found_files[--number], "found_files[]");
+
 			memFree(found_files, "found_files");
 		} /* if os_file_exist(file_name) */
 	} /* if number */
@@ -3114,7 +3110,10 @@ static int dbset_byte_order
 			else if (!os_strcmpi(data_byte_order, "big_endian"))
 				PINFO_BYTE_ORDER(pinfo) = 1;
 			else
-				return(err_push(ERR_PARAM_VALUE, data_byte_order));
+			{
+				error = err_push(ERR_PARAM_VALUE, data_byte_order);
+				break;
+			}
 
 			pinfo_list = dll_next(pinfo_list);
 			pinfo = FF_PI(pinfo_list);
@@ -3710,7 +3709,7 @@ static int change_input_img_format
 	char data_rep[MAX_PV_LENGTH] = {""};
 	short bytes_per_pixel;
 	VARIABLE_PTR var = NULL;
-	FF_TYPES_t data_type;
+	FF_TYPES_t new_data_type;
 
 	FF_VALIDATE(dbin);
 
@@ -3719,8 +3718,8 @@ static int change_input_img_format
 		error = 0;
 	else if (!error)
 	{
-		data_type = ff_lookup_number(variable_types, data_rep);
-		if (data_type == FF_VAR_TYPE_FLAG)
+		new_data_type = ff_lookup_number(variable_types, data_rep);
+		if (new_data_type == FF_VAR_TYPE_FLAG)
 		{
 			error = err_push(ERR_UNKNOWN_VAR_TYPE, "Defined for data_representation (\"%s\")", data_rep);
 		}
@@ -3728,7 +3727,7 @@ static int change_input_img_format
 		{
 			/* change bytes_per_pixel due to the change of data_type */
 			if (IS_BINARY(input))
-				bytes_per_pixel = (short)ffv_type_size(data_type);
+				bytes_per_pixel = (short)ffv_type_size(new_data_type);
 			else
 				error = nt_ask(dbin, NT_ANYWHERE, "bytes_per_pixel", FFV_SHORT, &bytes_per_pixel);
 			
@@ -3739,7 +3738,20 @@ static int change_input_img_format
 				{
 					short diff = 0;
 
-					error = dynamic_update_var(var, data_type, bytes_per_pixel, &diff);
+					/* Does var have a precision of zero and are we changing the data type
+						from an integer to a float or a double?  If so, change the precision to
+						a magic number like five or nine.
+					*/
+							
+					if (var->precision == 0 && IS_INTEGER(var) && IS_REAL_TYPE(new_data_type))
+					{
+						if (IS_FLOAT32_TYPE(new_data_type))
+							var->precision = 5;
+						else
+							var->precision = 9;
+					}
+					
+					error = dynamic_update_var(var, new_data_type, bytes_per_pixel, &diff);
 					if (!error)
 						error = dynamic_update_format(var, input, diff);
 				}
@@ -3882,23 +3894,29 @@ static int dbset_user_update_formats
 	FF_VALIDATE(dbin);
 
 	input_fd = fd_get_data(dbin, FFF_INPUT);
- 	FF_VALIDATE(input_fd);
-
-	error = check_vars_types_for_keywords(dbin, input_fd->format);
-	if (error)
-		return(error);
-
-	if (ask_change_input_img_format(dbin))
+	if (input_fd)
 	{
-		error = change_input_img_format(dbin, input_fd->format);
+ 		FF_VALIDATE(input_fd);
+
+		error = check_vars_types_for_keywords(dbin, input_fd->format);
 		if (error)
 			return(error);
+
+		if (ask_change_input_img_format(dbin))
+		{
+			error = change_input_img_format(dbin, input_fd->format);
+			if (error)
+				return(error);
+		}
 	}
 
 	output_fd = fd_get_data(dbin, FFF_OUTPUT);
-	FF_VALIDATE(output_fd);
+	if (output_fd)
+	{
+		FF_VALIDATE(output_fd);
 
-	error = check_vars_types_for_keywords(dbin, output_fd->format);
+		error = check_vars_types_for_keywords(dbin, output_fd->format);
+	}
 
 	return(error);
 }
@@ -4236,9 +4254,13 @@ static void set_array_offsets
 
 	if (array_conduit->input->connect.id & NDARRS_FILE)
 		array_conduit->input->connect.file_info.array_offset = input_var->start_pos - 1;
+	else
+		array_conduit->input->connect.file_info.array_offset = 0;
 
 	if (array_conduit->output->connect.id & NDARRS_FILE)
 		array_conduit->output->connect.file_info.array_offset = output_var->start_pos - 1;
+	else
+		array_conduit->output->connect.file_info.array_offset = 0;
 
 	input_var->end_pos = FF_VAR_LENGTH(input_var);
 	input_var->start_pos = 1;
@@ -4259,15 +4281,19 @@ static void set_record_array_offsets
 {
 	FF_VALIDATE(in_var);
 	
-	assert(array_conduit->input->connect.id & NDARRS_FILE);
-	array_conduit->input->connect.file_info.array_offset = in_var->start_pos - 1;
+	if (array_conduit->input->connect.id & NDARRS_FILE)
+		array_conduit->input->connect.file_info.array_offset = in_var->start_pos - 1;
+	else
+		array_conduit->input->connect.file_info.array_offset = 0;
 
 	if (out_var)
 	{
 		FF_VALIDATE(out_var);
 
-		assert(array_conduit->output->connect.id & NDARRS_FILE);
-		array_conduit->output->connect.file_info.array_offset = out_var->start_pos - 1;
+		if (array_conduit->output->connect.id & NDARRS_FILE)
+			array_conduit->output->connect.file_info.array_offset = out_var->start_pos - 1;
+		else
+			array_conduit->output->connect.file_info.array_offset = 0;
 	}
 }
 
@@ -4303,18 +4329,24 @@ static int create_array_pole
 	 char *name,
 	 FORMAT_DATA_PTR format_data,
 	 NDARR_SOURCE id,
-	 void *locus,
+	 char *filename,
+	 FF_BUFSIZE_PTR bufsize,
 	 FF_ARRAY_DIPOLE_HANDLE pole_h
 	)
 {
 	int error = 0;
 
-	assert(pole_h);
-
 	FF_VALIDATE(format_data);
 	FF_VALIDATE(format_data->format);
 	FF_VALIDATE(format_data->data);
+
+	assert(id & (NDARRS_BUFFER | NDARRS_FILE));
 	
+	if (bufsize)
+		FF_VALIDATE(bufsize);
+	
+	assert(pole_h);
+
 	*pole_h = (FF_ARRAY_DIPOLE_PTR)memMalloc(sizeof(FF_ARRAY_DIPOLE), "*pole_h");
 	if (*pole_h)
 	{
@@ -4339,28 +4371,26 @@ static int create_array_pole
 		(*pole_h)->connect.id = id;
 		
 		(*pole_h)->connect.file_info.array_offset = 0;
-		(*pole_h)->connect.buffer_info.size = 0;
 
-		if ((id & NDARRS_FILE) && locus)
+		(*pole_h)->connect.locus.filename = NULL;
+		(*pole_h)->connect.locus.bufsize = NULL;
+
+		if ((id & NDARRS_FILE) && filename)
 		{
 			(*pole_h)->connect.id |= NDARRS_UPDATE;
 
-			(*pole_h)->connect.locus = memStrdup(locus, "locus");
-			if (!(*pole_h)->connect.locus)
+			(*pole_h)->connect.locus.filename = memStrdup(filename, "filename");
+			if (!(*pole_h)->connect.locus.filename)
 			{
 				memFree(*pole_h, "*pole_h");
 				*pole_h = NULL;
 				return(err_push(ERR_MEM_LACK, NULL));
 			}
 		}
-		else if ((id & NDARRS_BUFFER) && locus)
-		{
-			(*pole_h)->connect.locus = locus;
-		}
-		else if (!locus)
-			(*pole_h)->connect.locus = NULL;
-		else
-			assert(id & (NDARRS_BUFFER | NDARRS_FILE));
+		else if ((id & NDARRS_BUFFER) && bufsize)
+			(*pole_h)->connect.locus.bufsize = bufsize;
+		else if (!(id & (NDARRS_BUFFER | NDARRS_FILE)))
+			return(err_push(ERR_API, "Calling create_array_pole with with incorrect ID"));
 
 		(*pole_h)->connect.array_done = 0;
 		(*pole_h)->connect.bytes_left = 0;
@@ -4498,9 +4528,8 @@ static int make_tabular_array_conduit
 	                             (NDARR_SOURCE)(std_args->input_file ?
 	                             NDARRS_FILE:
 	                             NDARRS_BUFFER),
-	                             std_args->input_file ?
-	                             std_args->input_file :
-	                             std_args->input_buffer,
+	                             std_args->input_file,
+	                             std_args->input_bufsize,
 	                             &input_pole
 	                            );
 	if (error)
@@ -4515,9 +4544,8 @@ static int make_tabular_array_conduit
 		                             (NDARR_SOURCE)(std_args->output_file ?
 		                             NDARRS_FILE :
 		                             NDARRS_BUFFER),
-		                             std_args->output_file ?
-		                             std_args->output_file :
-		                             std_args->output_buffer,
+		                             std_args->output_file,
+		                             std_args->output_bufsize,
 		                             &output_pole
 		                            );
 		if (error)
@@ -4549,9 +4577,13 @@ make_tabular_array_conduit_exit:
 		{
 			if (input_pole)
 				ff_destroy_array_pole(input_pole);
+			else if (input)
+				fd_destroy_format_data(input);
 
 			if (output_pole)
 				ff_destroy_array_pole(output_pole);
+			else if (output)
+				fd_destroy_format_data(output);
 		}
 	}
 	
@@ -5202,7 +5234,7 @@ static int read_EOL_from_file
 			if (!error)
 			{
 				if (!strlen(EOL_string))
-					error = err_push(ERR_GENERAL, "Cannot determine EOL type for %s", PINFO_FNAME(pinfo));
+					error = err_push(ERR_NO_EOL, "At position %lu in %s (\"%s\")", (unsigned long)file_offset + 1, os_path_return_name(PINFO_FNAME(pinfo)), PINFO_NAME(pinfo));
 			}
 		}
 	}
@@ -5235,9 +5267,9 @@ static int read_EOL_string
 	{
 		error = read_EOL_from_file(pinfo, EOL_string);
 	}
-	else if (PINFO_LOCUS(pinfo))
+	else if (PINFO_LOCUS_BUFSIZE(pinfo))
 	{
-		error = get_buffer_eol_str(PINFO_LOCUS(pinfo), EOL_string);
+		error = get_buffer_eol_str(PINFO_LOCUS_BUFFER(pinfo), EOL_string);
 		if (!strlen(EOL_string))
 			error = err_push(ERR_MAKE_FORM, "Cannot determine type of newline for \"%s\"", PINFO_NAME(pinfo));
 	}
@@ -5987,12 +6019,12 @@ static int update_following_offsets_or_size
 			
 		PROCESS_INFO_PTR pinfo = NULL;
 
-		input_file_name = PINFO_LOCUS(updater);
+		input_file_name = PINFO_FNAME(updater);
 		input_file_length = length_in_file(updater);
 
 		if (PINFO_MATE(updater))
 		{
-			output_file_name = PINFO_MATE_LOCUS(updater);
+			output_file_name = PINFO_MATE_FNAME(updater);
 			output_file_length = length_in_file(PINFO_MATE(updater));
 		}
 
@@ -6002,7 +6034,7 @@ static int update_following_offsets_or_size
 		{
 			if (PINFO_IS_FILE(pinfo) && input_file_name)
 			{
-				if (!strcmp(input_file_name, PINFO_LOCUS(pinfo)))
+				if (!strcmp(input_file_name, PINFO_FNAME(pinfo)))
 					PINFO_ARRAY_OFFSET(pinfo) += input_file_length;
 			}
 			else
@@ -6014,7 +6046,7 @@ static int update_following_offsets_or_size
 			{
 				if (PINFO_MATE_IS_FILE(pinfo) && output_file_name)
 				{
-					if (!strcmp(output_file_name, PINFO_MATE_LOCUS(pinfo)))
+					if (!strcmp(output_file_name, PINFO_MATE_FNAME(pinfo)))
 						PINFO_MATE_ARRAY_OFFSET(pinfo) += output_file_length;
 				}
 				else
@@ -6054,7 +6086,7 @@ static int dbset_init_conduits
 
 	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
 	if (error)
-		return(error);
+		return(err_push(ERR_GENERAL, "Nothing to process"));
 
 	pinfo_list = dll_first(pinfo_list);
 	pinfo = FF_PI(pinfo_list);
@@ -6110,7 +6142,7 @@ static int dbset_format_mappings
 		input_finfo = FF_PI(pinfo_list);
 		while (input_finfo)
 		{
-			if (PINFO_IS_FILE(input_finfo) || PINFO_LOCUS(input_finfo))
+			if (PINFO_IS_FILE(input_finfo) || PINFO_LOCUS_BUFSIZE(input_finfo))
 			{
 				PROCESS_INFO_PTR finfo = NULL;
 
@@ -6217,6 +6249,103 @@ static int dbset_equation_variables(DATA_BIN_PTR dbin)
 
 		ff_destroy_process_info_list(process_info_list);
 	} /* if !error */
+
+	return(0);
+}
+
+static int dbset_setup_stdin(DATA_BIN_PTR dbin, FF_STD_ARGS_PTR std_args)
+{
+	int error = 0;
+	PROCESS_INFO_LIST plist = NULL;
+	PROCESS_INFO_PTR pinfo = NULL;
+
+	FF_VALIDATE(dbin);
+	FF_VALIDATE(std_args);
+
+	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
+	if (!error)
+	{
+		size_t bytes_to_read = 0;
+		size_t bytes_to_alloc = 0;
+
+		plist = dll_first(plist);
+		pinfo = FF_PI(plist);
+		while (pinfo)
+		{
+			if (IS_HEADER(PINFO_FORMAT(pinfo)) || IS_ARRAY(PINFO_FORMAT(pinfo)))
+				error = err_push(ERR_GENERAL, "\"%s\": Ineligible format when redirecting standard input", PINFO_NAME(pinfo));
+
+			bytes_to_read += PINFO_RECL(pinfo);
+
+			plist = dll_next(plist);
+			pinfo = FF_PI(plist);
+		}
+
+		if (!error)
+		{
+			if (std_args->cache_size)
+				bytes_to_alloc = max(bytes_to_read, std_args->cache_size);
+			else
+				bytes_to_alloc = max(bytes_to_read, DEFAULT_CACHE_SIZE);
+
+			std_args->input_bufsize = ff_create_bufsize(bytes_to_alloc);
+			if (!std_args->input_bufsize)
+				error = err_push(ERR_MEM_LACK, "");
+		}
+
+		ff_destroy_process_info_list(plist);
+
+		if (!error)
+		{
+			size_t bytes_read = 0;
+
+			ff_destroy_array_conduit_list(dbin->array_conduit_list);
+			dbin->array_conduit_list = NULL;
+
+#if FF_OS == FF_OS_DOS || FF_OS == FF_OS_MACOS
+			setmode(fileno(stdin), O_BINARY);
+#endif
+			bytes_read = fread(std_args->input_bufsize->buffer, 1, bytes_to_read, stdin); 
+			if (bytes_read != bytes_to_read)
+				error = err_push(ERR_READ_FILE, "Only read %lu of %lu bytes from standard input", (unsigned long)bytes_read, (unsigned long)bytes_to_read);
+			else
+			{
+				std_args->input_bufsize->bytes_used = bytes_read;
+
+				/* Was an output file created by the previous db_init? */
+				if (std_args->output_file && os_file_exist(std_args->output_file))
+					remove(std_args->output_file);
+
+				error = db_init(std_args, &dbin, NULL);
+				if (!error || error > ERR_WARNING_ONLY)
+				{
+					error = db_set(dbin, DBSET_CACHE_SIZE, (unsigned long)bytes_to_alloc);
+					if (!error)
+					{
+						error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
+						if (!error)
+						{
+							plist = dll_first(plist);
+							pinfo = FF_PI(plist);
+							while (pinfo)
+							{
+								size_t records_in_buffer = 0;
+
+								records_in_buffer = PINFO_CACHEL(pinfo) / PINFO_RECL(pinfo);
+
+								PINFO_LOCUS_FILLED(pinfo) = records_in_buffer * PINFO_RECL(pinfo);
+
+								plist = dll_next(plist);
+								pinfo = FF_PI(plist);
+							} /* while pinfo */
+
+							ff_destroy_process_info_list(plist);
+						} /* if !error (db_ask) */
+					} /* if !error (db_set) */
+				} /* if !error (db_init) */
+			} /* else (if bytes_read != bytes_to_read) */
+		} /* if not error (malloc) */
+	} /* if !error (db_ask) */
 
 	return(error);
 }
@@ -6369,6 +6498,15 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 		case DBSET_EQUATION_VARIABLES:
 		{
 			error = dbset_equation_variables(dbin);
+		}
+
+		break;
+
+		case DBSET_SETUP_STDIN:
+		{
+			FF_STD_ARGS_PTR std_args = va_arg(args, FF_STD_ARGS_PTR);
+
+			error = dbset_setup_stdin(dbin, std_args);
 		}
 
 		break;

@@ -250,7 +250,17 @@ static int option_E_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 					if (!argv[*i])
 						error = err_push(ERR_PARAM_VALUE, "Need a name for error log file (following %s)", argv[*i - 1]);
 					else
+					{
+						FILE *fp = NULL;
+
 						std_args->error_log = argv[*i];
+
+						fp = fopen(std_args->error_log, "w");
+						if (fp)
+							fclose(fp);
+						else
+							error = err_push(ERR_CREATE_FILE, std_args->error_log);
+					}
 				break;
 							
 				default:
@@ -511,6 +521,38 @@ static int option_O__(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 			} /* switch on third letter of -O flag */
 		break;
 
+		case 'L':
+			switch (toupper(argv[*i][3])) /* -ol? */
+			{
+				case STR_END : /* log file */
+					(*i)++;
+					/* Check File */
+
+					if (!argv[*i])
+						error = err_push(ERR_PARAM_VALUE, "Need a name for log file (following %s)", argv[*i - 1]);
+					else
+					{
+						FILE *fp;
+
+						std_args->log_file = argv[*i];
+						fp = fopen(std_args->log_file, "w");
+						if (fp)
+						{
+							fclose(fp);
+							remove(std_args->log_file);
+						}
+						else
+							error = err_push(ERR_CREATE_FILE, std_args->log_file);
+					}
+				break;
+									
+				default :
+					error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+				break;
+			}
+
+		break;
+
 		default :
 			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
 		break;
@@ -714,6 +756,8 @@ void show_command_line(int argc, char *argv[])
  * -b   local_buffer_size
  * -c   count
  * -d   data_file_name
+ * -ep  passive error messages
+ * -el  error logging file
  * -if  input_format_file
  * -ift input_format_title
  * -f   format_file
@@ -724,6 +768,7 @@ void show_command_line(int argc, char *argv[])
  * -o   output_data_file
  * -of  output_format_file
  * -oft output_format_title
+ * -ol  log file
  * -p   precision (checkvar only)
  * -q   query_file
  * -v   variable file
@@ -867,6 +912,12 @@ int parse_command_line(int argc, char *argv[], FF_STD_ARGS_PTR std_args)
 	if (last_error)
 		show_command_line(argc, argv);
 
+	/* Has user requested a log file but not an error log?  Why make errors interactive
+	   when they are logging?  So send errors and log to the same file
+	*/
+	if (!std_args->error_log && std_args->log_file)
+		std_args->error_log = std_args->log_file;
+
 	return(last_error);
 }
 
@@ -909,18 +960,14 @@ static int check_file_write_access(DATA_BIN_PTR dbin)
 		pinfo = FF_PI(plist);
 		while (pinfo)
 		{
-			char *file_name = NULL;
-
-			file_name = PINFO_FNAME(pinfo);
-
-			if (file_name)
+			if (PINFO_IS_FILE(pinfo))
 			{
-				if (os_file_exist(file_name))
+				if (os_file_exist(PINFO_FNAME(pinfo)))
 				{
 					if (overwrite_okay)
-						error = err_push(ERR_WARNING_ONLY + ERR_WILL_OVERWRITE_FILE, "%s: \"%s\"", file_name, PINFO_NAME(pinfo));
+						error = err_push(ERR_WARNING_ONLY + ERR_WILL_OVERWRITE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
 					else
-						error = err_push(ERR_FILE_EXISTS, file_name);
+						error = err_push(ERR_FILE_EXISTS, PINFO_FNAME(pinfo));
 				}
 			}
 
@@ -932,21 +979,17 @@ static int check_file_write_access(DATA_BIN_PTR dbin)
 		pinfo = FF_PI(plist);
 		while (pinfo)
 		{
-			char *file_name = NULL;
-
-			file_name = PINFO_FNAME(pinfo);
-
-			if (file_name)
+			if (PINFO_IS_FILE(pinfo))
 			{
 				FILE *fp = NULL;
 
-				if (overwrite_okay || !os_file_exist(file_name))
+				if (overwrite_okay || !os_file_exist(PINFO_FNAME(pinfo)))
 				{
-					fp = fopen(file_name, "w"); /* Can we write to file? */
+					fp = fopen(PINFO_FNAME(pinfo), "w"); /* Can we write to file? */
 					if (!fp)
 					{
 						/* need to clean-up turds */
-						error = err_push(ERR_CREATE_FILE, "%s: \"%s\"", file_name, PINFO_NAME(pinfo));
+						error = err_push(ERR_CREATE_FILE, "%s: \"%s\"", PINFO_FNAME(pinfo), PINFO_NAME(pinfo));
 					}
 					else
 						fclose(fp);
@@ -960,7 +1003,7 @@ static int check_file_write_access(DATA_BIN_PTR dbin)
 		ff_destroy_process_info_list(plist);
 	}
 
-	return(error);
+	return(0);
 }
 
 static void destroy_format_data_list(FORMAT_DATA_LIST format_data_list)
@@ -1336,21 +1379,24 @@ int db_init
 		if (!error_cb || error_cb(DBSET_INPUT_FORMATS))
 			return(DBSET_INPUT_FORMATS);
 	}
-	
-	if (db_set(*dbin_h,
-	           DBSET_OUTPUT_FORMATS,
-	           std_args->input_file,
-	           std_args->output_file,
-	           std_args->output_format_file,
-	           std_args->output_format_buffer,
-	           std_args->output_format_title,
-	           &format_data_list
-	          )
-	   )
+
+	if (!error_cb || (*error_cb)(DBSET_OUTPUT_FORMATS))
 	{
-		err_push(ERR_SET_DBIN, "setting an output format for %s", std_args->input_file);
-		if (!error_cb || error_cb(DBSET_OUTPUT_FORMATS))
-			return(DBSET_OUTPUT_FORMATS);
+		if (db_set(*dbin_h,
+					  DBSET_OUTPUT_FORMATS,
+					  std_args->input_file,
+					  std_args->output_file,
+					  std_args->output_format_file,
+					  std_args->output_format_buffer,
+					  std_args->output_format_title,
+					  &format_data_list
+					 )
+			)
+		{
+			err_push(ERR_SET_DBIN, "setting an output format for %s", std_args->input_file);
+			if (!error_cb || error_cb(DBSET_OUTPUT_FORMATS))
+				return(DBSET_OUTPUT_FORMATS);
+		}
 	}
 
 	if (db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list))

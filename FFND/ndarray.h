@@ -148,12 +148,8 @@ int                  ndarr_do_calculations(ARRAY_DESCRIPTOR_PTR arrd);
 #define NDARRS_PADDING (NDARR_SOURCE)0x00FF
 
 /* If we are under freeform, use freeform's err functions */
-#ifdef FREEFORM
-#define NDA_ERR_PUSH(rtn, mesg) err_push(ERR_NDARRAY, "%s", mesg);
-#else
-/********* We are under FreeForm *********/
-/********* Not under FreeForm *********/
-#define NDA_ERR_PUSH(rtn, mesg) {printf("ERROR in %s: %s\n", rtn, mesg);assert(0);}
+#ifndef FREEFORM
+#error Expecting ndarray.c to be used only by FreeForm
 #endif
 
 
