@@ -38,6 +38,20 @@
  * 
  * set_format_mappings
  *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
  */
 
 #include <freeform.h>
@@ -331,6 +345,65 @@ static int option_F_(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
 			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
 		break;
 	} /* switch on second letter of -f flag */
+	
+	return(error);
+}
+
+static int option_G(char *argv[], FF_STD_ARGS_PTR std_args, int *i)
+{
+	int error = 0;
+
+	switch (toupper(argv[*i][2])) /* -g? */
+	{
+		case STR_END :
+			(*i)++;
+
+			if (!argv[*i])
+				error = err_push(ERR_PARAM_VALUE, "Need a value for grid size(s) (following %s)", argv[*i - 1]);
+			else
+			{
+				char *endptr = NULL;
+
+				errno = 0;
+				std_args->SDE_grid_size = strtod(argv[*i], &endptr);
+				if (errno == ERANGE)
+					error = err_push(errno, argv[*i]);
+			
+				if (ok_strlen(endptr))
+					error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+
+				if (argv[*i + 1] && argv[*i + 1][0] != '-')
+				{
+					++(*i);
+
+					errno = 0;
+					std_args->SDE_grid_size2 = strtod(argv[*i], &endptr);
+					if (errno == ERANGE)
+						error = err_push(errno, argv[*i]);
+				
+					if (ok_strlen(endptr))
+						error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+				}
+
+				if (argv[*i + 1] && argv[*i + 1][0] != '-')
+				{
+					++(*i);
+
+					errno = 0;
+					std_args->SDE_grid_size3 = strtod(argv[*i], &endptr);
+					if (errno == ERANGE)
+						error = err_push(errno, argv[*i]);
+				
+					if (ok_strlen(endptr))
+						error = err_push(ERR_PARAM_VALUE, "Numeric conversion of \"%s\" stopped at \"%s\"", argv[*i], endptr);
+				}
+			}
+		break;
+
+		default:
+			error = err_push(ERR_UNKNOWN_OPTION, "==> %s <==", argv[*i]);
+		break;
+	}
 	
 	return(error);
 }
@@ -907,6 +980,10 @@ int parse_command_line(int argc, char *argv[], FF_STD_ARGS_PTR std_args)
 				
 					case 'F' : /* single format file/title */
 						error = option_F_(argv, std_args, &i);
+					break;
+					
+					case 'G' : /* SDE grid sizes */
+						error = option_G(argv, std_args, &i);
 					break;
 					
 					case 'I' : /* input format file/title */

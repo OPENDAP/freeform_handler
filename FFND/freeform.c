@@ -61,7 +61,22 @@
  * resize_for_EOL
  * set_array_mappings
  * update_sizes
-*/
+ *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
+ */
 
 #define WANT_NCSA_TYPES
 #include <freeform.h>
@@ -127,6 +142,10 @@ static void init_std_args(FF_STD_ARGS_PTR std_args)
 
 	std_args->error_log = NULL;
 	std_args->error_prompt = TRUE;
+
+	std_args->SDE_grid_size = 0;
+	std_args->SDE_grid_size2 = 0;
+	std_args->SDE_grid_size3 = 0;
 
 	std_args->cv_list_file_dir = NULL;
 	std_args->cv_precision = 0;
@@ -194,7 +213,7 @@ FF_STD_ARGS_PTR ff_create_std_args(void)
 {	
 	FF_STD_ARGS_PTR std_args = NULL;
 	
-	std_args = (FF_STD_ARGS_PTR)memMalloc(sizeof(FF_STD_ARGS), "std_args");
+	std_args = (FF_STD_ARGS_PTR)memCalloc(sizeof(FF_STD_ARGS), 1, "std_args");
 	if (std_args)
 	{
 		init_std_args(std_args);
@@ -392,7 +411,7 @@ FORMAT_PTR ff_create_format
 
 		if (name)
 		{
-			format->name = memStrdup(name, "name");
+			format->name = memStrdup(name ? name : "No name given", "name");
 			if (!format->name)
 			{
 				memFree(format, "format");

@@ -6,7 +6,20 @@
  *
  * Private functions:
  *
- *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
  */
 
  
@@ -577,7 +590,7 @@ static int parse_line_into_tokens_by_case
 	
 	assert(ch_ptr);
 	
-	while (isspace(*ch_ptr))
+	while (isspace((int)*ch_ptr))
 		++ch_ptr;
 	
 	if (*ch_ptr == COMMENT_INDICATOR)
@@ -588,7 +601,7 @@ static int parse_line_into_tokens_by_case
 		case IN_CONSTANT_TABLE:
 			while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
 			{
-				if (isspace(*ch_ptr))
+				if (isspace((int)*ch_ptr))
 					++ch_ptr;
 				else
 				{
@@ -597,7 +610,7 @@ static int parse_line_into_tokens_by_case
 
 					if (num_tokens + 1 < NUM_CONSTANT_TOKENS)
 					{
-						while (!isspace(*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+						while (!isspace((int)*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
 							++ch_ptr;
 					}
 					else if (num_tokens + 1 == NUM_CONSTANT_TOKENS)
@@ -622,14 +635,14 @@ static int parse_line_into_tokens_by_case
 		case IN_EQUIV_TABLE:
 			while (*ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
 			{
-				if (isspace(*ch_ptr))
+				if (isspace((int)*ch_ptr))
 					++ch_ptr;
 				else
 				{
 					if (!count_tokens_only)
 						tokens[num_tokens] = ch_ptr;
 
-					while (!isspace(*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
+					while (!isspace((int)*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))
 						++ch_ptr;
 
 					if (!count_tokens_only && strcspn(ch_ptr, UNION_EOL_CHARS))
@@ -663,7 +676,7 @@ static void reconstitute_line
 			line[strlen(line)] = ' ';
 
 			cp = line + strlen(line) + 1;
-			while (isspace(*cp))
+			while (isspace((int)*cp))
 				++cp;
 
 			os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
@@ -677,13 +690,13 @@ static void reconstitute_line
 				case NUM_NAME_EQUIV_TOKENS:
 
 					cp = line;
-					while (isspace(*cp))
+					while (isspace((int)*cp))
 						++cp;
 
 					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
 
 					cp = line + strlen(line) + 1;
-					while (isspace(*cp))
+					while (isspace((int)*cp))
 						++cp;
 
 					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
@@ -694,7 +707,7 @@ static void reconstitute_line
 				case NUM_TRANSLATOR_TOKENS:
 
 					cp = line + strlen(line) + 1;
-					while (isspace(*cp))
+					while (isspace((int)*cp))
 						++cp;
 
 					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
@@ -702,7 +715,7 @@ static void reconstitute_line
 					line[strlen(line)] = ' ';
 
 					cp = line + strlen(line) + 1;
-					while (isspace(*cp))
+					while (isspace((int)*cp))
 						++cp;
 
 					os_str_replace_unescaped_char1_with_char2(' ', '%', cp);
@@ -768,7 +781,7 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 		line[line_ndx] = STR_END; /* terminate line and set next */
 		next_line = line + line_ndx + strspn(line + 1 + line_ndx, UNION_EOL_CHARS) + 1;
 
-		while (isspace(*line))
+		while (isspace((int)*line))
 			++line;
 		
 		switch (status)

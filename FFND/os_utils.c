@@ -32,14 +32,21 @@
  *	This file contains OS utilities for portability across Unix,
  *	MacOS and DOS 
  *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
  */
-/*
- * HISTORY:
- *	Rich Fozzard	7/28/95		-rf01
- *		Include string.h and stdlib.h to fix memory stomps in CW
- *	Rich Fozzard	9/25/95		-rf02
- *		Include unix.h for CW
-*/
 
 #include <freeform.h>
 
@@ -1396,7 +1403,7 @@ char *os_str_trim_whitespace(char *dest, char *source)
 
 	start = strspn(source, WHITESPACE);
 
-	for (stop = strlen(source) - 1; stop >= start && isspace(source[stop]); stop--)
+	for (stop = strlen(source) - 1; stop >= start && isspace((int)source[stop]); stop--)
 		;
 
 	if (stop >= start)
@@ -1453,7 +1460,7 @@ char *os_str_trim_linespace(char *line)
 
 	str_balance = strcspn(line, "\n");
 	for (line_stop = str_balance - 1;
-	     line_stop >= 0 && isspace(line[line_stop]);
+	     line_stop >= 0 && isspace((int)line[line_stop]);
 	     line_stop--
 	    )
 		;

@@ -1,5 +1,5 @@
 /*
- * NAME:        ndarray.c
+ * FILENAME:        ndarray.c
  *
  * PURPOSE:     Routines for arbitrary n-dimensional (0 < n < 32768)
  *				array access, subsetting, and reorientation.
@@ -34,6 +34,20 @@
  *
  * KEYWORDS: array
  *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
  */
 
 #include <freeform.h>
@@ -358,7 +372,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		if (dbin && IS_KEYWORDED_PARAMETER(position))
 		{
 			endptr = position + 1;
-			while (!isspace(*endptr) && *endptr != ']')
+			while (!isspace((int)*endptr) && *endptr != ']')
 				++endptr;
 
 			save_char = *endptr;
@@ -377,7 +391,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		{
 			start = strtod(position, &endptr);
 #if 1
-			if (endptr && strlen(endptr) && !isspace(*endptr))
+			if (endptr && strlen(endptr) && !isspace((int)*endptr))
 			{
 				error = err_push(ERR_NDARRAY, "Badly formatted starting index for %s (%s)", arrd->dim_name[i], position);
 				goto ndarr_create_from_str_exit;
@@ -397,7 +411,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		if (dbin && IS_KEYWORDED_PARAMETER(pos))
 		{
 			endptr = pos + 1;
-			while (!isspace(*endptr) && *endptr != ']')
+			while (!isspace((int)*endptr) && *endptr != ']')
 				++endptr;
 
 			save_char = *endptr;
@@ -416,7 +430,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 		{
 			end = strtod(pos, &endptr);
 #if 1
-			if (endptr && strlen(endptr) && !isspace(*endptr))
+			if (endptr && strlen(endptr) && !isspace((int)*endptr))
 			{
 				error = err_push(ERR_NDARRAY, "Badly formatted ending index for %s (%s)", arrd->dim_name[i], pos);
 				goto ndarr_create_from_str_exit;
@@ -432,7 +446,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
 				endptr = pos + 1;
-				while (!isspace(*endptr) && *endptr != ']')
+				while (!isspace((int)*endptr) && *endptr != ']')
 					++endptr;
 
 				save_char = *endptr;
@@ -451,7 +465,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			{
 				gran = strtod(pos, &endptr);
 #if 1
-				if (endptr && strlen(endptr) && !isspace(*endptr))
+				if (endptr && strlen(endptr) && !isspace((int)*endptr))
 				{
 					error = err_push(ERR_NDARRAY, "Badly formatted granularity for %s (%s)", arrd->dim_name[i], pos);
 					goto ndarr_create_from_str_exit;
@@ -477,7 +491,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
 				endptr = pos + 1;
-				while (!isspace(*endptr) && *endptr != ']')
+				while (!isspace((int)*endptr) && *endptr != ']')
 					++endptr;
 
 				save_char = *endptr;
@@ -495,7 +509,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			else
 			{
 				sep = strtol(pos, &endptr, 10);
-				if (endptr && strlen(endptr) && !isspace(*endptr))
+				if (endptr && strlen(endptr) && !isspace((int)*endptr))
 				{
 					error = err_push(ERR_NDARRAY, "Badly formatted separation for %s (%s)", arrd->dim_name[i], pos);
 					goto ndarr_create_from_str_exit;
@@ -520,7 +534,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			if (dbin && IS_KEYWORDED_PARAMETER(pos))
 			{
 				endptr = pos + 1;
-				while (!isspace(*endptr) && *endptr != ']')
+				while (!isspace((int)*endptr) && *endptr != ']')
 					++endptr;
 
 				save_char = *endptr;
@@ -539,7 +553,7 @@ ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr)
 			{
 				grp = strtod(pos, &endptr);
 #if 1
-				if (endptr && strlen(endptr) && !isspace(*endptr))
+				if (endptr && strlen(endptr) && !isspace((int)*endptr))
 				{
 					error = err_push(ERR_NDARRAY, "Badly formatted grouping for %s (%s)", arrd->dim_name[i], pos);
 					goto ndarr_create_from_str_exit;

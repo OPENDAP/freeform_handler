@@ -1,3 +1,22 @@
+/*
+ * FILENAME:  chkform.c
+ *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
+ */
+
 #include <freeform.h>
 #include <time.h>
 
@@ -561,11 +580,15 @@ static int check_buffer
 	VARIABLE_LIST   v_list     = NULL;
 	char *record     = NULL;
 
-	char num_as_str[MAX_PV_LENGTH + 1];
+	char *num_as_str = NULL;
 
 	markers = ff_create_bufsize(format->length);
 	if (!markers)
-		return(err_push(ERR_MEM_LACK, ""));
+		return(err_push(ERR_MEM_LACK, "cannot allocate %d byte bufsize", format->length));
+
+	num_as_str = (char *)memMalloc(format->length + 1, "num_as_str");
+	if (!num_as_str)
+		return err_push(ERR_MEM_LACK, "Cannot allocate %d byte string", format->length + 1);
 
 	record = buffer;
 
@@ -677,6 +700,7 @@ static int check_buffer
 		record += format->length;
 	}
 
+	memFree(num_as_str, "num_as_str");
 	ff_destroy_bufsize(markers);
 	return 0;
 }

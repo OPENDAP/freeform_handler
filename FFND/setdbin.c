@@ -42,6 +42,21 @@
  * setup_header
  * strascii
  * text_delim_offset
+ *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
  */
 
 /*
@@ -136,10 +151,10 @@ static int trim_format
 			size_t vname_len = strlen(var->name);
 
 			/* var->name is a substring, but does its match have trailing whitespace or ends the string? */
-			if (isspace(save_var_name[vname_len]) || save_var_name[vname_len] == STR_END)
+			if (isspace((int)save_var_name[vname_len]) || save_var_name[vname_len] == STR_END)
 			{
 				/* var->name is a substring, but does its match have leading whitespace or begins the string? */
-				if (((char HUGE *)save_var_name == (char HUGE *)buffer) || isspace(save_var_name[-1]))
+				if (((char HUGE *)save_var_name == (char HUGE *)buffer) || isspace((int)save_var_name[-1]))
 				{
 					/* var->name has an exact match */
 					save_this_var = TRUE;
@@ -507,7 +522,7 @@ static BOOLEAN text_delim_offset
 	
 	delim_offset = strcspn(text, delim);
 	*offset = 0;
-	while ((isprint(text[*offset]) || isspace(text[*offset])) &&
+	while ((isprint(text[*offset]) || isspace((int)text[*offset])) &&
 	       *offset < delim_offset)
 		(*offset)++;
 
@@ -627,7 +642,7 @@ static FF_TYPES_t alphanum_type
 					else
 						return(FFV_TEXT);
 				}
-				else if (isspace(header[start - 1]))
+				else if (isspace((int)header[start - 1]))
 				{ /* space */
 					if (status == INITIAL)
 						;
@@ -1223,7 +1238,7 @@ static int set_var_info
 		end_pos += (item_name_pos - 1); /* was relative to pname, not header */
 
 	/* Trim trailing whitespace */
-	while (end_pos > 0 && isspace(header[end_pos - 1]))
+	while (end_pos > 0 && isspace((int)header[end_pos - 1]))
 		--end_pos;
 
 	if (start_pos <= 0 || end_pos <= 0 || end_pos < start_pos)
@@ -2644,7 +2659,7 @@ static int dbset_cache_size
 			if (PINFO_MATE(pinfo) && PINFO_BYTES_LEFT(pinfo))
 			{
 				if (PINFO_MATE_IS_BUFFER(pinfo))
-					cache_size = max(cache_size, max(PINFO_BYTES_LEFT(pinfo), PINFO_MATE_BYTES_LEFT(pinfo))); /* too conservative?  Maybe get rid of PINFO_MATE_BYTES_LEFT */
+					cache_size = max(cache_size, PINFO_BYTES_LEFT(pinfo));
 				else
 				{
 					unsigned long out_fsize; /* guess output file size */
@@ -4887,7 +4902,7 @@ static int create_array_pole
 			}
 		}
 		else if ((id & NDARRS_BUFFER) && bufsize)
-			(*pole_h)->connect.locus.bufsize = bufsize;// fd_graft_bufsize?
+			(*pole_h)->connect.locus.bufsize = bufsize;/* resurrect fd_graft_bufsize? */
 		else if (!(id & (NDARRS_BUFFER | NDARRS_FILE)))
 			return(err_push(ERR_API, "Calling create_array_pole with with incorrect ID"));
 

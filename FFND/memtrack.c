@@ -1,16 +1,25 @@
-/* 
- *
- * CONTAINS:    Functions for tracking allocation of memory:
- */
 /*
- * HISTORY:
- *	r fozzard	4/21/95		-rf01 
- *		malloc.h not needed on mac?
- * 		(char *) for Think C
- *		function declarations for MEMMemcpy and MEMMemmove
- *	r fozzard	7/18/95		-rf02
- *		add _fMEMMemcpy definition for mac 
-*/
+ * FILENAME: memtrack.c
+ * MEM.H -- ** Copyright (c) 1990, Cornerstone Systems Group, Inc. 
+ * Dr. Dobbs Journal, August 1990, p. 180
+ *
+ * Modified significantly by Mark A. Ohrenschall, mao@ngdc.noaa.gov
+ *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
+ */
 
 #define MEM_OPEN_FILE 1
 #define MEM_PTR_DEF 2
