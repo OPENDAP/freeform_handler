@@ -9,6 +9,9 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.9  1999/05/28 16:33:10  jimg
+// Added/fixed comments.
+//
 // Revision 1.8  1999/05/04 02:55:37  jimg
 // Merge with no-gnu
 //
@@ -207,6 +210,8 @@ Please report this error.");
 
     // Stuff the yyyy/ddd string into DODS_JDate.
     Str *dods_jdate = (Str*)dds.var("DODS_JDate");
+    // By calling DODS_Date::get with the token `yd' I'm explicitly asking
+    // for the year/day (pseudo juilian) date format. 5/27/99 jhrg
     string s = current.get(yd).c_str();
     dods_jdate->val2buf(&s);
 
@@ -243,8 +248,10 @@ Please report this error.");
   
     DODS_Date current = get_instance<DODS_Date, DODS_Date_Factory>(dds);
 
-    // Stuff the yyyy/ddd string into DODS_JDate.
+    // Stuff the yyyy/ddd string into DODS_Date.
     Str *dods_date = (Str*)dds.var("DODS_Date");
+    // Calling the regular form of DODS_Date::get() returns the data in y/m/d
+    // format. 5/27/99 jhrg
     string s = current.get().c_str();
     dods_date->val2buf(&s);
 
@@ -320,7 +327,6 @@ Please report this error.");
     DODS_Date_Time current 
 	= get_instance<DODS_Date_Time, DODS_Date_Time_Factory>(dds);
 
-    // Stuff the yyyy/ddd string into DODS_JDate.
     Str *dods_date_time = (Str*)dds.var("DODS_Date_Time");
     string s = current.get().c_str();
     dods_date_time->val2buf(&s);
