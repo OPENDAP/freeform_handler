@@ -9,7 +9,6 @@
 // expressions. 
 
 #include <iostream>
-#include <strstream>
 #include <string>
 #include <algorithm>
 
@@ -771,6 +770,9 @@ Expected zero or one arguments.");
 }
 
 // $Log: ce_functions.cc,v $
+// Revision 1.16  2003/05/14 19:27:34  jimg
+// Removed strstring include
+//
 // Revision 1.15  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
 //
