@@ -1,9 +1,9 @@
 
-# $Id: Makefile.in,v 1.8 1998/12/30 22:56:04 jimg Exp $
+# $Id: Makefile.in,v 1.9 1999/01/04 21:38:08 mao Exp $
 
 @SET_MAKE@
 
-PROG = readfile newform
+PROG = readfile newform chkform
 FF_LIBRARY = libfreeform.a
 MM_LIBRARY = libmaxmin.a
 
@@ -55,7 +55,7 @@ FF_OBJS = afm2bfm.o avlins.o avlfree.o cv_units.o dbevents.o dl_lists.o \
 
 MM_OBJS = mm_make.o 
 
-PROG_OBJS = newform.o readfile.o
+PROG_OBJS = newform.o readfile.o chkform.o
 
 FF_SRCS	= $(FF_OBJS:.o=.c)
 PROG_SRCS = $(PROG_OBJS:.o=.c)
@@ -95,23 +95,34 @@ bufform.o: bufform.c
 readfile: readfile.o
 	$(CC) $(LDFLAGS) readfile.o -o $@
 
+chkform: chkform.o $(LIBS)
+	$(CC) $(LDFLAGS) chkform.o -o $@ $(LIBS) -lm
+
+chkform-pure: chkform.o $(LIBS)
+	$(PURIFY) $(CC) $(LDFLAGS) chkform.o -o $@ $(LIBS) -lm
+	-rm chkform.o
+
+chkform.o: chkform.c
+	$(CC) $(CPPFLAGS) -DFF_MAIN $(CFLAGS) -c $< -o $@
+
 clean:
 	-rm -f $(FF_OBJS) $(MM_OBJS) \
         $(FF_LIBRARY) $(MM_LIBRARY) \
-	newform newform.o core *~ readfile.o readfile
+	newform newform.o core *~ readfile.o readfile chkform.o chkform
 
 distclean: clean
 	-rm -f config.status config.log config.cache
-	-(cd bin; rm newform readline)
+	-(cd bin; rm newform readfile chkform)
 	-(cd lib; rm lib*.a)
 
-install: newform readfile $(FF_LIBRARY)
+install: newform readfile chkform $(FF_LIBRARY)
 	$(INSTALL_DATA) $(FF_LIBRARY) $(libdir)/$(FF_LIBRARY)
 	$(RANLIB) $(libdir)/$(FF_LIBRARY)
 	$(INSTALL_DATA) $(MM_LIBRARY) $(libdir)/$(MM_LIBRARY)
 	$(RANLIB) $(libdir)/$(MM_LIBRARY)
 	$(INSTALL_PROGRAM) newform $(bindir)/newform
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
+	$(INSTALL_PROGRAM) chkform $(bindir)/chkform
 
 Makefile: ${srcdir}/Makefile.in
 	cd ..; ${SHELL} ./config.status
