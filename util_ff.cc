@@ -9,6 +9,9 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.10  1999/03/26 20:03:32  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.9  1999/03/18 01:12:38  jimg
 // Fixed up the file_exist90 function so that it no longer does the open/close
 // thing.
@@ -54,7 +57,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.9 1999/03/18 01:12:38 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.10 1999/03/26 20:03:32 jimg Exp $"};
 
 #include <unistd.h>
 
@@ -63,6 +66,9 @@ static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.9 1999/03/18 01:12:38 jimg
 #include <fstream.h>
 #include <String.h>
 #include "FreeForm.h"
+
+#include "BaseType.h"
+#include "dods-limits.h"
 
 #define DODS_DATA_PRX "dods-"	// prefix for temp format file names
 
@@ -73,14 +79,50 @@ static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.9 1999/03/18 01:12:38 jimg
 // otherwise NULL.
 
 const String
+ff_types(Type dods_type)
+{
+    switch (dods_type) {
+      case dods_byte_c:
+	return "int8";
+      case dods_int16_c:
+	return "int16";
+      case dods_uint16_c:
+	return "uint16";
+      case dods_int32_c:
+	return "int32";
+      case dods_uint32_c:
+	return "uint32";
+      case dods_float32_c:
+	return "float32";
+      case dods_float64_c:
+	return "float64";
+      case dods_str_c:
+	return "text";
+      case dods_url_c:
+	return "text";
+      default:
+	cerr << "ff_types: DODS type " << dods_type
+	     << " does not map to a FreeForm type." << endl;
+	return "";
+    }
+}
+	    
+// Deprecated version.
+const String
 ff_types(const String &dods_type)
 {
     if (dods_type == "Byte")
 	return "int8";
+    else if (dods_type == "Int16")
+	return "int16";
+    else if (dods_type == "UInt16")
+	return "uint16";
     else if (dods_type == "Int32")
 	return "int32";
     else if (dods_type == "UInt32")
 	return "uint32";
+    else if (dods_type == "Float32")
+	return "float32";
     else if (dods_type == "Float64")
 	return "float64";
     else if (dods_type == "String")
@@ -101,14 +143,45 @@ ff_types(const String &dods_type)
 // otherwise -1.
 
 int
+ff_prec(Type dods_type)
+{
+    switch (dods_type) {
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+	return 0;
+      case dods_float32_c:
+	return DODS_FLT_DIG;
+      case dods_float64_c:
+	return DODS_DBL_DIG;
+      case dods_str_c:
+      case dods_url_c:
+	return 0;
+      default:
+	cerr << "ff_types: DODS type " << dods_type
+	     << " does not map to a FreeForm type." << endl;
+	return -1;
+    }
+}
+
+// Deprecated version
+int
 ff_prec(const String &dods_type)
 {
     if (dods_type == "Byte")
+	return 0;
+    else if (dods_type == "Int16")
+	return 0;
+    else if (dods_type == "UIn16")
 	return 0;
     else if (dods_type == "Int32")
 	return 0;
     else if (dods_type == "UInt32")
 	return 0;
+    else if (dods_type == "Float32")
+	return 8;
     else if (dods_type == "Float64")
 	return 15;
     else if (dods_type == "String")
@@ -128,6 +201,19 @@ ff_prec(const String &dods_type)
     @return The format string. */
 
 const String
+make_output_format(const String &name, Type type, const int width)
+{
+    ostrstream str;
+
+    str << "binary_output_data \"DODS binary output data\"" << endl;
+    str << name << " 1 " << width << " " << ff_types(type) 
+	<< " " << ff_prec(type) << endl;
+    
+    return str.str();
+}
+
+// Deprecated 
+const String
 make_output_format(const String &name, const String &type, const int width)
 {
     ostrstream str;
@@ -140,6 +226,30 @@ make_output_format(const String &name, const String &type, const int width)
 }
 
 // format for multi-dimension array 
+const String
+makeND_output_format(const String &name, Type type, const int width,
+		     int ndim, const long *start, const long *edge, const
+		     long * stride, String *dname)
+{
+    ostrstream str;
+    str << "binary_output_data \"DODS binary output data\"" << endl;
+    str << name << " 1 " << width << " ARRAY";
+
+    for (int i=0; i < ndim; i++)
+	str << "[" << "\"" << dname[i] << "\" " << start[i]+1 << " to "
+	    << start[i]+(edge[i]-1)*stride[i]+1 <<" by " << stride[i] << " ]";
+
+    str << " of " << ff_types(type) << " " << ff_prec(type) << endl << "\0";
+
+#ifdef TEST   
+    cout <<str.str();
+#endif   
+
+    return str.str();
+}
+
+// Deprecated
+
 const String
 makeND_output_format(const String &name, const String &type, const int width,
 		     int ndim, const long *start, const long *edge, const
@@ -328,13 +438,4 @@ bool
 file_exist(const char * filename)
 {
     return access(filename, F_OK) == 0;
-#if 0
-  FILE *fp = fopen(filename, "r");
-  if(fp){
-    fclose(fp);
-    return true;
-  }
-  else 
-    return false;
-#endif
 }

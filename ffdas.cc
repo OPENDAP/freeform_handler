@@ -40,6 +40,9 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.8  1999/03/26 20:03:32  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.7  1998/08/31 04:06:13  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -65,7 +68,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.7 1998/08/31 04:06:13 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.8 1999/03/26 20:03:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,6 +78,10 @@ static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.7 1998/08/31 04:06:13 reza E
 
 #include "cgi_util.h"
 #include "DAS.h"
+// Hack. Header files from the WWW library (which are included from Connect.h
+// within cgi_util.h) also define BOOLEAN. Suppressing the definition avoids
+// a warning (g++ 2.8.1) or error (egcs). 3/26/99 jhrg
+#define _BOOLEAN_DEFINED	
 #include "FreeForm.h"
 #include "util_ff.h"
 

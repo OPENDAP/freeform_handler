@@ -4,15 +4,31 @@
 //
 // jhrg 4/2/96
 
-// $Id: util_ff.h,v 1.5 1998/08/31 04:06:16 reza Exp $
+// $Id: util_ff.h,v 1.6 1999/03/26 20:03:32 jimg Exp $
 
 #ifndef _util_ff_h_
 #define _util_ff_h_
 
 #include "FreeForm.h"
 
+#include "BaseType.h"
+
 #define MaxStr 100
 
+const String ff_types(Type dods_type);
+int ff_prec(Type dods_type);
+
+const String make_output_format(const String &name, Type type, 
+				const int width);
+
+const String makeND_output_format(const String &name, Type type, 
+				  const int width, int ndim, 
+				  const long *start, const long *edge, const
+				  long * stride, String *dname);
+
+// These four versions of the ff_types, ..., makeND_output_format functions
+// are deprecated. Use the versions that take the type argument as a Type
+// rather than as a String. 3/25/99 jhrg
 const String ff_types(const String &dods_type);
 int ff_prec(const String &dods_type);
 

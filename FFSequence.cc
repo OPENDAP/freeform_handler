@@ -10,6 +10,9 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.11  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.10  1998/11/13 05:39:15  jimg
 // Minor changes, formatting sanity.
 // Added ends to ostrstream object using to builf output format string.
@@ -45,7 +48,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFSequence.cc,v 1.10 1998/11/13 05:39:15 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFSequence.cc,v 1.11 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef _GNUG_
 #pragma implementation
@@ -166,8 +169,8 @@ FFSequence::read(const String &dataset, int &error)
 		endbyte += var(p)->width();
 	  
 	    str << var(p)->name() << " " << stbyte << " " << endbyte 
-		<< " " << ff_types(var(p)->type_name()) 
-		<< " " << ff_prec(var(p)->type_name()) << endl;
+		<< " " << ff_types(var(p)->type()) 
+		<< " " << ff_prec(var(p)->type()) << endl;
 	    stbyte = endbyte + 1;
 	}
 	str << ends;

@@ -6,6 +6,9 @@
 //      ReZa       Reza Nekovei (reza@intcomm.net)
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.7  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.6  1998/08/31 04:06:06  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -26,7 +29,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.6 1998/08/31 04:06:06 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.7 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -77,7 +80,7 @@ FFUInt32::read(const String &dataset, int &error)
 	char *ds = new char[dataset.length() + 1];
 	strcpy(ds, dataset);
 
-	String o_format = make_output_format(name(), type_name(), width());
+	String o_format = make_output_format(name(), type(), width());
 	char *o_f = new char[o_format.length() + 1];
 	strcpy(o_f, o_format);
 

@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFUrl.cc,v $
+// Revision 1.4  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.3  1998/04/21 17:14:05  jimg
 // Fixes for warnings, etc
 //
@@ -19,7 +22,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUrl.cc,v 1.3 1998/04/21 17:14:05 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUrl.cc,v 1.4 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -46,7 +49,7 @@ FFUrl::ptr_duplicate()
 bool
 FFUrl::read(const String &, int &)
 {
-    return true;
+    return false;
 }
 
 

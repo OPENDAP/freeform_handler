@@ -5,7 +5,18 @@ Content-Description: dods_das
 
 Attributes {
     FF_GLOBAL {
-        String Server "DODS FreeFrom based on FFND release 4.*";
-        String Native_file " (ff-test/1998-6-avhrr.fmt) ASCII_input_data	`GSO_AVHRR` File ff-test/1998-6-avhrr.dat contains 122 data records (10980 bytes) Each record contains 8 fields and is 90 characters long. ";
+        String Server "DODS FreeFrom based on FFND release *";
+        String Native_file "*";
+    }
+    DODS_Time {
+        String hours_variable GSO_AVHRR.hh;
+        String minutes_variable GSO_AVHRR.mm;
+        String seconds_variable GSO_AVHRR.ss;
+        String gmt_time true;
+    }
+    DODS_Date {
+        String year_variable GSO_AVHRR.year;
+        Int32 year_base 1900;
+        String year_day_variable GSO_AVHRR.day_num;
     }
 }

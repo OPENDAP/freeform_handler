@@ -114,6 +114,7 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr);
 #ifndef _WINNT_ /* specific to MSVC++ 4.0 */
 typedef short BOOLEAN; /* Boolean type */
 #endif
+#endif /* _BOOLEAN_DEFINED 3/25/99 jhrg */
 
 #ifdef TRUE
 #undef TRUE
@@ -123,7 +124,6 @@ typedef short BOOLEAN; /* Boolean type */
 #undef FALSE
 #endif
 #define FALSE 0
-#endif
 
 char *os_strlwr(char *string);
 char *os_strupr(char *);

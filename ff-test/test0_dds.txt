@@ -5,6 +5,6 @@ Content-Description: dods_dds
 
 Dataset {
     Sequence {
-        Int32 value;
+        Int16 value;
     } data;
 } test0;

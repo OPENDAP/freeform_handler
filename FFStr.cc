@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFStr.cc,v $
+// Revision 1.7  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.6  1998/11/13 05:43:08  jimg
 // Formatting changes
 //
@@ -31,7 +34,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.6 1998/11/13 05:43:08 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.7 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -102,3 +105,4 @@ FFStr::read(const String &dataset, int &)
     else 
 	return false;
 }
+

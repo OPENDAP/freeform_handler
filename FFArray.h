@@ -12,6 +12,9 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.h,v $
+// Revision 1.5  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.4  1998/08/12 21:20:50  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -32,6 +35,15 @@
 extern Array * NewArray(const String &n = (char *)0, BaseType *v = 0);
 
 class FFArray: public Array {
+private:
+    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
+    long Arr_constraint(long *cor, long *step, long *edg, String *dim_nms,
+			bool *has_stride);
+
+    /** Read an array of simple types into this objects #_buf# memeber. */
+    template <class T> bool extract_array<T>(char *ds, char *if_fmt, 
+					     char *o_fmt);
+
 public:
     FFArray(const String &n = (char *)0, BaseType *v = 0);
     virtual ~FFArray();
@@ -40,11 +52,6 @@ public:
 
     virtual bool read(const String &dataset, int &error);
 
-    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
-    long Arr_constraint(long *cor, long *step, long *edg, String *dim_nms,
-			bool *has_stride);
 };
 
 #endif
-
-

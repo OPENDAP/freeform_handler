@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.8  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.7  1998/11/10 19:23:01  jimg
 // Minor formatting changes...
 //
@@ -34,7 +37,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.7 1998/11/10 19:23:01 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.8 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -269,7 +272,7 @@ FFArray::read(const String &dataset, int &error)
     }
 
     String output_format =
-      makeND_output_format(name(), var()->type_name(), var()->width(), 
+      makeND_output_format(name(), var()->type(), var()->width(), 
 			     ndims, start, edge, stride, dname);
 
     char *o_fmt = new char[output_format.length() + 1];
@@ -283,77 +286,62 @@ FFArray::read(const String &dataset, int &error)
     //     Use ff to read the data
     //     Store the (possibly constrained) data
 
-    if (var()->type_name() == "Byte") {
-	// `+1' hack for FreeForm
-	dods_byte *b = (dods_byte *)new char[width()]; 
-	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)b, width());
-
-	if (bytes == -1) {
+    switch(var()->type()) {
+      case dods_byte_c:
+	if (!extract_array<dods_byte>(ds, if_fmt, o_fmt)) {
 	    error = 1;
 	    return false;
 	}
-	else { 
-	  // seq2vects(b, *this); Used for old sequence to array.
-	  set_read_p(true);
-	  val2buf((void *) b);
-	}
+	break;
 
-	if (b)
-	    delete(b);
-    }
-    else if (var()->type_name() == "Int32") {
-	dods_int32 *i = (dods_int32 *)new char[width()];
-	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)i, width());
-
-	if (bytes == -1) {
+      case dods_int16_c:
+	if (!extract_array<dods_int16>(ds, if_fmt, o_fmt)) {
 	    error = 1;
 	    return false;
 	}
-	else {
-	  //    seq2vects(i, *this); Used for serving sequences as array
-	  set_read_p(true);
-	  val2buf((void *) i);
-	}
-	if (i)
-	    delete(i);
-    }
-    else if (var()->type_name() == "UInt32") {
-	dods_uint32 *ui = (dods_uint32 *)new char[width()];
-	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)ui, width());
+	break;
 
-	if (bytes == -1) {
+      case dods_uint16_c:
+	if (!extract_array<dods_uint16>(ds, if_fmt, o_fmt)) {
 	    error = 1;
 	    return false;
 	}
-	else {
-	  //    seq2vects(ui, *this); Used for old Seq => Arrray 
-	  set_read_p(true);
-	  val2buf((void *) ui);
-	}
-	if (ui)
-	    delete(ui);
-    }
-    else if (var()->type_name() == "Float64") {
-	dods_float64 *d = (dods_float64 *)new char[width()];
-	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)d, width());
+	break;
 
-	if (bytes == -1) {
+      case dods_int32_c:
+	if (!extract_array<dods_int32>(ds, if_fmt, o_fmt)) {
 	    error = 1;
 	    return false;
 	}
-	else {
-	  //    seq2vects(d, *this);
-	  set_read_p(true);
-	  val2buf((void *) d);
+	break;
+
+      case dods_uint32_c:
+	if (!extract_array<dods_uint32>(ds, if_fmt, o_fmt)) {
+	    error = 1;
+	    return false;
 	}
-	if (d)
-	    delete(d);
-    }
-    else {
+	break;
+
+      case dods_float32_c:
+	if (!extract_array<dods_float32>(ds, if_fmt, o_fmt)) {
+	    error = 1;
+	    return false;
+	}
+	break;
+
+      case dods_float64_c:
+	if (!extract_array<dods_float64>(ds, if_fmt, o_fmt)) {
+	    error = 1;
+	    return false;
+	}
+	break;
+
+      default:
 	cerr << "FFArray::read: Unsupported array type " << var()->type_name()
 	     << endl;
 	error = 1;
 	return false;
+	break;
     }
 
     // clean up
@@ -368,6 +356,27 @@ FFArray::read(const String &dataset, int &error)
     return false;
 }
 
+// This template reads arrays of simple types into the Array object's _buf
+// memeber. It returns true if successful, false otherwise.
 
+template <class T>
+bool
+FFArray::extract_array<T>(char *ds, char *if_fmt, char *o_fmt)
+{
+    T *d = (T *)new char[width()];
+    long bytes = read_ff(ds, if_fmt, o_fmt, (char *)d, width());
 
+    if (bytes == -1) {
+	return false;
+    }
+    else {
+	//    seq2vects(d, *this);
+	set_read_p(true);
+	val2buf((void *) d);
+    }
 
+    if (d)
+	delete(d);
+
+    return true;
+}

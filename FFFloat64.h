@@ -1,15 +1,9 @@
 // -*- C++ -*-
 
 // (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
-
-// (c) COPYRIGHT URI/MIT 1994-1997
-// Please read the full copyright statement in the file COPYRIGHT.  
-//
-// Authors:
-//      reza            Reza Nekovei (reza@intcomm.net)
 
 // FreeForm sub-class implementation for FFByte,...FFGrid.
 // The files are patterned after the subcalssing examples 
@@ -18,6 +12,9 @@
 // ReZa 6/18/97
 
 // $Log: FFFloat64.h,v $
+// Revision 1.4  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.3  1998/04/21 17:13:47  jimg
 // Fixes for warnings, etc
 //

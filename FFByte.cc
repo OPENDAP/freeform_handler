@@ -12,6 +12,9 @@
 // ReZa 6/18/97
 
 // $Log: FFByte.cc,v $
+// Revision 1.6  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.5  1998/08/13 20:24:21  jimg
 // Fixed read mfunc semantics
 //
@@ -26,7 +29,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFByte.cc,v 1.5 1998/08/13 20:24:21 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFByte.cc,v 1.6 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -86,10 +89,11 @@ FFByte::read(const String &dataset, int &error)
 	return false;
     }
     else {
+#if 0
 	char *ds = new char[dataset.length() + 1];
 	strcpy(ds, dataset);
 
-	String o_format = make_output_format(name(), type_name(), width());
+	String o_format = make_output_format(name(), type(), width());
 	char *o_f = new char[o_format.length() + 1];
 	strcpy(o_f, o_format);
 
@@ -114,6 +118,7 @@ FFByte::read(const String &dataset, int &error)
 	delete [] ds;
 	delete [] o_f;
 	delete [] if_f;
+#endif
 
 	return false;
     }

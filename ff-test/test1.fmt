@@ -6,11 +6,11 @@
 // 10^x).
 
 ASCII_input_data "ASCII_data"
-fvar1   1 10  int32 2
+fvar1   1 10  int32 0
 svar1  13 18  int16 0
-usvar1 21 26 uint16 1
+usvar1 21 26 uint16 0
 lvar1  29 39  int32 0
-ulvar1 42 52 uint32 4
+ulvar1 42 52 uint32 0
 
 // The output_data part of the file is not used by DODS.
 // However, tools like newform use it. 8/13/98 jhrg

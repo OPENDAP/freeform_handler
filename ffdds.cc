@@ -15,6 +15,9 @@
 // ReZa 6/20/97
 
 // $Log: ffdds.cc,v $
+// Revision 1.8  1999/03/26 20:03:32  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.7  1998/08/31 04:06:14  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -38,7 +41,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.7 1998/08/31 04:06:14 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.8 1999/03/26 20:03:32 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,15 +50,21 @@ static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.7 1998/08/31 04:06:14 reza E
 #include <assert.h>
 #include <iostream.h>
 
+#include "cgi_util.h" 
+#define _BOOLEAN_DEFINED	// Hack. See ffdas.cc 3/25/99 jhrg
+#include "FreeForm.h"
+
 #include "DDS.h"
+#include "FFInt16.h"
+#include "FFUInt16.h"
 #include "FFInt32.h"
+#include "FFUInt32.h"
+#include "FFFloat32.h"
 #include "FFFloat64.h"
 #include "FFByte.h"
 #include "FFArray.h"
 #include "FFGrid.h"
 #include "FFStr.h"
-#include "cgi_util.h" 
-#include "FreeForm.h"
 #include "util_ff.h"
 
 int StrLens[MaxStr]; // List of string lengths
@@ -216,15 +225,15 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    break;
 	  
 	  case FFV_UINT8:
-	    bt = NewUInt32(cp);
+	    bt = NewByte(cp);	// Byte is unsigned.
 	    break;
 	  
 	  case FFV_INT16:
-	    bt = NewInt32(cp);
+	    bt = NewInt16(cp);
 	    break;
 	  
 	  case FFV_UINT16:
-	    bt = NewUInt32(cp);
+	    bt = NewUInt16(cp);
 	    break;
 
 	  case FFV_INT32:
@@ -236,7 +245,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    break;
 	  
 	  case FFV_INT64:
-	    bt = NewInt32(cp);
+	    bt = NewInt32(cp);	// Ouch!
 	    break;
 	  
 	  case FFV_UINT64:
@@ -244,7 +253,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    break;
 	  
 	  case FFV_FLOAT32:
-	    bt = NewFloat64(cp);
+	    bt = NewFloat32(cp);
 	    break;
 	  
 	  case FFV_FLOAT64:

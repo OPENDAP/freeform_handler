@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFFloat64.cc,v $
+// Revision 1.7  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
 // Revision 1.6  1998/08/31 04:06:00  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -31,7 +34,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.6 1998/08/31 04:06:00 reza Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.7 1999/03/26 20:03:31 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -79,36 +82,7 @@ FFFloat64::read(const String &dataset, int &error)
 	BufPtr += width();
 	return false;
     }
-    else{
-	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, dataset);
-
-	String o_format = make_output_format(name(), type_name(), width());
-	char *o_f = new char[o_format.length() + 1];
-	strcpy(o_f, o_format);
-
-	String i_format_file = find_ancillary_file(dataset);
-	char *if_f = new char[i_format_file.length() + 1];
-	strcpy(if_f, i_format_file);
-
-	dods_float64 *i = new dods_float64[width() + 1];
-	long bytes = read_ff(ds, if_f, o_f, (char *)i, width()+1);
-
-	if (bytes == -1){
-	    error = 1;
-	}
-	else {
-	    set_read_p(true);
-	    val2buf(i);     
-	}
-
-	if (i)
-	    delete(i);
-
-	delete [] ds;
-	delete [] o_f;
-	delete [] if_f;
-
+    else {
 	return false;
     }
 }
