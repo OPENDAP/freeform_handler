@@ -7,3 +7,11 @@
 
 
 bool func_date(int argc, BaseType *argv[], DDS &);
+
+// Selection and projection (synthesis) for yyyy/ddd dates.
+void proj_dods_jdate(int argc, BaseType *argv[], DDS &dds);
+bool sel_dods_jdate(int argc, BaseType *argv[], DDS &dds);
+
+// Selection and projection for yyyy/mm/dd dates.
+void proj_dods_date(int argc, BaseType *argv[], DDS &dds);
+bool sel_dods_date(int argc, BaseType *argv[], DDS &dds);
