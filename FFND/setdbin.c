@@ -2583,34 +2583,14 @@ static int collect_record_formats
  * PRECONDITIONS:       None
  *
  * CHANGES IN STATE:	ALLOCATES MEMORY FOR CACHE
- *						Sets dbin->cache
- *						= dbin->cache_end
- *						= dbin->data_ptr
- *						Sets dbin->cache_size
- *						Sets dbin->records_in_cache 
- *						Sets dbin->state.cache_defined = 1
- *						Initialize first character of cache to STR_END
  *
- * DESCRIPTION: Create cache for dbin with a given size.
- * If an input or output format is defined, the cache size
- * is adjusted to be the largest integral multiple
- * of the record size of the larger of input or output format.
- *
- * If insufficient memory exists to create a new cache, smaller cache
- * sizes are tried until a cache is allocated, or no cache can be allocated
- * whatever the size.  If an existing cache is being resized, and
- * insufficient memory exists to resize it, then no such cache reduction
- * is attempted, instead, we return immediately with an error.  This
- * assumes that if the user (application programmer) is changing the
- * cache size, they want the exact size they are asking for.
+ * DESCRIPTION: 
  *
  * ERRORS:	Lack of Memory:
- *				Sets dbin->state.cache_defined = 0 
- *				Sets dbin->state.cache_filled  = 0 
  *
  * AUTHOR:      TH, NGDC,(303)497-6472, haber@ngdc.noaa.gov
  *
- * COMMENTS:	Why initialize first cache character to STR_END?
+ * COMMENTS:
  *
  * KEYWORDS:    
  *
@@ -2645,16 +2625,14 @@ static int dbset_cache_size
 		while (pinfo)
 		{
 			unsigned long cache_size = 0;
-			unsigned long max_record_length = 0;
+			unsigned long record_length = 0;
 
-			max_record_length = max(FORMAT_LENGTH(PINFO_FORMAT(pinfo)),
-			                        (PINFO_MATE(pinfo) ? FORMAT_LENGTH(PINFO_MATE_FORMAT(pinfo)) : 0)
-			                       );
+			record_length = FORMAT_LENGTH(PINFO_FORMAT(pinfo));
 
 			if (PINFO_IS_BUFFER(pinfo))
 				cache_size = max(cache_size, PINFO_LOCUS_FILLED(pinfo));
 			else
-				cache_size = max(orig_cache_size, max_record_length);
+				cache_size = max(orig_cache_size, record_length);
 
 			if (PINFO_MATE(pinfo) && PINFO_BYTES_LEFT(pinfo))
 			{
@@ -2672,7 +2650,7 @@ static int dbset_cache_size
 				}
 			}
 			
-			count = cache_size / max_record_length;
+			count = cache_size / record_length;
 			cache_size = (count * FORMAT_LENGTH(PINFO_FORMAT(pinfo)));
 
 			assert(cache_size < FF_MAX_CACHE_SIZE);
@@ -5044,7 +5022,7 @@ static int make_tabular_array_conduit
 		error = create_array_pole(input->format->name,
 		                          input,
 		                          (NDARR_SOURCE)(std_args->input_file ?
-		                          NDARRS_FILE:
+		                          NDARRS_FILE :
 		                          NDARRS_BUFFER),
 		                          std_args->input_file,
 		                          std_args->input_bufsize,
