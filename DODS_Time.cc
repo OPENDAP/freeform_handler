@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.14 2004/02/04 20:50:08 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.15 2004/07/09 17:54:24 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -290,6 +290,12 @@ DODS_Time::get(bool gmt) const
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.15  2004/07/09 17:54:24  jimg
+// Merged with release-3-4-3FCS.
+//
+// Revision 1.11.4.2  2004/03/07 22:05:51  rmorris
+// Final code changes to port the freeform server to win32.
+//
 // Revision 1.14  2004/02/04 20:50:08  jimg
 // Build fixes. No longer uses Pix.
 //

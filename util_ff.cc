@@ -10,9 +10,13 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.20 2004/02/04 20:50:08 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.21 2004/07/09 17:54:25 jimg Exp $"};
 
+#ifndef WIN32
 #include <unistd.h>
+#else
+#define F_OK 0
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -527,6 +531,12 @@ get_float_value(BaseType *var) throw(InternalErr)
 }
 
 // $Log: util_ff.cc,v $
+// Revision 1.21  2004/07/09 17:54:25  jimg
+// Merged with release-3-4-3FCS.
+//
+// Revision 1.18.4.1  2004/03/07 22:05:51  rmorris
+// Final code changes to port the freeform server to win32.
+//
 // Revision 1.20  2004/02/04 20:50:08  jimg
 // Build fixes. No longer uses Pix.
 //

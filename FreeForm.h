@@ -6,6 +6,18 @@
  * ReZa (Reza Nekovei URI/GSO) 7/10/98
 
  * $Log: FreeForm.h,v $
+ * Revision 1.6  2004/07/09 17:54:24  jimg
+ * Merged with release-3-4-3FCS.
+ *
+ * Revision 1.5.16.2  2004/03/08 04:35:24  rmorris
+ * Mod to port to win32.  VC++ doesn't understand 'extern "C"' within
+ * C code (and it doesn't make sense there).  If #if defined(__cplusplus)
+ * around extern C declarations.
+ *
+ * Revision 1.5.16.1  2003/06/29 06:04:14  rmorris
+ * Close -DLINUX related code to -DNETBSD and tweek to get ff server to compile
+ * under OS X.
+ *
  * Revision 1.5  1999/05/27 17:02:23  jimg
  * Merge with alpha-3-0-0
  *
@@ -1218,7 +1230,9 @@ typedef struct struct_ff_data_flag
 	char          value_exists;
 } FF_DATA_FLAG, *FF_DATA_FLAG_PTR;
 
+#if defined(__cplusplus)
 extern "C" {
+#endif
 #ifdef FF_DBG
 VARIABLE_PTR           FF_VARIABLE(VARIABLE_LIST);
 FORMAT_PTR             FF_FORMAT(FORMAT_LIST);
@@ -1247,7 +1261,9 @@ DLL_NODE_PTR dll_previous(DLL_NODE_PTR node);
 
 DLL_NODE_PTR dll_first(DLL_NODE_PTR node);
 DLL_NODE_PTR dll_last(DLL_NODE_PTR node);
-	   }
+#if defined(__cplusplus)
+}
+#endif
 
 typedef enum enum_ff_dll_data_types
 {
@@ -1487,7 +1503,9 @@ typedef struct struct_ff_array_dim_info
 #define PINFO_MATE_ARRAY_MAP(pi)     PINFO_ARRAY_MAP(PINFO_MATE(pi))
 #define PINFO_MATE_ID(pi)            PINFO_ID(PINFO_MATE(pi))
 
+#if defined(__cplusplus)
 extern "C" {
+#endif
 void dll_assign(void *data, FF_DLL_DATA_TYPES type, DLL_NODE_PTR node);
 
 typedef BOOLEAN (*pgenobj_cmp_t)(void *, void *); /* pointer to generic object comparison function */
@@ -1641,7 +1659,10 @@ int update_following_offsets_or_size
 	 PROCESS_INFO_LIST updater_list,
 	 long adjustment
 	);
-	   }/* end of extern "C" */
+#if defined(__cplusplus)
+}
+#endif
+
 /* Define MAX_MIN Attributes/messages */
 #define MM_MAX_MIN		101
 #define MM_MISSING_DATA_FLAGS	102

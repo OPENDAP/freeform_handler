@@ -12,13 +12,15 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFStr.cc,v 1.10 2003/02/10 23:01:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFStr.cc,v 1.11 2004/07/09 17:54:24 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
+#ifndef WIN32
 #include <strings.h>
+#endif
 
 #include <ctype.h>
 #include <string>
@@ -90,6 +92,22 @@ FFStr::read(const string &dataset)
 }
 
 // $Log: FFStr.cc,v $
+// Revision 1.11  2004/07/09 17:54:24  jimg
+// Merged with release-3-4-3FCS.
+//
+// Revision 1.10.4.3  2004/03/07 22:05:51  rmorris
+// Final code changes to port the freeform server to win32.
+//
+// Revision 1.10.4.2  2003/09/06 23:33:14  jimg
+// I modified the read() method implementations so that they test the new
+// in_selection property. If it is true, the methods will read values
+// even if the send_p property is not true. This is so that variables used
+// in the selection part of the CE, or as function arguments, will be read.
+// See bug 657.
+//
+// Revision 1.10.4.1  2003/07/24 03:23:15  dan
+// Rollback to usage where FFserver strips leading whitespace from strings.
+//
 // Revision 1.10  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5
 //
