@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.5  1998/08/13 20:24:20  jimg
+// Fixed read mfunc semantics
+//
 // Revision 1.4  1998/08/12 21:20:49  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -22,7 +25,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.4 1998/08/12 21:20:49 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.5 1998/08/13 20:24:20 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -228,12 +231,10 @@ seq2vects(T *t, FFArray &array)
 // Returns: False if an error was detected, True otherwise.
 
 bool
-FFArray::read(const String &dataset, int &)
+FFArray::read(const String &dataset, int &error)
 {    
     if (read_p())  // Nothing to do
-        return true;
-
-    bool status = true;
+        return false;
 
     // make char * variables to hold String data for read_ff
     char *ds = new char[dataset.length() + 1];
@@ -251,8 +252,10 @@ FFArray::read(const String &dataset, int &)
     long *edge = new long[ndims];    
     long count = Arr_constraint(start, stride, edge, dname, 
      				&has_stride);    
+#if 0
     if(!count)
-      printf("constraint returned empty dataset");
+	printf("constraint returned empty dataset");
+#endif
 
     String output_format =
       makeND_output_format(name(), var()->type_name(), var()->width(), 
@@ -274,9 +277,11 @@ FFArray::read(const String &dataset, int &)
 	dods_byte *b = (dods_byte *)new char[width()]; 
 	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)b, width());
 
-	if (bytes == -1)
-	    status = false;
-	else{ 
+	if (bytes == -1) {
+	    error = 1;
+	    return false;
+	}
+	else { 
 	  // seq2vects(b, *this); Used for old sequence to array.
 	  set_read_p(true);
 	  val2buf((void *) b);
@@ -289,9 +294,11 @@ FFArray::read(const String &dataset, int &)
 	dods_int32 *i = (dods_int32 *)new char[width()];
 	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)i, width());
 
-	if (bytes == -1)
-	    status = false;
-	else{
+	if (bytes == -1) {
+	    error = 1;
+	    return false;
+	}
+	else {
 	  //    seq2vects(i, *this); Used for serving sequences as array
 	  set_read_p(true);
 	  val2buf((void *) i);
@@ -303,9 +310,11 @@ FFArray::read(const String &dataset, int &)
 	dods_uint32 *ui = (dods_uint32 *)new char[width()];
 	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)ui, width());
 
-	if (bytes == -1)
-	    status = false;
-	else{
+	if (bytes == -1) {
+	    error = 1;
+	    return false;
+	}
+	else {
 	  //    seq2vects(ui, *this); Used for old Seq => Arrray 
 	  set_read_p(true);
 	  val2buf((void *) ui);
@@ -317,9 +326,11 @@ FFArray::read(const String &dataset, int &)
 	dods_float64 *d = (dods_float64 *)new char[width()];
 	long bytes = read_ff(ds, if_fmt, o_fmt, (char *)d, width());
 
-	if (bytes == -1)
-	    status = false;
-	else{
+	if (bytes == -1) {
+	    error = 1;
+	    return false;
+	}
+	else {
 	  //    seq2vects(d, *this);
 	  set_read_p(true);
 	  val2buf((void *) d);
@@ -327,15 +338,11 @@ FFArray::read(const String &dataset, int &)
 	if (d)
 	    delete(d);
     }
-    else if (var()->type_name() == "Str" || var()->type_name() == "Url") {
-	cerr << "FFArray::read: Unsupported array type " << var()->type_name()
-	     << endl;
-	status = false;
-    }
     else {
 	cerr << "FFArray::read: Unsupported array type " << var()->type_name()
 	     << endl;
-	status = false;
+	error = 1;
+	return false;
     }
 
     // clean up
@@ -347,7 +354,7 @@ FFArray::read(const String &dataset, int &)
     delete[] stride;
     delete[] edge;
 
-    return status;
+    return false;
 }
 
 

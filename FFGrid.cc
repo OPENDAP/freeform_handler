@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFGrid.cc,v $
+// Revision 1.4  1998/08/13 20:24:26  jimg
+// Fixed read mfunc semantics
+//
 // Revision 1.3  1998/04/21 17:13:50  jimg
 // Fixes for warnings, etc
 //
@@ -19,7 +22,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFGrid.cc,v 1.3 1998/04/21 17:13:50 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFGrid.cc,v 1.4 1998/08/13 20:24:26 jimg Exp $"};
 
 #include "FFGrid.h"
 
@@ -53,19 +56,22 @@ FFGrid::read(const String &dataset, int &error)
     bool status;
 
     if (read_p()) // nothing to do
-        return true;
+        return false;
 
     // read array elements
-    if (!(status = array_var()->read(dataset, error))) 
-        return status;
+    array_var()->read(dataset, error);
+    if (error) 
+        return false;
 
     // read maps elements
-    for (Pix p = first_map_var(); p; next_map_var(p)){
-      if(!(status = map_var(p)->read(dataset, error)))
-            break;
-      }
-    if( status ) set_read_p(true);
-    return status;
+    for (Pix p = first_map_var(); p; next_map_var(p)) {
+	map_var(p)->read(dataset, error);
+	if (error)
+	    return false;
+    }
 
+    set_read_p(true);
+
+    return false;
 }
 

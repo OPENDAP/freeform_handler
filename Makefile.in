@@ -1,9 +1,10 @@
 
-# $Id: Makefile.in,v 1.2 1998/08/12 21:21:03 jimg Exp $
+# $Id: Makefile.in,v 1.3 1998/08/13 20:24:36 jimg Exp $
 
 @SET_MAKE@
 
 PROG = ff_das ff_dds ff_dods
+FF_LIBS = libfreeform.a libmemtrack.a libmaxmin.a 
 DODS_ROOT = ../..
 
 WWW_ROOT = @WWW_ROOT@
@@ -15,7 +16,8 @@ CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
 CXXFLAGS = @CXXFLAGS@ -Wall
 CFLAGS = @CFLAGS@ -Wall
 
-LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND/lib
+# Search in both the FFND and FFND/lib dirs for the freeform libraries.
+LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
 LIBS = -ldap++ -lrx -lfreeform -lmemtrack -lmaxmin @LIBS@ -lm
@@ -69,17 +71,15 @@ FFOBJ =	FFArray.o FFByte.o FFFloat64.o FFFunction.o FFGrid.o \
 SERVSRC = ff_dods.cc ffdds.cc
 SERVOBJ = ff_dods.o ffdds.o
 
-# DDSSRC = ffdds.c ff_dds.cc
-# DDSOBJ = ffdds.o ff_dds.o
 DDSSRC = ff_dds.cc ffdds.cc
 DDSOBJ = ff_dds.o ffdds.o
 
 DASSRC = ffdas.cc ff_das.cc
 DASOBJ = ffdas.o ff_das.o
 
-all: ff_das ff_dds ff_dods
+all: $(FF_LIBS) ff_das ff_dds ff_dods
 
-ff_das: $(DASOBJ) $(FFOBJ)
+ff_das: $(DASOBJ) $(FFOBJ) 
 	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
 
 ff_dds: $(DDSOBJ) $(FFOBJ)
@@ -87,6 +87,15 @@ ff_dds: $(DDSOBJ) $(FFOBJ)
 
 ff_dods: $(SERVOBJ) $(FFOBJ)
 	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+
+libfreeform.a: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
+
+libmemtrack.a: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
+
+libmaxmin.a: 
+	cd FFND; $(MAKE) $(MFLAGS) $@
 
 check: test_read_ff
 
@@ -106,11 +115,11 @@ Makefile: ${srcdir}/Makefile.in
 clean:
 	-rm -f *.o *.sum *.log *~ core
 	-rm -f $(PROG) test_read_ff
-	-cd freeform && $(MAKE) $(MFLAGS) clean
+	-cd FFND && $(MAKE) $(MFLAGS) clean
 
 distclean: clean
 	-rm -f config.status config.log config.cache
-	-cd freeform && $(MAKE) $(MFLAGS) distclean
+	-cd FFND && $(MAKE) $(MFLAGS) distclean
 
 .PHONY: depend
 depend: 

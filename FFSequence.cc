@@ -11,6 +11,9 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.5  1998/08/13 20:24:32  jimg
+// Fixed read mfunc semantics
+//
 // Revision 1.4  1998/08/12 21:20:56  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -64,40 +67,39 @@ FFSequence::~FFSequence()
 long
 Records(const String &filename)
 {
-  int error = 0;
-  DATA_BIN_PTR dbin = NULL;
-  FF_STD_ARGS_PTR SetUps = NULL;  
-  PROCESS_INFO_LIST pinfo_list = NULL;
-  PROCESS_INFO_PTR  pinfo = NULL;
-  static char Msgt[255];
+    int error = 0;
+    DATA_BIN_PTR dbin = NULL;
+    FF_STD_ARGS_PTR SetUps = NULL;  
+    PROCESS_INFO_LIST pinfo_list = NULL;
+    PROCESS_INFO_PTR  pinfo = NULL;
+    static char Msgt[255];
 
-  SetUps = ff_create_std_args();
-  if (!SetUps)
-      return -1;
+    SetUps = ff_create_std_args();
+    if (!SetUps)
+	return -1;
     
-  /** set the structure values to create the FreeForm DB**/
-  SetUps->user.is_stdin_redirected = 0;
-  SetUps->input_file = (char *)filename;
-  String iff = find_ancillary_file(filename);
-  char *if_f = new char[iff.length() + 1];
-  strcpy(if_f, iff);
-  SetUps->input_format_file = if_f;
-  SetUps->output_file = NULL;
+    /** set the structure values to create the FreeForm DB**/
+    SetUps->user.is_stdin_redirected = 0;
+    SetUps->input_file = (char *)filename; // This could be a bug 8/13/98 jhrg
+    String iff = find_ancillary_file(filename);
+    char *if_f = new char[iff.length() + 1];
+    strcpy(if_f, iff);
+    SetUps->input_format_file = if_f;
+    SetUps->output_file = NULL;
 
-  error = SetDodsDB(SetUps, &dbin, Msgt);
-  if (error && error < ERR_WARNING_ONLY)
-    {
-      db_destroy(dbin);
-      return -1;
+    error = SetDodsDB(SetUps, &dbin, Msgt);
+    if (error && error < ERR_WARNING_ONLY) {
+	db_destroy(dbin);
+	return -1;
     }
 
     error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
     if (error)
-     return(-1);
+	return(-1);
 
     pinfo_list = dll_first(pinfo_list);
  
-   //    pinfo = FF_PI(pinfo_list);
+    //    pinfo = FF_PI(pinfo_list);
     pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
 
     long num_records = PINFO_SUPER_ARRAY_ELS(pinfo);
@@ -111,67 +113,67 @@ FFSequence::read(const String &dataset, int &error)
 {
 
     if (read_p())  // Nothing to do
-      return true;
+      return false;
 
     if(BufPtr > BufSiz)
       return false; // End of sequence
 
-    bool status = true;
     if (!BufVal) { // Make the cache
-
-      char *ds = new char[dataset.length() + 1];
-      strcpy(ds, (const char*)dataset);
+	char *ds = new char[dataset.length() + 1];
+	strcpy(ds, (const char*)dataset);
    
-      // Create the output Sequence format
-      ostrstream str;
-      int endbyte = 0;
-      int stbyte = 1;
+	// Create the output Sequence format
+	ostrstream str;
+	int endbyte = 0;
+	int stbyte = 1;
 
-      str << "binary_output_data \"DODS binary output data\"" << endl;
-      for(Pix p = first_var(); p; next_var(p)) {
-	endbyte += var(p)->width();
-	str << var(p)->name() << " " << stbyte << " " << endbyte 
-	    << " " << ff_types(var(p)->type_name()) 
-	    << " " << ff_prec(var(p)->type_name()) << endl;
-	stbyte = endbyte + 1;
-      }
+	str << "binary_output_data \"DODS binary output data\"" << endl;
+	for(Pix p = first_var(); p; next_var(p)) {
+	    endbyte += var(p)->width();
+	    str << var(p)->name() << " " << stbyte << " " << endbyte 
+		<< " " << ff_types(var(p)->type_name()) 
+		<< " " << ff_prec(var(p)->type_name()) << endl;
+	    stbyte = endbyte + 1;
+	}
 
 #ifdef TEST 
-      cout << str.str();
+	cout << str.str();
 #endif 
       
-      String output_format = str.str();
+	String output_format = str.str();
       
-      char *o_fmt = new char[output_format.length() + 1];
-      strcpy(o_fmt, (const char*)output_format);
+	char *o_fmt = new char[output_format.length() + 1];
+	strcpy(o_fmt, (const char*)output_format);
 
-      String input_format_file = find_ancillary_file(dataset);
-      char *if_fmt = new char[input_format_file.length() + 1];
-      strcpy(if_fmt, input_format_file);
+	String input_format_file = find_ancillary_file(dataset);
+	char *if_fmt = new char[input_format_file.length() + 1];
+	strcpy(if_fmt, input_format_file);
      
-      long num_rec = Records(dataset); // It could come from DDS if sequence length was known
+	long num_rec = Records(dataset); // It could come from DDS if sequence length was known
 
-      if (num_rec == -1)
-	return false;
+	if (num_rec == -1)
+	    return false;
 
-      BufSiz = num_rec * stbyte;
+	BufSiz = num_rec * stbyte;
 
-      BufVal = (char *)new char[BufSiz];
-      long tbytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
-      if (tbytes == -1)
-	status = false;
-      
-      // clean up
-      delete[] ds;	       
-      delete[] o_fmt;
-      delete[] if_fmt;
+	BufVal = (char *)new char[BufSiz];
+	long tbytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
+	if (tbytes == -1) {
+	    error = 1;
+	    return false;
+	}
+	    
+	// clean up
+	delete[] ds;	       
+	delete[] o_fmt;
+	delete[] if_fmt;
     }
 
-    for (Pix p = first_var(); p; next_var(p)) 
-         status = var(p)->read(dataset, error);
+    for (Pix p = first_var(); p; next_var(p)) {
+         var(p)->read(dataset, error);
+	 if (error)
+	     return false;
+    }
  
-    return status;
+    return true;
 }
-
-
-

@@ -6,6 +6,9 @@
 //      ReZa       Reza Nekovei (reza@intcomm.net)
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.5  1998/08/13 20:24:34  jimg
+// Fixed read mfunc semantics
+//
 // Revision 1.4  1998/08/12 21:21:00  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -17,7 +20,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.4 1998/08/12 21:21:00 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.5 1998/08/13 20:24:34 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -47,54 +50,50 @@ FFUInt32::ptr_duplicate(){
 }
 
 bool
-FFUInt32::read(const String &dataset, int &)
+FFUInt32::read(const String &dataset, int &error)
 {
-  if (read_p()) // nothing to do
-    return true;
+    if (read_p()) // nothing to do
+	return false;
 
-  if(BufVal){ // data in cache
-    char * ptr = BufVal+BufPtr;
-    val2buf((void *) ptr);
-    set_read_p(true);
-    BufPtr += width();    
-    return true;
-  }
-  else{
-
-    bool status = true;
-
-    char *ds = new char[dataset.length() + 1];
-    strcpy(ds, dataset);
-
-    String o_format = make_output_format(name(), type_name(), width());
-    char *o_f = new char[o_format.length() + 1];
-    strcpy(o_f, o_format);
-
-    String i_format_file = find_ancillary_file(dataset);
-    char *if_f = new char[i_format_file.length() + 1];
-    strcpy(if_f, i_format_file);
-
-    dods_uint32 *i = new dods_uint32[width() + 1];
-    long bytes = read_ff(ds, if_f, o_f, (char *)i, width()+1);
-
-
-    if (bytes == -1){
-        status = false;
+    if(BufVal){ // data in cache
+	char * ptr = BufVal+BufPtr;
+	val2buf((void *) ptr);
+	set_read_p(true);
+	BufPtr += width();    
+	return false;
     }
-    else {
-      set_read_p(true);
-      val2buf(i);     
-    }
+    else{
+	char *ds = new char[dataset.length() + 1];
+	strcpy(ds, dataset);
 
-    if (i)
-        delete(i);
+	String o_format = make_output_format(name(), type_name(), width());
+	char *o_f = new char[o_format.length() + 1];
+	strcpy(o_f, o_format);
 
-    delete [] ds;
-    delete [] o_f;
-    delete [] if_f;
+	String i_format_file = find_ancillary_file(dataset);
+	char *if_f = new char[i_format_file.length() + 1];
+	strcpy(if_f, i_format_file);
+
+	dods_uint32 *i = new dods_uint32[width() + 1];
+	long bytes = read_ff(ds, if_f, o_f, (char *)i, width()+1);
+
+	if (bytes == -1){
+	    error = 1;
+	}
+	else {
+	    set_read_p(true);
+	    val2buf(i);     
+	}
+
+	if (i)
+	    delete(i);
+
+	delete [] ds;
+	delete [] o_f;
+	delete [] if_f;
   
-    return status;
-  }
+	return false;
+    }
 }
 
 
