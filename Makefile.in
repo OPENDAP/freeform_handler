@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.28 2001/09/28 23:19:43 jimg Exp $
+# $Id: Makefile.in,v 1.29 2001/10/14 01:36:17 jimg Exp $
 
 @SET_MAKE@
 
@@ -164,7 +164,7 @@ install: all
 	$(INSTALL_PROGRAM) FFND/bufform $(bindir)/bufform
 	$(INSTALL_PROGRAM) FFND/readfile $(bindir)/readfile
 
-configure: configure.in
+configure: configure.in $(DODS_ROOT)etc/aclocal.m4
 	autoconf --localdir=$(DODS_ROOT)etc
 
 Makefile: Makefile.in
@@ -228,6 +228,7 @@ binary-tar:
 	cd $(DODS_ROOT).. && \
 	$(TAR) --gzip --create --dereference \
 	    --file DODS-ff-server-$(version)-$(host).tar.gz \
+            DODS/readme/README DODS/readme/README-ff-server \
 	    DODS/etc/ff_das \
 	    DODS/etc/ff_dds \
 	    DODS/etc/ff_dods \

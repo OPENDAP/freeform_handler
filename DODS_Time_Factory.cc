@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.7 2000/10/11 19:37:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.8 2001/10/14 01:36:17 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -31,18 +31,18 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     
     AttrTable *at = das.get_table("DODS_Time");
     if (!at)
-	throw Error(unknown_error, "DODS_Time_Factory requires that the DODS_Time attribute be present.");
+	throw Error("DODS_Time_Factory requires that the DODS_Time attribute be present.");
 
-    string _hours_name = at->get_attr("hours_variable");
-    string _mins_name = at->get_attr("minutes_variable");
-    string _secs_name = at->get_attr("seconds_variable");
-    string _gmt = at->get_attr("gmt_time");
+    string hours_name = at->get_attr("hours_variable");
+    string mins_name = at->get_attr("minutes_variable");
+    string secs_name = at->get_attr("seconds_variable");
+    string gmt = at->get_attr("gmt_time");
 
     // If the gmt attribute is present that meanas that the times are GMT/UTC
     // times. Set the _gmt flag true, otherwise set it false.
     
-    downcase(_gmt);
-    if (_gmt == "true")
+    downcase(gmt);
+    if (gmt == "true")
 	_gmt = true;
     else
 	_gmt = false;
@@ -50,23 +50,17 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     // Now check that these variables actually exist and that they have
     // sensible types.
 
-    _hours = dds.var(_hours_name);
-    if ( _hours ) {
-      if (_hours->type() != dods_int32_c)
-	throw Error(unknown_error, "DODS_Time_Factory: The variable used for hours must be an integer.");
-    }
+    _hours = dds.var(hours_name);
+    if ( _hours && _hours->type() != dods_int32_c)
+	throw Error("DODS_Time_Factory: The variable used for hours must be an integer.");
 
-    _minutes = dds.var(_mins_name);
-    if ( _minutes ) {
-      if (_minutes->type() != dods_int32_c)
-	throw Error(unknown_error, "DODS_Time_Factory: The variable used for minutes must be an integer.");
-    }
+    _minutes = dds.var(mins_name);
+    if ( _minutes && _minutes->type() != dods_int32_c)
+	throw Error("DODS_Time_Factory: The variable used for minutes must be an integer.");
 
-    _seconds = dds.var(_secs_name);
-    if ( _seconds ) {
-      if (_seconds->type() != dods_int32_c)
-	throw Error(unknown_error, "DODS_Time_Factory: The variable used for seconds must be an integer.");
-    }
+    _seconds = dds.var(secs_name);
+    if ( _seconds && _seconds->type() != dods_int32_c)
+	throw Error("DODS_Time_Factory: The variable used for seconds must be an integer.");
 }
 
 DODS_Time
@@ -97,6 +91,13 @@ DODS_Time_Factory::get()
 }
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.8  2001/10/14 01:36:17  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.7.2.1  2001/10/11 17:42:09  jimg
+// Fixed a bug in the Time, StartTime and EndTime factory calsses. A local
+// variable _gmt shadowed the class member _gmt.
+//
 // Revision 1.7  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

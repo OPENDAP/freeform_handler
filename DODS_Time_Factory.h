@@ -28,7 +28,7 @@
 class DODS_Time_Factory {
 private:
     BaseType *_hours;
-    BaseType * _minutes;
+    BaseType *_minutes;
     BaseType *_seconds;
     bool _gmt;
 
@@ -62,6 +62,13 @@ public:
 };
 
 // $Log: DODS_Time_Factory.h,v $
+// Revision 1.5  2001/10/14 01:36:17  jimg
+// Merged with release-3-2-4.
+//
+// Revision 1.4.2.1  2001/10/11 17:42:09  jimg
+// Fixed a bug in the Time, StartTime and EndTime factory calsses. A local
+// variable _gmt shadowed the class member _gmt.
+//
 // Revision 1.4  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

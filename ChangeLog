@@ -1,3 +1,16 @@
+2001-10-13  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged with release-3-2-4.
+
+	* Fixed some minor problems with the configure script.
+
+	* Removed some unused code.
+
+	* Fixed a bug in the Date and Time factory classes where the field
+	_gmt was shadowed by a local variable with the same name.
+
+	* Updated README & INSTALL.
+
 2001-09-28  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged 3.2.3. The next merge should use release-3-2-3 -j
