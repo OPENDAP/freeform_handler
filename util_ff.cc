@@ -9,6 +9,12 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.13  2000/04/20 13:57:38  dan
+// Modified ff_types to return the FreeForm type 'uint8'
+// for the DODS type 'byte'.  This is consistent with the
+// current behavior of dods_byte but will cause FreeForm
+// datasets using the 'int8' datatype to fail.
+//
 // Revision 1.12  1999/05/04 02:55:38  jimg
 // Merge with no-gnu
 //
@@ -64,7 +70,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.12 1999/05/04 02:55:38 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.13 2000/04/20 13:57:38 dan Exp $"};
 
 #include <unistd.h>
 
@@ -93,7 +99,7 @@ ff_types(Type dods_type)
 {
     switch (dods_type) {
       case dods_byte_c:
-	return "int8";
+	return "uint8";
       case dods_int16_c:
 	return "int16";
       case dods_uint16_c:
