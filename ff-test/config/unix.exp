@@ -1,64 +1,19 @@
 
 # Tcl/Expect code for the FreeForm server tests.
 # 
-# $Id: unix.exp,v 1.1 1999/01/06 22:59:54 jimg Exp $
+# $Id: unix.exp,v 1.2 1999/05/24 22:06:18 jimg Exp $
 
-# Compare $expected to the global $comp_output. Run `pass' if they match. If
-# they do not mathc run `fail' unless `xfailp' is true in which case run
-# `xfail'. $msg is the name of the test to print when calling pass, fail or
-# xfail. The $str_test variable contains the name of the test to run. Usually
-# `compare', which does a straight char for char comparison is used. However,
-# any of Tcl's string comparisons can be used. 
-#
-# NB: $expected may be either a string or a file name. If it is the latter,
-# read the file and compare its contents to $comp_output.
+set version {ff/3.0.0a}
 
-proc compare_stdout {expected msg {xfailp 0} {str_test compare}} {
-    global comp_output
-    global verbose
+# Read the common code for tests.
 
-    # If $expected is the name of a file, read that file's contents and store
-    # in $expected, then procede to compare $expected to $comp_output.
-
-    if {[file exists $expected] && [file isfile $expected]} {
-	if {$verbose >= 1} {
-	    send_user "PWD: [pwd]\n"
-	    send_user "Reading file: $expected\n"
-	}
-	set fd [open $expected r]
-	set expected [read $fd]
-	close $fd
-    }
-
-    # Trim is used here to remove trailing `\n's from files of data.
-    set expected [string trim $expected]
-    set comp_output [string trim $comp_output]
-
-    # If str_test is compare, a result of 0 indicates equality. If the test
-    # is match, a result of 1 indicates that the pattern matches.
-    if {[string compare $str_test "compare"] == 0} {
-	set test_value 0
-    } elseif {[string compare $str_test "match"] == 0} {
-	set test_value 1
-    } else {
-	send_user "I don't understand string comparison name"
-	exit
-    }
-
-    if {[string $str_test $expected $comp_output] == $test_value} {
-	pass "$msg"
-	send_user "PASS: $msg\n"
-    } elseif {$xfailp == 1} {
-	xfail "$msg"
-	send_user "XFAIL: $msg\n"
-    } else {
-	fail "$msg"
-    }
-
-    if {$verbose >= 1} {
-	send_user "Comp output:$comp_output\n"
-	send_user "Expected output:$expected\n"
-    }
+if {[info exists env(DODS_ROOT)] && [file exists $env(DODS_ROOT)/etc/common_tests.exp]} {
+    source $env(DODS_ROOT)/etc/common_tests.exp
+} elseif {[file exists ../../etc/common_tests.exp]} {
+    source ../../etc/common_tests.exp
+} else {
+    send_user "Could not load common tests!"
+    exit(1)
 }
 
 # The four `required' procs are _start, _load, _exit and _version.
@@ -67,19 +22,20 @@ proc ff_das_start { {args ""} {file ""}} {
     global verbose
     global comp_output
     global spawn_id
+    global version
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_das $args ...\n"
+	    send_user "Testing ff_das -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ff_das $args" comp_output
+	catch "exec ff_das -v $version $args" comp_output
     } else {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_das $args >& $file ...\n"
+	    send_user "Testing ff_das -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ff_das $args > $file" comp_output
+	catch "exec ff_das -v $version $args >& $file" comp_output
     }
 }
 
@@ -98,19 +54,20 @@ proc ff_dds_start { {args ""} {file ""}} {
     global verbose
     global comp_output
     global spawn_id
+    global version
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_dds $args ...\n"
+	    send_user "Testing ff_dds -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ff_dds $args" comp_output
+	catch "exec ff_dds -v $version $args" comp_output
     } else {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_dds $args >& $file ...\n"
+	    send_user "Testing ff_dds -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ff_dds $args > $file" comp_output
+	catch "exec ff_dds -v $version $args >& $file" comp_output
     }
 }
 
@@ -129,19 +86,20 @@ proc ff_dods_start { {args ""} {file ""}} {
     global verbose
     global comp_output
     global spawn_id
+    global version
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_dods $args ...\n"
+	    send_user "Testing ff_dods -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ff_dods $args" comp_output
+	catch "exec ff_dods -v $version $args" comp_output
     } else {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_dods $args >& $file ...\n"
+	    send_user "Testing ff_dods -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ff_dods $args > $file" comp_output
+	catch "exec ff_dods -v $version $args >& $file" comp_output
     }
 }
 
