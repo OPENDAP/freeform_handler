@@ -26,6 +26,9 @@
 // use in the browsed image server. That version was written in C. 
 
 // $Log: date_proc.cc,v $
+// Revision 1.2  1998/11/10 17:47:43  jimg
+// Cleaned up the doc++ comments.
+//
 // Revision 1.1  1998/09/17 17:46:40  jimg
 // Created
 //
@@ -34,11 +37,11 @@
 
 #include "config_dap.h"
 
-static char __unused__ rcsid[]={"$Id: date_proc.cc,v 1.1 1998/09/17 17:46:40 jimg Exp $"};
+static char __unused__ rcsid[]={"$Id: date_proc.cc,v 1.2 1998/11/10 17:47:43 jimg Exp $"};
 
 // You have to add one to days[1] if the year is a leap year. Since the month
 // number in a Gregorian date is ones-based, fill element zero below to
-// avaoid gratuitous subtractions of the index value. Note that the fill
+// avoid gratuitous subtractions of the index value. Note that the fill
 // value is never used. 9/4/98 jhrg
 static int days_arr[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
@@ -63,8 +66,8 @@ days(int year, int month)
 }
 
 /**
-  Given a gregorian date in the years, month and day, return the Julian day
-  number. 
+  Given a gregorian date in year, month and day, return the Julian day
+  number.
   
   NB: I am not sure this code deals correctly with dates before 1100 A.D.
 
@@ -72,8 +75,7 @@ days(int year, int month)
   @param month The month. Ones-based month number (Jan = 1, Dec = 12).
   @param day The day. Ones-based day number.
   @see ACM Collected algorithms.
-  @return Julian day number. 
-*/
+  @return The Julian day number. */
 
 long 
 julian_day(int year, int month, int day)
