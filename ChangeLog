@@ -1,3 +1,7 @@
+1999-05-05  James Gallagher  <jimg@dcz.dods.org>
+
+	* Added test-coverage target to Makefile.in
+
 1999-05-04  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added version.h based version to dispatch script (set by
