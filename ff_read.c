@@ -7,6 +7,9 @@
 
 /*
  * $Log: ff_read.c,v $
+ * Revision 1.7  1998/10/29 16:58:47  mao
+ * turned off error prompting
+ *
  * Revision 1.6  1998/09/17 17:41:42  jimg
  * Changed the error messages to aid in bug tracking.
  *
@@ -27,7 +30,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.6 1998/09/17 17:41:42 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.7 1998/10/29 16:58:47 mao Exp $"};
 
 #include <freeform.h>
 
@@ -51,6 +54,7 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
     }
 
   /* set the std_arg structure values **/
+  std_args->error_prompt = FALSE;
   std_args->user.is_stdin_redirected = 0;
   std_args->input_file = dataset;
   std_args->input_format_file = if_file;
@@ -114,20 +118,7 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
 
  main_exit:
 
-  {
-      int err = err_state();
-      if (err && !error)
-	  error = err_pop();
-      if (error)
-	  switch (error) {
-	    case ERR_MEM_LACK:
-	      fprintf(stderr, "Insufficient memory!\n");
-	      break;
-	    default:
-	      fprintf(stderr, "Unknown FreeForm error!\n");
-	      break;
-	  }
-  }
+  err_disp(std_args);
 
   if (std_args)
     ff_destroy_std_args(std_args);
