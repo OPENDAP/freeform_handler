@@ -1721,8 +1721,8 @@ unsigned long ndarr_get_mapped_offset(ARRAY_MAPPING_PTR amap)
 
 	for(i = 0; i < amap->sub_array->num_dim; i++){
 		amap->aindex->index[amap->dim_mapping[i]] =
-				(amap->index_mapping[i] +
-				amap->index_dir[i] * amap->subaindex->index[i]) *
+				amap->index_mapping[i] +
+				amap->index_dir[i] * amap->subaindex->index[i] *
 				amap->gran_mapping[i] / amap->gran_div_mapping[i];
 	}
 
