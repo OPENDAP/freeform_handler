@@ -9,13 +9,17 @@
 // Implementation of the DODS Time class
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.2  1998/12/30 06:38:26  jimg
+// Define TEST to use this without the dap++ library (e.g., when testing
+// DODS_Date_Time).
+//
 // Revision 1.1  1998/12/28 19:07:33  jimg
 // Initial version of the DODS_Time object
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.1 1998/12/28 19:07:33 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.2 1998/12/30 06:38:26 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -50,6 +54,7 @@ compute_ssm(int hh, int mm, double ss)
 static string
 extract_argument(BaseType *arg)
 {
+#ifndef TEST
     if (arg->type() != dods_str_c)
 	throw Error(malformed_expr, "A DODS string argument is required.");
     
@@ -63,10 +68,13 @@ extract_argument(BaseType *arg)
     DBG(cerr << "s: " << s << endl);
 
     return s;
+#else
+    return "";
+#endif
 }
 
 bool
-DODS_Time::OK()
+DODS_Time::OK() const
 {
     return _hours >= 0 && _hours <= 23
 	&& _minutes >= 0 && _minutes <= 59
@@ -97,16 +105,20 @@ DODS_Time::DODS_Time(int hh, int mm, bool gmt = false):
     _hours(hh), _minutes(mm), _seconds(0), _gmt(gmt)
 {
     _sec_since_midnight = compute_ssm(hh, mm, 0);
+#ifndef TEST
     if (!OK())
 	throw Error(malformed_expr, time_syntax_string);
+#endif
 }
 
 DODS_Time::DODS_Time(int hh, int mm, double ss, bool gmt = false):
     _hours(hh), _minutes(mm), _seconds(ss), _gmt(gmt)
 {
     _sec_since_midnight = compute_ssm(hh, mm, ss);
+#ifndef TEST
     if (!OK())
 	throw Error(malformed_expr, time_syntax_string);
+#endif
 }
 
 void
@@ -120,7 +132,7 @@ DODS_Time::set_time(string time)
     iss >> _minutes;
 
     // If there are two colons, assume hours:minutes:seconds.
-    if (time.find_first_of(":") != time.find_last_of(":")) {
+    if (time.find(":") != time.rfind(":")) {
 	iss >> c;
 	iss >> _seconds;
     }
@@ -134,8 +146,10 @@ DODS_Time::set_time(string time)
     else
 	_gmt = false;
 
+#ifndef TEST
     if (!OK())
 	throw Error(malformed_expr, time_syntax_string);
+#endif
 }    
 
 void
@@ -159,8 +173,10 @@ DODS_Time::set_time(int hh, int mm, double ss, bool gmt = false)
    _gmt = gmt;
    _sec_since_midnight = compute_ssm(hh, mm, ss);
 
+#ifndef TEST
     if (!OK())
 	throw Error(malformed_expr, time_syntax_string);
+#endif
 }
 
 double
