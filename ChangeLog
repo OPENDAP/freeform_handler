@@ -1,3 +1,12 @@
+1999-01-04  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Additions for the File Server. This software consists of the
+	classes DODS_Date, DODS_Time, and DODS_Date_Time. Instances of
+	these classes maybe created using the matching Factory classes
+	which in turn read configuration parameters from an ancillary DAS
+	object. The objects may be accessed via the CE using functions
+	(see the files ce_functions.cc/h).
+
 1998-11-12  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* This code contains an alpha version of the DODS_Date catlaog
