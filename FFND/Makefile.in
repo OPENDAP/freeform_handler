@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.4 1998/08/14 19:05:34 jimg Exp $
+# $Id: Makefile.in,v 1.5 1998/08/17 18:50:31 jimg Exp $
 
 @SET_MAKE@
 
@@ -85,10 +85,10 @@ clean:
         $(FF_LIBRARY) $(MM_LIBRARY) \
 	newform newform.o core *~ readfile.o readfile
 
-distclean:
+distclean: clean
 	-rm -f config.status config.log config.cache
-	(cd bin; rm *)
-	(cd lib; rm *)
+	(cd bin; rm newform readline)
+	(cd lib; rm lib*.a)
 
 install: newform readfile $(FF_LIBRARY)
 	$(INSTALL_DATA) $(FF_LIBRARY) $(libdir)/$(FF_LIBRARY)
