@@ -15,6 +15,9 @@
 // ReZa 6/20/97
 
 // $Log: ffdds.cc,v $
+// Revision 1.6  1998/08/18 16:58:25  reza
+// Files with headers are now handled correctly
+//
 // Revision 1.5  1998/08/14 19:42:57  jimg
 // Added default case to FFV_DATA_TYPE switch statement.
 //
@@ -29,7 +32,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.5 1998/08/14 19:42:57 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.6 1998/08/18 16:58:25 reza Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +102,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	return false;
     }
   
-    error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT, &num_names, 
+    error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names, 
 		   &var_names_vector);
     if (error) {
 	sprintf(Msgt, "ff_dds: db_ask could not get varible list from the input file");
@@ -108,30 +111,21 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	return false;
     }
   
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
-    if (!error) {
-	pinfo_list = dll_first(pinfo_list);
-	// pinfo = FF_PI(pinfo_list);
-	pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
-	iformat = PINFO_FORMAT(pinfo);
-    }
-    else {
+    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &pinfo_list);
+    if(error){
 	sprintf(Msgt, "ff_dds: db_ask could not get process info. for the input file");
 	ErrMsgT(Msgt);  
 	cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
 	return false;
     }
  
-    // For some formats: Freefrom sends extra NULL variables at the end of
-    // the list.
-    for (i=0; ((*var_names_vector)[i])&&(i<num_names); i++) { 
-	int num_dim_names = 0;
+    for (i=0; i<num_names; i++) { 
+        int num_dim_names = 0;
 	char **dim_names_vector = NULL;
 	char *cp = NULL;
 	FF_ARRAY_DIM_INFO_PTR array_dim_info = NULL;
 	int j = 0;	
-	/***/
-    
+	
 	error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i], 
 		       &num_dim_names, &dim_names_vector);
 	if (error) {
@@ -150,8 +144,18 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    // name with '::' ?
 	    cp = strstr(var_names_vector[i], "::")+2;
 
+	pinfo_list = dll_first(pinfo_list);
+	// pinfo = FF_PI(pinfo_list);
+	pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
+	iformat = PINFO_FORMAT(pinfo);
+
 	var = ff_find_variable(cp, iformat);	
 
+	// For some formats: Freefrom sends an extra EOL variable at the end of
+	// the list.
+	if(IS_EOL(var)) 
+	  break;
+	
 	while (!var) { // search formats in the format list for the variable
 	    //pinfo_list = dll_next(pinfo_list);
 	    pinfo_list = (pinfo_list)->next;
@@ -169,6 +173,11 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    var = ff_find_variable(cp, iformat);	
 	}
        
+
+
+
+
+
 	if(num_dim_names == 0) {
 	    if(newseq) {
 		newseq = false;
@@ -279,6 +288,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	else
 	    if(newseq)
 		dds_table.add_var(seq);
+	//      }// If name is not NULL
     }
 
     if(!is_array)

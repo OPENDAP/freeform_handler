@@ -9,6 +9,9 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.6  1998/08/18 16:58:24  reza
+// Files with headers are now handled correctly
+//
 // Revision 1.5  1998/08/14 19:44:35  jimg
 // Added return for non-void functions that could return implicitly (without a
 // value).
@@ -37,7 +40,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.5 1998/08/14 19:44:35 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.6 1998/08/18 16:58:24 reza Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -267,20 +270,26 @@ SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
     }
 	
     error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
-    dll_free_holdings(format_data_list); // dll == dyn link lib? 8/13/98 jhrg
+    dll_free_holdings(format_data_list); 
     if (error) {
 	sprintf(Msgt, "Error creating array information for %s",
 		std_args->input_file); 
 	return(DBSET_CREATE_CONDUITS);
     }
 		
-    // I think these next two return calls signal errors. 8/13/98 jhrg
     if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT,
 	       std_args->input_file)) {
 	sprintf(Msgt, "Error determining input header file names for %s",
 		std_args->input_file); 
 	return(DBSET_HEADER_FILE_NAMES);
     }
+    
+    if (db_set(*dbin_h, DBSET_HEADERS)) 
+      { 
+	sprintf(Msgt, "getting header file for %s", std_args->input_file); 
+	return(DBSET_HEADERS); 
+      } 
+
 	
     if (db_set(*dbin_h, DBSET_INIT_CONDUITS, FFF_DATA,
 	       std_args->records_to_read)) {

@@ -1,4 +1,3 @@
-
 // (c) COPYRIGHT URI/MIT 1997-98
 // Please read the full copyright statement in the file COPYRIGH.  
 //
@@ -11,6 +10,9 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.7  1998/08/18 16:58:23  reza
+// Files with headers are now handled correctly
+//
 // Revision 1.6  1998/08/14 18:20:14  reza
 // Fixed extra records read for sequences.
 //
@@ -96,7 +98,7 @@ Records(const String &filename)
 	return -1;
     }
 
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &pinfo_list);
+    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &pinfo_list);
     if (error)
 	return(-1);
 
