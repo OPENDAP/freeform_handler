@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.14 1999/06/30 18:44:36 jimg Exp $
+# $Id: Makefile.in,v 1.15 1999/11/05 01:00:28 jimg Exp $
 
 @SET_MAKE@
 
@@ -131,12 +131,16 @@ install: newform readfile chkform $(FF_LIBRARY)
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 	$(INSTALL_PROGRAM) checkvar $(bindir)/checkvar
 
-Makefile: ${srcdir}/Makefile.in
-	cd ..; ${SHELL} ./config.status
+Makefile: Makefile.in
+	if [ -x ../config.status ]; \
+	then \
+	    ${SHELL} ../config.status; \
+	else \
+	    ../configure; \
+	fi
 
 check: newform readfile
 	cd testsuite; test_newform
-
 
 test-coverage: clean
 	$(MAKE) $(MFLAGS) CFLAGS="$(CFLAGS) $(TEST_COV_FLAGS)" check
@@ -159,13 +163,11 @@ tags:
 
 .PHONY: depend
 depend: 
-	> dependencies
-	@depend@ -m dependencies -- $(CPPFLAGS) -- $(FF_SRCS) \
-	$(PROG_SRCS)
+	@depend@ -m Makefile.in -- $(CPPFLAGS) -- $(FF_SRCS) $(PROG_SRCS)
 
 .SUFFIXES:      .o .c
 
 .c.o:
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
-include dependencies
+# DO NOT DELETE; depend depends on this line.

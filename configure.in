@@ -2,15 +2,13 @@
 dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.8 1999/08/09 18:30:57 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.9 1999/11/05 01:00:28 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
 AC_CONFIG_AUX_DIR(../../etc)
 
 AC_PREFIX_DEFAULT("\$(DODS_ROOT)")
-
-fulldir=`pwd`
 
 DODS_GET_DODS_ROOT
 DODS_DIRECTORY_VERSION
@@ -26,9 +24,9 @@ dnl to default values otherwise.
 
 AC_CANONICAL_HOST
 
-CFLAGS="-g -O2 $CFLAGS"
-CXXFLAGS="-g -O2 $CXXFLAGS"
-LDFLAGS="-g $LDFLAGS"
+CFLAGS="-gstabs -O2 $CFLAGS"
+CXXFLAGS="-gstabs -O2 $CXXFLAGS"
+dnl LDFLAGS="-gstabs $LDFLAGS"
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -45,13 +43,7 @@ DODS_PROG_BISON
 DODS_GCC
 
 DODS_CHECK_GCC_DEBUG
-DODS_FIND_GPP_INC
-
-if echo $INSTALL | egrep 'install-sh'
-then
-	INSTALL="$(DODS_ROOT)/etc/install-sh -c"
-	AC_SUBST(INSTALL)
-fi
+dnl DODS_FIND_GPP_INC
 
 dnl You should have g++, but you can override that with an environment
 dnl variable. 
@@ -81,8 +73,8 @@ DODS_SEM
 DODS_COMPRESSION_LIB
 DODS_RX_LIB
 DODS_WWW_LIB
-DODS_TCL_LIB
-DODS_TK_LIB
+dnl DODS_TCL_LIB
+dnl DODS_TK_LIB
 
 DODS_EFENCE
 

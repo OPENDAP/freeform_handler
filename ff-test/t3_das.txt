@@ -1,0 +1,22 @@
+HTTP/1.0 200 OK
+XDODS-Server: ff/*
+Content-type: text/plain
+Content-Description: dods_das
+
+Attributes {
+    FF_GLOBAL {
+        String Server "DODS FreeFrom based on FFND release 4*";
+        String Native_file *;
+    }
+    inger1 {
+        String units "integer..unitless";
+    }
+    inger2 {
+        String units "integer..unitless";
+    }
+    reel1 {
+        String units "real..unitless";
+    }
+    inger3 {
+    }
+}
