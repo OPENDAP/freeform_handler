@@ -40,6 +40,9 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.5  1998/08/13 20:23:45  jimg
+// Removed the attribute about file info.
+//
 // Revision 1.4  1998/08/12 21:21:14  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -53,7 +56,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.4 1998/08/12 21:21:14 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.5 1998/08/13 20:23:45 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,7 +97,7 @@ read_attributes(const char *filename, AttrTable *at, String *err_msg)
   /** set the structure values to create the FreeForm DB**/
   SetUps->user.is_stdin_redirected = 0;
   SetUps->input_file = (char *)filename;
-  String &ds = (char *)filename;
+  String ds = (char *)filename;
   String iff = find_ancillary_file(ds);
   char *if_f = new char[iff.length() + 1];
   strcpy(if_f, iff);
@@ -118,8 +121,15 @@ read_attributes(const char *filename, AttrTable *at, String *err_msg)
   }
   
   at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
-  //  	at->append_attr("Input File", "STRING", dbin->title);
-  at->append_attr("Info. on native input file:", "STRING", bufsize->buffer);
+  // at->append_attr("Title", "STRING", dbin->title);
+
+  // Add the file information back once we have code to process the string.
+  // It contains embedded double quotes that confuse the DAS parser. 8/13/98
+  // jhrg.
+#if 0
+  at->append_attr("file_information", "STRING", bufsize->buffer);
+#endif
+
   return true;
 }
 
