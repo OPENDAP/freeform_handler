@@ -1,13 +1,21 @@
 /*
- * HISTORY:
- *	r fozzard	7/28/95		-rf03
- *		CodeWarrior doesn't need unix.h
- *	r fozzard	8/3/95		-rf04
- *		Redefine FF_TYPES_t to unsigned int to solve var_args stack problem; apparently
- *		on the Mac, (and maybe Unix), a 4-byte value is pushed, even when you request only
- *		2 bytes.
- *		Also, a fix to the TRUE/FALSE definitions to properly define them if not defined.
-*/
+ * FILENAME: freeform.h
+ *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
+ */
 
 #ifndef FREEFORM_H__
 #define FREEFORM_H__
@@ -879,6 +887,11 @@ struct struct_ff_std_args
 
 	char           *error_log;            /* string: file name to send error messages */
 	BOOLEAN         error_prompt;
+
+	/* FF2SDE specific option flags */
+	double          SDE_grid_size;
+	double          SDE_grid_size2;
+	double          SDE_grid_size3;
 	
 	/* Checkvar specific option flags */
 	char   *cv_list_file_dir;
@@ -1559,9 +1572,9 @@ FF_DATA_FLAG_PTR ff_create_data_flag(void);
 void ff_destroy_data_flag(FF_DATA_FLAG_PTR);
 
 FORMAT_PTR ff_find_format(FORMAT_LIST, ...);
-FORMAT_PTR ff_afm2bfm(FORMAT_PTR);
+FORMAT_PTR ff_afm2bfm(FORMAT_PTR, char *new_name);
 size_t ffv_ascii_type_size(VARIABLE_PTR var);
-FORMAT_PTR ff_bfm2dfm(FORMAT_PTR format);
+FORMAT_PTR ff_bfm2dfm(FORMAT_PTR format, char *new_name);
 int format_to_ISO8211DDR(FORMAT_PTR format, const char *first_fields, FF_BUFSIZE_HANDLE ddf);
 VARIABLE_PTR ff_find_variable(char *, FORMAT_PTR);
 VARIABLE_PTR ff_new_name(FORMAT_PTR, char *, char *);

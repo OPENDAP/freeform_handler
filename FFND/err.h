@@ -1,28 +1,23 @@
 /*
- * NAME: err.h
+ * FILENAME: err.h
  *              
  * PURPOSE: contains error defined constants and prototypes for error.c 
  *
- * USAGE:       
- *
- * RETURNS:     
- *
- * DESCRIPTION: include file for error.c
- *
- * SYSTEM DEPENDENT FUNCTIONS:  
- *
- * AUTHOR:      Mark Van Gorp at NGDC (based upon Ron White's version) 497-6221
- *
- * COMMENTS:    
- *
- * KEYWORDS:    
- *
+ * CAVEAT:
+ * No claims are made as to the suitability of the accompanying
+ * source code for any purpose.  Although this source code has been
+ * used by the NOAA, no warranty, expressed or implied, is made by
+ * NOAA or the United States Government as to the accuracy and
+ * functioning of this source code, nor shall the fact of distribution
+ * constitute any such endorsement, and no responsibility is assumed
+ * by NOAA in connection therewith.  The source code contained
+ * within was developed by an agency of the U.S. Government.
+ * NOAA's National Geophysical Data Center has no objection to the
+ * use of this source code for any purpose since it is not subject to
+ * copyright protection in the U.S.  If this source code is incorporated
+ * into other software, a statement identifying this source code may be
+ * required under 17 U.S.C. 403 to appear with any copyright notice.
  */
-/*
- * HISTORY:
- *	Rich Fozzard	7/31/95		-rf01
- *		CodeWarrior for Mac is picky about redefines of TRUE,FALSE
-*/
 
 
 /* Avoid multiple includes */
