@@ -2059,7 +2059,7 @@ static int find_dir_format_files
 #endif
 #define ROUTINE_NAME "find_format_files"
 
-static int find_format_files
+int find_format_files
 	(
 	 DATA_BIN_PTR dbin,
 	 char *input_file,
