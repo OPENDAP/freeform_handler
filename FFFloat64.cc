@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFFloat64.cc,v $
+// Revision 1.4  1998/08/12 21:20:53  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:13:46  jimg
 // Fixes for warnings, etc
 //
@@ -19,7 +22,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.3 1998/04/21 17:13:46 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.4 1998/08/12 21:20:53 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -30,6 +33,8 @@ static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.3 1998/04/21 17:13:46 ji
 #include "FFFloat64.h"
 #include "util_ff.h"
 
+extern long BufPtr;
+extern char *BufVal;
 
 Float64 *
 NewFloat64(const String &n)
@@ -50,8 +55,18 @@ FFFloat64::ptr_duplicate()
 bool
 FFFloat64::read(const String &dataset, int &)
 {
-    if (read_p()) // nothing to do
-        return true;
+  if (read_p()) // nothing to do
+    return true;
+  
+  if(BufVal){ // data in cache
+    char * ptr = BufVal+BufPtr;
+    val2buf((void *) ptr);
+    set_read_p(true);
+
+    BufPtr += width();
+    return true;
+  }
+  else{
 
     bool status = true;
 
@@ -85,7 +100,7 @@ FFFloat64::read(const String &dataset, int &)
     delete [] if_f;
 
     return status;
-
+  }
 }
 
 

@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.4  1998/08/12 21:20:49  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:13:41  jimg
 // Fixes for warnings, etc
 //
@@ -19,7 +22,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.3 1998/04/21 17:13:41 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.4 1998/08/12 21:20:49 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -62,32 +65,36 @@ FFArray::~FFArray()
 // return number of elements to read. 
 
 long
-FFArray::Arr_constraint(long *cor, long *step, long *edg, char **dim_nms, 
+FFArray::Arr_constraint(long *cor, long *step, long *edg, String *dim_nms, 
 			bool *has_stride)
 {
-    int start, stride, stop;
+    long start, stride, stop;
+
     int id = 0;
     long nels = 1;
-    String dimname;
+    //    String dimname;
 
     *has_stride = false;
 
     for (Pix p = first_dim(); p ; next_dim(p), id++) {
-	start = dimension_start(p, true); 
-	stride = dimension_stride(p, true);
-	stop = dimension_stop(p, true);
-	dimname = dimension_name(p);
+	start = (long) dimension_start(p, true); 
+	stride = (long) dimension_stride(p, true);
+	stop = (long) dimension_stop(p, true);
+	String dimname = dimension_name(p);
 
 	// Check for empty constraint
 	if(start+stop+stride == 0)
 	    return -1;
-
-	(void) strcpy(dim_nms[id],(const char *)dimname);
-
+	
+	dim_nms[id] = dimname;
+	//	(void) strcpy(dim_nms[id],(const char *)dimname);
+	
 	cor[id] = start;
 	step[id] = stride;
 	edg[id] = ((stop - start)/stride) + 1; // count of elements
+	
 	nels *= edg[id];      // total number of values for variable
+	
 	if (stride != 1)
 	    *has_stride = true;
     }
@@ -229,42 +236,36 @@ FFArray::read(const String &dataset, int &)
     bool status = true;
 
     // make char * variables to hold String data for read_ff
-
     char *ds = new char[dataset.length() + 1];
-    strcpy(ds, dataset);
+    strcpy(ds, (const char*)dataset);
 
-    /* This was used for original Sequence to Array translation
-    String output_format = make_output_format(name(), var()->type_name(), 
-					      var()->width());
-    */
-#if 0
-    unused...
+    // This was used for original Sequence to Array translation 
+    // String output_format = make_output_format(name(), var()->type_name(), 
+    //					      var()->width());
+   
     bool has_stride;
-#endif
-    char dname[40][40];		// *** change this to dynamically alloc.
     int ndims = dimensions();
+    String *dname = new String[ndims];	       
     long *start = new long[ndims];
     long *stride = new long[ndims];
-    long *edge = new long[ndims];
+    long *edge = new long[ndims];    
+    long count = Arr_constraint(start, stride, edge, dname, 
+     				&has_stride);    
+    if(!count)
+      printf("constraint returned empty dataset");
 
-#if 0
-    unused...
-    long count = Arr_constraint(start, stride, edge, (char **)dname, 
-				&has_stride);  
-#endif
-
-    String output_format = 
-	makeND_output_format(name(), var()->type_name(), var()->width(), 
-			     ndims, start, edge, stride, (const char **)dname);
+    String output_format =
+      makeND_output_format(name(), var()->type_name(), var()->width(), 
+			     ndims, start, edge, stride, dname);
 
     char *o_fmt = new char[output_format.length() + 1];
-    strcpy(o_fmt, output_format);
+    strcpy(o_fmt, (const char*)output_format);
 
     String input_format_file = find_ancillary_file(dataset);
     char *if_fmt = new char[input_format_file.length() + 1];
     strcpy(if_fmt, input_format_file);
 
-    // For each cadinal-type variable, do the following:
+    // For each cardinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data
 
@@ -276,7 +277,7 @@ FFArray::read(const String &dataset, int &)
 	if (bytes == -1)
 	    status = false;
 	else{ 
-	  // seq2vects(b, *this); Used for sequence to array.
+	  // seq2vects(b, *this); Used for old sequence to array.
 	  set_read_p(true);
 	  val2buf((void *) b);
 	}
@@ -305,7 +306,7 @@ FFArray::read(const String &dataset, int &)
 	if (bytes == -1)
 	    status = false;
 	else{
-	  //    seq2vects(ui, *this); Used for Seq => Arrray 
+	  //    seq2vects(ui, *this); Used for old Seq => Arrray 
 	  set_read_p(true);
 	  val2buf((void *) ui);
 	}
@@ -341,6 +342,10 @@ FFArray::read(const String &dataset, int &)
     delete[] ds;		// delete temporary char * arrays
     delete[] o_fmt;
     delete[] if_fmt;
+
+    delete[] start;
+    delete[] stride;
+    delete[] edge;
 
     return status;
 }

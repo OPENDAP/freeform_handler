@@ -40,6 +40,9 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.4  1998/08/12 21:21:14  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:14:09  jimg
 // Fixes for warnings, etc
 //
@@ -50,7 +53,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.3 1998/04/21 17:14:09 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.4 1998/08/12 21:21:14 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,20 +64,10 @@ static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.3 1998/04/21 17:14:09 jimg E
 #include "cgi_util.h"
 #include "DAS.h"
 #include "FreeForm.h"
-
-
-// These are used as the return values for print_type().
-
-static const char STRING[]="String";
-static const char BYTE[]="Byte";
-static const char INT32[]="Int32";
-static const char FLOAT64[]="Float64";
+#include "util_ff.h"
 
 // Used by ErrMsgT
-
-#if 0
 static char Msgt[255];
-#endif
 
 // reads the attributes and store their names and values in the attribute table.
 //
@@ -82,47 +75,52 @@ static char Msgt[255];
 // file, true otherwise. 
 
 bool
-read_attributes(const char *filename, AttrTable *at, String *error1)
+read_attributes(const char *filename, AttrTable *at, String *err_msg)
 {
-
-#if 0
-  FF_BUFSIZE_PTR bufsize = NULL;
-#endif
-  
-  DATA_BIN_PTR dbin = NULL;
   int error = 0;
-  FF_STD_ARGS_PTR std_args = NULL;
-
-  std_args = ff_create_std_args();
-  if (!std_args)
+  FF_BUFSIZE_PTR bufsize = NULL;
+  DATA_BIN_PTR dbin = NULL;
+  FF_STD_ARGS_PTR SetUps = NULL;  
+  
+  SetUps = ff_create_std_args();
+  if (!SetUps)
     {
-      error = ERR_MEM_LACK;
-      exit(1);
+      sprintf(Msgt, "ff_das: Insufficient memory -- free more memory and try again");
+      ErrMsgT(Msgt);  
+      cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+      return false;
     }
+    
+  /** set the structure values to create the FreeForm DB**/
+  SetUps->user.is_stdin_redirected = 0;
+  SetUps->input_file = (char *)filename;
+  String &ds = (char *)filename;
+  String iff = find_ancillary_file(ds);
+  char *if_f = new char[iff.length() + 1];
+  strcpy(if_f, iff);
+  SetUps->input_format_file = if_f;
+  SetUps->output_file = NULL;
 
-  char *fn = new char[strlen(filename) + 1];
-  strcpy(fn, filename);
-  std_args->input_file = fn;
-  String format_file = ((String) filename).before(".")+".fmt";
-  char *iff = new char[format_file.length() + 1];
-  strcpy(iff, (const char *) format_file),
-  std_args->input_format_file = iff;
-
-  error = db_init(std_args, &dbin, NULL);
+  error = SetDodsDB(SetUps, &dbin, Msgt);
   if (error && error < ERR_WARNING_ONLY)
-    exit(1);
-  else if (error)
-    error = 0;
-
-  //cout << dbin->title;
-
-  //	db_ask(dbin, DBASK_FORMAT_SUMMARY, &bufsize);
-
-  //	at->append_attr("Title", STRING, bufsize->buffer);
-
-	at->append_attr("Server", STRING, "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
-
-    return true;
+    {
+      db_destroy(dbin);
+      ErrMsgT(Msgt);  
+      cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+      return false;
+    }
+  error = db_ask(dbin,DBASK_FORMAT_SUMMARY,FFF_INPUT, &bufsize);
+  if(error) {
+    sprintf(Msgt, "ff_das: db_ask can not get Format Summary");
+    ErrMsgT(Msgt);  
+    cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+    return false;
+  }
+  
+  at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
+  //  	at->append_attr("Input File", "STRING", dbin->title);
+  at->append_attr("Info. on native input file:", "STRING", bufsize->buffer);
+  return true;
 }
 
 // Given a reference to an instance of class DAS and a filename that refers
@@ -136,15 +134,15 @@ bool
 get_attributes(DAS &das, const char *filename, String *error)
 {
 
-    AttrTable *attr_table_ptr;
+  AttrTable *attr_table_ptr;
+  
+  // global attributes (no variable attributes in freefrom)
+  attr_table_ptr = das.add_table("FF_GLOBAL", new AttrTable);
+  if (!read_attributes(filename, attr_table_ptr, error))
+    return false;
 
-    // global attributes (no variable attributes in freefrom)
-	attr_table_ptr = das.add_table("FF_GLOBAL", new AttrTable);
-	if (!read_attributes(filename, attr_table_ptr, error))
-	    return false;
-
-
-    return true;
+  
+  return true;
 }
 
 #ifdef TEST

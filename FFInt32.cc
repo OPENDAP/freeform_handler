@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFInt32.cc,v $
+// Revision 1.4  1998/08/12 21:20:55  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:13:53  jimg
 // Fixes for warnings, etc
 //
@@ -19,7 +22,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFInt32.cc,v 1.3 1998/04/21 17:13:53 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFInt32.cc,v 1.4 1998/08/12 21:20:55 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -28,6 +31,9 @@ static char rcsid[] __unused__ ={"$Id: FFInt32.cc,v 1.3 1998/04/21 17:13:53 jimg
 #include <assert.h>
 #include "FFInt32.h"
 #include "util_ff.h"
+
+extern long BufPtr;
+extern char *BufVal;
 
 Int32 *
 NewInt32(const String &n)
@@ -48,11 +54,28 @@ FFInt32::ptr_duplicate(){
 bool
 FFInt32::read(const String &dataset, int &)
 {
-    if (read_p()) // nothing to do
-        return true;
+  if (read_p()) // nothing to do
+    return true;
+
+  if(BufVal){ // data in cache
+ 
+    char * ptr = BufVal+BufPtr;
+    val2buf((void *) ptr);
+    set_read_p(true);
+
+#ifdef TEST
+    dods_int32 *tmo;
+    tmo = (dods_int32 *)ptr;
+    printf("\n%ld offset=%ld\n",*tmo,BufPtr);
+#endif 
+
+    BufPtr += width();
+    return true;
+  }
+  else{
 
     bool status = true;
-
+    
     char *ds = new char[dataset.length() + 1];
     strcpy(ds, dataset);
 
@@ -83,7 +106,7 @@ FFInt32::read(const String &dataset, int &)
     delete [] if_f;
 
     return status;
-
+  }
 }
 
 

@@ -9,6 +9,9 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.4  1998/08/12 21:21:18  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:14:10  jimg
 // Fixes for warnings, etc
 //
@@ -30,12 +33,13 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.3 1998/04/21 17:14:10 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.4 1998/08/12 21:21:18 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
 #include <fstream.h>
 #include <String.h>
+#include "FreeForm.h"
 
 #define DODS_DATA_PRX "dods-"	// prefix for temp format file names
 
@@ -112,23 +116,26 @@ make_output_format(const String &name, const String &type, const int width)
     return str.str();
 }
 
-// format for multi-dimension array (may not be able to handle Grids!!)
+// format for multi-dimension array 
 const String
 makeND_output_format(const String &name, const String &type, const int width,
 		     int ndim, const long *start, const long *edge, const
-		     long * stride, const char **dname)
+		     long * stride, String *dname)
 {
     ostrstream str;
-
     str << "binary_output_data \"DODS binary output data\"" << endl;
     str << name << " 1 " << width << " ARRAY";
 
     for (int i=0; i < ndim; i++)
-	str << "[" << "\"" << dname[i] << "\" " << start[i] << " to "
+	str << "[" << "\"" << dname[i] << "\" " << start[i]+1 << " to "
 	    << start[i]+edge[i] <<" by " << stride[i] << " ]";
 
-    str << " of " << ff_types(type) << " " << ff_prec(type) << endl;
-    
+    str << " of " << ff_types(type) << " " << ff_prec(type) << endl << "\0";
+
+#ifdef TEST    
+	 cout <<str.str();
+#endif   
+
     return str.str();
 }
 
@@ -185,3 +192,99 @@ format_extension(const String &new_extension)
     return extension;
 }
 
+/* FreeForm data and format initializattion calls (input format only)*/
+static BOOLEAN cmp_array_conduit
+(
+ FF_ARRAY_CONDUIT_PTR src_conduit,
+ FF_ARRAY_CONDUIT_PTR trg_conduit
+ )
+{
+  
+  if (src_conduit->input && trg_conduit->input)
+    return(ff_format_comp(src_conduit->input->fd->format, trg_conduit->input->fd->format));
+  else if (src_conduit->output && trg_conduit->output)
+    return(ff_format_comp(src_conduit->output->fd->format, trg_conduit->output->fd->format));
+  else
+    return 0;
+}
+
+static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
+{
+  int error = 0;  
+  error = list_replace_items((pgenobj_cmp_t)cmp_array_conduit, conduit_list); 
+  return(error);
+}
+
+int SetDodsDB (FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt)
+{
+	FORMAT_DATA_LIST format_data_list = NULL;
+	int error = 0;
+	
+	assert(dbin_h);
+	
+	if (!dbin_h) {
+	  sprintf(Msgt, "NULL DATA_BIN_HANDLE in %s", ROUTINE_NAME);
+	  return(ERR_API);
+	}
+	if (!*dbin_h)
+	  {
+	    *dbin_h = db_make(std_args->input_file);
+
+	    if (!*dbin_h){
+	      sprintf (Msgt, "Error in Standard Data Bin");
+	      return(ERR_MEM_LACK);
+	    }
+	  }
+	
+	/* Now set the formats and the auxillary files */
+	
+	if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file))
+	  {
+	    sprintf(Msgt, "making name table for %s", std_args->input_file);
+	    return(DBSET_READ_EQV);
+	  }
+	
+	if (db_set(*dbin_h,
+	           DBSET_INPUT_FORMATS,
+	           std_args->input_file,
+	           std_args->output_file,
+	           std_args->input_format_file,
+	           std_args->input_format_buffer,
+	           std_args->input_format_title,
+	           &format_data_list
+		   )
+	    )
+	  {
+	    if (format_data_list)
+	      dll_free_holdings(format_data_list);
+	    
+	    sprintf(Msgt, "setting an input format for %s", std_args->input_file);
+	    return(DBSET_INPUT_FORMATS);
+	  }
+	
+	error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
+	dll_free_holdings(format_data_list);
+	if (error)
+	  {
+	    sprintf(Msgt, "creating array information for %s", std_args->input_file);
+	    return(DBSET_CREATE_CONDUITS);
+	  }
+		
+	if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT, std_args->input_file))
+	  {
+	    sprintf(Msgt, "Determining input header file names for %s", std_args->input_file);
+	    return(DBSET_HEADER_FILE_NAMES);
+	  }
+	
+	if (db_set(*dbin_h, DBSET_INIT_CONDUITS, FFF_DATA, std_args->records_to_read))
+	  {
+	    sprintf(Msgt, "creating array information for %s", std_args->input_file);
+	    return(DBSET_INIT_CONDUITS);
+	  }
+	
+	error = merge_redundant_conduits((*dbin_h)->array_conduit_list);
+	if(error)
+	  sprintf(Msgt, "merging redundent conduits");
+	
+	return(error);
+}

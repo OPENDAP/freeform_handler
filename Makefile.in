@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.1 1998/04/21 17:30:08 jimg Exp $
+# $Id: Makefile.in,v 1.2 1998/08/12 21:21:03 jimg Exp $
 
 @SET_MAKE@
 
@@ -18,8 +18,8 @@ CFLAGS = @CFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
-LIBS = -ldap++ -lfreeform -lmemtrack @LIBS@ -lm
-TAGS_FLAGS = -b
+LIBS = -ldap++ -lrx -lfreeform -lmemtrack -lmaxmin @LIBS@ -lm
+TAGS_FLAGS = --include=../dap*/TAGS
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
@@ -88,8 +88,6 @@ ff_dds: $(DDSOBJ) $(FFOBJ)
 ff_dods: $(SERVOBJ) $(FFOBJ)
 	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
 
-# Standard targets with some customization for das-test and dds-test
-
 check: test_read_ff
 
 test_read_ff: read_ff.c libfreeform.a
@@ -97,10 +95,10 @@ test_read_ff: read_ff.c libfreeform.a
 	$(CC) $(LDFLAGS) ff_read.o -o test_read_ff -lfreeform -liberty -lm
 
 install: all
-	$(INSTALL_PROGRAM) ff_das $(etcdir)
-	$(INSTALL_PROGRAM) ff_dds $(etcdir)
-	$(INSTALL_PROGRAM) ff_dods $(etcdir)
-	$(INSTALL_PROGRAM) nph_ff $(etcdir)
+	$(INSTALL_PROGRAM) -s ff_das $(etcdir)
+	$(INSTALL_PROGRAM) -s ff_dds $(etcdir)
+	$(INSTALL_PROGRAM) -s ff_dods $(etcdir)
+	$(INSTALL_PROGRAM) nph-ff $(etcdir)
 
 Makefile: ${srcdir}/Makefile.in
 	${SHELL} ./config.status
@@ -121,7 +119,7 @@ depend:
 	$(FFSRC) $(SERVSRC)
 
 tags:
-	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
+	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.c
 
 .SUFFIXES:      .o .cc .c
 

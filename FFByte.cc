@@ -12,6 +12,9 @@
 // ReZa 6/18/97
 
 // $Log: FFByte.cc,v $
+// Revision 1.4  1998/08/12 21:20:51  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:13:43  jimg
 // Fixes for warnings, etc
 //
@@ -20,7 +23,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFByte.cc,v 1.3 1998/04/21 17:13:43 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFByte.cc,v 1.4 1998/08/12 21:20:51 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -30,6 +33,9 @@ static char rcsid[] __unused__ ={"$Id: FFByte.cc,v 1.3 1998/04/21 17:13:43 jimg 
 
 #include "FFByte.h"
 #include "util_ff.h"
+
+extern long BufPtr;
+extern char * BufVal;
 
 // This `helper functions' creates a pointer to the a FFByte and returns
 // that pointer. It takes the same arguments as the class's ctor. If any of
@@ -66,8 +72,18 @@ bool
 FFByte::read(const String &dataset, int &)
 {
 
-    if (read_p()) // nothing to do
-        return true;
+  if (read_p()) // nothing to do
+    return true;
+
+  if (BufVal){ // Data in cache
+    char * ptr = BufVal+BufPtr;
+    val2buf((void *) ptr);
+    set_read_p(true);
+
+    BufPtr += width();
+    return true;
+  }
+  else {
 
     bool status = true;
 
@@ -101,6 +117,6 @@ FFByte::read(const String &dataset, int &)
     delete [] if_f;
 
     return status;
-
+  }
 }
 

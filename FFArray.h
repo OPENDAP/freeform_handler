@@ -12,6 +12,9 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.h,v $
+// Revision 1.4  1998/08/12 21:20:50  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:13:42  jimg
 // Fixes for warnings, etc
 //
@@ -38,7 +41,7 @@ public:
     virtual bool read(const String &dataset, int &error);
 
     long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
-    long Arr_constraint(long *cor, long *step, long *edg, char **dim_nms,
+    long Arr_constraint(long *cor, long *step, long *edg, String *dim_nms,
 			bool *has_stride);
 };
 

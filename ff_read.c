@@ -1,4 +1,3 @@
-
 /* 
    (c) COPYRIGHT URI/MIT 1997-98
    Please read the full copyright statement in the file COPYRIGH.  
@@ -8,6 +7,9 @@
 
 /*
  * $Log: ff_read.c,v $
+ * Revision 1.4  1998/08/12 21:21:13  jimg
+ * Massive changes from Reza. Compatible with the new FFND library
+ *
  * Revision 1.3  1998/04/21 17:14:09  jimg
  * Fixes for warnings, etc
  *
@@ -17,314 +19,142 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.3 1998/04/21 17:14:09 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.4 1998/08/12 21:21:13 jimg Exp $"};
 
 #include <freeform.h>
 
-static BOOLEAN 
-is_separation(PROCESS_INFO_PTR finfo)
-{
-    FF_VALIDATE(finfo);
 
-    if (PINFO_ARRAY_MAP(finfo)->subsep)
-	return(TRUE);
-    else
-	return(FALSE);
-}
-
-static BOOLEAN 
-is_offset(PROCESS_INFO_PTR finfo)
-{
-    FF_VALIDATE(finfo);
-
-    if (PINFO_ARRAY_OFFSET(finfo) != 0)
-	return(TRUE);
-    else
-	return(FALSE);
-}
-
-/* Check to see if any fseek's will be done on output. This will happen if an
-   array has separation or has an offset other than zero. Basically, output
-   formats with only a single array will not require any fseek's on output.
-
-   Also check for any separate headers */
-
-static int 
-check_stdout_contiguity(DATA_BIN_PTR dbin)
-{
-    PROCESS_INFO_LIST finfo_list = NULL;
-    PROCESS_INFO_PTR  finfo = NULL;
-    int error = 0;
-
-    FF_VALIDATE(dbin);
-
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_OUTPUT, &finfo_list);
-    if (!error) {
-	finfo_list = dll_first(finfo_list);
-	finfo = FF_PI(finfo_list);
-	while (finfo) {
-	    FF_VALIDATE(finfo);
-
-	    if (is_separation(finfo) || is_offset(finfo) ||
-		(IS_HEADER(PINFO_FORMAT(finfo)) &&
-		 IS_SEPARATE(PINFO_FORMAT(finfo)))) {
-		error = err_push(ERR_GENERAL, "You must use -o with this output format: %s", PINFO_NAME(finfo));
-		break;
-	    }
-
-	    finfo_list = dll_next(finfo_list);
-	    finfo = FF_PI(finfo_list);
-	}
-
-	ff_destroy_process_info_list(finfo_list);
-    }
-    else
-	error = err_push(ERR_GENERAL, "Nothing to redirect as no output formats have been specified");
-
-    return(error);
-}
-
-static int 
-check_standard_input(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin,
-		     BOOLEAN *done_processing)
-{
-    int error = 0;
-
-    FF_VALIDATE(std_args);
-    FF_VALIDATE(dbin);
-
-    if (std_args->user.is_stdin_redirected) {
-	size_t bytes_read = 0;
-	size_t bytes_to_read = 0;
-	PROCESS_INFO_LIST plist = NULL;
-
-	if (feof(stdin)) {
-	    *done_processing = TRUE;
-	    return(0);
-	}
-
-	error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &plist);
-	if (!error) {
-	    PROCESS_INFO_PTR pinfo = NULL;
-
-	    plist = dll_first(plist);
-	    pinfo = FF_PI(plist);
-	    while (pinfo) {
-		size_t records_to_read = 0;
-
-		records_to_read = PINFO_BUFFER_SIZE(pinfo) / PINFO_RECL(pinfo);
-		/* records_to_read = PINFO_LOCUS_SIZE(pinfo) /
-		   PINFO_RECL(pinfo); */
-		bytes_to_read = records_to_read * PINFO_RECL(pinfo);
-
-		bytes_read = fread(std_args->input_buffer, 1,
-				   bytes_to_read, stdin); 
-
-		if (bytes_read != bytes_to_read) {
-		    if (!feof(stdin))
-			error = err_push(ERR_READ_FILE, "...from standard input");
-		}
-		else
-		    *done_processing = FALSE;
-
-		if (!error) {
-		    size_t records_read = 0;
-
-		    records_read = bytes_read / PINFO_RECL(pinfo);
-
-		    if (bytes_read % PINFO_RECL(pinfo))
-			error = err_push(ERR_FILE_LENGTH, "...from standard input");
-		    else
-			error = make_tabular_format_array_mappings(pinfo, records_read, 0);
-		}
-
-		if (error)
-		    break;
-
-		plist = dll_next(plist);
-		pinfo = FF_PI(plist);
-	    }
-
-	    ff_destroy_process_info_list(plist);
-	}
-    }
-
-    return(error);
-}
-
-static long 
-bytes_to_process(PROCESS_INFO_LIST finfo_list)
-{
-    long bytes_to_process = 0;
-    PROCESS_INFO_PTR finfo = NULL;
-
-    finfo_list = dll_first(finfo_list);
-    finfo = FF_PI(finfo_list);
-    while (finfo) {
-	if (PINFO_MATE(finfo))
-	    bytes_to_process += PINFO_MATE_BYTES_LEFT(finfo);
-
-	finfo_list = dll_next(finfo_list);
-	finfo      = FF_PI(finfo_list);
-    }
-
-    return(bytes_to_process);
-}
-
-int 
-convert_in(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin)
-{
-    int error = 0;
-
-    long bytes_remaining = 0;
-    long total_bytes = 0L;
-
-    BOOLEAN done_processing = FALSE;
-
-    PROCESS_INFO_LIST finfo_list = NULL;
-
-    FF_VALIDATE(dbin);
-	
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT, &finfo_list);
-    if (error)
-	return(error);
-	
-    total_bytes = bytes_to_process(finfo_list);
-
-    while (!error && !done_processing) {
-	error = db_do(dbin, DBDO_PROCESS_FORMATS, finfo_list);
-	if (error == EOF) {
-	    error = 0;
-	    done_processing = TRUE;
-	}
-
-	if (!error)
-	    error = db_do(dbin, DBDO_WRITE_FORMATS, finfo_list);
-
-	if (!error)
-	    error = check_standard_input(std_args, dbin, &done_processing);
-    }
-	
-    /* End Processing */
-	
-    bytes_remaining = bytes_to_process(finfo_list);
-    if (bytes_remaining)
-	error = err_push(ERR_PROCESS_DATA + ERR_WARNING_ONLY, 
-			 "%ld BYTES OF DATA NOT PROCESSED.", bytes_remaining);
-
-    ff_destroy_process_info_list(finfo_list);
-
-    return(error);
-} 
-
-#define DODS_DATA_PRX "dods-"
-	
 long
 read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer, 
-	unsigned long size)
+	unsigned long bsize)
 {
-    char *tmp_file = 0;
-    FF_BUFSIZE_PTR bufsize = NULL;
+  int error = 0;
+  FF_BUFSIZE_PTR newform_log = NULL;
+  FF_BUFSIZE_PTR bufsz = NULL;
+  FF_STD_ARGS_PTR std_args = NULL;
   
-    DATA_BIN_PTR dbin = NULL;
-    int error = 0;
-    FF_STD_ARGS_PTR std_args = NULL;
-
-    /*  char * el = "error.log"; */
-
-    std_args = ff_create_std_args();
-    if (!std_args) {
-	error = ERR_MEM_LACK;
-	goto main_exit;
+  std_args = ff_create_std_args();
+  if (!std_args)
+    {
+      fprintf(stderr, "Insufficient memory -- free more memory and try again");
+      error = ERR_MEM_LACK;
+      goto main_exit;
     }
 
-    /*
-      std_args->output_bufsize->buffer = o_buffer;  
-      std_args->output_bufsize->bytes_used = size;  
-    */
-    /* Can not get it to work ? Core dump in FF library
-       using a temporary file for now, Reza     */
+  /** set the std_arg structure values **/
+  std_args->user.is_stdin_redirected = 0;
+  std_args->input_file = dataset;
+  std_args->input_format_file = if_file;
+  std_args->output_file =	NULL;
+  std_args->output_format_buffer = o_format;
   
-    tmp_file = tempnam(NULL, DODS_DATA_PRX);		       
-    std_args->output_file = tmp_file;                  
-
-    std_args->user.is_stdin_redirected = 0;
-    std_args->input_file = dataset;
-    std_args->input_format_file = if_file;
-    std_args->output_format_buffer = o_format;
-
-    /*	std_args->error_log = el;*/
-
-    /*	std_args->cache_size = size;  */
-
-    error = db_init(std_args, &dbin, NULL);
-    if (error && error < ERR_WARNING_ONLY)
-	goto main_exit;
-    else if (error)
-	error = 0;
-  
-    if (!isatty(fileno(stdout))) {
-#if FF_OS == FF_OS_DOS || FF_OS == FF_OS_MACOS
-	setmode(fileno(stdout), O_BINARY);
-#endif
-	error = check_stdout_contiguity(dbin);
-	if (error)
-	    goto main_exit;
-    }
-  
-    error = convert_in(std_args, dbin);
-  
- main_exit:
-
-    if (dbin)
-	db_destroy(dbin);
-  
-    if (error || err_state())
-	err_disp(std_args);
-  
-    if (std_args)
-	ff_destroy_std_args(std_args);
-  
-    /*	memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main"); */
-  
-    error = ff_file_to_bufsize(tmp_file, &bufsize); /* check the error
-						       here */
-    unlink(tmp_file); 
-    memcpy(o_buffer, bufsize->buffer,(size_t) bufsize->bytes_used); 	
-  
-    /* return size; */
-    return bufsize->bytes_used;
-}
+  /* log file can be replaced and the reset simplified for /dev/null */
+  std_args->log_file = "/dev/null"; 
 
 #ifdef TEST
+  std_args->log_file = "/tmp/ffdods.log"; 
+#endif  
+
+  bufsz = (FF_BUFSIZE_PTR)memMalloc(sizeof(FF_BUFSIZE), "bufsz");
+  bufsz->usage = 1;
+  bufsz->buffer = o_buffer;
+  bufsz->total_bytes = (FF_BSS_t)bsize;
+  bufsz->bytes_used = (FF_BSS_t)0;
+  std_args->output_bufsize = bufsz; 
+  
+  newform_log = ff_create_bufsize(SCRATCH_QUANTA);
+  if (!newform_log)
+    {
+      error = ERR_MEM_LACK;
+      goto main_exit;
+    }
+  
+  error = newform(std_args, newform_log, stderr);
+
+#ifdef TEST  
+  char log_file_write_mode[4];
+  /* Is user asking for both error logging and a log file? */
+  if (std_args->error_log && newform_log)
+    {
+      if (strcmp(std_args->error_log, std_args->log_file))
+	strcpy(log_file_write_mode, "w");
+      else
+	strcpy(log_file_write_mode, "a");
+      
+    }
+  else if (newform_log)
+    strcpy(log_file_write_mode, "w");
+    
+  FILE *fp = NULL;
+      
+  fp = fopen(std_args->log_file, log_file_write_mode);
+  if (fp)
+    {
+      size_t bytes_written = fwrite(newform_log->buffer, 1, (size_t)newform_log->bytes_used, fp);
+      
+      if (bytes_written != (size_t)newform_log->bytes_used)
+	error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", (int)bytes_written, (int)newform_log->bytes_used, std_args->log_file);
+      
+      fclose(fp);
+    }
+  else
+    error = err_push(ERR_CREATE_FILE, std_args->log_file);
+  
+  if (std_args->user.is_stdin_redirected)
+    ff_destroy_bufsize(std_args->input_bufsize);
+#endif //TEST  
+
+  ff_destroy_bufsize(newform_log);
+
+ main_exit:
+  
+  if (error || err_state())
+    fprintf(stderr, "Insufficient memory -- free more memory and try again");
+  
+  if (std_args)
+    ff_destroy_std_args(std_args);
+  
+  /* return size; */
+  return bufsz->bytes_used;
+  
+}
+
+
+#ifdef TEST 
 
 int main(int argc, char *argv[])
 {
-    char *ds;
-    char *iff;
-    char *of;
-    unsigned long buffer_size;
+    char *datafile;
+    char *in_format;
+    char *out_format;
     char *data;
-    unsigned long bytes;
+    unsigned long data_size;
+    unsigned long bytes_in;
 
-    ds = malloc(strlen(argv[1]) + 1);
-    iff = malloc(strlen(argv[2]) + 1); 
-    of = malloc(strlen(argv[3]) + 1);
-    buffer_size = atoi(argv[4]);
-    data = malloc(buffer_size);
+    /* name and directory for data file */
+    datafile = malloc(strlen(argv[1]) + 1);
+    strcpy(datafile, argv[1]);
 
-    strcpy(ds, argv[1]);
-    strcpy(iff, argv[2]);
-    strcpy(of, argv[3]);
+    /* name and directory for the input format file */
+    in_format = malloc(strlen(argv[2]) + 1); 
+    strcpy(in_format, argv[2]);
 
-    bytes = read_ff(ds, iff, of, data, buffer_size);
+    /* output format writen in the buffer */
+    out_format = malloc(250);
+    strcpy(out_format, "ascii_output_data \"data st\" \nfvar1 1 4 ARRAY[\"records\"1 to 101] of int32 0");
 
-    printf("Bytes read: %d\n", bytes);
-    if (bytes > 0)
-        fwrite(data, 1, bytes, stdout);
+    /* size of data expecting to read (can be oversized)*/
+    data_size = atoi(argv[3]);
+    data = malloc(data_size);
 
+
+    printf("Converting to the following format:\n%s\n",out_format);
+    bytes_in = read_ff(datafile, in_format, out_format, data, data_size);
+
+    printf("Bytes read: %d\n", bytes_in);
+    if (bytes_in > 0)
+        fwrite(data, 1, bytes_in, stdout);
     exit(0);
 }
 
-#endif
-
+#endif 

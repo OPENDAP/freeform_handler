@@ -1,7 +1,7 @@
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.1 1998/04/21 17:30:10 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.2 1998/08/12 21:21:07 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
@@ -134,5 +134,5 @@ dnl FreeForm.h. Add them here. 4/17/98 jhrg
 
 CPPFLAGS="$CPPFLAGS -DFREEFORM"
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile FFND/Makefile)
 

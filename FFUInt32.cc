@@ -6,6 +6,9 @@
 //      ReZa       Reza Nekovei (reza@intcomm.net)
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.4  1998/08/12 21:21:00  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
 // Revision 1.3  1998/04/21 17:14:04  jimg
 // Fixes for warnings, etc
 //
@@ -14,7 +17,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.3 1998/04/21 17:14:04 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.4 1998/08/12 21:21:00 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -23,6 +26,9 @@ static char rcsid[] __unused__ ={"$Id: FFUInt32.cc,v 1.3 1998/04/21 17:14:04 jim
 #include <assert.h>
 #include "FFUInt32.h"
 #include "util_ff.h"
+
+extern long BufPtr;
+extern char *BufVal;
 
 UInt32 *
 NewUInt32(const String &n)
@@ -43,8 +49,17 @@ FFUInt32::ptr_duplicate(){
 bool
 FFUInt32::read(const String &dataset, int &)
 {
-    if (read_p()) // nothing to do
-        return true;
+  if (read_p()) // nothing to do
+    return true;
+
+  if(BufVal){ // data in cache
+    char * ptr = BufVal+BufPtr;
+    val2buf((void *) ptr);
+    set_read_p(true);
+    BufPtr += width();    
+    return true;
+  }
+  else{
 
     bool status = true;
 
@@ -77,8 +92,9 @@ FFUInt32::read(const String &dataset, int &)
     delete [] ds;
     delete [] o_f;
     delete [] if_f;
-
+  
     return status;
+  }
 }
 
 
