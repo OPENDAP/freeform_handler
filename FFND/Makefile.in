@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.13 1999/03/30 19:08:42 jimg Exp $
+# $Id: Makefile.in,v 1.14 1999/06/30 18:44:36 jimg Exp $
 
 @SET_MAKE@
 
@@ -55,7 +55,7 @@ FF_OBJS = afm2bfm.o avlins.o avlfree.o cv_units.o dbevents.o dl_lists.o \
 
 MM_OBJS = mm_make.o 
 
-PROG_OBJS = newform.o readfile.o chkform.o
+PROG_OBJS = newform.o readfile.o chkform.o checkvar.o
 
 FF_SRCS	= $(FF_OBJS:.o=.c)
 PROG_SRCS = $(PROG_OBJS:.o=.c)
@@ -112,7 +112,7 @@ chkform.o: chkform.c
 clean:
 	-rm -f $(FF_OBJS) $(MM_OBJS) $(FF_LIBRARY) $(MM_LIBRARY) \
 	newform newform.o core *~ readfile.o readfile chkform.o chkform \
-	bufform bufform.o *.bb *.bbg *.da
+	bufform bufform.o checkvar checkvar.o *.bb *.bbg *.da
 
 distclean: clean
 	-rm -f config.status config.log config.cache
@@ -129,6 +129,7 @@ install: newform readfile chkform $(FF_LIBRARY)
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
 	$(INSTALL_PROGRAM) chkform $(bindir)/chkform
 	$(INSTALL_PROGRAM) readfile $(bindir)/readfile
+	$(INSTALL_PROGRAM) checkvar $(bindir)/checkvar
 
 Makefile: ${srcdir}/Makefile.in
 	cd ..; ${SHELL} ./config.status
