@@ -10,6 +10,11 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.10  1998/11/13 05:39:15  jimg
+// Minor changes, formatting sanity.
+// Added ends to ostrstream object using to builf output format string.
+// Added debug.h
+//
 // Revision 1.9  1998/11/10 19:22:15  jimg
 // Added calls to the new BaseType accessor synthesized_p(). This means that
 // the projection functions now work.
@@ -40,7 +45,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id"};
+static char rcsid[] __unused__ ={"$Id: FFSequence.cc,v 1.10 1998/11/13 05:39:15 jimg Exp $"};
 
 #ifdef _GNUG_
 #pragma implementation
@@ -50,6 +55,7 @@ static char rcsid[] __unused__ ={"$Id"};
 
 #include "FFSequence.h"
 #include "util_ff.h"
+#include "debug.h"
 
 extern long BufPtr;
 extern char *BufVal;
@@ -142,9 +148,6 @@ FFSequence::read(const String &dataset, int &error)
       return false; // End of sequence
 
     if (!BufVal) { // Make the cache
-	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, (const char*)dataset);
-   
 	// Create the output Sequence format
 	ostrstream str;
 	int endbyte = 0;
@@ -153,29 +156,28 @@ FFSequence::read(const String &dataset, int &error)
 	str << "binary_output_data \"DODS binary output data\"" << endl;
 	StrCnt = 0;
 	for(Pix p = first_var(); p; next_var(p)) {
-	  if (var(p)->synthesized_p())
-	      continue;
-	  if (var(p)->type() == dods_str_c) {
-	    endbyte +=StrLens[StrCnt];
-	    StrCnt++;
-	  }
-	  else
-	    endbyte += var(p)->width();
+	    if (var(p)->synthesized_p())
+		continue;
+	    if (var(p)->type() == dods_str_c) {
+		endbyte +=StrLens[StrCnt];
+		StrCnt++;
+	    }
+	    else
+		endbyte += var(p)->width();
 	  
-	  str << var(p)->name() << " " << stbyte << " " << endbyte 
-	      << " " << ff_types(var(p)->type_name()) 
-	      << " " << ff_prec(var(p)->type_name()) << endl;
-	  stbyte = endbyte + 1;
+	    str << var(p)->name() << " " << stbyte << " " << endbyte 
+		<< " " << ff_types(var(p)->type_name()) 
+		<< " " << ff_prec(var(p)->type_name()) << endl;
+	    stbyte = endbyte + 1;
 	}
+	str << ends;
 
-#ifdef TEST 
-	cout << str.str();
-#endif 
+	DBG(cerr << str.str());
       
-	String output_format = str.str();
-      
-	char *o_fmt = new char[output_format.length() + 1];
-	strcpy(o_fmt, (const char*)output_format);
+	str.freeze(1);
+	char *o_fmt = new char[strlen(str.str()) + 1];
+	strcpy(o_fmt, str.str());
+	str.freeze(0);
 
 	String input_format_file = find_ancillary_file(dataset);
 	char *if_fmt = new char[input_format_file.length() + 1];
@@ -187,8 +189,10 @@ FFSequence::read(const String &dataset, int &error)
 	    return false;
 
 	BufSiz = num_rec * (stbyte - 1);
-
 	BufVal = (char *)new char[BufSiz];
+	char *ds = new char[dataset.length() + 1];
+	strcpy(ds, (const char*)dataset);
+   
 	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
 	if (bytes == -1) {
 	    error = 1;
@@ -200,15 +204,16 @@ FFSequence::read(const String &dataset, int &error)
 	delete[] o_fmt;
 	delete[] if_fmt;
     }
+
     StrCnt = 0;
     for (Pix p = first_var(); p; next_var(p)) {
-      if(var(p)->type()== dods_str_c){
-	StrLength = StrLens[StrCnt];
-	StrCnt++;
-      }
-         var(p)->read(dataset, error);
-	 if (error)
-	     return false;
+	if(var(p)->type()== dods_str_c){
+	    StrLength = StrLens[StrCnt];
+	    StrCnt++;
+	}
+	var(p)->read(dataset, error);
+	if (error)
+	    return false;
     }
 
     return true;
