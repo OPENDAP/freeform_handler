@@ -2064,7 +2064,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
     			/* Put out header if needed */
 				if(dest_size)
 					for(i = 0; i < dest_size; i++)
-						putc(paddingch, outfile);
+						fputc(paddingch, outfile);
     		}
     		else{ /* Output array is broken */
     			outfilename = (char *)ndarr_get_next_group(sub_array, NDARR_GINITIAL);
@@ -2076,7 +2076,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					/* Put out header if needed */
 					if(dest_size)
 						for(i = 0; i < dest_size; i++)
-							putc(paddingch, outfile);
+							fputc(paddingch, outfile);
 					fclose(outfile);
 				} while((outfilename = (char *)ndarr_get_next_group(sub_array, NDARR_GNEXT)));
     			outfile = NULL;
@@ -2284,7 +2284,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				if(needtopad)
 				{
 					for(i = outoffset; i > 0; i--)
-						putc(paddingch, outfile);
+						fputc(paddingch, outfile);
 				}
 				else
 				{
@@ -2619,16 +2619,15 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				bytesread += sub_array->element_size;
 									
 				/* See if we need to put out padding (or skip) for separation */
-				if(amap->subsep) {
+				if(amap->subsep){
 					NDARR_GET_SEPARATION(amap->subaindex, outoffset);
 					bytesread += outoffset;
 					/* Need to pad a little for output */
-					if(needtopad) {
+					if(needtopad)
 						for(i = outoffset; i > 0; i--)
-							putc(paddingch, outfile);
-					}
-					else {
-						if(fseek(outfile, outoffset, SEEK_CUR)) {
+							fputc(paddingch, outfile);
+					else
+						if(fseek(outfile, outoffset, SEEK_CUR)){
 							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
 							err_push(ERR_NDARRAY, outfilename);
 
@@ -2640,7 +2639,6 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 							memFree(buffer, "buffer");
 							return(-1);
 						}
-					}
 				}
 			} while(ndarr_increment_indices(amap->subaindex));
 	
@@ -2725,7 +2723,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 				/* Need to pad a little for output */
 				if(needtopad)
 					for(i = outoffset; i > 0; i--)
-						putc(paddingch, outfile);
+						fputc(paddingch, outfile);
 				else
 					if(fseek(outfile, outoffset, SEEK_CUR)){
 						err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
