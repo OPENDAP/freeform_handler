@@ -1,3 +1,8 @@
+1999-03-17  James Gallagher  <jimg@dcz.dods.org>
+
+	* Format file are now found using a matching scheme that works
+	when the filename has dots (.) in it.
+
 1999-02-26  James Gallagher  <jimg@dcz.dods.org>
 
 	* The four FreeForm tools newform, bufform, chkform and readfile
