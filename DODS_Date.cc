@@ -9,6 +9,9 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.5  1999/01/08 22:09:01  jimg
+// Added some comments about errors.
+//
 // Revision 1.4  1999/01/05 00:34:04  jimg
 // Removed string class; replaced with the GNU String class. It seems those
 // don't mix well.
@@ -26,7 +29,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.4 1999/01/05 00:34:04 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.5 1999/01/08 22:09:01 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -43,6 +46,10 @@ static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.4 1999/01/05 00:34:04 jim
 // The Error class is defined in the core software. For testing we don't need
 // this function and can supply a dummy version. That simplifies building the
 // test code. 11/12/98 jhrg
+
+// This function is repeated in DODS_Time, something that should be changed,
+// at the least. However, the real problem is that it is pretty hard to read
+// values from DODS types. 1/8/99 jhrg
 
 #include "Error.h"
 
@@ -110,6 +117,10 @@ DODS_Date::set(BaseType *arg)
     String s = extract_argument(arg);
     set(s);
 }
+
+// The software that parses data strings is pretty weak on error checking.
+// This should be bolstered. For example, a real parser which flags invalid
+// separators, etc. would improve error detection.
 
 void
 DODS_Date::set(String date) 
