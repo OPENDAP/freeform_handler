@@ -1,5 +1,5 @@
 
-	$Id: README,v 1.1 1998/12/15 18:53:26 jimg Exp $
+	$Id: README,v 1.2 1998/12/15 18:53:59 jimg Exp $
 
 These files comprise a small set of test dataset for the FreeForm server.
 Each of the files named test?.fmt contains a FF format description for the
@@ -7,7 +7,8 @@ data in the data file with matching base name (test0.fmt --> test0.dat, ...).
 
 For information on the content of these files, look in the FF manual. I've
 also stuck some information in comments in the files. Note that the manual
-does not contain information about the new array features of FF.
+does not contain information about the new array features of FF. The updated
+FF manual *does* contain information on the array syntax. 12/15/98 jhrg
 
 The format description files only need the *_input_data part to run with the
 DODS-FF server. However, by including an ASCII_output_data section it is
