@@ -1,0 +1,89 @@
+/* config_ff.h.  Generated automatically by configure.  */
+/* config_ff.h.in.  Generated automatically from configure.in by autoheader.  */
+#ifndef _CONFIG_FF_H_
+#define _CONFIG_FF_H_
+
+/* 
+ * $Log: config_ff.h.in,v $
+ * Revision 1.1  1998/04/21 17:32:00  jimg
+ * Fixes for warnings, etc
+ *
+ */
+
+
+/* Define to empty if the keyword does not work.  */
+#undef const
+
+/* Define if you don't have vprintf but do have _doprnt.  */
+/* #undef HAVE_DOPRNT */
+
+/* Define if you have the vprintf function.  */
+#undef HAVE_VPRINTF
+
+/* Define to `long' if <sys/types.h> doesn't define.  */
+#undef off_t
+
+/* Define if you need to in order for stat and other things to work.  */
+#undef _POSIX_SOURCE
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* If defined, enable memory leak detection through libdbnew.a. Make sure to */
+/* link with that library. */
+#undef TRACE_NEW
+
+/* If defined, the DBG() macro defined in debug.h is activated. This macro */
+/* is used for nominal program instrumentation */
+#undef DODS_DEBUG
+
+/* If defined, the DBG2() macro defined in debug.h is activated. This macro */
+/* is used for detailed program instrumentation. Anything that prints half a */
+/* page or more of stuff every time it is executed should be inside DBG2(), */
+/* not DBG(). */
+#undef DODS_DEBUG2
+
+/* Define if you have the strerror function.  */
+#undef HAVE_STRERROR
+
+/* Define if you have the strtol function.  */
+#undef HAVE_STRTOL
+
+/* Define if you have the <fcntl.h> header file.  */
+#undef HAVE_FCNTL_H
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
+
+/* Define if you have the <unistd.h> header file.  */
+#undef HAVE_UNISTD_H
+
+/* The number of bytes in a char.  */
+#undef SIZEOF_CHAR
+
+/* The number of bytes in a double.  */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in a float.  */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
+/* GNU gcc/g++ provides a way to mark variables, etc. as unused */
+
+#if defined(__GNUG__) || defined(__GNUC__)
+#define __unused__ __attribute__ ((unused))
+#else
+#define __unused__ 
+#endif
+
+#endif /* _CONFIG_FF_H_ */
+
+

@@ -1,0 +1,138 @@
+
+dnl Process this file with autoconf to produce a configure script.
+
+AC_REVISION($Id: configure.in,v 1.1 1998/04/21 17:30:10 jimg Exp $)
+AC_INIT(FFArray.cc)
+
+AC_CONFIG_HEADER(config_ff.h)
+AC_CONFIG_AUX_DIR(../../etc)
+
+AC_PREFIX_DEFAULT("\$(DODS_ROOT)")
+
+dnl the variable `dir' is used as a basename for the directory tar file
+
+fulldir=`pwd`
+dir=`basename ${fulldir}`
+AC_SUBST(dir)
+
+DODS_GET_DODS_ROOT
+
+AC_DEFINE(CNAME, "DODS")
+AC_DEFINE(CVER, "2.15")
+DVR="DODS/2.15"
+AC_DEFINE_UNQUOTED(DVR, "$DVR")
+AC_SUBST(DVR)
+
+dnl Find where perl lives on the users system
+
+PERL=`which perl`
+AC_SUBST(PERL)
+
+dnl the command to use to generate dependencies for makefiles
+
+depend=${dods_root}/etc/depend.sh
+AC_SUBST(depend)
+
+dnl flags for the compilers and linkers - set these before locating the
+dnl actual tools since some of the AC_PROG macros set these `flag variables'
+dnl to default values otherwise.
+
+AC_CANONICAL_HOST
+
+CFLAGS="-g -O2"
+CXXFLAGS="-g -O2"	
+LDFLAGS="-g"
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_AWK
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_RANLIB
+AC_PROG_MAKE_SET
+
+DODS_PROG_LEX
+DODS_PROG_BISON
+DODS_GCC
+
+DODS_CHECK_GCC_DEBUG
+DODS_FIND_GPP_INC
+
+if echo $INSTALL | egrep 'install-sh'
+then
+	INSTALL="$(DODS_ROOT)/etc/install-sh -c"
+	AC_SUBST(INSTALL)
+fi
+
+dnl You should have g++, but you can override that with an environment
+dnl variable. 
+
+CXX=${CXX-g++}
+AC_MSG_RESULT(Setting CXX to $CXX)
+AC_SUBST(CXX)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h limits.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_FUNC_MEMCMP
+AC_FUNC_SETVBUF_REVERSED
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(strcspn strerror strspn strstr strtod strtol)
+
+DODS_CHECK_SIZES
+
+DODS_SEM
+
+DODS_COMPRESSION_LIB
+DODS_WWW_LIB
+DODS_EXPECT_LIB
+
+DODS_EFENCE
+
+DODS_DBNEW
+
+DODS_DEBUG_OPTION
+
+dnl Use the $host variable set by configure to set a preprocessor symbol for
+dnl the FreeForm library. The list of recognized symbols is:
+dnl    symbol       Do we support it?
+dnl	PC	    no
+dnl	MAC	    no
+dnl	IBM6000	    no
+dnl	LINUX	    yes
+dnl	HP9000	    yes
+dnl	DEC_ALPHA   yes
+dnl	SUN	    yes (Which sun? - I think both [see FreeForm.h])
+dnl	IRIS4	    yes (32 bit IRIX? - I think so...)
+dnl	IRIX	    yes (64 bit IRIX? - I think so...)
+dnl
+dnl 4/17/98 jhrg
+
+case "$host" in
+    *linux*) CPPFLAGS="$CPPFLAGS -DLINUX" ;;
+    *hp*)    CPPFLAGS="$CPPFLAGS -DHP9000" ;;
+    *alpha*) CPPFLAGS="$CPPFLAGS -DDEC_ALPHA" ;;
+    *sun*)   CPPFLAGS="$CPPFLAGS -DSUN" ;;
+    *sgi*)   if test $ac_cv_sizeof_long -eq 4
+	     then
+	         CPPFLAGS="$CPPFLAGS -DIRIS4"
+	     else       
+	         CPPFLAGS="$CPPFLAGS -DIRIX"
+	     fi ;;
+    *)       echo "Either this machine is not supported by FreeForm or"
+	     echo "the configure script needs to be fixed?" ;;
+esac
+
+dnl There are some defines which must be set with you build code which uses
+dnl FreeForm.h. Add them here. 4/17/98 jhrg
+
+CPPFLAGS="$CPPFLAGS -DFREEFORM"
+
+AC_OUTPUT(Makefile)
+

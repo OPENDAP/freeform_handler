@@ -1,0 +1,137 @@
+
+# $Id: Makefile.in,v 1.1 1998/04/21 17:30:08 jimg Exp $
+
+@SET_MAKE@
+
+PROG = ff_das ff_dds ff_dods
+DODS_ROOT = ../..
+
+WWW_ROOT = @WWW_ROOT@
+INCS = -I. -I$(DODS_ROOT)/include -IFFND @INCS@
+# DEFS = -DDLL_CHK
+DEFS = @DEFS@ -DUSE_LIBGXX_INLINES
+
+CPPFLAGS = @CPPFLAGS@ $(DEFS) $(INCS)
+CXXFLAGS = @CXXFLAGS@ -Wall
+CFLAGS = @CFLAGS@ -Wall
+
+LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND/lib
+LFLAGS = -8
+YFLAGS = -d -v
+LIBS = -ldap++ -lfreeform -lmemtrack @LIBS@ -lm
+TAGS_FLAGS = -b
+
+# Set the instalation directories; prefix can be set on the command line
+# during Makefile construction with `./configure --prefix /my/choice'
+
+prefix = @prefix@
+exec_prefix = $(prefix)
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+includedir = $(prefix)/include
+manext = 1
+mandir = $(prefix)/man/man$(manext)
+
+src = $(DODS_ROOT)/src
+etcdir = $(DODS_ROOT)/etc
+
+INSTALLMAN = man
+
+SHELL = /bin/sh
+srcdir = @srcdir@
+dir = @dir@
+
+# names of key programs
+
+LN_S = @LN_S@
+CP = cp
+AWK = @AWK@
+CC = @CC@
+CXX = @CXX@
+YACC = @YACC@
+LEX = @LEX@
+AR = ar
+TAGS = etags
+RANLIB = @RANLIB@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+STRIP = strip
+
+FFSRC = FFArray.cc FFByte.cc FFFloat64.cc FFFunction.cc \
+	FFGrid.cc FFInt32.cc FFList.cc FFSequence.cc FFStr.cc \
+	FFUInt32.cc FFStructure.cc FFUrl.cc util_ff.cc ff_read.c
+
+FFOBJ =	FFArray.o FFByte.o FFFloat64.o FFFunction.o FFGrid.o \
+	FFInt32.o FFList.o FFSequence.o FFStr.o FFStructure.o \
+	FFUInt32.o FFUrl.o util_ff.o ff_read.o
+
+SERVSRC = ff_dods.cc ffdds.cc
+SERVOBJ = ff_dods.o ffdds.o
+
+# DDSSRC = ffdds.c ff_dds.cc
+# DDSOBJ = ffdds.o ff_dds.o
+DDSSRC = ff_dds.cc ffdds.cc
+DDSOBJ = ff_dds.o ffdds.o
+
+DASSRC = ffdas.cc ff_das.cc
+DASOBJ = ffdas.o ff_das.o
+
+all: ff_das ff_dds ff_dods
+
+ff_das: $(DASOBJ) $(FFOBJ)
+	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+
+ff_dds: $(DDSOBJ) $(FFOBJ)
+	$(CXX) $(LDFLAGS) -o ff_dds $(DDSOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+
+ff_dods: $(SERVOBJ) $(FFOBJ)
+	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+
+# Standard targets with some customization for das-test and dds-test
+
+check: test_read_ff
+
+test_read_ff: read_ff.c libfreeform.a
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -DTEST -o ff_read.o ff_read.c
+	$(CC) $(LDFLAGS) ff_read.o -o test_read_ff -lfreeform -liberty -lm
+
+install: all
+	$(INSTALL_PROGRAM) ff_das $(etcdir)
+	$(INSTALL_PROGRAM) ff_dds $(etcdir)
+	$(INSTALL_PROGRAM) ff_dods $(etcdir)
+	$(INSTALL_PROGRAM) nph_ff $(etcdir)
+
+Makefile: ${srcdir}/Makefile.in
+	${SHELL} ./config.status
+
+clean:
+	-rm -f *.o *.sum *.log *~ core
+	-rm -f $(PROG) test_read_ff
+	-cd freeform && $(MAKE) $(MFLAGS) clean
+
+distclean: clean
+	-rm -f config.status config.log config.cache
+	-cd freeform && $(MAKE) $(MFLAGS) distclean
+
+.PHONY: depend
+depend: 
+	@depend@ -m dependencies \
+	-- $(CPPFLAGS) -I/usr/local/lib/g++-include -- \
+	$(FFSRC) $(SERVSRC)
+
+tags:
+	$(TAGS) $(TAGS_FLAGS) *.cc *.h *.lex *.y
+
+.SUFFIXES:      .o .cc .c
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
+
+.cc.o:
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
+
+include dependencies
+
+
+
