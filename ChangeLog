@@ -1,3 +1,12 @@
+1999-01-08  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Updated the FFND library; Mark O. Made changes and I also made a
+	few (minor) changes based on some warnings from gcc.
+
+	* Added tests for the the basic actions of the server plus for the
+	DODS_Date, _Time and _Date_time classes and the CE functions that
+	provide access to them via CEs. 
+
 1999-01-04  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
 	* Additions for the File Server. This software consists of the
