@@ -8,13 +8,16 @@
 // Implementation of the DODS_Time_Factory class
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.2  1999/01/05 00:40:44  jimg
+// Switched to simpler method names.
+//
 // Revision 1.1  1998/12/28 19:08:05  jimg
 // Initial version of the DODS_Time factory object. This is a test implementation.
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Time_Factory.cc,v 1.1 1998/12/28 19:08:05 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Time_Factory.cc,v 1.2 1999/01/05 00:40:44 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -40,6 +43,16 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     String _hours_name = at->get_attr("hours_variable");
     String _mins_name = at->get_attr("minutes_variable");
     String _secs_name = at->get_attr("seconds_variable");
+    String _gmt = at->get_attr("gmt_time");
+
+    // If the gmt attribute is present that meanas that the times are GMT/UTC
+    // times. Set the _gmt flag true, otherwise set it false.
+    
+    _gmt.downcase();
+    if (_gmt == "true")
+	_gmt = true;
+    else
+	_gmt = false;
 
     // Now check that these variables actually exist and that they have
     // sensible types.
@@ -58,7 +71,7 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
 }
 
 DODS_Time
-DODS_Time_Factory::get_time()
+DODS_Time_Factory::get()
 {
     int hour;
     int *hour_p = &hour;
@@ -72,9 +85,5 @@ DODS_Time_Factory::get_time()
     int *sec_p = &sec;
     _seconds->buf2val((void **)&sec_p);
 
-    DODS_Time t(hour, min, sec, true);
-
-    DBG(cerr << "hh: " << hour << " mm: " << min << " ss: " << sec << endl);
-
-    return t;
+    return DODS_Time(hour, min, sec, _gmt);
 }
