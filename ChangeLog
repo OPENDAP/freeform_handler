@@ -1,3 +1,11 @@
+1999-05-25  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed the spelling of COPYRIGHT and removed dead code.
+
+	* Added security fixes to the nph-ff.in script.
+
+	* Added the decimal year server-side function.
+
 1999-05-05  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added test-coverage target to Makefile.in
