@@ -8,55 +8,9 @@
 //
 // Implementation of the DODS Date class
 
-// $Log: DODS_Date.cc,v $
-// Revision 1.9  2000/08/31 22:16:53  jimg
-// Merged with 3.1.7
-//
-// Revision 1.8.2.1  2000/08/03 20:18:57  jimg
-// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
-// neither should be included in a header file).
-// Changed code that calculated leap year information so that it uses the
-// functions in date_proc.c/h.
-//
-// Revision 1.8  1999/07/22 21:28:08  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.7.2.1  1999/06/01 15:38:05  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.7  1999/05/27 17:02:21  jimg
-// Merge with alpha-3-0-0
-//
-// Revision 1.6.2.1  1999/05/20 21:37:26  edavis
-// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
-//
-// Revision 1.6  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.5.6.1  1999/05/01 04:40:28  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.5  1999/01/08 22:09:01  jimg
-// Added some comments about errors.
-//
-// Revision 1.4  1999/01/05 00:34:04  jimg
-// Removed string class; replaced with the GNU String class. It seems those
-// don't mix well.
-// Switched to simpler method names.
-//
-// Revision 1.3  1998/12/30 06:39:18  jimg
-// Define TEST when building the test version (also define DATE_TEST).
-//
-// Revision 1.2  1998/12/30 02:00:58  jimg
-// Added class invariant.
-//
-// Revision 1.1  1998/12/28 19:08:25  jimg
-// Initial version of the DODS_Date object
-//
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.9 2000/08/31 22:16:53 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.10 2000/10/11 19:37:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -477,3 +431,55 @@ int main(int argc, char *argv[])
     cout << "Seconds: " << d1.unix_time() << endl;
 }
 #endif // TEST_DATE
+
+// $Log: DODS_Date.cc,v $
+// Revision 1.10  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.9  2000/08/31 22:16:53  jimg
+// Merged with 3.1.7
+//
+// Revision 1.8.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
+// Revision 1.8  1999/07/22 21:28:08  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.7.2.1  1999/06/01 15:38:05  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.7  1999/05/27 17:02:21  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.6.2.1  1999/05/20 21:37:26  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
+// Revision 1.6  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.5.6.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.5  1999/01/08 22:09:01  jimg
+// Added some comments about errors.
+//
+// Revision 1.4  1999/01/05 00:34:04  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+//
+// Revision 1.3  1998/12/30 06:39:18  jimg
+// Define TEST when building the test version (also define DATE_TEST).
+//
+// Revision 1.2  1998/12/30 02:00:58  jimg
+// Added class invariant.
+//
+// Revision 1.1  1998/12/28 19:08:25  jimg
+// Initial version of the DODS_Date object
+//

@@ -7,44 +7,9 @@
 
 // Implementation of the DODS_Time_Factory class
 
-// $Log: DODS_Time_Factory.cc,v $
-// Revision 1.6  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.5.2.1  2000/08/03 20:18:57  jimg
-// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
-// neither should be included in a header file).
-// Changed code that calculated leap year information so that it uses the
-// functions in date_proc.c/h.
-//
-// Revision 1.5  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.4.2.1  1999/06/04 15:01:35  dan
-// Fixed problem caused by testing '_hours', prior to setting '_hours'
-// with an assignment to dds.var(). Same for '_minutes', '_seconds'.
-//
-// Revision 1.4  1999/05/25 18:37:50  dan
-// Check for empty hour/minute/second variables in a DODS_Time
-// variable, if these variables do not exist set a default value
-// for them to 0.
-//
-// Revision 1.3  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.2.8.1  1999/05/01 04:40:28  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.2  1999/01/05 00:40:44  jimg
-// Switched to simpler method names.
-//
-// Revision 1.1  1998/12/28 19:08:05  jimg
-// Initial version of the DODS_Time factory object. This is a test implementation.
-//
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.6 2000/08/31 22:16:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.7 2000/10/11 19:37:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -131,5 +96,43 @@ DODS_Time_Factory::get()
     return DODS_Time(hour, min, sec, _gmt);
 }
 
-
-
+// $Log: DODS_Time_Factory.cc,v $
+// Revision 1.7  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.6  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.5.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
+// Revision 1.5  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.4.2.1  1999/06/04 15:01:35  dan
+// Fixed problem caused by testing '_hours', prior to setting '_hours'
+// with an assignment to dds.var(). Same for '_minutes', '_seconds'.
+//
+// Revision 1.4  1999/05/25 18:37:50  dan
+// Check for empty hour/minute/second variables in a DODS_Time
+// variable, if these variables do not exist set a default value
+// for them to 0.
+//
+// Revision 1.3  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.2.8.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.2  1999/01/05 00:40:44  jimg
+// Switched to simpler method names.
+//
+// Revision 1.1  1998/12/28 19:08:05  jimg
+// Initial version of the DODS_Time factory object. This is a test implementation.
+//

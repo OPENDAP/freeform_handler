@@ -8,99 +8,9 @@
 //
 // jhrg 3/29/96
 
-// $Log: util_ff.cc,v $
-// Revision 1.15  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.14  2000/04/20 16:52:27  jimg
-// Merged with release-3-1-4 code.
-//
-// Revision 1.12.8.5  2000/04/20 16:36:19  jimg
-// I moved Dan's fix of int8 --> uint8 for dods_byte here. The fix was
-// originally checked in on the trunk.
-//
-// Revision 1.13  2000/04/20 13:57:38  dan
-// Modified ff_types to return the FreeForm type 'uint8'
-// for the DODS type 'byte'.  This is consistent with the
-// current behavior of dods_byte but will cause FreeForm
-// datasets using the 'int8' datatype to fail.
-//
-// Revision 1.12.8.4  1999/08/28 06:35:49  jimg
-// Added debug.h include
-//
-// Revision 1.12.8.3  1999/08/28 06:09:35  jimg
-// Removed extraneous debug code.
-//
-// Revision 1.12.8.2  1999/08/28 05:16:16  jimg
-// Replaced the call to find_format_files with a call to
-// dods_find_format_files. The latter takes the `format' file suffix as a
-// parameter and so can be used to search for files the end in something
-// other than .fmt. Thus, find_ancillary_files() now uses the same procedure
-// to file all ancillary and format files.
-//
-// Revision 1.12.8.1  1999/08/28 01:29:56  jimg
-// Fixed and error where the output_format string was not built properly. It
-// was not terminated by a null; instead the *string* "\0" was used. That
-// caused strings to sometimes contain parts of previous output_format
-// strings, particularly when the previous strings were longer than the
-// current string. The bad strings confused the FF format parser and produce
-// garbage output.
-//
-// Revision 1.12  1999/05/04 02:55:38  jimg
-// Merge with no-gnu
-//
-// Revision 1.11  1999/04/30 14:48:40  dan
-// Modified find_ancillary_file to use the setdbin:find_format_files
-// routine to locate the local FreeForm description file.
-//
-// Revision 1.9  1999/03/18 01:12:38  jimg
-// Fixed up the file_exist90 function so that it no longer does the open/close
-// thing.
-//
-// Revision 1.8  1999/03/18 00:25:38  jimg
-// Fixed find_ancillary_file(). It now works correctly for files that have .s
-// in their names (not just spearating the basename from the extension.
-//
-// Revision 1.7.12.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.7  1998/08/31 04:06:15  reza
-// Added String support.
-// Fixed data alignment problem (64-bit Architectures).
-// Removed Warnings and added a check for file existence.
-// Updated FFND to fix a bug in stride.
-//
-// Revision 1.6  1998/08/18 16:58:24  reza
-// Files with headers are now handled correctly
-//
-// Revision 1.5  1998/08/14 19:44:35  jimg
-// Added return for non-void functions that could return implicitly (without a
-// value).
-//
-// Revision 1.4  1998/08/12 21:21:18  jimg
-// Massive changes from Reza. Compatible with the new FFND library
-//
-// Revision 1.3  1998/04/21 17:14:10  jimg
-// Fixes for warnings, etc
-//
-// Revision 1.2  1998/04/16 18:11:26  jimg
-// Sequence support added by Reza
-//
-// Revision 1.3  1996/05/20 21:11:29  jimg
-// Make_output_format now returns a string instead of creating a temporary
-// file. find_format_file was changed to `find_ancillary_file' to better
-// reflect what it actually does.
-//
-// Revision 1.2  1996/04/17 20:40:10  jimg
-// First release version of the DODS-FreeForm data server. This works with
-// version 1 of the DODS core and client software.
-//
-// Revision 1.1.2.1  1996/04/10 15:51:45  jimg
-// The initial version of the FreeForm data server.
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.15 2000/08/31 22:16:55 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.16 2000/10/11 19:37:56 jimg Exp $"};
 
 #include <unistd.h>
 
@@ -441,3 +351,99 @@ find_ancillary_file(const string &dataset, const string &delimiter,
 	db_destroy(dbin);
     }
 }
+
+// $Log: util_ff.cc,v $
+// Revision 1.16  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.15  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.14  2000/04/20 16:52:27  jimg
+// Merged with release-3-1-4 code.
+//
+// Revision 1.12.8.5  2000/04/20 16:36:19  jimg
+// I moved Dan's fix of int8 --> uint8 for dods_byte here. The fix was
+// originally checked in on the trunk.
+//
+// Revision 1.13  2000/04/20 13:57:38  dan
+// Modified ff_types to return the FreeForm type 'uint8'
+// for the DODS type 'byte'.  This is consistent with the
+// current behavior of dods_byte but will cause FreeForm
+// datasets using the 'int8' datatype to fail.
+//
+// Revision 1.12.8.4  1999/08/28 06:35:49  jimg
+// Added debug.h include
+//
+// Revision 1.12.8.3  1999/08/28 06:09:35  jimg
+// Removed extraneous debug code.
+//
+// Revision 1.12.8.2  1999/08/28 05:16:16  jimg
+// Replaced the call to find_format_files with a call to
+// dods_find_format_files. The latter takes the `format' file suffix as a
+// parameter and so can be used to search for files the end in something
+// other than .fmt. Thus, find_ancillary_files() now uses the same procedure
+// to file all ancillary and format files.
+//
+// Revision 1.12.8.1  1999/08/28 01:29:56  jimg
+// Fixed and error where the output_format string was not built properly. It
+// was not terminated by a null; instead the *string* "\0" was used. That
+// caused strings to sometimes contain parts of previous output_format
+// strings, particularly when the previous strings were longer than the
+// current string. The bad strings confused the FF format parser and produce
+// garbage output.
+//
+// Revision 1.12  1999/05/04 02:55:38  jimg
+// Merge with no-gnu
+//
+// Revision 1.11  1999/04/30 14:48:40  dan
+// Modified find_ancillary_file to use the setdbin:find_format_files
+// routine to locate the local FreeForm description file.
+//
+// Revision 1.9  1999/03/18 01:12:38  jimg
+// Fixed up the file_exist90 function so that it no longer does the open/close
+// thing.
+//
+// Revision 1.8  1999/03/18 00:25:38  jimg
+// Fixed find_ancillary_file(). It now works correctly for files that have .s
+// in their names (not just spearating the basename from the extension.
+//
+// Revision 1.7.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.7  1998/08/31 04:06:15  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
+// Revision 1.6  1998/08/18 16:58:24  reza
+// Files with headers are now handled correctly
+//
+// Revision 1.5  1998/08/14 19:44:35  jimg
+// Added return for non-void functions that could return implicitly (without a
+// value).
+//
+// Revision 1.4  1998/08/12 21:21:18  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
+// Revision 1.3  1998/04/21 17:14:10  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:11:26  jimg
+// Sequence support added by Reza
+//
+// Revision 1.3  1996/05/20 21:11:29  jimg
+// Make_output_format now returns a string instead of creating a temporary
+// file. find_format_file was changed to `find_ancillary_file' to better
+// reflect what it actually does.
+//
+// Revision 1.2  1996/04/17 20:40:10  jimg
+// First release version of the DODS-FreeForm data server. This works with
+// version 1 of the DODS core and client software.
+//
+// Revision 1.1.2.1  1996/04/10 15:51:45  jimg
+// The initial version of the FreeForm data server.

@@ -5,13 +5,8 @@
 //
 // Authors: James Gallagher
 
-// $Log: FFFloat32.h,v $
-// Revision 1.1  1999/05/19 17:52:41  jimg
-// Added
-//
-
-#ifndef _FFFloat32_h
-#define _FFFloat32_h 1
+#ifndef _fffloat32_h
+#define _fffloat32_h 1
 
 #ifdef __GNUG__
 #pragma interface
@@ -27,8 +22,19 @@ public:
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset, int &error);
+    virtual bool read(const string &dataset);
 };
+
+// $Log: FFFloat32.h,v $
+// Revision 1.2  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.1  1999/05/19 17:52:41  jimg
+// Added
+//
 
 #endif
 

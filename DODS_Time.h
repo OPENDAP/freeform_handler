@@ -7,32 +7,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODS_Time.h,v $
-// Revision 1.5  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.4.6.1  1999/06/01 15:38:06  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.4  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.3.6.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.3  1999/01/08 22:08:19  jimg
-// Fixed doc++ comments.
-//
-// Revision 1.2  1999/01/05 00:37:28  jimg
-// Removed string class; replaced with the GNU String class. It seems those
-// don't mix well.
-// Switched to simpler method names.
-// Added DOC++ Comments.
-//
-// Revision 1.1  1998/12/28 19:07:33  jimg
-// Initial version of the DODS_Time object
-//
-
 #ifndef _dods_time_h
 #define _dods_time_h
 
@@ -214,5 +188,37 @@ public:
     void set_epsilon(double eps);
 
 };
+
+// $Log: DODS_Time.h,v $
+// Revision 1.6  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.5  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.4.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.4  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.3  1999/01/08 22:08:19  jimg
+// Fixed doc++ comments.
+//
+// Revision 1.2  1999/01/05 00:37:28  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+// Added DOC++ Comments.
+//
+// Revision 1.1  1998/12/28 19:07:33  jimg
+// Initial version of the DODS_Time object
+//
 
 #endif // _dods_time_h

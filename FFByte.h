@@ -17,7 +17,33 @@
 //
 // ReZa 6/16/97
 
+#ifndef _ffbyte_h
+#define _ffbyte_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "Byte.h"
+extern Byte * NewByte(const string &n = "");
+
+class FFByte: public Byte {
+public:
+    FFByte(const string &n = "");
+    virtual ~FFByte() {}
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+};
+
 // $Log: FFByte.h,v $
+// Revision 1.6  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.5  1999/05/27 17:02:22  jimg
 // Merge with alpha-3-0-0
 //
@@ -35,26 +61,6 @@
 //
 // Revision 1.2  1998/04/16 18:11:01  jimg
 // Sequence support added by Reza
-
-#ifndef _FFByte_h
-#define _FFByte_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include "Byte.h"
-extern Byte * NewByte(const string &n = "");
-
-class FFByte: public Byte {
-public:
-    FFByte(const string &n = "");
-    virtual ~FFByte() {}
-
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset, int &error);
-};
 
 #endif
 

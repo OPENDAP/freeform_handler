@@ -12,64 +12,16 @@
 //
 // ReZa 6/23/97
 
-// $Log: ffdas.cc,v $
-// Revision 1.11  1999/07/22 21:28:10  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.10.2.1  1999/07/21 20:27:08  dan
-// Added Attribute handling for FreeForm File_Headers.  FreeForm
-// header variables defined in the format-descriptor file will be
-// added the the FF_GLOBAL DAS container.  File_Headers are commonly
-// used by FreeForm to provide metadata concerning the data contained
-// in the dataset.
-//
-// Revision 1.10  1999/05/27 17:02:23  jimg
-// Merge with alpha-3-0-0
-//
-// Revision 1.9.2.1  1999/05/20 21:43:51  edavis
-// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
-//
-// Revision 1.9  1999/05/04 02:55:38  jimg
-// Merge with no-gnu
-//
-// Revision 1.8  1999/03/26 20:03:32  jimg
-// Added support for the Int16, UInt16 and Float32 datatypes
-//
-// Revision 1.7.12.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.7  1998/08/31 04:06:13  reza
-// Added String support.
-// Fixed data alignment problem (64-bit Architectures).
-// Removed Warnings and added a check for file existence.
-// Updated FFND to fix a bug in stride.
-//
-// Revision 1.6  1998/08/14 18:26:33  reza
-// Removed embedded double quotes in attributes.
-//
-// Revision 1.5  1998/08/13 20:23:45  jimg
-// Removed the attribute about file info.
-//
-// Revision 1.4  1998/08/12 21:21:14  jimg
-// Massive changes from Reza. Compatible with the new FFND library
-//
-// Revision 1.3  1998/04/21 17:14:09  jimg
-// Fixes for warnings, etc
-//
-// Revision 1.2  1998/04/16 18:11:24  jimg
-// Sequence support added by Reza
-//
-//
-
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.11 1999/07/22 21:28:10 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.12 2000/10/11 19:37:56 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <iostream.h>
+
+#include <iostream>
 #include <string>
 
 #include "cgi_util.h"
@@ -318,5 +270,57 @@ main(int argc, char *argv[])
 
 #endif
 
-
-
+// $Log: ffdas.cc,v $
+// Revision 1.12  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.11  1999/07/22 21:28:10  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.10.2.1  1999/07/21 20:27:08  dan
+// Added Attribute handling for FreeForm File_Headers.  FreeForm
+// header variables defined in the format-descriptor file will be
+// added the the FF_GLOBAL DAS container.  File_Headers are commonly
+// used by FreeForm to provide metadata concerning the data contained
+// in the dataset.
+//
+// Revision 1.10  1999/05/27 17:02:23  jimg
+// Merge with alpha-3-0-0
+//
+// Revision 1.9.2.1  1999/05/20 21:43:51  edavis
+// Fix spelling of COPYRIGHT and remove some #if 0 stuff.
+//
+// Revision 1.9  1999/05/04 02:55:38  jimg
+// Merge with no-gnu
+//
+// Revision 1.8  1999/03/26 20:03:32  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.7.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.7  1998/08/31 04:06:13  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
+// Revision 1.6  1998/08/14 18:26:33  reza
+// Removed embedded double quotes in attributes.
+//
+// Revision 1.5  1998/08/13 20:23:45  jimg
+// Removed the attribute about file info.
+//
+// Revision 1.4  1998/08/12 21:21:14  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
+// Revision 1.3  1998/04/21 17:14:09  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:11:24  jimg
+// Sequence support added by Reza
+//
+//

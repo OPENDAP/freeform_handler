@@ -11,7 +11,33 @@
 //
 // ReZa 6/18/97
 
+#ifndef _ffsequence_h
+#define _ffsequence_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "Sequence.h"
+extern Sequence * NewSequence(const string &n = "");
+
+class FFSequence: public Sequence {
+public:
+    FFSequence(const string &n = "");
+    virtual ~FFSequence();
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+};
+
 // $Log: FFSequence.h,v $
+// Revision 1.6  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.5  1999/05/27 17:02:22  jimg
 // Merge with alpha-3-0-0
 //
@@ -29,25 +55,5 @@
 //
 // Revision 1.2  1998/04/16 18:11:15  jimg
 // Sequence support added by Reza
-
-#ifndef _FFSequence_h
-#define _FFSequence_h 1
-
-#ifdef _GNUG_
-#pragma interface
-#endif
-
-#include "Sequence.h"
-extern Sequence * NewSequence(const string &n = "");
-
-class FFSequence: public Sequence {
-public:
-    FFSequence(const string &n = "");
-    virtual ~FFSequence();
-
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset, int &error);
-};
 
 #endif

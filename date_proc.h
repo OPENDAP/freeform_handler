@@ -5,18 +5,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: date_proc.h,v $
-// Revision 1.3  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.2.24.1  2000/08/03 20:16:27  jimg
-// The is_leap and days_in_year functions are now externally visible. This
-// should be the only place where we calculate leap year stuff.
-//
-// Revision 1.2  1998/11/10 17:46:56  jimg
-// Added this log.
-//
-
 int is_leap(int year);
 double days_in_year(int year);
 
@@ -28,6 +16,20 @@ void days_to_month_day(int year, int ddd, int *month, int *day);
 
 int dayofweek(double j);
 
-
-
-
+// $Log: date_proc.h,v $
+// Revision 1.4  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.3  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.2.24.1  2000/08/03 20:16:27  jimg
+// The is_leap and days_in_year functions are now externally visible. This
+// should be the only place where we calculate leap year stuff.
+//
+// Revision 1.2  1998/11/10 17:46:56  jimg
+// Added this log.
+//

@@ -10,61 +10,9 @@
 //
 // ReZa 6/18/97
 
-// $Log: FFArray.cc,v $
-// Revision 1.11  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.10.2.2  2000/08/03 20:18:57  jimg
-// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
-// neither should be included in a header file).
-// Changed code that calculated leap year information so that it uses the
-// functions in date_proc.c/h.
-//
-// Revision 1.10.2.1  1999/08/28 01:18:53  jimg
-// Changed the extract_array declaration from `template <class t> bool
-// extract_array<T>(...)' to template <class t> bool extract_array(...).
-// I.E.: I removed the second <T> which was allowed by gcc 2.8.1 but was, in
-// fact, not legal C++.
-//
-// Revision 1.10  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.9.6.1  1999/06/07 17:32:18  edavis
-// Changed 'data()' to 'c_str()'.
-//
-// Revision 1.9  1999/05/04 02:55:36  jimg
-// Merge with no-gnu
-//
-// Revision 1.8  1999/03/26 20:03:31  jimg
-// Added support for the Int16, UInt16 and Float32 datatypes
-//
-// Revision 1.7.8.1  1999/05/01 04:40:29  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.7  1998/11/10 19:23:01  jimg
-// Minor formatting changes...
-//
-// Revision 1.6  1998/08/31 04:05:58  reza
-// Added String support.
-// Fixed data alignment problem (64-bit Architectures).
-// Removed Warnings and added a check for file existence.
-// Updated FFND to fix a bug in stride.
-//
-// Revision 1.5  1998/08/13 20:24:20  jimg
-// Fixed read mfunc semantics
-//
-// Revision 1.4  1998/08/12 21:20:49  jimg
-// Massive changes from Reza. Compatible with the new FFND library
-//
-// Revision 1.3  1998/04/21 17:13:41  jimg
-// Fixes for warnings, etc
-//
-// Revision 1.2  1998/04/16 18:10:58  jimg
-// Sequence support added by Reza
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.11 2000/08/31 22:16:55 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.12 2000/10/11 19:37:56 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -72,14 +20,15 @@ static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.11 2000/08/31 22:16:55 jimg 
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <string.h>
-#include <iostream.h>
 
-#include <assert.h>
+#include <ctype.h>
+#include <iostream>
 #include <string>
 
 #include "dods-datatypes.h"
+#include "Error.h"
+#include "InternalErr.h"
 
 #include "FFArray.h"
 #include "util_ff.h"
@@ -268,10 +217,11 @@ seq2vects(T *t, FFArray &array)
 // Float64. Str and Url as well as all the ctor  types are not
 // supported. 
 //
-// Returns: False if an error was detected, True otherwise.
+// Throws an Error object if an error was detected. 
+// Returns true if more data still needs to be read, otherwise returns false.
 
 bool
-FFArray::read(const string &dataset, int &error)
+FFArray::read(const string &dataset)
 {    
     if (read_p())  // Nothing to do
         return false;
@@ -294,9 +244,7 @@ FFArray::read(const string &dataset, int &error)
      				&has_stride);    
 
     if (!count) {
-      cerr << "constraint returned empty dataset" << endl;
-      error = 1;
-      return false;
+      throw Error(unknown_error, "Constraint returned an empty dataset.");
     }
 
     string output_format =
@@ -313,63 +261,40 @@ FFArray::read(const string &dataset, int &error)
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data
-
+    //     NB: extract_array throws an Error object to signal problems.
     switch(var()->type()) {
       case dods_byte_c:
-	if (!extract_array<dods_byte>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_byte>(ds, if_fmt, o_fmt);
 	break;
 
       case dods_int16_c:
-	if (!extract_array<dods_int16>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_int16>(ds, if_fmt, o_fmt);
 	break;
 
       case dods_uint16_c:
-	if (!extract_array<dods_uint16>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_uint16>(ds, if_fmt, o_fmt);
 	break;
 
       case dods_int32_c:
-	if (!extract_array<dods_int32>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_int32>(ds, if_fmt, o_fmt);
 	break;
 
       case dods_uint32_c:
-	if (!extract_array<dods_uint32>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_uint32>(ds, if_fmt, o_fmt);
 	break;
 
       case dods_float32_c:
-	if (!extract_array<dods_float32>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_float32>(ds, if_fmt, o_fmt);
 	break;
 
       case dods_float64_c:
-	if (!extract_array<dods_float64>(ds, if_fmt, o_fmt)) {
-	    error = 1;
-	    return false;
-	}
+	extract_array<dods_float64>(ds, if_fmt, o_fmt);
 	break;
 
       default:
-	cerr << "FFArray::read: Unsupported array type " << var()->type_name()
-	     << endl;
-	error = 1;
-	return false;
-	break;
+	throw InternalErr(__FILE__, __LINE__,
+			  (string)"FFArray::read: Unsupported array type "
+			  + var()->type_name() + ".");
     }
 
     // clean up
@@ -389,22 +314,79 @@ FFArray::read(const string &dataset, int &error)
 
 template <class T>
 bool
-FFArray::extract_array<T>(char *ds, char *if_fmt, char *o_fmt)
+FFArray::extract_array(char *ds, char *if_fmt, char *o_fmt)
 {
     T *d = (T *)new char[width()];
     long bytes = read_ff(ds, if_fmt, o_fmt, (char *)d, width());
 
     if (bytes == -1) {
-	return false;
+      throw Error(unknown_error, "Could not read values from the dataset.");
     }
     else {
-	//    seq2vects(d, *this);
 	set_read_p(true);
 	val2buf((void *) d);
     }
 
     if (d)
-	delete(d);
+	delete[] (d);
 
     return true;
 }
+
+// $Log: FFArray.cc,v $
+// Revision 1.12  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.11  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.10.2.2  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
+// Revision 1.10.2.1  1999/08/28 01:18:53  jimg
+// Changed the extract_array declaration from `template <class t> bool
+// extract_array<T>(...)' to template <class t> bool extract_array(...).
+// I.E.: I removed the second <T> which was allowed by gcc 2.8.1 but was, in
+// fact, not legal C++.
+//
+// Revision 1.10  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.9.6.1  1999/06/07 17:32:18  edavis
+// Changed 'data()' to 'c_str()'.
+//
+// Revision 1.9  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.8  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.7.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.7  1998/11/10 19:23:01  jimg
+// Minor formatting changes...
+//
+// Revision 1.6  1998/08/31 04:05:58  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
+// Revision 1.5  1998/08/13 20:24:20  jimg
+// Fixed read mfunc semantics
+//
+// Revision 1.4  1998/08/12 21:20:49  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
+// Revision 1.3  1998/04/21 17:13:41  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:10:58  jimg
+// Sequence support added by Reza

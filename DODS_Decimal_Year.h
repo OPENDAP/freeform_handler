@@ -7,14 +7,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODS_Decimal_Year.h,v $
-// Revision 1.1  1999/05/25 13:50:49  dan
-// Modified for dap-3.0.0a changes.
-//
-// Revision 1.1  1999/01/08 22:08:18  jimg
-// Fixed doc++ comments.
-//
-
 #ifndef _dods_decimal_year_h
 #define _dods_decimal_year_h
 
@@ -215,5 +207,19 @@ class DODS_Decimal_Year {
     bool OK() const;
 
 };
+
+// $Log: DODS_Decimal_Year.h,v $
+// Revision 1.2  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.1  1999/05/25 13:50:49  dan
+// Modified for dap-3.0.0a changes.
+//
+// Revision 1.1  1999/01/08 22:08:18  jimg
+// Fixed doc++ comments.
+//
 
 #endif // _DODS_Decimal_Year_h

@@ -4,10 +4,10 @@
 //
 // jhrg 4/2/96
 
-// $Id: util_ff.h,v 1.7 1999/05/04 02:55:38 jimg Exp $
+// $Id: util_ff.h,v 1.8 2000/10/11 19:37:56 jimg Exp $
 
-#ifndef _util_ff_h_
-#define _util_ff_h_
+#ifndef _util_ff_h
+#define _util_ff_h
 
 #include "FreeForm.h"
 

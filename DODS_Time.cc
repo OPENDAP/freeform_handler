@@ -6,9 +6,10 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // Implementation of the DODS Time class
+
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.8 2000/08/31 22:16:54 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.9 2000/10/11 19:37:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,7 +20,7 @@ static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.8 2000/08/31 22:16:54 jimg 
 
 #include <string> 
 #include <strstream.h>
-#include <iomanip.h>
+#include <iomanip>
 
 #include "BaseType.h"
 #include "DODS_Time.h"
@@ -292,6 +293,12 @@ DODS_Time::get(bool gmt) const
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.9  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.8  2000/08/31 22:16:54  jimg
 // Merged with 3.1.7
 //

@@ -8,40 +8,9 @@
 //
 // Implementation of the DODS Date/Time class
 
-// $Log: DODS_Date_Time.cc,v $
-// Revision 1.5  2000/08/31 22:16:53  jimg
-// Merged with 3.1.7
-//
-// Revision 1.4.2.1  2000/08/03 20:18:57  jimg
-// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
-// neither should be included in a header file).
-// Changed code that calculated leap year information so that it uses the
-// functions in date_proc.c/h.
-//
-// Revision 1.4  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.3.6.1  1999/06/01 15:38:06  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.3  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.2.8.1  1999/05/01 04:40:28  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.2  1999/01/05 00:35:35  jimg
-// Removed string class; replaced with the GNU string class. It seems those
-// don't mix well.
-// Switched to simpler method names.
-//
-// Revision 1.1  1998/12/30 06:40:39  jimg
-// Initial version
-//
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.5 2000/08/31 22:16:53 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.6 2000/10/11 19:37:55 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -474,3 +443,40 @@ main(int argc, char *argv[])
     cout << "Seconds: " << dt.unix_time() << endl;
 }
 #endif // TEST_DATE
+
+// $Log: DODS_Date_Time.cc,v $
+// Revision 1.6  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.5  2000/08/31 22:16:53  jimg
+// Merged with 3.1.7
+//
+// Revision 1.4.2.1  2000/08/03 20:18:57  jimg
+// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
+// neither should be included in a header file).
+// Changed code that calculated leap year information so that it uses the
+// functions in date_proc.c/h.
+//
+// Revision 1.4  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.3.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.3  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.2.8.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.2  1999/01/05 00:35:35  jimg
+// Removed string class; replaced with the GNU string class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+//
+// Revision 1.1  1998/12/30 06:40:39  jimg
+// Initial version
+//

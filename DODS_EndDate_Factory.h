@@ -8,15 +8,6 @@
 //      jhrg,jimg  James Gallagher (jgallager@gso.uri.edu)
 //      dan        Daniel Holloway (dholloway@gso.uri.edu)
 
-// $Log: DODS_EndDate_Factory.h,v $
-// Revision 1.2  2000/08/31 22:16:53  jimg
-// Merged with 3.1.7
-//
-// Revision 1.1.2.1  2000/05/01 21:25:28  dan
-// New server-side function to support date-range usage in time fields.
-//
-//
-
 #ifndef _dods_enddate_factory_h
 #define _dods_enddate_factory_h
 
@@ -75,5 +66,20 @@ public:
     DODS_Date get();
     //@}
 };
+
+// $Log: DODS_EndDate_Factory.h,v $
+// Revision 1.3  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.2  2000/08/31 22:16:53  jimg
+// Merged with 3.1.7
+//
+// Revision 1.1.2.1  2000/05/01 21:25:28  dan
+// New server-side function to support date-range usage in time fields.
+//
+//
 
 #endif // _dods_enddate_factory_h 

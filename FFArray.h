@@ -11,7 +11,45 @@
 //
 // ReZa 6/18/97
 
+#ifndef _ffarray_h
+#define _ffarray_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include <string>
+
+#include "Array.h"
+
+extern Array * NewArray(const string &n = "", BaseType *v = 0);
+
+class FFArray: public Array {
+private:
+    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
+    long Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
+			bool *has_stride);
+
+    /** Read an array of simple types into this objects #_buf# memeber. */
+    template <class T> bool extract_array(char *ds, char *if_fmt, 
+					  char *o_fmt);
+
+public:
+    FFArray(const string &n = "", BaseType *v = 0);
+    virtual ~FFArray();
+
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+};
+
 // $Log: FFArray.h,v $
+// Revision 1.8  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.7  1999/05/27 17:02:22  jimg
 // Merge with alpha-3-0-0
 //
@@ -35,37 +73,5 @@
 //
 // Revision 1.2  1998/04/16 18:10:59  jimg
 // Sequence support added by Reza
-
-#ifndef _FFArray_h
-#define _FFArray_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include <string>
-
-#include "Array.h"
-
-extern Array * NewArray(const string &n = "", BaseType *v = 0);
-
-class FFArray: public Array {
-private:
-    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
-    long Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
-			bool *has_stride);
-
-    /** Read an array of simple types into this objects #_buf# memeber. */
-    template <class T> bool extract_array<T>(char *ds, char *if_fmt, 
-					     char *o_fmt);
-
-public:
-    FFArray(const string &n = "", BaseType *v = 0);
-    virtual ~FFArray();
-
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset, int &error);
-};
 
 #endif

@@ -10,7 +10,71 @@
 //
 // ReZa 6/18/97
 
+#include "config_ff.h"
+
+static char rcsid[] not_used = {"$Id: FFInt32.cc,v 1.9 2000/10/11 19:37:56 jimg Exp $"};
+
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include "FFInt32.h"
+#include "util_ff.h"
+
+extern long BufPtr;
+extern char *BufVal;
+
+Int32 *
+NewInt32(const string &n)
+{
+    return new FFInt32(n);
+}
+
+FFInt32::FFInt32(const string &n) : Int32(n)
+{
+}
+
+BaseType *
+FFInt32::ptr_duplicate(){
+
+    return new FFInt32(*this);
+}
+
+bool
+FFInt32::read(const string &dataset)
+{
+    if (read_p()) // nothing to do
+	return false;
+
+    if (BufVal) { // data in cache
+	char * ptr = BufVal+BufPtr;
+
+	dods_int32 align;
+	memcpy((void*)&align, (void *)ptr, width());
+
+	val2buf((void *) &align);
+	set_read_p(true);
+
+#ifdef TEST
+	dods_int32 *tmo;
+	tmo = (dods_int32 *)ptr;
+	printf("\n%ld offset=%ld\n",*tmo,BufPtr);
+#endif 
+	BufPtr += width();
+	return false;
+    }
+    else {
+	return false;
+    }
+}
+
 // $Log: FFInt32.cc,v $
+// Revision 1.9  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.8  1999/05/04 02:55:36  jimg
 // Merge with no-gnu
 //
@@ -37,62 +101,3 @@
 //
 // Revision 1.2  1998/04/16 18:11:10  jimg
 // Sequence support added by Reza
-
-#include "config_ff.h"
-
-static char rcsid[] not_used = {"$Id: FFInt32.cc,v 1.8 1999/05/04 02:55:36 jimg Exp $"};
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include <assert.h>
-#include "FFInt32.h"
-#include "util_ff.h"
-
-extern long BufPtr;
-extern char *BufVal;
-
-Int32 *
-NewInt32(const string &n)
-{
-    return new FFInt32(n);
-}
-
-FFInt32::FFInt32(const string &n) : Int32(n)
-{
-}
-
-BaseType *
-FFInt32::ptr_duplicate(){
-
-    return new FFInt32(*this);
-}
-
-bool
-FFInt32::read(const string &dataset, int &error)
-{
-    if (read_p()) // nothing to do
-	return false;
-
-    if (BufVal) { // data in cache
-	char * ptr = BufVal+BufPtr;
-
-	dods_int32 align;
-	memcpy((void*)&align, (void *)ptr, width());
-
-	val2buf((void *) &align);
-	set_read_p(true);
-
-#ifdef TEST
-	dods_int32 *tmo;
-	tmo = (dods_int32 *)ptr;
-	printf("\n%ld offset=%ld\n",*tmo,BufPtr);
-#endif 
-	BufPtr += width();
-	return false;
-    }
-    else {
-	return false;
-    }
-}

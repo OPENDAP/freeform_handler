@@ -14,40 +14,9 @@
 //
 // ReZa 6/20/97
 
-// $Log: ffdds.cc,v $
-// Revision 1.9  1999/05/04 02:55:38  jimg
-// Merge with no-gnu
-//
-// Revision 1.8  1999/03/26 20:03:32  jimg
-// Added support for the Int16, UInt16 and Float32 datatypes
-//
-// Revision 1.7.12.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.7  1998/08/31 04:06:14  reza
-// Added String support.
-// Fixed data alignment problem (64-bit Architectures).
-// Removed Warnings and added a check for file existence.
-// Updated FFND to fix a bug in stride.
-//
-// Revision 1.6  1998/08/18 16:58:25  reza
-// Files with headers are now handled correctly
-//
-// Revision 1.5  1998/08/14 19:42:57  jimg
-// Added default case to FFV_DATA_TYPE switch statement.
-//
-// Revision 1.4  1998/08/12 21:21:15  jimg
-// Massive changes from Reza. Compatible with the new FFND library
-//
-// Revision 1.3  1998/04/21 17:14:10  jimg
-// Fixes for warnings, etc
-//
-// Revision 1.2  1998/04/16 18:11:25  jimg
-// Sequence support added by Reza
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.9 1999/05/04 02:55:38 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.10 2000/10/11 19:37:56 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -346,3 +315,39 @@ main(int argc, char *argv[])
 
 #endif
 
+// $Log: ffdds.cc,v $
+// Revision 1.10  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.9  1999/05/04 02:55:38  jimg
+// Merge with no-gnu
+//
+// Revision 1.8  1999/03/26 20:03:32  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.7.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.7  1998/08/31 04:06:14  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
+// Revision 1.6  1998/08/18 16:58:25  reza
+// Files with headers are now handled correctly
+//
+// Revision 1.5  1998/08/14 19:42:57  jimg
+// Added default case to FFV_DATA_TYPE switch statement.
+//
+// Revision 1.4  1998/08/12 21:21:15  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
+// Revision 1.3  1998/04/21 17:14:10  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:11:25  jimg
+// Sequence support added by Reza

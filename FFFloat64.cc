@@ -10,7 +10,68 @@
 //
 // ReZa 6/18/97
 
+#include "config_ff.h"
+
+static char rcsid[] not_used = {"$Id: FFFloat64.cc,v 1.9 2000/10/11 19:37:56 jimg Exp $"};
+
+#ifdef __GNUG__
+#pragma implementation
+#endif
+
+#include <string>
+
+#include "FFFloat64.h"
+#include "util_ff.h"
+
+extern long BufPtr;
+extern char *BufVal;
+
+Float64 *
+NewFloat64(const string &n)
+{
+    return new FFFloat64(n);
+}
+
+FFFloat64::FFFloat64(const string &n) : Float64(n)
+{
+}
+
+BaseType *
+FFFloat64::ptr_duplicate()
+{
+    return new FFFloat64(*this); // Copy ctor calls duplicate to do the work
+}
+ 
+bool
+FFFloat64::read(const string &dataset)
+{
+    if (read_p()) // nothing to do
+	return false;
+  
+    if(BufVal){ // data in cache
+	char * ptr = BufVal+BufPtr;
+
+	dods_float64 align;
+	memcpy((void*)&align, (void *)ptr, width());
+
+	val2buf((void *) &align);
+	set_read_p(true);
+
+	BufPtr += width();
+	return false;
+    }
+    else {
+	return false;
+    }
+}
+
 // $Log: FFFloat64.cc,v $
+// Revision 1.9  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.8  1999/05/04 02:55:36  jimg
 // Merge with no-gnu
 //
@@ -37,67 +98,3 @@
 //
 // Revision 1.2  1998/04/16 18:11:03  jimg
 // Sequence support added by Reza
-
-#include "config_ff.h"
-
-static char rcsid[] not_used = {"$Id: FFFloat64.cc,v 1.8 1999/05/04 02:55:36 jimg Exp $"};
-
-#ifdef __GNUG__
-#pragma implementation
-#endif
-
-#include <assert.h>
-#include <string>
-
-#include "FFFloat64.h"
-#include "util_ff.h"
-
-extern long BufPtr;
-extern char *BufVal;
-
-Float64 *
-NewFloat64(const string &n)
-{
-    return new FFFloat64(n);
-}
-
-FFFloat64::FFFloat64(const string &n) : Float64(n)
-{
-}
-
-BaseType *
-FFFloat64::ptr_duplicate()
-{
-    return new FFFloat64(*this); // Copy ctor calls duplicate to do the work
-}
- 
-bool
-FFFloat64::read(const string &dataset, int &error)
-{
-    if (read_p()) // nothing to do
-	return false;
-  
-    if(BufVal){ // data in cache
-	char * ptr = BufVal+BufPtr;
-
-	dods_float64 align;
-	memcpy((void*)&align, (void *)ptr, width());
-
-	val2buf((void *) &align);
-	set_read_p(true);
-
-	BufPtr += width();
-	return false;
-    }
-    else {
-	return false;
-    }
-}
-
-
-
-
-
-
-
-

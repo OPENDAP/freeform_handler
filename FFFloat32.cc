@@ -4,20 +4,13 @@
 //
 // Authors: James Gallagher
 
-// $Log: FFFloat32.cc,v $
-// Revision 1.1  1999/05/19 17:52:41  jimg
-// Added
-//
-
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: FFFloat32.cc,v 1.1 1999/05/19 17:52:41 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFFloat32.cc,v 1.2 2000/10/11 19:37:56 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
-
-#include <assert.h>
 
 #include "FFFloat32.h"
 #include "util_ff.h"
@@ -42,7 +35,7 @@ FFFloat32::ptr_duplicate()
 }
  
 bool
-FFFloat32::read(const string &dataset, int &error)
+FFFloat32::read(const string &dataset)
 {
     if (read_p()) // nothing to do
 	return false;
@@ -64,10 +57,13 @@ FFFloat32::read(const string &dataset, int &error)
     }
 }
 
-
-
-
-
-
-
-
+// $Log: FFFloat32.cc,v $
+// Revision 1.2  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.1  1999/05/19 17:52:41  jimg
+// Added
+//

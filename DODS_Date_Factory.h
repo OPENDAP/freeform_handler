@@ -7,11 +7,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODS_Date_Factory.h,v $
-// Revision 1.1  1999/01/08 22:08:18  jimg
-// Fixed doc++ comments.
-//
-
 #ifndef _dods_date_factory_h
 #define _dods_date_factory_h
 
@@ -69,5 +64,16 @@ public:
     DODS_Date get();
     //@}
 };
+
+// $Log: DODS_Date_Factory.h,v $
+// Revision 1.2  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.1  1999/01/08 22:08:18  jimg
+// Fixed doc++ comments.
+//
 
 #endif // _dods_date_factory_h 

@@ -17,7 +17,33 @@
 //
 // ReZa 6/18/97
 
+#ifndef _ffgrid_h
+#define _ffgrid_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "Grid.h"
+extern Grid * NewGrid(const string &n = "");
+
+class FFGrid: public Grid {
+public:
+    FFGrid(const string &n = "");
+    virtual ~FFGrid();
+    
+    virtual BaseType *ptr_duplicate();
+
+    virtual bool read(const string &dataset);
+};
+
 // $Log: FFGrid.h,v $
+// Revision 1.6  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.5  1999/05/27 17:02:22  jimg
 // Merge with alpha-3-0-0
 //
@@ -35,26 +61,6 @@
 //
 // Revision 1.2  1998/04/16 18:11:09  jimg
 // Sequence support added by Reza
-
-#ifndef _FFGrid_h
-#define _FFGrid_h 1
-
-#ifdef _GNUG_
-#pragma interface
-#endif
-
-#include "Grid.h"
-extern Grid * NewGrid(const string &n = "");
-
-class FFGrid: public Grid {
-public:
-    FFGrid(const string &n = "");
-    virtual ~FFGrid();
-    
-    virtual BaseType *ptr_duplicate();
-
-    virtual bool read(const string &dataset, int &error);
-};
 
 #endif
 

@@ -7,7 +7,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.6 2000/10/11 17:50:39 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.7 2000/10/11 19:37:56 jimg Exp $"};
 
 #include <assert.h>
 
@@ -22,7 +22,7 @@ static int days_arr[13]= {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 int
 is_leap(int year) 
 {
-  return (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0));
+  return (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0);
 }
 
 /** How many days are in the given Gregorian year?
@@ -193,6 +193,12 @@ dayofweek(double j)
 }
 
 // $Log: date_proc.cc,v $
+// Revision 1.7  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.6  2000/10/11 17:50:39  jimg
 // Moved the CVS Log to the end of the file.
 // Fixed a bug i the is_leap() function.

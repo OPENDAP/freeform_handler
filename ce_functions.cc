@@ -8,87 +8,10 @@
 // This file contains various functions for use with/in constraint
 // expressions. 
 
-// $Log: ce_functions.cc,v $
-// Revision 1.13  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.12.2.1  2000/05/01 21:35:05  dan
-// Added modules for date-range server side functions
-//
-// Revision 1.12  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.11  1999/07/22 20:50:40  jimg
-// Resolved conflicts from merge. I've kept the old (I think) versions of the
-// decimal year functions but wrapped them in #if 0 #endif.
-//
-// Revision 1.10  1999/05/28 17:17:34  dan
-// Added DODS_Decimal_Year server-side definitions.
-//
-// Revision 1.9.2.5  1999/06/04 19:38:34  dan
-// Changed name.data() to name.c_str() in new_string_variable, this fixed
-// projection problem for synthesized variables.
-//
-// Revision 1.9.2.4  1999/06/04 15:19:25  dan
-// Changed DODS_DYear to DODS_Decimal_Year in sel_dods_decimal_year.  Should
-// have been done with the change to proj_dods_decimal_year, oops.
-//
-// Revision 1.9.2.3  1999/06/04 14:50:01  dan
-// Changed syntehsized variable DODS_DYear back to DODS_Decimal_Year
-//
-// Revision 1.9.2.2  1999/06/02 15:36:18  jimg
-// removed errant #if 0 ... #endif
-//
-// Revision 1.9.2.1  1999/06/01 15:35:10  jimg
-// Changed the proj and sel functions for decimal dates (DODS_DYear) so that
-// they access DODS_Date and DODS_Date_Time objects using the get member
-// function with the `decimal' token. This works because I also changed those
-// classes to parse floating point date-time representations (using code from
-// Dan's Decimal_Year class).
-//
-// Revision 1.9  1999/05/28 16:33:10  jimg
-// Added/fixed comments.
-//
-// Revision 1.8  1999/05/04 02:55:37  jimg
-// Merge with no-gnu
-//
-// Revision 1.7  1999/03/17 23:26:11  jimg
-// get_instance() now uses the find_ancillary_file() function. This should help
-// to standardize things, although it is still a hack to read the DAS at this
-// point.
-//
-// Revision 1.6.8.1  1999/05/01 04:40:29  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.6  1999/01/05 00:46:13  jimg
-// Switched to a template design for some of the CE selection functions.
-// There's more to do here, but its OK...
-//
-// Revision 1.5  1998/12/31 17:59:18  jimg
-// Changes to match the new (shorter) names in the DODS_Date, _Time and
-// _Date_Time classes along with the associated _Factory classes.
-// Added a template function for comparison.
-//
-// Revision 1.4  1998/12/15 19:38:25  jimg
-// *** empty log message ***
-//
-// Revision 1.3  1998/11/13 05:40:02  jimg
-// Added many DBG() lines.
-//
-// Revision 1.2  1998/11/10 17:53:45  jimg
-// Recoded the projection and selection date functions for jdate. Added new
-// functions for ymd dates and changed the overall organization a bit; it now
-// tries to isolate the information specific to a particular dataset and it now
-// uses the new DODS_Date objects for date conversions.
-//
-// Revision 1.1  1998/09/17 17:44:14  jimg
-// Created
-//
-
 #include <iostream>
 #include <strstream>
 #include <string>
-#include <algo.h>
+#include <algorithm>
 
 #include "BaseType.h"
 #include "Str.h"
@@ -113,10 +36,6 @@
 #include "DODS_Date_Time_Factory.h"
 #include "DODS_StartDate_Time_Factory.h"
 #include "DODS_EndDate_Time_Factory.h"
-#if 0
-#include "DODS_Decimal_Year.h"
-#include "DODS_Decimal_Year_Factory.h"
-#endif
 
 /** Read an instance of T using a Factory for objects of type T. The Factory
     class for T must read configuration information from the DAS.
@@ -907,6 +826,85 @@ Expected zero or one arguments.");
     dds.append_clause(sel_dods_enddate_time, 0); // 0 == no BaseType args
 }
 
-
-
-
+// $Log: ce_functions.cc,v $
+// Revision 1.14  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.13  2000/08/31 22:16:55  jimg
+// Merged with 3.1.7
+//
+// Revision 1.12.2.1  2000/05/01 21:35:05  dan
+// Added modules for date-range server side functions
+//
+// Revision 1.12  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.11  1999/07/22 20:50:40  jimg
+// Resolved conflicts from merge. I've kept the old (I think) versions of the
+// decimal year functions but wrapped them in #if 0 #endif.
+//
+// Revision 1.10  1999/05/28 17:17:34  dan
+// Added DODS_Decimal_Year server-side definitions.
+//
+// Revision 1.9.2.5  1999/06/04 19:38:34  dan
+// Changed name.data() to name.c_str() in new_string_variable, this fixed
+// projection problem for synthesized variables.
+//
+// Revision 1.9.2.4  1999/06/04 15:19:25  dan
+// Changed DODS_DYear to DODS_Decimal_Year in sel_dods_decimal_year.  Should
+// have been done with the change to proj_dods_decimal_year, oops.
+//
+// Revision 1.9.2.3  1999/06/04 14:50:01  dan
+// Changed syntehsized variable DODS_DYear back to DODS_Decimal_Year
+//
+// Revision 1.9.2.2  1999/06/02 15:36:18  jimg
+// removed errant #if 0 ... #endif
+//
+// Revision 1.9.2.1  1999/06/01 15:35:10  jimg
+// Changed the proj and sel functions for decimal dates (DODS_DYear) so that
+// they access DODS_Date and DODS_Date_Time objects using the get member
+// function with the `decimal' token. This works because I also changed those
+// classes to parse floating point date-time representations (using code from
+// Dan's Decimal_Year class).
+//
+// Revision 1.9  1999/05/28 16:33:10  jimg
+// Added/fixed comments.
+//
+// Revision 1.8  1999/05/04 02:55:37  jimg
+// Merge with no-gnu
+//
+// Revision 1.7  1999/03/17 23:26:11  jimg
+// get_instance() now uses the find_ancillary_file() function. This should help
+// to standardize things, although it is still a hack to read the DAS at this
+// point.
+//
+// Revision 1.6.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.6  1999/01/05 00:46:13  jimg
+// Switched to a template design for some of the CE selection functions.
+// There's more to do here, but its OK...
+//
+// Revision 1.5  1998/12/31 17:59:18  jimg
+// Changes to match the new (shorter) names in the DODS_Date, _Time and
+// _Date_Time classes along with the associated _Factory classes.
+// Added a template function for comparison.
+//
+// Revision 1.4  1998/12/15 19:38:25  jimg
+// *** empty log message ***
+//
+// Revision 1.3  1998/11/13 05:40:02  jimg
+// Added many DBG() lines.
+//
+// Revision 1.2  1998/11/10 17:53:45  jimg
+// Recoded the projection and selection date functions for jdate. Added new
+// functions for ymd dates and changed the overall organization a bit; it now
+// tries to isolate the information specific to a particular dataset and it now
+// uses the new DODS_Date objects for date conversions.
+//
+// Revision 1.1  1998/09/17 17:44:14  jimg
+// Created
+//

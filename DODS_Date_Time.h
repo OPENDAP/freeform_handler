@@ -7,23 +7,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODS_Date_Time.h,v $
-// Revision 1.3  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.2.6.1  1999/06/01 15:38:06  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.2  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.1.6.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.1  1999/01/08 22:08:18  jimg
-// Fixed doc++ comments.
-//
-
 #ifndef _dods_date_time_h
 #define _dods_date_time_h
 
@@ -227,5 +210,28 @@ class DODS_Date_Time {
     bool OK() const;
 
 };
+
+// $Log: DODS_Date_Time.h,v $
+// Revision 1.4  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.3  1999/07/22 21:28:09  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.2.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.2  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.1.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.1  1999/01/08 22:08:18  jimg
+// Fixed doc++ comments.
+//
 
 #endif // _dods_date_time_h

@@ -11,7 +11,33 @@
 //
 // ReZa 6/18/97
 
+#ifndef _ffuint32_h
+#define _ffuint32_h 1
+
+#ifdef __GNUG__
+#pragma interface
+#endif
+
+#include "UInt32.h"
+extern UInt32 * NewUInt32(const string &n = "");
+
+class FFUInt32: public UInt32 {
+public:
+    FFUInt32(const string &n = "");
+    virtual ~FFUInt32() {}
+
+    virtual BaseType *ptr_duplicate();
+    
+    virtual bool read(const string &dataset);
+};
+
 // $Log: FFUInt32.h,v $
+// Revision 1.6  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
 // Revision 1.5  1999/05/27 17:02:23  jimg
 // Merge with alpha-3-0-0
 //
@@ -29,26 +55,6 @@
 //
 // Revision 1.2  1998/04/16 18:11:21  jimg
 // Sequence support added by Reza
-
-#ifndef _FFUInt32_h
-#define _FFUInt32_h 1
-
-#ifdef __GNUG__
-#pragma interface
-#endif
-
-#include "UInt32.h"
-extern UInt32 * NewUInt32(const string &n = "");
-
-class FFUInt32: public UInt32 {
-public:
-    FFUInt32(const string &n = "");
-    virtual ~FFUInt32() {}
-
-    virtual BaseType *ptr_duplicate();
-    
-    virtual bool read(const string &dataset, int &error);
-};
 
 #endif
 

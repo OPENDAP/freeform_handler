@@ -10,59 +10,17 @@
 //
 // ReZa 6/16/97
 
-// $Log: FFSequence.cc,v $
-// Revision 1.12  1999/05/04 02:55:36  jimg
-// Merge with no-gnu
-//
-// Revision 1.11  1999/03/26 20:03:31  jimg
-// Added support for the Int16, UInt16 and Float32 datatypes
-//
-// Revision 1.10.8.1  1999/05/01 04:40:29  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.10  1998/11/13 05:39:15  jimg
-// Minor changes, formatting sanity.
-// Added ends to ostrstream object using to builf output format string.
-// Added debug.h
-//
-// Revision 1.9  1998/11/10 19:22:15  jimg
-// Added calls to the new BaseType accessor synthesized_p(). This means that
-// the projection functions now work.
-//
-// Revision 1.8  1998/08/31 04:06:03  reza
-// Added String support.
-// Fixed data alignment problem (64-bit Architectures).
-// Removed Warnings and added a check for file existence.
-// Updated FFND to fix a bug in stride.
-//
-// Revision 1.7  1998/08/18 16:58:23  reza
-// Files with headers are now handled correctly
-//
-// Revision 1.6  1998/08/14 18:20:14  reza
-// Fixed extra records read for sequences.
-//
-// Revision 1.5  1998/08/13 20:24:32  jimg
-// Fixed read mfunc semantics
-//
-// Revision 1.4  1998/08/12 21:20:56  jimg
-// Massive changes from Reza. Compatible with the new FFND library
-//
-// Revision 1.3  1998/04/21 17:13:57  jimg
-// Fixes for warnings, etc
-//
-// Revision 1.2  1998/04/16 18:11:14  jimg
-// Sequence support added by Reza
-
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.12 1999/05/04 02:55:36 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.13 2000/10/11 19:37:56 jimg Exp $"};
 
-#ifdef _GNUG_
+#ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <strstream.h>
 
+#include "Error.h"
 #include "FFSequence.h"
 #include "util_ff.h"
 #include "debug.h"
@@ -146,7 +104,7 @@ Records(const string &filename)
 }
 
 bool 
-FFSequence::read(const string &dataset, int &error)
+FFSequence::read(const string &dataset)
 {
 
   int StrCnt = 0;
@@ -205,8 +163,8 @@ FFSequence::read(const string &dataset, int &error)
    
 	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
 	if (bytes == -1) {
-	    error = 1;
-	    return false;
+	  throw Error(unknown_error, 
+		      "Could not read requested data from the dataset.");
 	}
 	    
 	// clean up
@@ -221,10 +179,57 @@ FFSequence::read(const string &dataset, int &error)
 	    StrLength = StrLens[StrCnt];
 	    StrCnt++;
 	}
-	var(p)->read(dataset, error);
-	if (error)
-	    return false;
+	var(p)->read(dataset);
     }
 
     return true;
 }
+
+// $Log: FFSequence.cc,v $
+// Revision 1.13  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.12  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.11  1999/03/26 20:03:31  jimg
+// Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.10.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.10  1998/11/13 05:39:15  jimg
+// Minor changes, formatting sanity.
+// Added ends to ostrstream object using to builf output format string.
+// Added debug.h
+//
+// Revision 1.9  1998/11/10 19:22:15  jimg
+// Added calls to the new BaseType accessor synthesized_p(). This means that
+// the projection functions now work.
+//
+// Revision 1.8  1998/08/31 04:06:03  reza
+// Added String support.
+// Fixed data alignment problem (64-bit Architectures).
+// Removed Warnings and added a check for file existence.
+// Updated FFND to fix a bug in stride.
+//
+// Revision 1.7  1998/08/18 16:58:23  reza
+// Files with headers are now handled correctly
+//
+// Revision 1.6  1998/08/14 18:20:14  reza
+// Fixed extra records read for sequences.
+//
+// Revision 1.5  1998/08/13 20:24:32  jimg
+// Fixed read mfunc semantics
+//
+// Revision 1.4  1998/08/12 21:20:56  jimg
+// Massive changes from Reza. Compatible with the new FFND library
+//
+// Revision 1.3  1998/04/21 17:13:57  jimg
+// Fixes for warnings, etc
+//
+// Revision 1.2  1998/04/16 18:11:14  jimg
+// Sequence support added by Reza

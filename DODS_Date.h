@@ -7,35 +7,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODS_Date.h,v $
-// Revision 1.6  1999/07/22 21:28:08  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.5.6.1  1999/06/01 15:38:06  jimg
-// Added code to parse and return floating point dates.
-//
-// Revision 1.5  1999/05/04 02:55:35  jimg
-// Merge with no-gnu
-//
-// Revision 1.4.6.1  1999/05/01 04:40:30  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.4  1999/01/08 22:08:18  jimg
-// Fixed doc++ comments.
-//
-// Revision 1.3  1999/01/05 00:34:45  jimg
-// Removed string class; replaced with the GNU String class. It seems those
-// don't mix well.
-// Switched to simpler method names.
-// Added the date_format enumerated type.
-//
-// Revision 1.2  1998/12/30 02:01:12  jimg
-// Added class invariant.
-//
-// Revision 1.1  1998/12/28 19:08:26  jimg
-// Initial version of the DODS_Date object
-//
-
 #ifndef _dods_date_h
 #define _dods_date_h
 
@@ -220,5 +191,40 @@ public:
 	@return True for a valid instance, otherwise false. */
     bool OK() const;
 };
+
+// $Log: DODS_Date.h,v $
+// Revision 1.7  2000/10/11 19:37:55  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.6  1999/07/22 21:28:08  jimg
+// Merged changes from the release-3-0-2 branch
+//
+// Revision 1.5.6.1  1999/06/01 15:38:06  jimg
+// Added code to parse and return floating point dates.
+//
+// Revision 1.5  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.4.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
+// Revision 1.4  1999/01/08 22:08:18  jimg
+// Fixed doc++ comments.
+//
+// Revision 1.3  1999/01/05 00:34:45  jimg
+// Removed string class; replaced with the GNU String class. It seems those
+// don't mix well.
+// Switched to simpler method names.
+// Added the date_format enumerated type.
+//
+// Revision 1.2  1998/12/30 02:01:12  jimg
+// Added class invariant.
+//
+// Revision 1.1  1998/12/28 19:08:26  jimg
+// Initial version of the DODS_Date object
+//
 
 #endif // _dods_date_h

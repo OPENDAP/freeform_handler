@@ -7,19 +7,6 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
-// $Log: DODS_Time_Factory.h,v $
-// Revision 1.3  1999/01/08 22:08:19  jimg
-// Fixed doc++ comments.
-//
-// Revision 1.2  1999/01/05 00:42:42  jimg
-// Switched to simpler method names.
-// Added _gmt field.
-//
-// Revision 1.1  1998/12/28 19:08:05  jimg
-// Initial version of the DODS_Time factory object. This is a test
-// implementation. 
-//
-
 #ifndef _dods_time_factory_h
 #define _dods_time_factory_h
 
@@ -73,5 +60,24 @@ public:
     DODS_Time get();
     //@}
 };
+
+// $Log: DODS_Time_Factory.h,v $
+// Revision 1.4  2000/10/11 19:37:56  jimg
+// Moved the CVS log entries to the end of files.
+// Changed the definition of the read method to match the dap library.
+// Added exception handling.
+// Added exceptions to the read methods.
+//
+// Revision 1.3  1999/01/08 22:08:19  jimg
+// Fixed doc++ comments.
+//
+// Revision 1.2  1999/01/05 00:42:42  jimg
+// Switched to simpler method names.
+// Added _gmt field.
+//
+// Revision 1.1  1998/12/28 19:08:05  jimg
+// Initial version of the DODS_Time factory object. This is a test
+// implementation. 
+//
 
 #endif // _dods_time_factory_h 
