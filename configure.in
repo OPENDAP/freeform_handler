@@ -1,7 +1,8 @@
 
+dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.4 1998/09/17 17:44:51 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.5 1998/10/06 16:51:28 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
@@ -30,9 +31,9 @@ dnl to default values otherwise.
 
 AC_CANONICAL_HOST
 
-CFLAGS="-g -O2"
-CXXFLAGS="-g -O2"	
-LDFLAGS="-g"
+CFLAGS="-g -O2 $CFLAGS"
+CXXFLAGS="-g -O2 $CXXFLAGS"
+LDFLAGS="-g $LDFLAGS"
 
 dnl Checks for programs.
 AC_PROG_CC
