@@ -1,6 +1,6 @@
 1998-11-12  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
-	* This code contains the alpha version of the DODS_Date catlaog
+	* This code contains an alpha version of the DODS_Date catlaog
 	service code.
 
 	* Fixed a problem in DODS_Date where using (mixing) String and
