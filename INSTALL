@@ -1,5 +1,5 @@
 
-$Id: INSTALL,v 1.3 1999/11/05 01:00:27 jimg Exp $
+$Id: INSTALL,v 1.4 2000/09/29 15:26:59 tom Exp $
 
 To Build the ff-dods servers:
 
@@ -24,6 +24,13 @@ To Build the ff-dods servers:
     find out the name of this directory if you don't know it by looking in
     the http server's srm.conf configuration file (which will be located in a
     directory called `conf' within the http server's home directory.
+
+  Note that the DODS server scripts use specialized versions of
+  several Perl modules, shipped with DODS.  These libraries must be
+  in the same directory as the DODS server scripts.  However, if they
+  are in the same directory as other scripts that use the standard
+  versions of these modules, conflicts will develop.  In this case, it
+  may be best to establish a CGI directory just for DODS.
 
 For information about installing secure DODS servers, see the file SECURITY
 in DODS_ROOT.
