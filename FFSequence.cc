@@ -11,6 +11,9 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.6  1998/08/14 18:20:14  reza
+// Fixed extra records read for sequences.
+//
 // Revision 1.5  1998/08/13 20:24:32  jimg
 // Fixed read mfunc semantics
 //
@@ -115,7 +118,7 @@ FFSequence::read(const String &dataset, int &error)
     if (read_p())  // Nothing to do
       return false;
 
-    if(BufPtr > BufSiz)
+    if((BufPtr >= BufSiz) && (BufSiz != 0))
       return false; // End of sequence
 
     if (!BufVal) { // Make the cache
@@ -154,11 +157,11 @@ FFSequence::read(const String &dataset, int &error)
 	if (num_rec == -1)
 	    return false;
 
-	BufSiz = num_rec * stbyte;
+	BufSiz = num_rec * (stbyte - 1);
 
 	BufVal = (char *)new char[BufSiz];
 	long tbytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
-	if (tbytes == -1) {
+	if (tbytes != BufSiz) {
 	    error = 1;
 	    return false;
 	}
