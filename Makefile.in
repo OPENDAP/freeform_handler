@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.13 1999/02/27 00:34:41 jimg Exp $
+# $Id: Makefile.in,v 1.14 1999/03/18 01:24:51 jimg Exp $
 
 @SET_MAKE@
 
@@ -21,7 +21,7 @@ LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
 LIBS = -ldap++ -lfreeform -lmaxmin @LIBS@ -lm
-TAGS_FLAGS = --include=../dap*/TAGS
+TAGS_FLAGS = --include=../dap/TAGS
 
 # Set the instalation directories; prefix can be set on the command line
 # during Makefile construction with `./configure --prefix /my/choice'
