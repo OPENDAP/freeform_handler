@@ -778,7 +778,8 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 		int_year = (short) (year + DOUBLE_UP);
 		base_days = (long)((int_year - 1901) * 365.25 + DOUBLE_UP);
 		extra_days = (short) (adj_serial_day_1980 - base_days);	/* days since beginning of year */
-		if (int_year % 4 == 0 && int_year % 100 != 0 || int_year % 400 == 0)leap = 1; 
+		if ((int_year % 4 == 0 && int_year % 100 != 0) || int_year % 400 == 0)
+			leap = 1;
 		if ((int)extra_days > 59 + (int)leap){ 	/*  month is not Jan or Feb */
 			mon_const = 1;
 			extra_days = extra_days = leap;
@@ -952,8 +953,10 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 	unsigned char output_variable = 0;
 
 	double decimal, year_decimal;
+/*
 	double day_per_year = 1.0 / 365.0;
 	double day_per_leap_year = 1.0 / 366.0;
+*/
 
 	static double century_and_year, century, year, month, day, hour, minute, second;
 	static long int_century_and_year, int_century, int_year, int_month, int_day, int_hour, int_minute, int_second;
@@ -996,7 +999,8 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 		int_month = 0;
 		
 		/* determine if this is a leap year */
-	 	if(int_century_and_year % 4 == 0 && int_century_and_year % 100 != 0 || int_century_and_year % 400 == 0){
+	 	if((int_century_and_year % 4 == 0 && int_century_and_year % 100 != 0) || int_century_and_year % 400 == 0)
+		{
 			decimal *= 366.0;	/* Convert Decimal to days */
 			while(decimal > days_per_leap_month[int_month])
 				int_month++;
@@ -1158,7 +1162,9 @@ static int helper_2
 	 FF_DATA_BUFFER input_buffer
 	)
 {
+/*
 	char *last_underscore = NULL;
+*/
 	VARIABLE_PTR tmp_var = NULL;
 
 	tmp_var = ff_create_variable(name);
@@ -1472,6 +1478,23 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	return(1);
 }
 
+static void setup_vname
+	(
+	 char *orig,
+	 char *new_name,
+	 char **last_underscore
+	)
+{
+	unsigned name_length = 0;
+
+	assert(strlen(orig) < MAX_NAME_LENGTH + 24); /* (size of new_name) */
+
+	name_length = min(strlen(orig), MAX_NAME_LENGTH + 24 - 1);
+	memcpy(new_name, orig, name_length);
+	new_name[name_length] = STR_END;
+
+	*last_underscore = strrchr(new_name, '_');
+}
 
 /*
  * NAME:	cv_units	
@@ -1507,6 +1530,7 @@ int cv_units(
 
 	double 	*double_ptr	 = NULL;
 	double 	double_value = 0.0;
+/*
 	double	scale		= 0.0;
 	double	offset		= 0.0;
 
@@ -1514,19 +1538,14 @@ int cv_units(
 	int i = 0; 
 	unsigned variable_length = 0;
 
-	VARIABLE_PTR var_source = NULL;
 	VARIABLE_PTR scale_var = NULL;
+*/
+	VARIABLE_PTR var_source = NULL;
 	int error;
-	unsigned name_length = 0;
 	FF_DATA_BUFFER ch = NULL;
 	char *last_underscore = NULL;
-	
-	assert(strlen(var->name) < sizeof(v_name));
-	name_length = min(strlen(var->name), sizeof(v_name) - 1);
-	memcpy(v_name, var->name, name_length);
-	v_name[name_length] = STR_END;
 
-	last_underscore = strrchr(v_name, '_');
+	setup_vname(var->name, v_name, &last_underscore);	
 
 #ifdef SCALED_CONVERSION_NOT_WORKING
 /*	CONVERT FROM:			TO:
@@ -1557,7 +1576,7 @@ int cv_units(
 			return(1);
 		}
 		else
-			return(0);
+			setup_vname(var->name, v_name, &last_underscore);
 	}			
 #endif /* SCALED_CONVERSION_NOT_WORKING */
 
@@ -1590,7 +1609,7 @@ int cv_units(
 			return(1);
 		}
 		else
-			return(0);
+			setup_vname(var->name, v_name, &last_underscore);
 	}
 
 /*	CONVERT FROM:			TO:
@@ -1622,7 +1641,7 @@ int cv_units(
 			return(1);
 		}
 		else
-			return(0);
+			setup_vname(var->name, v_name, &last_underscore);
 	}
  
 
@@ -1648,7 +1667,7 @@ int cv_units(
 			return(1);
 		}
 		else
-			return(0);
+			setup_vname(var->name, v_name, &last_underscore);
 	}
 
 	if (last_underscore && !strcmp(last_underscore + 1, "sign"))
@@ -1668,7 +1687,7 @@ int cv_units(
 			return(1);
 		}
 		else
-			return(0);
+			setup_vname(var->name, v_name, &last_underscore);
 	}
 
 /*	CONVERT FROM:			TO:
@@ -1691,7 +1710,7 @@ int cv_units(
 			return(1);
 		}
 		else
-			return(0);
+			setup_vname(var->name, v_name, &last_underscore);
 	}
 	
 /*	CONVERT FROM:			TO:
@@ -1701,7 +1720,7 @@ int cv_units(
  *		   				 
 */
 
-	v_name[name_length] = STR_END;
+	setup_vname(var->name, v_name, &last_underscore);
 
 	assert(sizeof(v_name) - strlen(v_name) > 4);
 	strncat(v_name, "_abs", sizeof(v_name) - strlen(v_name) - 1);
@@ -1717,7 +1736,7 @@ int cv_units(
 		*converted_value = double_value;
 		
 		/* Now Get The Sign */
-		v_name[name_length] = STR_END;
+		setup_vname(var->name, v_name, &last_underscore);
 
 		assert(sizeof(v_name) - strlen(v_name) > 5);
 		strncat(v_name, "_sign", sizeof(v_name) - strlen(v_name) - 1);
@@ -1742,7 +1761,7 @@ int cv_units(
  *  v_name_negate   v_name
  */
 
-	v_name[name_length] = STR_END;
+	setup_vname(var->name, v_name, &last_underscore);
 
 	assert(sizeof(v_name) - strlen(v_name) > 7);
 	strncat(v_name, "_negate", sizeof(v_name) - strlen(v_name) - 1);
@@ -1761,7 +1780,7 @@ int cv_units(
 
 	/* Check for generic date string conversion */
 
-	v_name[name_length] = STR_END;
+	setup_vname(var->name, v_name, &last_underscore);
 
 	if (!strncmp(v_name,"date", 4))
 	{
@@ -1803,7 +1822,9 @@ int cv_abs(VARIABLE_PTR var,			/* Description of Desired variable */
 
 {
 	VARIABLE_PTR var_source = NULL;
+/*
 	double double_value = 0.0;
+*/
 	char *last_underscore = NULL;
 	char v_name[MAX_NAME_LENGTH + 24];	/* Variable Name */
 
@@ -3607,7 +3628,9 @@ int cv_long2mag(
 {
 
 	VARIABLE_PTR 		var_longmag	= NULL;
+/*
 	FF_DATA_PTR 		data_source	= NULL;
+*/
 	unsigned int 		tmp			= 0;
 	double 				tmp_mag		= 0;
 	unsigned long 		longmag		= 0;
@@ -3803,7 +3826,9 @@ int cv_mag_diff(
 
 	VARIABLE_PTR 		var_mag_1	= NULL;
 	VARIABLE_PTR 		var_mag_2	= NULL;
+/*
 	FF_DATA_PTR 		data_source	= NULL;
+*/
 	char				magnitude_1[64] = "magnitude_";
 	char				magnitude_2[64] = "magnitude_";
 	char				*minus;
