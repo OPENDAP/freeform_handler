@@ -1,0 +1,7 @@
+1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
+
+	* Fixed many bugs. 
+
+	* Added a date() CE function. It is a collection of functions,
+	waiting to become an object...
+

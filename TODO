@@ -1,0 +1,4 @@
+
+If the size of the data file is greater than the FF cache, the FF library
+gives up the ghost. 
+[open 9/17/98 jhrg]
