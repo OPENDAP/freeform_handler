@@ -9,6 +9,9 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.4  1998/12/15 19:38:25  jimg
+// *** empty log message ***
+//
 // Revision 1.3  1998/11/13 05:40:02  jimg
 // Added many DBG() lines.
 //
@@ -83,7 +86,7 @@ func_date(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc < 1 || argc > 2)
 	throw Error(malformed_expr,
-		    "Wrong number of arguments to a projection function.");
+		    "Wrong number of arguments to a constraint expression function.");
 
     DODS_Date d1(argv[0]);
     DODS_Date d2;
@@ -105,6 +108,9 @@ func_date(int argc, BaseType *argv[], DDS &dds)
     DBG(cerr << "Result: " << res << endl);
     return res;
 }
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
 
 bool
 sel_dods_jdate(int argc, BaseType *argv[], DDS &dds)
@@ -129,6 +135,9 @@ Please report this error.");
 
     return true;
 }
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
 
 void
 proj_dods_jdate(int argc, BaseType *argv[], DDS &dds)
@@ -177,6 +186,8 @@ type (e.g., a structure, sequence, ...).");
 
     dds.append_clause(sel_dods_jdate, 0); // 0 == no BaseType args
 }
+
+// Same as the above function, but for ymd dates.
 
 bool
 sel_dods_date(int argc, BaseType *argv[], DDS &dds)
