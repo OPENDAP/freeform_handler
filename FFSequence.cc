@@ -10,6 +10,10 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.9  1998/11/10 19:22:15  jimg
+// Added calls to the new BaseType accessor synthesized_p(). This means that
+// the projection functions now work.
+//
 // Revision 1.8  1998/08/31 04:06:03  reza
 // Added String support.
 // Fixed data alignment problem (64-bit Architectures).
@@ -149,8 +153,9 @@ FFSequence::read(const String &dataset, int &error)
 	str << "binary_output_data \"DODS binary output data\"" << endl;
 	StrCnt = 0;
 	for(Pix p = first_var(); p; next_var(p)) {
-	  
-	  if(var(p)->type() == dods_str_c){
+	  if (var(p)->synthesized_p())
+	      continue;
+	  if (var(p)->type() == dods_str_c) {
 	    endbyte +=StrLens[StrCnt];
 	    StrCnt++;
 	  }
@@ -184,8 +189,8 @@ FFSequence::read(const String &dataset, int &error)
 	BufSiz = num_rec * (stbyte - 1);
 
 	BufVal = (char *)new char[BufSiz];
-	long tbytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
-	if (tbytes != BufSiz) {
+	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
+	if (bytes == -1) {
 	    error = 1;
 	    return false;
 	}
