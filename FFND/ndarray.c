@@ -2623,10 +2623,11 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 					NDARR_GET_SEPARATION(amap->subaindex, outoffset);
 					bytesread += outoffset;
 					/* Need to pad a little for output */
-					if(needtopad)
+					if(needtopad) {
 						for(i = outoffset; i > 0; i--)
 							putc(paddingch, outfile);
-					else
+					}
+					else {
 						if(fseek(outfile, outoffset, SEEK_CUR)){
 							err_push(ERR_NDARRAY, "Unable to seek past separation in output file");
 							err_push(ERR_NDARRAY, outfilename);
@@ -2639,6 +2640,7 @@ long ndarr_reorient(ARRAY_MAPPING_PTR amap,
 							memFree(buffer, "buffer");
 							return(-1);
 						}
+					}
 				}
 			} while(ndarr_increment_indices(amap->subaindex));
 	
