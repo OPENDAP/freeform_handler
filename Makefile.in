@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.33 2004/01/26 23:30:34 jimg Exp $
+# $Id: Makefile.in,v 1.34 2004/02/03 23:00:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -72,7 +72,7 @@ STRIP = strip
 DOCXX = doc++
 
 FFSRC = FFArray.cc FFByte.cc FFFloat64.cc \
-	FFGrid.cc FFInt32.cc FFList.cc FFSequence.cc FFStr.cc \
+	FFGrid.cc FFInt32.cc FFSequence.cc FFStr.cc \
 	FFUInt32.cc FFStructure.cc FFUrl.cc util_ff.cc ff_read.c \
 	FFInt16.cc FFUInt16.cc FFFloat32.cc \
 	ce_functions.cc date_proc.cc DODS_Date.cc \
@@ -84,7 +84,7 @@ FFSRC = FFArray.cc FFByte.cc FFFloat64.cc \
 	DODS_EndDate_Time_Factory.cc
 
 FFOBJ =	FFArray.o FFByte.o FFFloat64.o FFGrid.o \
-	FFInt32.o FFList.o FFSequence.o FFStr.o FFStructure.o \
+	FFInt32.o FFSequence.o FFStr.o FFStructure.o \
 	FFInt16.o FFUInt16.o FFFloat32.o \
 	FFUInt32.o FFUrl.o util_ff.o ff_read.o ce_functions.o date_proc.o \
 	DODS_Date.o DODS_Time.o DODS_Time_Factory.o DODS_Date_Factory.o \
