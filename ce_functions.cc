@@ -9,8 +9,33 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.11  1999/07/22 20:50:40  jimg
+// Resolved conflicts from merge. I've kept the old (I think) versions of the
+// decimal year functions but wrapped them in #if 0 #endif.
+//
 // Revision 1.10  1999/05/28 17:17:34  dan
 // Added DODS_Decimal_Year server-side definitions.
+//
+// Revision 1.9.2.5  1999/06/04 19:38:34  dan
+// Changed name.data() to name.c_str() in new_string_variable, this fixed
+// projection problem for synthesized variables.
+//
+// Revision 1.9.2.4  1999/06/04 15:19:25  dan
+// Changed DODS_DYear to DODS_Decimal_Year in sel_dods_decimal_year.  Should
+// have been done with the change to proj_dods_decimal_year, oops.
+//
+// Revision 1.9.2.3  1999/06/04 14:50:01  dan
+// Changed syntehsized variable DODS_DYear back to DODS_Decimal_Year
+//
+// Revision 1.9.2.2  1999/06/02 15:36:18  jimg
+// removed errant #if 0 ... #endif
+//
+// Revision 1.9.2.1  1999/06/01 15:35:10  jimg
+// Changed the proj and sel functions for decimal dates (DODS_DYear) so that
+// they access DODS_Date and DODS_Date_Time objects using the get member
+// function with the `decimal' token. This works because I also changed those
+// classes to parse floating point date-time representations (using code from
+// Dan's Decimal_Year class).
 //
 // Revision 1.9  1999/05/28 16:33:10  jimg
 // Added/fixed comments.
@@ -145,7 +170,7 @@ new_string_variable(const string &name, DDS &dds, BaseType *position = 0)
 {
     // Create the new variable
 
-    Str *new_variable = NewStr(name.data());
+    Str *new_variable = NewStr(name.c_str());
     new_variable->set_read_p(true); // You must call this before ...
     new_variable->set_synthesized_p(true); // this! Look at BaseType.cc.
 
@@ -194,6 +219,8 @@ func_time(int argc, BaseType *argv[], DDS &dds)
     return comparison<DODS_Time, DODS_Time_Factory>(argc, argv, dds);
 }
 
+// This comparision function should be used for decimal dates. 5/29/99 jhrg
+
 bool
 func_date_time(int argc, BaseType *argv[], DDS &dds)
 {
@@ -208,6 +235,9 @@ func_decimal_year(int argc, BaseType *argv[], DDS &dds)
 
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
+
+// The date and date_time functions should now recognize decimal format years
+// and date-times. 5/30/99 jhrg
 
 bool
 sel_dods_jdate(int argc, BaseType *argv[], DDS &dds)
@@ -365,7 +395,14 @@ Expected zero or one arguments.");
     dds.append_clause(sel_dods_date_time, 0); // 0 == no BaseType args
 }
 
+
+
 /*************************** Decimal/Year functions *************************/
+
+#if 0
+
+// NB: I'm not abosoutely sure which version of these we should be using.
+// I'll leave these here just in case my guess is wrong. 7/22/99 jhrg
 
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
@@ -408,4 +445,48 @@ Expected zero or one arguments.");
 
     dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
 }
+#endif
 
+/*************************** Decimal/Year functions *************************/
+
+// This function is added to the selection part of the CE when the matching
+// `projection function' is run. 
+
+bool
+sel_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DODS_Date_Time current 
+	= get_instance<DODS_Date_Time, DODS_Date_Time_Factory>(dds);
+
+    // Stuff the yyyy/ddd string into DODS_JDate.
+    Str *dods_decimal_year = (Str*)dds.var("DODS_Decimal_Year");
+    string s = current.get(decimal);
+    dods_decimal_year->val2buf(&s);
+
+    return true;
+}
+
+// A projection function: This adds a new variable to the DDS and arranges
+// for the matching selection function (above) to be called.
+
+void
+proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+"Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    new_string_variable("DODS_Decimal_Year", dds, (argc == 1) ? argv[0] : 0);
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
+}
