@@ -1,5 +1,6 @@
+
 /* FILENAME:  newform.c
- *
+
  * CONTAINS:  newform()
  */
 
@@ -7,7 +8,7 @@
 
 #ifdef TIMER
 #include <time.h>
-#endif 
+#endif
 
 /*****************************************************************************
  * NAME:  check_for_unused_flags()
@@ -37,125 +38,103 @@
 
 static int check_for_unused_flags(FF_STD_ARGS_PTR std_args)
 {
-	int error = 0;
+    int error = 0;
 
-	if (std_args->user.set_cv_precision)
-	{
-		error = err_push(ERR_IGNORED_OPTION, "precision (checkvar only)");
-	}
-	
-	if (std_args->cv_maxbins)
-	{
-		error = err_push(ERR_IGNORED_OPTION, "maximum number of histogram bins (checkvar only)");
-	}
-	
-	if (std_args->user.is_stdin_redirected && std_args->records_to_read)
-	{
-		error = err_push(ERR_IGNORED_OPTION, "Records to read when redirecting standard input");
-	}
-	
-	return(error);
+    if (std_args->user.set_cv_precision) {
+	error = err_push(ERR_IGNORED_OPTION, "precision (checkvar only)");
+    }
+    if (std_args->cv_maxbins) {
+	error = err_push(ERR_IGNORED_OPTION, "maximum number of histogram bins (checkvar only)");
+    }
+    if (std_args->user.is_stdin_redirected && std_args->records_to_read) {
+	error = err_push(ERR_IGNORED_OPTION, "Records to read when redirecting standard input");
+    }
+    return (error);
 }
-	
-void main(int argc, char *argv[])
+
+int
+main(int argc, char *argv[])
 {
-	FF_BUFSIZE_PTR newform_log = NULL;
+    FF_BUFSIZE_PTR newform_log = NULL;
 
-	char log_file_write_mode[4];
-  
-	int error = 0;
-	FF_STD_ARGS_PTR std_args = NULL;
+    char log_file_write_mode[4];
 
-	std_args = ff_create_std_args();
-	if (!std_args)
-	{
-		fprintf(stderr, "Insufficient memory -- free more memory and try again");
-		error = ERR_MEM_LACK;
-		goto main_exit;
+    int error = 0;
+    FF_STD_ARGS_PTR std_args = NULL;
+
+    std_args = ff_create_std_args();
+    if (!std_args) {
+	fprintf(stderr, "Insufficient memory -- free more memory and try again");
+	error = ERR_MEM_LACK;
+	goto main_exit;
+    }
+    error = parse_command_line(argc, argv, std_args);
+    if (error)
+	goto main_exit;
+
+    if (std_args->log_file) {
+	newform_log = ff_create_bufsize(SCRATCH_QUANTA);
+	if (!newform_log) {
+	    error = ERR_MEM_LACK;
+	    goto main_exit;
 	}
+    }
+    error = check_for_unused_flags(std_args);
+    if (error)
+	goto main_exit;
 
-	error = parse_command_line(argc, argv, std_args);
-	if (error)
-		goto main_exit;
+    error = newform(std_args, newform_log, stderr);
 
-	if (std_args->log_file)
-	{
-		newform_log = ff_create_bufsize(SCRATCH_QUANTA);
-		if (!newform_log)
-		{
-			error = ERR_MEM_LACK;
-			goto main_exit;
-		}
-	}
+    fprintf(stderr, "\n");
 
-	error = check_for_unused_flags(std_args);
-	if (error)
-		goto main_exit;
-
-	error = newform(std_args, newform_log, stderr);
-	
-	fprintf(stderr,"\n");
-
-	/* Is user asking for both error logging and a log file? */
-	if (std_args->error_log && newform_log)
-	{
-		if (strcmp(std_args->error_log, std_args->log_file))
-		{
+    /* Is user asking for both error logging and a log file? */
+    if (std_args->error_log && newform_log) {
+	if (strcmp(std_args->error_log, std_args->log_file)) {
 #if FF_OS == FF_OS_UNIX
-			strcpy(log_file_write_mode, "w");
+	    strcpy(log_file_write_mode, "w");
 #else
-			strcpy(log_file_write_mode, "wt");
+	    strcpy(log_file_write_mode, "wt");
 #endif
-		}
-		else
-		{
+	} else {
 #if FF_OS == FF_OS_UNIX
-			strcpy(log_file_write_mode, "a");
+	    strcpy(log_file_write_mode, "a");
 #else
-			strcpy(log_file_write_mode, "at");
-#endif
-		}
-	}
-	else if (newform_log)
-	{
-#if FF_OS == FF_OS_UNIX
-			strcpy(log_file_write_mode, "w");
-#else
-			strcpy(log_file_write_mode, "wt");
+	    strcpy(log_file_write_mode, "at");
 #endif
 	}
+    } else if (newform_log) {
+#if FF_OS == FF_OS_UNIX
+	strcpy(log_file_write_mode, "w");
+#else
+	strcpy(log_file_write_mode, "wt");
+#endif
+    }
+    if (newform_log) {
+	FILE *fp = NULL;
 
-	if (newform_log)
-	{
-		FILE *fp = NULL;
+	fp = fopen(std_args->log_file, log_file_write_mode);
+	if (fp) {
+	    size_t bytes_written = fwrite(newform_log->buffer, 1, (size_t) newform_log->bytes_used, fp);
 
-		fp = fopen(std_args->log_file, log_file_write_mode);
-		if (fp)
-		{
-			size_t bytes_written = fwrite(newform_log->buffer, 1, (size_t)newform_log->bytes_used, fp);
+	    if (bytes_written != (size_t) newform_log->bytes_used)
+		error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", (int) bytes_written, (int) newform_log->bytes_used, std_args->log_file);
 
-			if (bytes_written != (size_t)newform_log->bytes_used)
-				error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", (int)bytes_written, (int)newform_log->bytes_used, std_args->log_file);
+	    fclose(fp);
+	} else
+	    error = err_push(ERR_CREATE_FILE, std_args->log_file);
 
-			fclose(fp);
-		}
-		else
-			error = err_push(ERR_CREATE_FILE, std_args->log_file);
+	ff_destroy_bufsize(newform_log);
+    }
+    if (std_args->user.is_stdin_redirected)
+	ff_destroy_bufsize(std_args->input_bufsize);
 
-		ff_destroy_bufsize(newform_log);
-	}
+  main_exit:
 
-	if (std_args->user.is_stdin_redirected)
-		ff_destroy_bufsize(std_args->input_bufsize);
+    if (error || err_state())
+	err_disp(std_args);
 
-main_exit:
+    if (std_args)
+	ff_destroy_std_args(std_args);
 
-	if (error || err_state())
-		err_disp(std_args);
-
-	if (std_args)
-		ff_destroy_std_args(std_args);
-	
-	memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main");
+    memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main");
 }
-

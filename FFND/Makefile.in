@@ -1,9 +1,9 @@
 
-# $Id: Makefile.in,v 1.2 1998/08/12 21:10:00 jimg Exp $
+# $Id: Makefile.in,v 1.3 1998/08/13 02:37:21 jimg Exp $
 
 @SET_MAKE@
 
-PROG = $(FF_LIBRARY) $(MEM_LIBRARY) readfile newform
+PROG = readfile newform
 FF_LIBRARY = libfreeform.a
 MEM_LIBRARY = libmemtrack.a
 MM_LIBRARY = libmaxmin.a
@@ -57,10 +57,6 @@ MM_OBJS = mm_make.o
 
 MEM_OBJS = memtrack.o
 
-#UTIL_OBJS = avlfree.o avlins.o checkvar.o fillhead.o gethead.o getll.o \
-#	    getllsym.o getnames.o makehdf.o newform.o pntshow.o readfile.o \
-#	    splitdat.o   
-
 PROG_OBJS = newform.o readfile.o
 
 FF_SRCS	= $(FF_OBJS:.o=.c)
@@ -69,7 +65,7 @@ PROG_SRCS = $(PROG_OBJS:.o=.c)
 
 LIBS = $(FF_LIBRARY) $(MEM_LIBRARY) $(MM_LIBRARY)
 
-all: $(PROG)
+all: $(LIBS) $(PROG)
 
 $(FF_LIBRARY):	$(FF_OBJS) 
 		$(AR) $(ARFLAGS) $(FF_LIBRARY) $(FF_OBJS)

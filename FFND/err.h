@@ -1,3 +1,4 @@
+
 /*
  * NAME: err.h
  *              
@@ -20,9 +21,9 @@
  */
 /*
  * HISTORY:
- *	Rich Fozzard	7/31/95		-rf01
- *		CodeWarrior for Mac is picky about redefines of TRUE,FALSE
-*/
+ *      Rich Fozzard    7/31/95         -rf01
+ *              CodeWarrior for Mac is picky about redefines of TRUE,FALSE
+ */
 
 
 /* Avoid multiple includes */
@@ -37,9 +38,9 @@
 #define ERR_OPEN_FILE           501
 #define ERR_READ_FILE           502
 #define ERR_WRITE_FILE          503
-#define ERR_PTR_DEF             504 /* for menu library */
+#define ERR_PTR_DEF             504	/* for menu library */
 #define ERR_MEM_LACK            505
-#define ERR_UNKNOWN             506 /* for menu library */
+#define ERR_UNKNOWN             506	/* for menu library */
 #define ERR_FIND_FILE           507
 #define ERR_FILE_DEFINED        508
 #define ERR_OUT_OF_RANGE        510
@@ -132,28 +133,28 @@
 
 /* Do NOT create any error codes that exceed those below */
 
-#define ERR_WARNING_ONLY             16000 /* Don't change this number either */
+#define ERR_WARNING_ONLY             16000	/* Don't change this number either */
 
-typedef int  ERR_BOOLEAN;
+typedef int ERR_BOOLEAN;
 
-#ifdef TRUE /* CodeWarrior for Mac is picky about this -rf01 */
+#ifdef TRUE			/* CodeWarrior for Mac is picky about this -rf01 */
 #undef TRUE
-#endif	/* end #ifdef TRUE -rf01 */
+#endif				/* end #ifdef TRUE -rf01 */
 #define TRUE                    1
-#ifdef FALSE /* CodeWarrior for Mac is picky about this -rf01 */
+#ifdef FALSE			/* CodeWarrior for Mac is picky about this -rf01 */
 #undef FALSE
-#endif	/* end #ifdef FALSE -rf01 */
+#endif				/* end #ifdef FALSE -rf01 */
 #define FALSE                   0
 
-int   err_count(void);
-int   err_pop(void);
-void  err_clear(void);
-void  err_disp(FF_STD_ARGS_PTR std_args);
-void  err_end(void);
+int err_count(void);
+int err_pop(void);
+void err_clear(void);
+void err_disp(FF_STD_ARGS_PTR std_args);
+void err_end(void);
 
-int err_push(const int, const char *, ...);
+int err_push(const int, const char *,...);
 int verr_push(const int ercode, const char *format, va_list va_args);
 
 ERR_BOOLEAN err_state(void);
 
-#endif /* (NOT) ERR_H__ */
+#endif				/* (NOT) ERR_H__ */

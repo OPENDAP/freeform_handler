@@ -14,8 +14,8 @@
  *
  * DESCRIPTION: The function checks to see that the variables mentioned in the 
  *                  equation_info structure exist in the passed eqn_format.
- *				It also sets variable_ptr to the appropriate VAR structure, and
- *				mallocs enough room for any string type variables.
+ *                              It also sets variable_ptr to the appropriate VAR structure, and
+ *                              mallocs enough room for any string type variables.
  *
  * SYSTEM DEPENDENT FUNCTIONS:  none.
  *
@@ -30,58 +30,54 @@
 #define ROUTINE_NAME "ee_check_vars_exist"
 int ee_check_vars_exist(EQUATION_INFO_PTR einfo, FORMAT_PTR eqn_format)
 {
-	VARIABLE_LIST       vars    = NULL;
-	VARIABLE_PTR            var		= NULL;
-	unsigned char           i;
-	char					variable_found;
-	char					*ch_ptr	= NULL;
-	
-	FF_VALIDATE(eqn_format);
-	FF_VALIDATE(einfo);
+    VARIABLE_LIST vars = NULL;
+    VARIABLE_PTR var = NULL;
+    unsigned char i;
+    char variable_found;
+    char *ch_ptr = NULL;
 
-	for(i = 0; i < einfo->num_vars; i++){
-		vars = eqn_format->variables;
-		vars = dll_first(vars);
-	   
-		variable_found = 0;
-	   
-		while ((var = FF_VARIABLE(vars)) != NULL)
-		{
-			if(!memStrcmp(einfo->variable[i], var->name,NO_TAG)){ /* Match found */
-				/* check to make sure it is of correct data type */
-				if(IS_TEXT(var)){
-					if(einfo->variable_type[i] != EE_VAR_TYPE_CHAR){
-						err_push(ERR_EE_DATA_TYPE, var->name);
-						return(1);
-					}
-					/* We have a character type variable */
-					if((char *)((long)einfo->eqn_vars[i])){ /* This has been allocated before */
-						memFree((char *)((long)einfo->eqn_vars[i]), "einfo->eqn_vars[i]");
-					}
-					ch_ptr = (char *)memMalloc((size_t)(var->end_pos - var->start_pos + 5), "ee_check_vars_exist: ch_ptr");
-					if(!ch_ptr)
-					{
-						err_push(ERR_MEM_LACK, "Allocating the character type variable");
-						return(1);						
-					}
-					einfo->eqn_vars[i] = (double)((long)ch_ptr);
-				}
-				else if(einfo->variable_type[i] == EE_VAR_TYPE_CHAR){
-					err_push(ERR_EE_DATA_TYPE, var->name);
-				}
-				einfo->variable_ptr[i] = (void *)var;
-				variable_found = 1;
-				break;
-			}
-			vars = dll_next(vars);
+    FF_VALIDATE(eqn_format);
+    FF_VALIDATE(einfo);
+
+    for (i = 0; i < einfo->num_vars; i++) {
+	vars = eqn_format->variables;
+	vars = dll_first(vars);
+
+	variable_found = 0;
+
+	while ((var = FF_VARIABLE(vars)) != NULL) {
+	    if (!memStrcmp(einfo->variable[i], var->name, NO_TAG)) {	/* Match found */
+		/* check to make sure it is of correct data type */
+		if (IS_TEXT(var)) {
+		    if (einfo->variable_type[i] != EE_VAR_TYPE_CHAR) {
+			err_push(ERR_EE_DATA_TYPE, var->name);
+			return (1);
+		    }
+		    /* We have a character type variable */
+		    if ((char *) ((long) einfo->eqn_vars[i])) {		/* This has been allocated before */
+			memFree((char *) ((long) einfo->eqn_vars[i]), "einfo->eqn_vars[i]");
+		    }
+		    ch_ptr = (char *) memMalloc((size_t) (var->end_pos - var->start_pos + 5), "ee_check_vars_exist: ch_ptr");
+		    if (!ch_ptr) {
+			err_push(ERR_MEM_LACK, "Allocating the character type variable");
+			return (1);
+		    }
+		    einfo->eqn_vars[i] = (double) ((long) ch_ptr);
+		} else if (einfo->variable_type[i] == EE_VAR_TYPE_CHAR) {
+		    err_push(ERR_EE_DATA_TYPE, var->name);
 		}
-		if(!variable_found)
-		{
-			err_push(ERR_EE_VAR_NFOUND, einfo->variable[i]);
-			return(1); /* return an error code */
-		}
+		einfo->variable_ptr[i] = (void *) var;
+		variable_found = 1;
+		break;
+	    }
+	    vars = dll_next(vars);
 	}
-	return(0);
+	if (!variable_found) {
+	    err_push(ERR_EE_VAR_NFOUND, einfo->variable[i]);
+	    return (1);		/* return an error code */
+	}
+    }
+    return (0);
 }
 
 /*
@@ -109,37 +105,37 @@ int ee_check_vars_exist(EQUATION_INFO_PTR einfo, FORMAT_PTR eqn_format)
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "ee_set_var_values"        
+#define ROUTINE_NAME "ee_set_var_values"
 int ee_set_var_values(EQUATION_INFO_PTR einfo, void *record, FORMAT_PTR eqn_format)
 {
-	unsigned char i;
-	char *ch_ptr;
-	VARIABLE_PTR var; 
-	
-	FF_VALIDATE(einfo);
-	FF_VALIDATE(eqn_format);
-	
-	for(i = 0; i < einfo->num_vars; i++){
-		var = (VARIABLE_PTR)(einfo->variable_ptr[i]);
-		switch(einfo->variable_type[i]){
-			case EE_VAR_TYPE_NUMERIC:
-				if(ff_get_double(var, (char *)record + var->start_pos - 1,
-						&(einfo->eqn_vars[i]), eqn_format->type)){
-					err_push(ERR_GENERAL, "Filling equation variables");
-					return(1);
-				}
-				break;
-			case EE_VAR_TYPE_CHAR:
-				ch_ptr = (char *)((long)einfo->eqn_vars[i]);
-				memStrncpy(ch_ptr, (char *)((char *)record + var->start_pos - 1), (size_t)(var->end_pos - var->start_pos + 1),NO_TAG);
-				ch_ptr[var->end_pos - var->start_pos + 1] = '\0';
-				break;
-			default:
-				err_push(ERR_EE_DATA_TYPE, "Unknown data type");
-				return(1);
-		}
+    unsigned char i;
+    char *ch_ptr;
+    VARIABLE_PTR var;
+
+    FF_VALIDATE(einfo);
+    FF_VALIDATE(eqn_format);
+
+    for (i = 0; i < einfo->num_vars; i++) {
+	var = (VARIABLE_PTR) (einfo->variable_ptr[i]);
+	switch (einfo->variable_type[i]) {
+	case EE_VAR_TYPE_NUMERIC:
+	    if (ff_get_double(var, (char *) record + var->start_pos - 1,
+			      &(einfo->eqn_vars[i]), eqn_format->type)) {
+		err_push(ERR_GENERAL, "Filling equation variables");
+		return (1);
+	    }
+	    break;
+	case EE_VAR_TYPE_CHAR:
+	    ch_ptr = (char *) ((long) einfo->eqn_vars[i]);
+	    memStrncpy(ch_ptr, (char *) ((char *) record + var->start_pos - 1), (size_t) (var->end_pos - var->start_pos + 1), NO_TAG);
+	    ch_ptr[var->end_pos - var->start_pos + 1] = '\0';
+	    break;
+	default:
+	    err_push(ERR_EE_DATA_TYPE, "Unknown data type");
+	    return (1);
 	}
-	return(0);
+    }
+    return (0);
 }
 
 /*
@@ -170,53 +166,59 @@ int ee_set_var_values(EQUATION_INFO_PTR einfo, void *record, FORMAT_PTR eqn_form
 #define ROUTINE_NAME "ee_set_var_types"
 int ee_set_var_types(char *eqn, FORMAT_PTR eqn_format)
 {
-	int i, j, k;
-	char inside_string = 0;
-	char var_name[256];
-	VARIABLE_LIST       vars    = NULL;
-	VARIABLE_PTR            var             = NULL;
-	
-	assert(eqn);
-	FF_VALIDATE(eqn_format);
-	
-    for(i = 0; i < (signed int)strlen(eqn); i++){
-	if(eqn[i] == '\"'){
-		if(!inside_string) inside_string = 1;
-		else{
-			if(eqn[i + 1] == '\"'){
-				i++;
-				continue;
-			}
-			inside_string = 0;
+    int i, j, k;
+    char inside_string = 0;
+    char var_name[256];
+    VARIABLE_LIST vars = NULL;
+    VARIABLE_PTR var = NULL;
+
+    assert(eqn);
+    FF_VALIDATE(eqn_format);
+
+    for (i = 0; i < (signed int) strlen(eqn); i++) {
+	if (eqn[i] == '\"') {
+	    if (!inside_string)
+		inside_string = 1;
+	    else {
+		if (eqn[i + 1] == '\"') {
+		    i++;
+		    continue;
 		}
+		inside_string = 0;
+	    }
 	}
-	if((eqn[i] == '[') && !inside_string){
-		/* variable name */
-		k = 0;
-		for(i++; i < (signed int)strlen(eqn); i++) if(eqn[i] != ' ') break;
-			for(j = i; j < (signed int)strlen(eqn); j++){
-				if(eqn[j] == ']') break;
-				var_name[k++] = eqn[j];
-			}
-			for(; k > 0; k--) if(var_name[k - 1] != ' ') break;
-			var_name[k] = '\0';
-			vars = eqn_format->variables;
-			vars = dll_first(vars);
-	   
-			while ((var = FF_VARIABLE(vars)) != NULL)
-			{
-				if(!memStrcmp(var_name, var->name,NO_TAG)){ /* Match found */
-					if(IS_TEXT(var)){
-						for(j = strlen(eqn); j >= i; j--) eqn[j + 1] = eqn[j];
-						eqn[i] = '$';
-					}
-					break;
-				}
-				vars = dll_next(vars);
-			}
+	if ((eqn[i] == '[') && !inside_string) {
+	    /* variable name */
+	    k = 0;
+	    for (i++; i < (signed int) strlen(eqn); i++)
+		if (eqn[i] != ' ')
+		    break;
+	    for (j = i; j < (signed int) strlen(eqn); j++) {
+		if (eqn[j] == ']')
+		    break;
+		var_name[k++] = eqn[j];
+	    }
+	    for (; k > 0; k--)
+		if (var_name[k - 1] != ' ')
+		    break;
+	    var_name[k] = '\0';
+	    vars = eqn_format->variables;
+	    vars = dll_first(vars);
+
+	    while ((var = FF_VARIABLE(vars)) != NULL) {
+		if (!memStrcmp(var_name, var->name, NO_TAG)) {	/* Match found */
+		    if (IS_TEXT(var)) {
+			for (j = strlen(eqn); j >= i; j--)
+			    eqn[j + 1] = eqn[j];
+			eqn[i] = '$';
+		    }
+		    break;
 		}
+		vars = dll_next(vars);
+	    }
 	}
-	return(0);
+    }
+    return (0);
 }
 
 
@@ -230,12 +232,12 @@ int ee_set_var_types(char *eqn, FORMAT_PTR eqn_format)
  * RETURNS:     NULL on error, or a pointer to the EQUATION_INFO struct
  *
  * DESCRIPTION: Makes a copy of the equation, 
- *				sets variable types (inserts a '$' in front of char type variables, 
- *										according to eqn_format),
- *				calls ee_clean_up_equation to create the EQUATION_INFO structure,
- *				and calls ee_check_vars_exist to confirm that all variables are
- *				accounted for.
- *				
+ *                              sets variable types (inserts a '$' in front of char type variables, 
+ *                                                                              according to eqn_format),
+ *                              calls ee_clean_up_equation to create the EQUATION_INFO structure,
+ *                              and calls ee_check_vars_exist to confirm that all variables are
+ *                              accounted for.
+ *                              
  * SYSTEM DEPENDENT FUNCTIONS:  none.
  *
  * AUTHOR:      Kevin Frender (kbf@ngdc.noaa.gov)
@@ -252,44 +254,38 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format)
     char *scratch;
     EQUATION_INFO_PTR einfo = NULL;
     int error = 0;
-    
-	assert(equation);
-	FF_VALIDATE(eqn_format);
 
-	scratch = (char *)memMalloc((size_t)(max(80, strlen(equation) + EE_SCRATCH_EQN_LEN)), "scratch");
-	if(!scratch)
-	{
-		err_push(ERR_MEM_LACK, "Creating a copy of the query restriction");
-		return(NULL);
-	}
-			
-	memStrcpy(scratch, equation,NO_TAG);
-	if(ee_set_var_types(scratch, eqn_format)){
-		err_push(ERR_GENERAL, "Preprocessing equation");
-		memFree(scratch, "scratch");
-		return(NULL);
-	}
-			
-	/* call ee_clean_up_equation to generate the EQUATION_INFO struct */
-	einfo = ee_clean_up_equation(scratch, &error);
-	if(!einfo)
-	{
-		ee_show_err_mesg(scratch, error); /* retrieve the exact error */
-		err_push(ERR_PARSE_EQN, scratch);
-		memFree(scratch, "scratch");
-		return(NULL);
-	}
+    assert(equation);
+    FF_VALIDATE(eqn_format);
 
-	/* Check to make sure that all the variables ee_clean_up_equation found
-	 * are indeed in the format */
-	if(ee_check_vars_exist(einfo, eqn_format))
-	{
-		ee_free_einfo(einfo);
-		memFree(scratch, "scratch");
-		return(NULL);
-	}
+    scratch = (char *) memMalloc((size_t) (max(80, strlen(equation) + EE_SCRATCH_EQN_LEN)), "scratch");
+    if (!scratch) {
+	err_push(ERR_MEM_LACK, "Creating a copy of the query restriction");
+	return (NULL);
+    }
+    memStrcpy(scratch, equation, NO_TAG);
+    if (ee_set_var_types(scratch, eqn_format)) {
+	err_push(ERR_GENERAL, "Preprocessing equation");
 	memFree(scratch, "scratch");
-	return(einfo);
+	return (NULL);
+    }
+    /* call ee_clean_up_equation to generate the EQUATION_INFO struct */
+    einfo = ee_clean_up_equation(scratch, &error);
+    if (!einfo) {
+	ee_show_err_mesg(scratch, error);	/* retrieve the exact error */
+	err_push(ERR_PARSE_EQN, scratch);
+	memFree(scratch, "scratch");
+	return (NULL);
+    }
+    /* Check to make sure that all the variables ee_clean_up_equation found
+     * are indeed in the format */
+    if (ee_check_vars_exist(einfo, eqn_format)) {
+	ee_free_einfo(einfo);
+	memFree(scratch, "scratch");
+	return (NULL);
+    }
+    memFree(scratch, "scratch");
+    return (einfo);
 }
 
 /*
@@ -314,30 +310,29 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format)
  */
 int ee_free_einfo(EQUATION_INFO_PTR einfo)
 {
-	int i;
-	
-	FF_VALIDATE(einfo);
+    int i;
 
-	memFree(einfo->equation, "ee_free_einfo: einfo->equation");
-	
-	/* Free string type variables */
-	for(i = 0; i < (int)einfo->num_vars; i++){
-		if(einfo->variable_type[i] == EE_VAR_TYPE_CHAR)
-			if((char *)((long)einfo->eqn_vars[i]))
-				memFree((void *)((long)einfo->eqn_vars[i]), "ee_free_einfo: einfo->eqn_vars[i]");
-		memFree(einfo->variable[i], "ee_free_einfo: einfo->variable[i]");
-	}
-	
-	/* Free string type constants */
-	for(i = einfo->num_vars; i < (int)(einfo->num_vars + einfo->num_strc); i++)
-		memFree((void *)((long)einfo->eqn_vars[i]), "ee_free_einfo: einfo->eqn_vars[i]");
-	
-	memFree(einfo->variable_type, "ee_free_einfo: einfo->variable_type");
-	
-	memFree(einfo->variable_ptr, "ee_free_einfo: einfo->variable_ptr");
-	memFree(einfo->variable, "ee_free_einfo: einfo->variable");
-	memFree(einfo->eqn_vars, "ee_free_einfo: einfo->eqn_vars");
-	memFree(einfo, "ee_free_einfo: einfo");
-	return(1);
+    FF_VALIDATE(einfo);
+
+    memFree(einfo->equation, "ee_free_einfo: einfo->equation");
+
+    /* Free string type variables */
+    for (i = 0; i < (int) einfo->num_vars; i++) {
+	if (einfo->variable_type[i] == EE_VAR_TYPE_CHAR)
+	    if ((char *) ((long) einfo->eqn_vars[i]))
+		memFree((void *) ((long) einfo->eqn_vars[i]), "ee_free_einfo: einfo->eqn_vars[i]");
+	memFree(einfo->variable[i], "ee_free_einfo: einfo->variable[i]");
+    }
+
+    /* Free string type constants */
+    for (i = einfo->num_vars; i < (int) (einfo->num_vars + einfo->num_strc); i++)
+	memFree((void *) ((long) einfo->eqn_vars[i]), "ee_free_einfo: einfo->eqn_vars[i]");
+
+    memFree(einfo->variable_type, "ee_free_einfo: einfo->variable_type");
+
+    memFree(einfo->variable_ptr, "ee_free_einfo: einfo->variable_ptr");
+    memFree(einfo->variable, "ee_free_einfo: einfo->variable");
+    memFree(einfo->eqn_vars, "ee_free_einfo: einfo->eqn_vars");
+    memFree(einfo, "ee_free_einfo: einfo");
+    return (1);
 }
-
