@@ -9,6 +9,11 @@
 // Implementation of the DODS Time class
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.7  2000/08/31 02:53:18  dan
+// Modified DODS_Time::set(time_str) to handle hours only
+// time strings.  This is part of ISO8601 time specifications
+// and how JPL stores their daily 9KM Pathfinder archives.
+//
 // Revision 1.6  1999/07/22 21:28:09  jimg
 // Merged changes from the release-3-0-2 branch
 //
@@ -45,7 +50,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.6 1999/07/22 21:28:09 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.7 2000/08/31 02:53:18 dan Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -160,23 +165,32 @@ DODS_Time::set(string time)
     char c;
     size_t pos1, pos2;
     iss >> _hours;
-    iss >> c;
-    iss >> _minutes;
 
-    // If there are two colons, assume hours:minutes:seconds.
     pos1 = time.find(":");
-    pos2 = time.rfind(":");
-    if ((pos1 != time.npos) && (pos2 != time.npos) && (pos1 != pos2)) {
+    // If there is at least one colon, assume hours:minutes
+    if (pos1 != time.npos) {
+      iss >> c;
+      iss >> _minutes;
+
+      // If there are two colons, assume hours:minutes:seconds.
+      pos2 = time.rfind(":");
+      if ((pos2 != time.npos) && (pos1 != pos2)) {
 	iss >> c;
 	iss >> _seconds;
+      }  
+      else _seconds = 0;
     }
-    
+    else {
+      // If there are no colons, assume hours only, set others to 0.
+      _minutes = 0;
+      _seconds = 0;
+    }
     _sec_since_midnight = compute_ssm(_hours, _minutes, _seconds);
 
     string gmt;
     iss >> gmt;
-    if (gmt.c_str() == "GMT" || gmt.c_str() == "gmt" || gmt.c_str() == "UTC" 
-	|| gmt.c_str() == "utc")
+    if (gmt == "GMT" || gmt == "gmt" || gmt == "UTC" 
+	|| gmt == "utc")
 	_gmt = true;
     else
 	_gmt = false;
@@ -185,7 +199,7 @@ DODS_Time::set(string time)
     if (!OK())
 	throw Error(malformed_expr, time_syntax_string);
 #endif
-}    
+}
 
 void
 DODS_Time::set(BaseType *arg)
