@@ -201,12 +201,6 @@ static int warn_if_eqv_mismatch(DATA_BIN_PTR dbin)
 	NAME_TABLE_PTR intable = NULL;
 	NAME_TABLE_PTR outtable = NULL;
 
-	FORMAT_PTR infmt = NULL;
-	FORMAT_PTR outfmt = NULL;
-
-	VARIABLE_LIST invlist = NULL;
-	VARIABLE_LIST outvlist = NULL;
-
 	FF_VALIDATE(dbin);
 
 	intable = fd_find_format_data(dbin->table_list, FFF_GROUP, FFF_TABLE | FFF_INPUT);
@@ -371,9 +365,6 @@ static int get_geo_ref
 	int i = 0;
 	int num_names = 0;
 	char **names_vector = NULL;
-
-	long number_of_rows = 0;
-	long number_of_columns = 0;
 
 	int error = 0;
 
@@ -1926,7 +1917,10 @@ static void remove_eqn_companion_vars(FORMAT_PTR format)
 		if (IS_EQN(var))
 		{
 			char *cp = NULL;
+
+#ifndef NDEBUG
 			VARIABLE_PTR var2 = FF_VARIABLE(dll_next(vlist));
+#endif
 
 			FF_VALIDATE(var2);
 
@@ -2444,17 +2438,12 @@ static int setup_lists
 
 	VARIABLE_PTR var = NULL;
 
-	int occurrence = 0;
-	short num_char = 0;
 	char file_name[MAX_NAME_LENGTH + 16];
 
 	int num_names = 0;
 	int name_number = 0;
 	char **var_names = 0;
 	double **var_flags = NULL;
-
-	PROCESS_INFO_LIST collider_list = NULL;
-	VARIABLE_PTR collider = NULL;
 
 	FF_VALIDATE(dbin);
 
@@ -2490,8 +2479,13 @@ static int setup_lists
 		
 		if (!maxmin_only)
 		{
-		
 #if FF_OS == FF_OS_DOS
+			PROCESS_INFO_LIST collider_list = NULL;
+			VARIABLE_PTR collider = NULL;
+
+			int occurrence = 0;
+			short num_char = 0;
+
 			/* Check for duplicate variable file names */
 			/* Repeat occurrences are checked against the format list -- no matter if
 		   	  a variable file exists or not. The decision to go this way was made to

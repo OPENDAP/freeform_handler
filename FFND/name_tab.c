@@ -730,8 +730,6 @@ int nt_parse(char *origin, FF_BUFSIZE_PTR bufsize, NAME_TABLE_HANDLE htable)
 	char scratch_buffer[sizeof(double) + 1];
 	
 	int num_tokens;
-	int num_lines = 0;
-	int num_read = 0;
 
 	size_t line_ndx = 0;
 	
@@ -1552,7 +1550,6 @@ static int nt_convert_value
 	)
 {
 	int error = 0;
-	char *value_ptr = NULL;
 	VARIABLE_PTR var = NULL;
 
 	FORMAT_DATA_MAPPING_PTR format_data_mapping = NULL;
@@ -2065,7 +2062,6 @@ int nt_ask
 {
 	NAME_TABLE_PTR table = NULL;
 	FORMAT_DATA_PTR request_format_data = NULL;
-	VARIABLE_PTR var = NULL;
 
 	char *user_name = NULL;
 	int error;

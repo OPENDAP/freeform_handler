@@ -2889,7 +2889,7 @@ int ndarr_create_brkn_desc(ARRAY_DESCRIPTOR_PTR adesc, int map_type, void *mappi
 	/* Create the array descriptor string */
 	position = descstr;
 	for(i = 0; i < gdim; i++){
-		sprintf(position, "[\"%d\" 0 to %d]", i, (adesc->dim_size[i] / adesc->grouping[i]) - 1);
+		sprintf(position, "[\"%d\" 0 to %d]", i, (int)(adesc->dim_size[i] / adesc->grouping[i]) - 1);
 		position = position + strlen(position);
 	}
 	sprintf(position, " %d", (int)sizeof(char *));

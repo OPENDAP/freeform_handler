@@ -727,8 +727,8 @@ int mm_print(VARIABLE_PTR var)
 	{
 		case FFV_TEXT:
 			printf("Minimum: %s  Maximum: %s\n",
-			       *(char *)max_min->minimum,
-			       *(char *)max_min->maximum
+			       (char *)(max_min->minimum),
+			       (char *)(max_min->maximum)
 			      );
 		break;
 

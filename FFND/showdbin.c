@@ -51,7 +51,6 @@ static int get_format_type_and_title
 	 FF_BUFSIZE_PTR bufsize
 	)
 {
-	int error = 0;
 	FF_TYPES_t save_format_type = 0;
 
 	FF_VALIDATE(format);
@@ -405,8 +404,6 @@ static int display_var_desc
 	var   = FF_VARIABLE(vlist);
 	while (var && !error)
 	{
-		int i = 0;
-
 		FF_VALIDATE(var);
 
 		if (IS_INTERNAL_VAR(var) || (!IS_ARRAY(format) && IS_ASCII(format) && IS_LAST_EOL_VAR(vlist)))
@@ -637,8 +634,8 @@ static int display_record_variable_list
 
 		sprintf(bufsize->buffer + bufsize->bytes_used, "%*s %*d %*d ",
 				  vdf.var_fw, IS_EOL(var) ? "EOL" : var->name,
-				  vdf.start_pos_fw, (int)var->start_pos + array_offset,
-				  vdf.end_pos_fw, (int)var->end_pos + array_offset);
+				  vdf.start_pos_fw, (int)(var->start_pos + array_offset),
+				  vdf.end_pos_fw, (int)(var->end_pos + array_offset));
 		bufsize->bytes_used += strlen(bufsize->buffer + bufsize->bytes_used);
 
 		os_str_replace_unescaped_char1_with_char2('%', ' ', var->name);
@@ -763,7 +760,6 @@ static int dbask_format_list_description
 	 FF_BUFSIZE_PTR bufsize
 	)
 {
-	int format_num = 0;
 	int error = 0;
 
 	PROCESS_INFO_PTR pinfo = NULL;
@@ -803,7 +799,6 @@ static int dbask_format_list_description_to_user
 	 FF_BUFSIZE_PTR bufsize
 	)
 {
-	int format_num = 0;
 	int error = 0;
 
 	PROCESS_INFO_PTR pinfo = NULL;

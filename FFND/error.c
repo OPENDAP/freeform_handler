@@ -31,7 +31,6 @@ typedef struct
 
 
 static FF_ERROR_LIST error_list = NULL;
-static ERR_BOOLEAN      err_stack_space = FALSE;
 								
 /* Local prototypes */
 static char *err_get_msg(int);
@@ -44,99 +43,99 @@ static ERROR_RECORD local_errlist[] =
 		   THE APPROPRIATE ERROR DESCRIPTION */
 
 	/* General Errors */
-	ERR_GENERAL,                    "Unable to complete requested command",                 /*500*/
-	ERR_OPEN_FILE,                  "Opening file (file does not exist, or too many open files)",                                 /*501*/
-	ERR_READ_FILE,                  "Reading file",                                 /*502*/
-	ERR_WRITE_FILE,                 "Writing to file",                              /*503*/
-	ERR_PTR_DEF,                    "Required internal data structure undefined",                                  /*504*/
-	ERR_MEM_LACK,                   "Insufficient memory (RAM)",                 /* 505 */
-	ERR_UNKNOWN,                    "Undefined error",                                      /*506*/
-	ERR_FIND_FILE,                  "Finding file",                                      /*507*/
-	ERR_FILE_DEFINED,               "File undefined",                                     /*508*/
-	ERR_OUT_OF_RANGE,               "Value went out of range",                     /*510*/
-	ERR_PROCESS_DATA,               "Processing data",                              /*515*/
-	ERR_NUM_TOKENS,                 "Incorrect Number of Tokens on Line",                    /* 519 */
-	ERR_FILE_EXISTS,                "File already exists (Can you delete or move the file?)",   /* 522 */
-	ERR_CREATE_FILE,                "Creating file (Do you have write access to the file and directory?)",    /* 523 */
-	ERR_WILL_OVERWRITE_FILE,        "File will be overwritten (Define \"nooverwrite\" keyword?)",  /* 524 */
-	ERR_REMOVE_FILE,                "Removing file (is the file read-only?)",                             /* 525 */
-	ERR_WONT_OVERWRITE_FILE,        "File already exists and will not be overwritten",  /* 524 */
+	{ERR_GENERAL,                    "Unable to complete requested command"},                 /*500*/
+	{ERR_OPEN_FILE,                  "Opening file (file does not exist, or too many open files)"},                                 /*501*/
+	{ERR_READ_FILE,                  "Reading file"},                                 /*502*/
+	{ERR_WRITE_FILE,                 "Writing to file"},                              /*503*/
+	{ERR_PTR_DEF,                    "Required internal data structure undefined"},                                  /*504*/
+	{ERR_MEM_LACK,                   "Insufficient memory (RAM)"},                 /* 505 */
+	{ERR_UNKNOWN,                    "Undefined {ERRor"},                                      /*506*/
+	{ERR_FIND_FILE,                  "Finding file"},                                      /*507*/
+	{ERR_FILE_DEFINED,               "File undefined"},                                     /*508*/
+	{ERR_OUT_OF_RANGE,               "Value went out of range"},                     /*510*/
+	{ERR_PROCESS_DATA,               "Processing data"},                              /*515*/
+	{ERR_NUM_TOKENS,                 "Incorrect Number of Tokens on Line"},                    /* 519 */
+	{ERR_FILE_EXISTS,                "File already exists (Can you delete or move the file?)"},   /* 522 */
+	{ERR_CREATE_FILE,                "Creating file (Do you have write access to the file and directory?)"},    /* 523 */
+	{ERR_WILL_OVERWRITE_FILE,        "File will be overwritten (Define \"nooverwrite\" keyword?)"},  /* 524 */
+	{ERR_REMOVE_FILE,                "Removing file (is the file read-only?)"},                             /* 525 */
+	{ERR_WONT_OVERWRITE_FILE,        "File already exists and will not be overwritten"},  /* 524 */
 
-	/* Freeform Errors */
-	ERR_UNKNOWN_VAR_TYPE,           "Unknown variable type",                                /*1000*/
-	ERR_UNKNOWN_PARAMETER,          "Could not get a value for parameter or keyword",                  /*1001*/
-	ERR_CONVERT,                    "Problem in conversion",                                /*1003*/
-	ERR_MAKE_FORM,                  "Making format",                                /*1004*/
-	ERR_NO_VARIABLES,               "No variables found in format",                                   /*1012*/
-	ERR_FIND_FORM,                  "Finding the named format",                               /*1021*/
-	ERR_CONVERT_VAR,                "Could not determine type of conversion for the given variable",           /*1022*/
-	ERR_ORPHAN_VAR,                 "Output variable has no relation to input",                                /* 1023 */
-	ERR_POSSIBLE,                   "Possible problem when you next use output data",
+	/* Freeform {ERRors */
+	{ERR_UNKNOWN_VAR_TYPE,           "Unknown variable type"},                                /*1000*/
+	{ERR_UNKNOWN_PARAMETER,          "Could not get a value for parameter or keyword"},                  /*1001*/
+	{ERR_CONVERT,                    "Problem in conversion"},                                /*1003*/
+	{ERR_MAKE_FORM,                  "Making format"},                                /*1004*/
+	{ERR_NO_VARIABLES,               "No variables found in format"},                                   /*1012*/
+	{ERR_FIND_FORM,                  "Finding the named format"},                               /*1021*/
+	{ERR_CONVERT_VAR,                "Could not determine type of conversion for the given variable"},           /*1022*/
+	{ERR_ORPHAN_VAR,                 "Output variable has no relation to input"},                                /* 1023 */
+	{ERR_POSSIBLE,                   "Possible problem when you next use output data"},
 
-	/* Binview Errors */
+	/* Binview {ERRors */
 
-	ERR_SET_DBIN,                   "Setting data bin",                             /*1509*/
-	ERR_PARTIAL_RECORD,             "Last record was incomplete and was not read",      /*1517*/
-	ERR_NT_DEFINE,                  "Defining name table",                          /*1520*/
-	ERR_UNKNOWN_FORMAT_TYPE,        "Unknown Format Type",									/*1525*/
+	{ERR_SET_DBIN,                   "Setting data bin"},                             /*1509*/
+	{ERR_PARTIAL_RECORD,             "Last record was incomplete and was not read"},      /*1517*/
+	{ERR_NT_DEFINE,                  "Defining name table"},                          /*1520*/
+	{ERR_UNKNOWN_FORMAT_TYPE,        "Unknown Format Type"},									/*1525*/
 	
-	/* EQUATION errors */
-	ERR_EQN_SET,                 "Problem setting up equation variable",
+	/* EQUATION {ERRors */
+	{ERR_EQN_SET,                 "Problem setting up equation variable"},
 
-	ERR_SDTS,          "Problem in SDTS conversion",
-	ERR_SDTS_BYE_ATTR, "GeoVu keyword will not be encoded into the SDTS transfer",
+	{ERR_SDTS,          "Problem in SDTS conversion"},
+	{ERR_SDTS_BYE_ATTR, "GeoVu keyword will not be encoded into the SDTS transfer"},
 	
 	/* String database and menu systems */
 
-	ERR_MAKE_MENU_DBASE,            "Creating menu database",                       /*3000*/
-	ERR_NO_SUCH_SECTION,            "No Section with this title",                           /*3001*/
-	ERR_GETTING_SECTION,            "Getting text for section",                     /*3002*/
-	ERR_MENU,                       "Processing Menu",                              /*3003*/
+	{ERR_MAKE_MENU_DBASE,            "Creating menu database"},                       /*3000*/
+	{ERR_NO_SUCH_SECTION,            "No Section with this title"},                           /*3001*/
+	{ERR_GETTING_SECTION,            "Getting text for section"},                     /*3002*/
+	{ERR_MENU,                       "Processing Menu"},                              /*3003*/
 
-	ERR_MN_BUFFER_TRUNCATED,        "Menu section buffer truncated",                        /*3500*/
-	ERR_MN_SEC_NFOUND,              "Requested menu section not found",                       /*3501*/
-	ERR_MN_FILE_CORRUPT,            "Menu file corrupt",                                    /*3502*/
-	ERR_MN_REF_FILE_NFOUND,         "Referenced file not found",                            /*3503*/
+	{ERR_MN_BUFFER_TRUNCATED,        "Menu section buffer truncated"},                        /*3500*/
+	{ERR_MN_SEC_NFOUND,              "Requested menu section not found"},                       /*3501*/
+	{ERR_MN_FILE_CORRUPT,            "Menu file corrupt"},                                    /*3502*/
+	{ERR_MN_REF_FILE_NFOUND,         "Referenced file not found"},                            /*3503*/
 	
-	/* Interpreter and parse errors */
+	/* Interpreter and parse {ERRors */
 
-	ERR_MISSING_TOKEN,              "Expected token(s) missing",                               /* 4001 */
-	ERR_PARAM_VALUE,                "Invalid parameter value",                              /* 4006 */
-	ERR_UNKNOWN_OPTION,             "Unknown option; for usage, run again without any arguments", /* 4013 */
-	ERR_IGNORED_OPTION,             "This option not used with this application",             /* 4014 */
-	ERR_VARIABLE_DESC,              "Problem with variable description line",               /* 4015 */
-	ERR_VARIABLE_SIZE,              "Incorrect field size for this variable",         /* 4016 */
-	ERR_NO_EOL,                     "Expecting an End-Of-Line marker",                        /* 4017 */
+	{ERR_MISSING_TOKEN,              "Expected token(s) missing"},                               /* 4001 */
+	{ERR_PARAM_VALUE,                "Invalid parameter value"},                              /* 4006 */
+	{ERR_UNKNOWN_OPTION,             "Unknown option; for usage, run again without any arguments"}, /* 4013 */
+	{ERR_IGNORED_OPTION,             "This option not used with this application"},             /* 4014 */
+	{ERR_VARIABLE_DESC,              "Problem with variable description line"},               /* 4015 */
+	{ERR_VARIABLE_SIZE,              "Incorrect field size for this variable"},         /* 4016 */
+	{ERR_NO_EOL,                     "Expecting an End-Of-Line marker"},                        /* 4017 */
 
-	/* ADTLIB errors */
+	/* ADTLIB {ERRors */
 
-	ERR_FIND_MAX_MIN,               "Finding max and min",                          /* 6001 */
-	ERR_PARSE_EQN,                  "Parsing equation",                             /* 6002 */
-	ERR_EE_VAR_NFOUND,              "Variable in equation not found",                       /* 6003 */
-	ERR_CHAR_IN_EE,                 "Character data type in equation",                      /* 6004 */
-	ERR_EE_DATA_TYPE,               "Mismatching data types in equation",                   /* 6005 */
-	ERR_NDARRAY,                    "With N-dimensional array",                     /* 6006 */
-	ERR_GEN_QUERY,                  "Processing query",                             /* 6007 */
+	{ERR_FIND_MAX_MIN,               "Finding max and min"},                          /* 6001 */
+	{ERR_PARSE_EQN,                  "Parsing equation"},                             /* 6002 */
+	{ERR_EE_VAR_NFOUND,              "Variable in equation not found"},                       /* 6003 */
+	{ERR_CHAR_IN_EE,                 "Character data type in equation"},                      /* 6004 */
+	{ERR_EE_DATA_TYPE,               "Mismatching data types in equation"},                   /* 6005 */
+	{ERR_NDARRAY,                    "With N-dimensional array"},                     /* 6006 */
+	{ERR_GEN_QUERY,                  "Processing query"},                             /* 6007 */
 	
-	/* NAME_TABLE errors */
+	/* NAME_TABLE {ERRors */
 
-	ERR_EXPECTING_SECTION_START, "Expecting Section Start:",
-	ERR_EXPECTING_SECTION_END,   "Expecting Section End:",
-	ERR_MISPLACED_SECTION_START, "Badly Placed Section Start:",
-	ERR_MISPLACED_SECTION_END,   "Badly Placed Section End:",
-	ERR_NT_MERGE,                "Error in merging/copying name tables",
-	ERR_NT_KEYNOTDEF,            "Expected keyword not defined",
-	ERR_EQV_CONTEXT,             "Definition(s) in equivalence section would be out of context",
+	{ERR_EXPECTING_SECTION_START, "Expecting Section Start:"},
+	{ERR_EXPECTING_SECTION_END,   "Expecting Section End:"},
+	{ERR_MISPLACED_SECTION_START, "Badly Placed Section Start:"},
+	{ERR_MISPLACED_SECTION_END,   "Badly Placed Section End:"},
+	{ERR_NT_MERGE,                "{ERRor in merging/copying name tables"},
+	{ERR_NT_KEYNOTDEF,            "Expected keyword not defined"},
+	{ERR_EQV_CONTEXT,             "Definition(s) in equivalence section would be out of context"},
 
-	ERR_GEN_ARRAY, "Problem in performing array operation",
+	{ERR_GEN_ARRAY, "Problem in performing array operation"},
 
 	/* Programmer's eyes only, or programmer support */
-	ERR_API,                     "Error in Application Programmer Interface, contact support",   /* 7900 */
-	ERR_SWITCH_DEFAULT,          "Unexpected default case in switch statement, contact support", /* 7901 */
-	ERR_ASSERT_FAILURE,          "Assertion Failure, contact support",                                            /* 7902 */
-	ERR_NO_NAME_TABLE,           "Equivalence section has not been defined",
-	ERR_API_BUF_LOCKED,          "API Error -- internal buffer is already locked",
-	ERR_API_BUF_NOT_LOCKED,      "API Error -- internal buffer is not locked"
+	{ERR_API,                     "{ERRor in Application Programmer Interface, contact support"},   /* 7900 */
+	{ERR_SWITCH_DEFAULT,          "Unexpected default case in switch statement, contact support"}, /* 7901 */
+	{ERR_ASSERT_FAILURE,          "Assertion Failure, contact support"},                                            /* 7902 */
+	{ERR_NO_NAME_TABLE,           "Equivalence section has not been defined"},
+	{ERR_API_BUF_LOCKED,          "API {ERRor -- internal buffer is already locked"},
+	{ERR_API_BUF_NOT_LOCKED,      "API {ERRor -- internal buffer is not locked"}
 };
 
 #undef ROUTINE_NAME
@@ -331,7 +330,6 @@ int verr_push
 
 	char message[MAX_ERRSTR_SIZE]; /* big enough? */
 
-	FF_ERROR_PTR error = NULL;
 
 	assert(ercode);
 	assert(format);
@@ -576,7 +574,6 @@ int err_disp(FF_STD_ARGS_PTR std_args)
 {
 	int error_return = INT_MAX;
 
-	char *no_error_display = NULL;
 	char reply[4]; /* even for alignment/anal purposes */
 
 	int num_warnings = 0;

@@ -408,65 +408,6 @@ static char *find_EOL(char *s)
 	return(s + spn);
 }
 
-/*****************************************************************************
- * NAME:  find_last_word_on_line
- *
- * PURPOSE:
- *
- * USAGE:
- *
- * RETURNS:
- *
- * DESCRIPTION:
- *
- * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
- *
- * SYSTEM DEPENDENT FUNCTIONS:
- *
- * GLOBALS:
- *
- * COMMENTS:
- *
- * KEYWORDS:
- *
- * ERRORS:
- ****************************************************************************/
-
-static char *find_last_word_on_line(char *text_line)
-{
-	short lead_count;
-	char *cp = find_EOL(text_line);
-	
-	/* Does text_line begins with a newline?  If so, NULL indicates there
-	   is no last word.
-	*/
-	if (strcspn(text_line, UNION_EOL_CHARS) == 0)
-		return(NULL);
-		
-	if (cp)
-		--cp;
-	else
-		cp = text_line + strlen(text_line) - 1;
-
-	/* Now cp points to last character on the line */
-	lead_count = (short)((char HUGE *)cp - (char HUGE *)text_line);
-	assert(lead_count >= 0);
-
-	while (lead_count > 0 && isspace(text_line[lead_count]))
-	{
-		lead_count--;
-		cp--;
-	}
-	
-	while (lead_count > 0 && !isspace(text_line[lead_count]))
-	{
-		lead_count--;
-		cp--;
-	}
-	
-	return(cp);
-}
-
 static sect_types_t kind_of_equiv_section(char *text_line)
 {
 	size_t text_line_len = strlen(text_line);
@@ -653,7 +594,6 @@ static int parse_array_variable
 	int error = 0;
 	char *token = NULL;
 	char save_char = STR_END;
-	char *endptr = NULL;
 	FF_TYPES_t var_type = FFV_NULL;
 
 	FF_VALIDATE(var);
@@ -825,10 +765,8 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 
 		if (var->name[0] == '"' && var->name[strlen(var->name) - 1] == '"')
 		{
-			var->name[0] = ' ';
-			var->name[strlen(var->name) - 1] = ' ';
-
-			os_str_trim_whitespace(var->name, var->name);
+			memmove(var->name, var->name + 1, strlen(var->name) - 2);
+			var->name[strlen(var->name) - 2] = STR_END;
 		}
 	}
 	else
@@ -1071,7 +1009,6 @@ static int append_EOL_to_format
 	)
 {
 	VARIABLE_PTR EOL_var = NULL;
-	VARIABLE_LIST v_list = NULL;
 
 	EOL_var = ff_create_variable("EOL");
 	if (!EOL_var)

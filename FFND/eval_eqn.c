@@ -666,7 +666,9 @@ int ee_translate_expression(EQUATION_INFO_PTR einfo, char *eqn, int *error)
    char *position = NULL;
    char *position_two = NULL;
    char scratch_eqn[EE_SCRATCH_EQN_LEN];
+/*
    char oplen = 1;
+*/
    int x, y;
 
    /*** look for parens, and replace with value in them ***/
