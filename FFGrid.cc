@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFGrid.cc,v $
+// Revision 1.5  1998/08/14 19:41:23  jimg
+// Removed unused bool variable.
+//
 // Revision 1.4  1998/08/13 20:24:26  jimg
 // Fixed read mfunc semantics
 //
@@ -22,7 +25,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFGrid.cc,v 1.4 1998/08/13 20:24:26 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFGrid.cc,v 1.5 1998/08/14 19:41:23 jimg Exp $"};
 
 #include "FFGrid.h"
 
@@ -53,8 +56,6 @@ FFGrid::~FFGrid()
 bool
 FFGrid::read(const String &dataset, int &error)
 {
-    bool status;
-
     if (read_p()) // nothing to do
         return false;
 
