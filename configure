@@ -21,7 +21,7 @@
 # 4. Macros for locating various systems (Matlab, etc.)
 # 5. Macros used to test things about the computer/OS/hardware
 #
-# $Id: configure,v 1.4 1998/09/17 17:44:50 jimg Exp $
+# $Id: configure,v 1.5 1998/10/06 17:44:08 jimg Exp $
 
 # 1. Unidata's macros
 #-------------------------------------------------------------------------
@@ -795,9 +795,9 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 
-CFLAGS="-g -O2"
-CXXFLAGS="-g -O2"	
-LDFLAGS="-g"
+CFLAGS="-g -O2 $CFLAGS"
+CXXFLAGS="-g -O2 $CXXFLAGS"
+LDFLAGS="-g $LDFLAGS"
 
 # Extract the first word of "gcc", so it can be a program name with args.
 set dummy gcc; ac_word=$2
