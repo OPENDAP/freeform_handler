@@ -7,6 +7,9 @@
 
 /*
  * $Log: ff_read.c,v $
+ * Revision 1.6  1998/09/17 17:41:42  jimg
+ * Changed the error messages to aid in bug tracking.
+ *
  * Revision 1.5  1998/09/08 19:19:12  jimg
  * Changed the error reporting scheme a bit. This should actually be sending
  * back Error objects, but that will require some doing. Maybe there is a
@@ -24,9 +27,11 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.5 1998/09/08 19:19:12 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.6 1998/09/17 17:41:42 jimg Exp $"};
 
 #include <freeform.h>
+
+#include "debug.h"
 
 
 long
@@ -45,19 +50,16 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
       goto main_exit;
     }
 
-  /** set the std_arg structure values **/
+  /* set the std_arg structure values **/
   std_args->user.is_stdin_redirected = 0;
   std_args->input_file = dataset;
   std_args->input_format_file = if_file;
   std_args->output_file =	NULL;
   std_args->output_format_buffer = o_format;
-  
-  /* log file can be replaced and the reset simplified for /dev/null */
   std_args->log_file = "/dev/null"; 
-
-#ifdef TEST
-  std_args->log_file = "/tmp/ffdods.log"; 
-#endif  
+  /* Define DBG (as per dap/debug.h) to get a log file from FreeForm. 9/8/98
+     jhrg */
+  DBG(std_args->log_file = "/tmp/ffdods.log"); 
 
   bufsz = (FF_BUFSIZE_PTR)memMalloc(sizeof(FF_BUFSIZE), "bufsz");
   bufsz->usage = 1;
@@ -111,17 +113,22 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
   ff_destroy_bufsize(newform_log);
 
  main_exit:
-  
-  if (error || err_state())
-      switch (error) {
-	case ERR_MEM_LACK:
-	  fprintf(stderr, "Insufficient memory!");
-	  break;
-	default:
-	  fprintf(stderr, "Unknown FreeForm error!");
-	  break;
-      }
-  
+
+  {
+      int err = err_state();
+      if (err && !error)
+	  error = err_pop();
+      if (error)
+	  switch (error) {
+	    case ERR_MEM_LACK:
+	      fprintf(stderr, "Insufficient memory!\n");
+	      break;
+	    default:
+	      fprintf(stderr, "Unknown FreeForm error!\n");
+	      break;
+	  }
+  }
+
   if (std_args)
     ff_destroy_std_args(std_args);
   
