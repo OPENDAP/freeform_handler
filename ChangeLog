@@ -1,3 +1,8 @@
+1999-02-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* The four FreeForm tools newform, bufform, chkform and readfile
+	are now built and installing (in DODS.bin) by default.
+
 1999-02-24  James Gallagher  <jimg@dcz.dods.org>
 
 	* Generalized the tests so that they work regardless of the server
