@@ -1,0 +1,13 @@
+
+// -*- C++ -*-
+//
+
+//ASCII_file_header "header"
+//count 1 2 short 0
+//description 4 24 char 0
+
+ASCII_input_data "data"
+value 1 2 short 0
+
+// binary_output_data "sample binary data format"
+// value 1 2 short 0
