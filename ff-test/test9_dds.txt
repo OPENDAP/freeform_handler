@@ -1,0 +1,14 @@
+HTTP/1.0 200 OK
+XDODS-Server: DODS/2.*
+Content-type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        String t;
+        Float64 Bx;
+        String By;
+        String Bz;
+        String Bx2;
+    } ISEE3;
+} test9;

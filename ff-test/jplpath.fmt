@@ -1,0 +1,25 @@
+
+// -*- C++ -*-
+// The structure of the input_data section is:
+// variable name, starting column, ending column (ones-based, inclusive),
+// datatype, scaling factor (10^x; Data values are automatically divided by
+// 10^x).
+
+ASCII_input_data "JPL_Pathfinder"
+year     1 4    int32 0
+day	 6 8    int32 0
+hours    10 11  int32 0
+minutes  13 17  text 0
+//seconds  16 17  int32 0
+DODS_URL 19 144 text  0
+//DODS_URL 19 61 text  0
+
+// The output_data part of the file is not used by DODS.
+// However, tools like newform use it. 8/13/98 jhrg
+ASCII_output_data	"ASCII_data"
+year    1 4  int32 0
+day	6 8  int32 0
+hours   10 11  int32 0
+DODS_URL 13 150 char 0
+
+

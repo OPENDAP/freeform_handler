@@ -1,0 +1,10 @@
+HTTP/1.0 200 OK
+XDODS-Server: DODS/2.*
+Content-type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        Int32 value;
+    } data;
+} test0;

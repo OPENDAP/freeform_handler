@@ -1,0 +1,11 @@
+HTTP/1.0 200 OK
+XDODS-Server: DODS/2.*
+Content-type: text/plain
+Content-Description: dods_das
+
+Attributes {
+    FF_GLOBAL {
+        String Server "DODS FreeFrom based on FFND release 4.*";
+        String Native_file " (ff-test/test0.fmt) ASCII_input_file_header	`header` File ff-test/test0.dat contains 1 header record (25 bytes) Each record contains 3 fields and is 25 characters long.  (ff-test/test0.fmt) ASCII_input_data	`data` File ff-test/test0.dat contains 13 data records (39 bytes) Each record contains 2 fields and is 3 characters long. ";
+    }
+}

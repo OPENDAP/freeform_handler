@@ -1,0 +1,11 @@
+HTTP/1.0 200 OK
+XDODS-Server: DODS/2.*
+Content-type: text/plain
+Content-Description: dods_das
+
+Attributes {
+    FF_GLOBAL {
+        String Server "DODS FreeFrom based on FFND release 4.*";
+        String Native_file " (ff-test/test7.fmt) ASCII_input_data	`pathfinder` File ff-test/test7.dat contains 719 data records (99222 bytes) Each record contains 5 fields and is 138 characters long. ";
+    }
+}

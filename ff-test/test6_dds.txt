@@ -1,0 +1,14 @@
+HTTP/1.0 200 OK
+XDODS-Server: DODS/2.19a
+Content-type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        Float64 t;
+        Float64 Bx;
+        Float64 By;
+        Float64 Bz;
+        Float64 Bx2;
+    } ISEE3_data;
+} test6;

@@ -1,0 +1,11 @@
+HTTP/1.0 200 OK
+XDODS-Server: DODS/2.*
+Content-type: text/plain
+Content-Description: dods_das
+
+Attributes {
+    FF_GLOBAL {
+        String Server "DODS FreeFrom based on FFND release 4.*";
+        String Native_file " (ff-test/1998-6-avhrr.fmt) ASCII_input_data	`GSO_AVHRR` File ff-test/1998-6-avhrr.dat contains 122 data records (10980 bytes) Each record contains 8 fields and is 90 characters long. ";
+    }
+}
