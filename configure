@@ -1404,8 +1404,29 @@ host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 
 
 
-CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
-CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
+case "$host" in
+    *powerpc*)
+       CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
+       CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"} ;;
+    *linux*)
+      CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+      CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"} ;;
+    *hp*)
+      CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+      CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"} ;;
+    *alpha*)
+      CFLAGS=${CFLAGS-"-O2 $CFLAGS"}
+      CXXFLAGS=${CXXFLAGS-"-O2 $CXXFLAGS"} ;;
+    *sun*)
+      CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+      CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"} ;;
+    *sgi*)
+      CFLAGS=${CFLAGS-"-gstabs -O2 $CFLAGS"}
+      CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"} ;;
+    *)
+       echo "Either this machine is not supported by FreeForm or"
+       echo "the configure script needs to be fixed?" ;;
+esac
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
