@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.10 1998/12/28 19:18:09 jimg Exp $
+# $Id: Makefile.in,v 1.11 1999/01/05 00:43:41 jimg Exp $
 
 @SET_MAKE@
 
@@ -62,13 +62,16 @@ STRIP = strip
 FFSRC = FFArray.cc FFByte.cc FFFloat64.cc FFFunction.cc \
 	FFGrid.cc FFInt32.cc FFList.cc FFSequence.cc FFStr.cc \
 	FFUInt32.cc FFStructure.cc FFUrl.cc util_ff.cc ff_read.c \
-	ce_functions.cc date_proc.cc DODS_Date.cc ce_time_functions.cc \
-	DODS_Time.cc DODS_Time_Factory.cc
+	ce_functions.cc date_proc.cc DODS_Date.cc \
+	DODS_Time.cc DODS_Time_Factory.cc DODS_Date_Factory.cc \
+	DODS_Date_Time.cc DODS_Date_Time_Factory.cc
 
 FFOBJ =	FFArray.o FFByte.o FFFloat64.o FFFunction.o FFGrid.o \
 	FFInt32.o FFList.o FFSequence.o FFStr.o FFStructure.o \
 	FFUInt32.o FFUrl.o util_ff.o ff_read.o ce_functions.o date_proc.o \
-	DODS_Date.o ce_time_functions.o DODS_Time.o DODS_Time_Factory.o
+	DODS_Date.o DODS_Time.o DODS_Time_Factory.o DODS_Date_Factory.o \
+	DODS_Date_Time.o DODS_Date_Time_Factory.o
+
 
 SERVSRC = ff_dods.cc ffdds.cc
 SERVOBJ = ff_dods.o ffdds.o
