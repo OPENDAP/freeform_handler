@@ -7,7 +7,7 @@
  *
  * USAGE:       #include <eval_eqn.h>
  *
- * COMMENTS:    
+ * COMMENTS:	
  *
  */
 
@@ -42,32 +42,32 @@
 
 typedef struct eqninfstruct {
 #ifdef FF_CHK_ADDR
-    struct eqninfstruct *check_address;
+   struct eqninfstruct *check_address;
 #endif
-    unsigned char *equation;	/* This is where the step-by-step instructions are */
-    unsigned char *variable_type;	/* The type of the various variables */
-    void **variable_ptr;	/* Used as a VARIABLE_PTR to VAR structs */
-    char **variable;		/* The array of variable names */
-    double *eqn_vars;		/* The "workspace" for the ee_ functions */
-    int ee_scratch_int;		/* Used internally by the ee_ parsing functions */
-    int eqn_len;		/* Length of the instruction set */
-    unsigned char num_vars;	/* The number of variables */
-    unsigned char numconst;	/* The number of constants (numeric & text) */
-    unsigned char num_work;	/* The number of "working" variables */
-    unsigned char result;	/* The position in the array where result is found */
-    unsigned char num_strc;	/* The number of string constants */
+   unsigned char       *equation;       /* This is where the step-by-step instructions are */
+   unsigned char       *variable_type;  /* The type of the various variables */
+   void               **variable_ptr;   /* Used as a VARIABLE_PTR to VAR structs */
+   char               **variable;       /* The array of variable names */
+   double              *eqn_vars;       /* The "workspace" for the ee_ functions */
+   int                  ee_scratch_int; /* Used internally by the ee_ parsing functions */
+   int                  eqn_len;        /* Length of the instruction set */
+   unsigned char        num_vars;       /* The number of variables */
+   unsigned char        numconst;       /* The number of constants (numeric & text) */
+   unsigned char        num_work;       /* The number of "working" variables */
+   unsigned char        result;         /* The position in the array where result is found */
+   unsigned char        num_strc;       /* The number of string constants */
 } EQUATION_INFO, *EQUATION_INFO_PTR;
 
 /* Functions in eval_eqn.c (There are many more, but only these should be called) */
-void ee_show_err_mesg(char *buffer, int error);
-double ee_evaluate_equation(EQUATION_INFO_PTR einfo, int *error);
-EQUATION_INFO_PTR ee_clean_up_equation(char *eqn, int *error);
+void				ee_show_err_mesg(char *buffer, int error);
+double				ee_evaluate_equation(EQUATION_INFO_PTR einfo, int *error);
+EQUATION_INFO_PTR 	ee_clean_up_equation(char *eqn, int *error);
 
 #ifdef FREEFORM
 /* Functions in eqn_util.c */
 #include <freeform.h>
 
-int ee_check_vars_exist(EQUATION_INFO_PTR einfo, FORMAT_PTR eqn_format);
+int	ee_check_vars_exist(EQUATION_INFO_PTR einfo, FORMAT_PTR eqn_format);
 int ee_set_var_values(EQUATION_INFO_PTR einfo, void *record, FORMAT_PTR eqn_format);
 int ee_set_var_types(char *eqn, FORMAT_PTR eqn_format);
 int ee_free_einfo(EQUATION_INFO_PTR einfo);
@@ -76,10 +76,11 @@ EQUATION_INFO_PTR ee_make_std_equation(char *equation, FORMAT_PTR eqn_format);
 
 #ifndef FF_VALIDATE
 #ifdef FF_CHK_ADDR
-#define FF_VALIDATE(o) assert(o);assert((void *)o == (o)->check_address)
+#define FF_VALIDATE(o) assert(o);assert((void *)o == (o)->check_address);
 #else
-#define FF_VALIDATE(o) assert(o)
+#define FF_VALIDATE(o) assert(o);
 #endif
 #endif
 
-#endif				/* End of include file */
+#endif /* End of include file */
+
