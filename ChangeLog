@@ -1,3 +1,44 @@
+2001-06-18  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged head of release-3-2 (tagged release-3-2-2). The next
+	merge should use update -j release-3-2-2 -j release-3-2.
+
+	* Factored out the code in read_attributes that extracts
+	attributes from data file headers. I also added error trapping so
+	that files without headers won't crash the server(!). Also, I
+	modified the code which adds the attributes to quote any multiword
+	String attributes (using space, \r and \t as separators).
+
+	* Removed calls to find_ancillary_files to locate format
+	descriptor files. Use the functions in the FreeForm code to
+	perform this function (which happens anyways).
+
+	* Added throw for dates with months outside of 1 through 12.
+
+	* Fixed the DAS tests. They match the new DAS objects which lack the
+	long string and which contain datafile header info.
+
+	* Changed the way the DODSFilter is used to support the new
+	version request which returns information about the server's
+	version (name and number) along with information about the core
+	software's version.
+
+	* Changed NULL to 0 in an assignment to _year_base (which is an
+	int) because of a g++ warning.
+
+	* Modified date server-side functions to support year/month date
+	representations, and to support ISO8601 output formats. (By Dan).
+	
+	* Merged with changes on the release-3-1 branch. This apparently
+	was not done corrrectly the first time around.
+
+2001-01-29  James Gallagher  <jimg@dcz.dods.org>
+
+	* Made sure that multiword String attributes are quoted.
+
+	* Fixed a bug in the code that reads datafile headers and dumps
+	them into the DAS; Files without a header crashed the server.
+
 2000-08-31  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged with release-3-1-7. The next merge should use -j
