@@ -1,3 +1,15 @@
+2001-09-28  James Gallagher  <jimg@dcz.dods.org>
+
+	* Merged 3.2.3. The next merge should use release-3-2-3 -j
+	release-3-2. 
+
+2001-09-26  James Gallagher  <jimg@dcz.dods.org>
+
+	* Fixed error reporting bugs (Reza).
+
+	* Added some rudimentary error checking to the date and time
+	server side functions.
+
 2001-06-18  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged head of release-3-2 (tagged release-3-2-2). The next
