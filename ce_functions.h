@@ -26,7 +26,12 @@ bool func_date_time(int argc, BaseType *argv[], DDS &);
 void proj_dods_date_time(int argc, BaseType *argv[], DDS &dds);
 bool sel_dods_date_time(int argc, BaseType *argv[], DDS &dds);
 
+#if 0
 bool func_decimal_year(int argc, BaseType *argv[], DDS &);
+
+void proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds);
+bool sel_dods_decimal_year(int argc, BaseType *argv[], DDS &dds);
+#endif
 
 void proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds);
 bool sel_dods_decimal_year(int argc, BaseType *argv[], DDS &dds);
