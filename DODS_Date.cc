@@ -9,6 +9,9 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.3  1998/12/30 06:39:18  jimg
+// Define TEST when building the test version (also define DATE_TEST).
+//
 // Revision 1.2  1998/12/30 02:00:58  jimg
 // Added class invariant.
 //
@@ -18,7 +21,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.2 1998/12/30 02:00:58 jimg Exp $";
+static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.3 1998/12/30 06:39:18 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -41,7 +44,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.2 1998/12/30 02:00:58 jim
 static string
 extract_argument(BaseType *arg)
 {
-#ifndef TEST_DATE
+#ifndef TEST
     if (arg->type() != dods_str_c)
 	throw Error(malformed_expr, 
 	      "The Projection function requires a DODS string-type argument.");
@@ -114,7 +117,7 @@ DODS_Date::set_date(string date)
     iss >> _month;
 
     // If there are two slashes, assume a yyyy/mm/dd date.
-    if (date.find_first_of("/") != date.find_last_of("/")) {
+    if (date.find("/") != date.rfind("/")) {
 	iss >> c;
 	iss >> _day;
 	// Convert to julian day number and record year, month, ...
