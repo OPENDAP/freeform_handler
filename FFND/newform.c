@@ -72,7 +72,7 @@ static int check_for_unused_flags(FF_STD_ARGS_PTR std_args)
 	return(error);
 }
 	
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	FF_BUFSIZE_PTR newform_log = NULL;
 

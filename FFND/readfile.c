@@ -225,13 +225,15 @@ BOOLEAN endian(void)
 	return(*(char *)&i);
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	double double_var;
 
 	char *input_buffer = NULL;
 
+#if 0
 	unsigned char input_tty = 1;
+#endif
 
 	int data_file;
 	int option;
@@ -687,6 +689,8 @@ void main(int argc, char **argv)
 			last_u_option = ' ';
 
 	}/* end while loop */
+	
+	return 0;
 }/* end readfile */
 
 void show_opt(void)

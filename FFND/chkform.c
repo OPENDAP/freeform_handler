@@ -193,7 +193,7 @@ int events_to_do(int event)
 
 /* long lnum=0; DECLARED BUT NEVER USED */
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	char *greeting = 
 {
@@ -412,7 +412,9 @@ static FF_NDX_t scan_for_nonprintable(char *num_as_str, FF_NDX_t end_pos)
 
 	for (i = 0; i < end_pos; i++)
 	{
-		if ((!isspace(num_as_str[i]) && !isprint(num_as_str[i])) || num_as_str[i] >= 0x7F)
+		if ((!isspace((unsigned int)num_as_str[i]) 
+		     && !isprint((unsigned int)num_as_str[i]))
+		    || num_as_str[i] >= 0x7F)
 			return(i);
 	}
 
@@ -538,7 +540,9 @@ static int do_checks
 
 	while (input_pinfo)
 	{
+#if 0
 		PROCESS_INFO_PTR pinfo = NULL;
+#endif
 		FF_VALIDATE(input_pinfo);
 
 		if (PINFO_NEW_RECORD(input_pinfo))
