@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.5 2003/02/10 23:01:52 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.6 2004/02/06 00:40:51 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -20,7 +20,7 @@ static char rcsid[] not_used ="$Id: DODS_Decimal_Year.cc,v 1.5 2003/02/10 23:01:
 #include <time.h>
 #include <assert.h>
 
-#include <strstream.h>
+#include <sstream>
 
 #include "Error.h"
 #include "DODS_Decimal_Year.h"
@@ -252,16 +252,14 @@ DODS_Decimal_Year::gmt() const
 string 
 DODS_Decimal_Year::get(date_format format, bool gmt) const
 {
-    ostrstream oss;
+    ostringstream oss;
     oss.precision(14);
 
     double decday = (double)_date.year() + fraction();
 
-    oss << decday << ends;
+    oss << decday;
 
-    string dateString = oss.str();
-    oss.freeze(0);
-    return dateString;
+    return oss.str()
 }
 
 double
@@ -413,6 +411,9 @@ main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Decimal_Year.cc,v $
+// Revision 1.6  2004/02/06 00:40:51  jimg
+// Switched from strstream to stringstream.
+//
 // Revision 1.5  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5
 //
