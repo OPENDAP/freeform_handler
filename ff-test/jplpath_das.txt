@@ -5,7 +5,7 @@ Content-Description: dods_das
 
 Attributes {
     FF_GLOBAL {
-        String Server "DODS FreeFrom based on FFND release 4.*";
-        String Native_file " (ff-test/jplpath.fmt) ASCII_input_data	`JPL_Pathfinder` File ff-test/jplpath.dat contains 5429 data records (787205 bytes) Each record contains 6 fields and is 145 characters long. ";
+        String Server "DODS FreeFrom based on FFND release 4.2.3";
+        String Native_file " (ff-test/jplpath.fmt) ASCII_input_data	`JPL_Pathfinder` File ff-test/jplpath.dat contains 5429 data records (787205 bytes) Each record contains 7 fields and is 145 characters long. ";
     }
 }
