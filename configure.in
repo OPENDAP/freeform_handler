@@ -2,7 +2,7 @@
 dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.7 1999/07/22 21:28:10 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.8 1999/08/09 18:30:57 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
@@ -81,7 +81,8 @@ DODS_SEM
 DODS_COMPRESSION_LIB
 DODS_RX_LIB
 DODS_WWW_LIB
-DODS_EXPECT_LIB
+DODS_TCL_LIB
+DODS_TK_LIB
 
 DODS_EFENCE
 
