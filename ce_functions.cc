@@ -9,6 +9,12 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.2  1998/11/10 17:53:45  jimg
+// Recoded the projection and selection date functions for jdate. Added new
+// functions for ymd dates and changed the overall organization a bit; it now
+// tries to isolate the information specific to a particular dataset and it now
+// uses the new DODS_Date objects for date conversions.
+//
 // Revision 1.1  1998/09/17 17:44:14  jimg
 // Created
 //
@@ -21,68 +27,22 @@
 #include <String.h>
 
 #include "BaseType.h"
+#include "Str.h"
+#include "Structure.h"
+#include "Sequence.h"
+#include "FFStr.h"
 #include "DDS.h"
+#include "Error.h"
+
 #include "date_proc.h"
+#include "DODS_Date.h"
+#include "debug.h"
 
-static string
-extract_argument(BaseType *arg)
-{
-#if 0
-    if (arg->type() != dods_string_c)
-	throw wrong_argument_type;
-#endif
-    
-    // Use String until conversion of String to string is complete. 9/3/98
-    // jhrg
-    String *sp = 0;
-    arg->buf2val((void **)&sp);
-    string s = (const char *)(*sp);
-    delete sp;
+// Special for the JPL Pathfinder dataset. Read the sequence variables and
+// build a DODS_Date object.
 
-    cerr << "Argument value: `" << s << "'" << endl;
-    
-    return s;
-}
-
-// Parse the following notations: yyyy/ddd, yyyy/mm/dd, yyyymmdd, yyyyddd.
-//
-// Return the Julian day.
-
-static long
-get_julian_day(string date)
-{
-    int year, month, day;
-
-    // Does the date have slashes?
-    if (date.find("/") != string::npos) {
-	istrstream iss(date.c_str());
-	char slash;
-
-	iss >> year;
-	iss >> slash;
-	iss >> month;		// might read month or day, check below
-	iss >> slash;
-	if (slash && iss) {	// must have month and days
-	    iss >> day;
-	}
-	else {			// must have only year and day
-	    day = month;
-	    days_to_month_day(year, day, &month, &day);
-	}
-	
-	return julian_day(year, month, day);
-    }
-    else {			// no slashes
-	assert("Non-slash version of date not implemented" && false);
-    }
-}
-
-// This function reads variables from the current instance of a sequence and,
-// from them, computes the Julian day. That value is then used in date_func as
-// part of the comparison with the user-supplied date or date range.
-
-static long
-read_julian_day(DDS &dds)
+DODS_Date
+DODS_Date_jpl_pathfinder(DDS &dds)
 {
     BaseType *day_var = dds.var("JPL_Pathfinder.day");
     int day_number;
@@ -94,18 +54,15 @@ read_julian_day(DDS &dds)
     int *year_p = &year;
     year_var->buf2val((void **)&year_p);
 
-    int month;			// The jpl pathfinder catalog uses year/day.
+    DODS_Date d(year, day_number);
 
-    days_to_month_day(year, day_number, &month, &day_number);
-
-    return julian_day(year, month, day_number);
+    return d;
 }
 
 // Select sequence elements based on date. The sequence is assumed to have
 // year, month and day information accessible.
 //
-// Date uses the following notation: yyyyddd, yyyy/ddd, yyddd, yy/ddd, 
-// yyyymmdd, yyyy/mm/dd, yymmdd, yy/mm/dd.
+// Date uses the following notation: yyyy/ddd, yyyy/mm/dd.
 //
 // Semantics: One argument: return true for dates that match exactly.
 // Two arguments: return true for dates that fall within the (inclusive)
@@ -119,34 +76,168 @@ read_julian_day(DDS &dds)
 bool
 func_date(int argc, BaseType *argv[], DDS &dds)
 {
-    string date1, date2 = "";
-    long days1, days2 = 0;
-
-#if 0
     if (argc < 1 || argc > 2)
-	throw wrong_number_of_arguments;
-#endif
+	throw Error(malformed_expr,
+		    "Wrong number of arguments to a projection function.");
 
-    date1 = extract_argument(argv[0]);
-    days1 = get_julian_day(date1);
+    DODS_Date d1(argv[0]);
+    DODS_Date d2;
     if (argc == 2) {
-	date2 = extract_argument(argv[1]);
-	days2 = get_julian_day(date2);
+	d2.set_date(argv[1]);
     }
 
-    cerr << date1 << ": " << days1 << endl;
-    if (argc == 2) 
-	cerr << date2 << ": " << days2 << endl;
-
-    long jday = read_julian_day(dds);
-    cerr << "jday: " << jday << endl;
+    DODS_Date current = DODS_Date_jpl_pathfinder(dds);
 
     bool res;
     if (argc == 2)
-	res = days2 >= jday && days1 <= jday;
+	res = d2 >= current && d1 <= current;
     else
-	res = days1 == jday;
+	res = d1 == current;
 
-    cerr << "Result: " << res << endl;
+    DBG(cerr << "Result: " << res << endl);
     return res;
+}
+
+bool
+sel_dods_jdate(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DBG(cerr << "Entering" << endl);
+
+    DODS_Date new_date = DODS_Date_jpl_pathfinder(dds);
+
+    // Stuff the yyyy/ddd string into DODS_JDate.
+    Str *dods_jdate = (Str*)dds.var("DODS_JDate");
+    String s = new_date.yd_date().data();
+    dods_jdate->val2buf(&s);
+
+    DBG(dods_jdate->print_val(cerr, "    ", true));
+    DBG(cerr << "Exiting (" << dods_jdate->name() << " [" \
+	<< dods_jdate << "])" << endl);
+
+    return true;
+}
+
+void
+proj_dods_jdate(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    Str *dods_jdate = new FFStr("DODS_JDate");
+    dods_jdate->set_read_p(true); // You must call this before ...
+    dods_jdate->set_synthesized_p(true); // this! Look at BaseType.cc.
+
+    // Add it to the DDS in the right place
+
+    if (argc == 1 && argv[0]) {
+	switch (argv[0]->type()) {
+	  case dods_structure_c: {
+	      Structure *sp = (Structure *)argv[0];
+	      sp->add_var((BaseType *)dods_jdate);
+	      break;
+	  }
+
+	  case dods_sequence_c: {
+	      Sequence *sp = (Sequence *)argv[0];
+	      sp->add_var((BaseType *)dods_jdate);
+	      break;
+	  }
+
+	  default:
+	throw Error(malformed_expr,
+		  "You asked me to insert the synthesized variable in \n\
+something that did not exist or was not a constructor \n\
+type (e.g., a structure, sequence, ...).");
+	    break;
+	}
+    }
+
+    // Mark the variable as part of the current projection.
+
+    dds.mark("DODS_JDate", true); // Don't just call set_send_p()!
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_jdate, 0); // 0 == no BaseType args
+}
+
+bool
+sel_dods_date(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc != 0)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to internal selection function.\n\
+Please report this error.");
+  
+    DBG(cerr << "Entering" << endl);
+
+    DODS_Date new_date = DODS_Date_jpl_pathfinder(dds);
+
+    // Stuff the yyyy/ddd string into DODS_JDate.
+    Str *dods_date = (Str*)dds.var("DODS_Date");
+    String s = new_date.ymd_date().data();
+    dods_date->val2buf(&s);
+
+    DBG(dods_date->print_val(cerr, "    ", true));
+    DBG(cerr << "Exiting (" << dods_date->name() << " [" \
+	<< dods_date << "])" << endl);
+
+    return true;
+}
+
+void
+proj_dods_date(int argc, BaseType *argv[], DDS &dds)
+{
+    if (argc < 0 || argc > 1)
+	throw Error(malformed_expr,
+		  "Wrong number of arguments to projection function.\n\
+Expected zero or one arguments.");
+
+    // Create the new variable
+
+    Str *dods_date = new FFStr("DODS_Date");
+    dods_date->set_read_p(true); // You must call this before ...
+    dods_date->set_synthesized_p(true); // this! Look at BaseType.cc.
+
+    // Add it to the DDS in the right place
+
+    if (argc == 1 && argv[0]) {
+	switch (argv[0]->type()) {
+	  case dods_structure_c: {
+	      Structure *sp = (Structure *)argv[0];
+	      sp->add_var((BaseType *)dods_date);
+	      break;
+	  }
+
+	  case dods_sequence_c: {
+	      Sequence *sp = (Sequence *)argv[0];
+	      sp->add_var((BaseType *)dods_date);
+	      break;
+	  }
+
+	  default:
+	throw Error(malformed_expr,
+		  "You asked me to insert the synthesized variable in \n\
+something that did not exist or was not a constructor \n\
+type (e.g., a structure, sequence, ...).");
+	    break;
+	}
+    }
+
+    // Mark the variable as part of the current projection.
+
+    dds.mark("DODS_Date", true); // Don't just call set_send_p()!
+
+    // Add the selection function to the CE
+
+    dds.append_clause(sel_dods_date, 0); // 0 == no BaseType args
 }
