@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.6 1998/09/02 20:28:36 jimg Exp $
+# $Id: Makefile.in,v 1.7 1998/09/17 17:43:26 jimg Exp $
 
 @SET_MAKE@
 
@@ -18,7 +18,7 @@ CFLAGS = @CFLAGS@ -Wall
 LDFLAGS = @LDFLAGS@ -L. -L$(DODS_ROOT)/lib -LFFND -LFFND/lib
 LFLAGS = -8
 YFLAGS = -d -v
-LIBS = -ldap++ -lrx -lfreeform -lmaxmin @LIBS@ -lm
+LIBS = -ldap++ -lfreeform -lmaxmin @LIBS@ -lm
 TAGS_FLAGS = --include=../dap*/TAGS
 
 # Set the instalation directories; prefix can be set on the command line
@@ -61,11 +61,12 @@ STRIP = strip
 
 FFSRC = FFArray.cc FFByte.cc FFFloat64.cc FFFunction.cc \
 	FFGrid.cc FFInt32.cc FFList.cc FFSequence.cc FFStr.cc \
-	FFUInt32.cc FFStructure.cc FFUrl.cc util_ff.cc ff_read.c
+	FFUInt32.cc FFStructure.cc FFUrl.cc util_ff.cc ff_read.c \
+	ce_functions.cc date_proc.cc
 
 FFOBJ =	FFArray.o FFByte.o FFFloat64.o FFFunction.o FFGrid.o \
 	FFInt32.o FFList.o FFSequence.o FFStr.o FFStructure.o \
-	FFUInt32.o FFUrl.o util_ff.o ff_read.o
+	FFUInt32.o FFUrl.o util_ff.o ff_read.o ce_functions.o date_proc.o
 
 SERVSRC = ff_dods.cc ffdds.cc
 SERVOBJ = ff_dods.o ffdds.o
