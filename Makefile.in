@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.32 2004/01/22 18:11:01 jimg Exp $
+# $Id: Makefile.in,v 1.33 2004/01/26 23:30:34 jimg Exp $
 
 @SET_MAKE@
 
@@ -335,13 +335,6 @@ FFInt32.o: FFInt32.cc config_ff.h FFInt32.h ../../include/Int32.h \
   ../../include/RValue.h ../../include/Structure.h \
   ../../include/Constructor.h ../../include/Sequence.h \
   ../../include/Grid.h
-FFList.o: FFList.cc config_ff.h ../../include/InternalErr.h \
-  ../../include/Error.h FFList.h ../../include/List.h \
-  ../../include/dods-limits.h ../../include/Vector.h \
-  ../../include/BaseType.h ../../include/AttrTable.h ../../include/Pix.h \
-  ../../include/IteratorAdapter.h ../../include/dods-datatypes.h \
-  ../../include/DDS.h ../../include/DAS.h ../../include/Clause.h \
-  ../../include/expr.h ../../include/RValue.h
 FFSequence.o: FFSequence.cc config_ff.h ../../include/Error.h \
   FFSequence.h ../../include/Sequence.h ../../include/Pix.h \
   ../../include/IteratorAdapter.h ../../include/BaseType.h \
