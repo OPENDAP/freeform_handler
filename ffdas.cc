@@ -12,7 +12,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.15 2003/02/10 23:01:53 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.16 2003/05/14 19:30:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@ static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.15 2003/02/10 23:01:53 jimg E
 #include "util_ff.h"
 #include "freeform.h"
 
-int StrLens[MaxStr]; // List of string lengths, used by FFSequence. 
+extern int StrLens[MaxStr]; // List of string lengths, used by FFSequence. 
 
 // Read header information and populate an AttrTable with the information.
 
@@ -380,6 +380,10 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: ffdas.cc,v $
+// Revision 1.16  2003/05/14 19:30:03  jimg
+// Changed StrLens so taht it's declared extern; the definition is in
+// FFSequence.cc
+//
 // Revision 1.15  2003/02/10 23:01:53  jimg
 // Merged with 3.2.5
 //

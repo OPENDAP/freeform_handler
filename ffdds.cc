@@ -15,7 +15,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.13 2003/02/10 23:01:53 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.14 2003/05/14 19:30:03 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@ static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.13 2003/02/10 23:01:53 jimg Ex
 #include "FFStr.h"
 #include "util_ff.h"
 
-int StrLens[MaxStr]; // List of string lengths
+extern int StrLens[MaxStr]; // List of string lengths
 
 void
 read_descriptors(DDS &dds_table, const string &filename) throw (Error)
@@ -321,6 +321,10 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: ffdds.cc,v $
+// Revision 1.14  2003/05/14 19:30:03  jimg
+// Changed StrLens so taht it's declared extern; the definition is in
+// FFSequence.cc
+//
 // Revision 1.13  2003/02/10 23:01:53  jimg
 // Merged with 3.2.5
 //
