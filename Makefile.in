@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.34 2004/02/03 23:00:38 jimg Exp $
+# $Id: Makefile.in,v 1.35 2004/02/04 22:38:38 jimg Exp $
 
 @SET_MAKE@
 
@@ -141,9 +141,7 @@ tdate: DODS_Date.cc date_proc.cc
 	$(CXX) $(LDFLAGS) -o tdate DODS_Date.o date_proc.o
 
 install: all
-	$(INSTALL_PROGRAM) -s ff_das $(etcdir)
-	$(INSTALL_PROGRAM) -s ff_dds $(etcdir)
-	$(INSTALL_PROGRAM) -s ff_dods $(etcdir)
+	$(INSTALL_PROGRAM) -s ff_handler $(etcdir)
 	$(INSTALL_PROGRAM) FFND/newform $(bindir)/newform
 	$(INSTALL_PROGRAM) FFND/chkform $(bindir)/chkform
 	$(INSTALL_PROGRAM) FFND/checkvar $(bindir)/checkvar
