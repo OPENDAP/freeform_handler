@@ -4,7 +4,7 @@
 //
 // jhrg 4/2/96
 
-// $Id: util_ff.h,v 1.1 1997/10/03 17:02:49 jimg Exp $
+// $Id: util_ff.h,v 1.2 1998/04/16 18:11:26 jimg Exp $
 
 #ifndef _util_ff_h_
 #define _util_ff_h_

@@ -39,15 +39,15 @@
 // ReZa 6/18/97
 
 // $Log: FFStructure.cc,v $
-// Revision 1.1  1997/10/03 17:02:21  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:18  jimg
+// Sequence support added by Reza
 //
 //
 //
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFStructure.cc,v 1.1 1997/10/03 17:02:21 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFStructure.cc,v 1.2 1998/04/16 18:11:18 jimg Exp $"};
 
 #ifdef _GNUG_
 #pragma implementation

@@ -39,8 +39,8 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
-// Revision 1.1  1997/10/03 17:02:14  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:14  jimg
+// Sequence support added by Reza
 //
 //
 //
@@ -82,8 +82,60 @@ FFSequence::~FFSequence()
 bool 
 FFSequence::read(const String &, int &)
 {
-    return true;
-}
+   if (read_p())  // Nothing to do
+        return true;
+
+    bool status = true;
+
+    // make char * variables to hold String data for read_ff
+
+    char *ds = new char[dataset.length() + 1];
+    strcpy(ds, dataset);
+
+    // Create the output Sequence format
+    ostrstream str;
+    int endbyte = 0;
+    int stbyte = 1;
+    str << "binary_output_data \"DODS binary output data\"" << endl;
+    for(Pix p = first_var(); p; next_var(p)) {
+      endbyte += var(p)->width();
+      str << var(p)->name() << " " << stbyte << " " << endbyte 
+	  << " " << ff_types(var(p)->type_name()) 
+	  << " " << ff_prec(var(p)->type_name()) << endl;
+      stbyte = endbyte + 1;
+    }
+    String output_format = str.str();
+
+
+    char *O_fmt = new char[output_format.length() + 1];
+    strcpy(O_fmt, output_format);
+
+    String input_format_file = find_ancillary_file(dataset);
+    char *If_fmt = new char[input_format_file.length() + 1];
+    strcpy(If_fmt, input_format_file);
+
+    dods_byte *b = (dods_byte *)new char[stbyte]; // `+1' hack for FreeForm
+	long bytes = read_ff(ds, if_f, o_f, (char *)b, stbyte);
+
+	if (bytes == -1)
+	    status = false;
+	else{ 
+	  set_read_p(true);
+	  val2buf((void *) b); //I think this part is different for sequence?
+	}
+
+	if (b)
+	    delete(b);
+
+
+    // clean up
+    delete[] ds;		// delete temporary char * arrays
+    delete[] O_fmt;
+    delete[] If_fmt;
+
+    return status;
+
+
 
 
 

@@ -39,14 +39,14 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
-// Revision 1.1  1997/10/03 17:01:44  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:10:58  jimg
+// Sequence support added by Reza
 //
 //
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.1 1997/10/03 17:01:44 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.2 1998/04/16 18:10:58 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -84,11 +84,46 @@ FFArray::FFArray(const String &n, BaseType *v) : Array(n, v)
 FFArray::~FFArray()
 {
 }
+// parse constraint expr. and make coordinate point location for an array.
+// return number of elements to read. 
+long
+FFArray::Arr_constraint(long *cor, long *step, long *edg, char **dim_nms, 
+			bool *has_stride)
+{
+    int start, stride, stop;
+    int id = 0;
+    long nels = 1;
+    String dimname;
+
+    *has_stride = false;
+
+    for (Pix p = first_dim(); p ; next_dim(p), id++) {
+      start = dimension_start(p, true); 
+      stride = dimension_stride(p, true);
+      stop = dimension_stop(p, true);
+      dimname = dimension_name(p);
+
+      // Check for empty constraint
+      if(start+stop+stride == 0)
+	return -1;
+
+      (void) strcpy(dim_nms[id],(const char *)dimname);
+
+      cor[id] = start;
+      step[id] = stride;
+      edg[id] = ((stop - start)/stride) + 1; // count of elements
+      nels *= edg[id];      // total number of values for variable
+      if (stride != 1)
+	*has_stride = true;
+    }
+    return nels;
+}
+
 
 // parse constraint expr. and make coordinate point location.
 // return number of elements to read. 
 long
-FFArray::format_constraint(long *cor, long *step, long *edg, bool *has_stride)
+FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
 {
     int start, stride, stop;
     int id = 0;
@@ -155,7 +190,7 @@ hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index,
 
 template <class T>
 static void
-save_raw_data(T *t, FFArray &array)
+seq2vects(T *t, FFArray &array)
 {  
   bool has_stride;
   int ndim = array.dimensions();
@@ -163,7 +198,7 @@ save_raw_data(T *t, FFArray &array)
   long *stride = new long[ndim];
   long *edge = new long[ndim];
 
-  long count = array.format_constraint(start, stride, edge, &has_stride);  
+  long count = array.Seq_constraint(start, stride, edge, &has_stride);  
 
   if (count != -1) {		// non-null hyperslab
     T *t_hs = new T[count];
@@ -219,14 +254,29 @@ FFArray::read(const String &dataset, int &)
     char *ds = new char[dataset.length() + 1];
     strcpy(ds, dataset);
 
+    /* This was used for original Sequence to Array translation
     String output_format = make_output_format(name(), var()->type_name(), 
 					      var()->width());
-    char *o_f = new char[output_format.length() + 1];
-    strcpy(o_f, output_format);
+    */
+    bool has_stride;
+    char dname[40][40];
+    int ndims = dimensions();
+    long *start = new long[ndim];
+    long *stride = new long[ndim];
+    long *edge = new long[ndim];
+
+    long count = Arr_constraint(start, stride, edge, dname, &has_stride);  
+
+    String output_format = makeND_output_format(name(), var()->type_name(), 
+					      var()->width(), ndims, start,
+					      edge, stride, dname);
+
+    char *O_fmt = new char[output_format.length() + 1];
+    strcpy(O_fmt, output_format);
 
     String input_format_file = find_ancillary_file(dataset);
-    char *if_f = new char[input_format_file.length() + 1];
-    strcpy(if_f, input_format_file);
+    char *If_fmt = new char[input_format_file.length() + 1];
+    strcpy(If_fmt, input_format_file);
 
     // For each cadinal-type variable, do the following:
     //     Use ff to read the data
@@ -238,8 +288,11 @@ FFArray::read(const String &dataset, int &)
 
 	if (bytes == -1)
 	    status = false;
-	else 
-	    save_raw_data(b, *this);
+	else{ 
+	  //    seq2vects(b, *this); Used for sequence to array
+	  set_read_p(true);
+	  val2buf((void *) b);
+	}
 
 	if (b)
 	    delete(b);
@@ -250,9 +303,11 @@ FFArray::read(const String &dataset, int &)
 
 	if (bytes == -1)
 	    status = false;
-	else
-	    save_raw_data(i, *this);
-
+	else{
+	  //    seq2vects(i, *this); Used for serving sequences as array
+	  set_read_p(true);
+	  val2buf((void *) i);
+	}
 	if (i)
 	    delete(i);
     }
@@ -262,9 +317,11 @@ FFArray::read(const String &dataset, int &)
 
 	if (bytes == -1)
 	    status = false;
-	else
-	    save_raw_data(ui, *this);
-
+	else{
+	  //    seq2vects(ui, *this); Used for Seq => Arrray 
+	  set_read_p(true);
+	  val2buf((void *) ui);
+	}
 	if (ui)
 	    delete(ui);
     }
@@ -274,9 +331,11 @@ FFArray::read(const String &dataset, int &)
 
 	if (bytes == -1)
 	    status = false;
-	else
-	    save_raw_data(d, *this);
-
+	else{
+	  //    seq2vects(d, *this);
+	  set_read_p(true);
+	  val2buf((void *) d);
+	}
 	if (d)
 	    delete(d);
     }
@@ -293,9 +352,12 @@ FFArray::read(const String &dataset, int &)
 
     // clean up
     delete[] ds;		// delete temporary char * arrays
-    delete[] o_f;
-    delete[] if_f;
+    delete[] O_fmt;
+    delete[] If_fmt;
 
     return status;
 }
+
+
+
 

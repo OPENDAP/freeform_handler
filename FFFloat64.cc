@@ -39,14 +39,14 @@
 // ReZa 6/18/97
 
 // $Log: FFFloat64.cc,v $
-// Revision 1.1  1997/10/03 17:01:55  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:03  jimg
+// Sequence support added by Reza
 //
 //
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.1 1997/10/03 17:01:55 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: FFFloat64.cc,v 1.2 1998/04/16 18:11:03 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation

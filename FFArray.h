@@ -7,8 +7,8 @@
 // ReZa 6/18/97
 
 /* $Log: FFArray.h,v $
-/* Revision 1.1  1997/10/03 17:01:47  jimg
-/* Initial version from Reza
+/* Revision 1.2  1998/04/16 18:10:59  jimg
+/* Sequence support added by Reza
 /*
  *
  */
@@ -31,7 +31,10 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read(const String &dataset, int &error);
-    long format_constraint(long *cor, long *step, long *edg, bool *has_stride);
+    long Seq_constraint(long *cor, long *step, long *edg, bool
+			   *has_stride);
+    long Arr_constraint(long *cor, long *step, long *edg, bool
+			   *has_stride);
 };
 
 #endif

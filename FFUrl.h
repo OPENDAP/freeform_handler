@@ -13,8 +13,8 @@
 // ReZa 6/18/97
 
 /* $Log: FFUrl.h,v $
-/* Revision 1.1  1997/10/03 17:02:29  jimg
-/* Initial version from Reza
+/* Revision 1.2  1998/04/16 18:11:22  jimg
+/* Sequence support added by Reza
 /*
  *
 */

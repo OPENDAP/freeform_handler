@@ -13,8 +13,8 @@
 // ReZa 6/18/97
 
 /* $Log: FFGrid.h,v $
-/* Revision 1.1  1997/10/03 17:02:04  jimg
-/* Initial version from Reza
+/* Revision 1.2  1998/04/16 18:11:09  jimg
+/* Sequence support added by Reza
 /*
  *
 */

@@ -4,8 +4,8 @@
 // ReZa 6/16/97
 
 // $Log: FFDods.h,v $
-// Revision 1.1  1997/10/03 17:01:53  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:02  jimg
+// Sequence support added by Reza
 //
 // 
 

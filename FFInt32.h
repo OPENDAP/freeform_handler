@@ -13,8 +13,8 @@
 // ReZa 6/18/97
 
 /* $Log: FFInt32.h,v $
-/* Revision 1.1  1997/10/03 17:02:08  jimg
-/* Initial version from Reza
+/* Revision 1.2  1998/04/16 18:11:11  jimg
+/* Sequence support added by Reza
 /*
  *
 */

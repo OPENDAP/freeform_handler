@@ -37,13 +37,13 @@
   ReZa 6/20/97 */
 
 /* $Log: ff_read.c,v $
-/* Revision 1.1  1997/10/03 17:02:40  jimg
-/* Initial version from Reza
+/* Revision 1.2  1998/04/16 18:11:24  jimg
+/* Sequence support added by Reza
 /*
 
 */
 
-static char rcsid[]={"$Id: ff_read.c,v 1.1 1997/10/03 17:02:40 jimg Exp $"};
+static char rcsid[]={"$Id: ff_read.c,v 1.2 1998/04/16 18:11:24 jimg Exp $"};
 
 
 
@@ -126,6 +126,8 @@ read_ff(char *dataset, char *if_file, char *o_format,
   int error = 0;
   FF_STD_ARGS_PTR std_args = NULL;
 
+  /*  char * el = "error.log"; */
+
   std_args = ff_create_std_args();
   if (!std_args)
     {
@@ -133,55 +135,63 @@ read_ff(char *dataset, char *if_file, char *o_format,
       goto main_exit;
     }
 
-  /*  std_args->output_buffer = o_buffer;  Can not get it to work ?
- using a temporary file for now, Reza*/     
+  /*
+    std_args->output_bufsize->buffer = o_buffer;  
+    std_args->output_bufsize->bytes_used = size;  
+    */
+/* * Can not get it to work ? Core dump in FF library
+ using a temporary file for now, Reza     */
+  
   tmp_file = tempnam(NULL, DODS_DATA_PRX);		       
   std_args->output_file = tmp_file;                  
 
-	std_args->user.is_stdin_redirected = 0;
-	std_args->input_file = dataset;
-	std_args->input_format_file = if_file;
-	std_args->output_format_buffer = o_format;
+  std_args->user.is_stdin_redirected = 0;
+  std_args->input_file = dataset;
+  std_args->input_format_file = if_file;
+  std_args->output_format_buffer = o_format;
+
+	/*	std_args->error_log = el;*/
 
 /*	std_args->cache_size = size;  */
 
-	error = db_init(std_args, &dbin, NULL);
-	if (error && error < ERR_WARNING_ONLY)
-		goto main_exit;
-	else if (error)
-		error = 0;
-
-	if (!isatty(fileno(stdout)))
-	{
+  error = db_init(std_args, &dbin, NULL);
+  if (error && error < ERR_WARNING_ONLY)
+    goto main_exit;
+  else if (error)
+    error = 0;
+  
+  if (!isatty(fileno(stdout)))
+    {
 #if FF_OS == FF_OS_DOS || FF_OS == FF_OS_MACOS
-		setmode(fileno(stdout), O_BINARY);
+      setmode(fileno(stdout), O_BINARY);
 #endif
-		error = check_stdout_contiguity(dbin);
-		if (error)
-			goto main_exit;
-	}
-
-	error = new2form(std_args, dbin);
-	
+      error = check_stdout_contiguity(dbin);
+      if (error)
+	goto main_exit;
+    }
+  
+  error = convert_in(std_args, dbin);
+  
 main_exit:
 
-	if (dbin)
-		db_destroy(dbin);
-	
-	if (error || err_state())
-		err_disp(std_args);
-
-	if (std_args)
-		ff_destroy_std_args(std_args);
-	
-	/*	memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main"); */
-
-	error = ff_file_to_bufsize(tmp_file, &bufsize); /* check the error
-							   here */
-	unlink(tmp_file);
-	memcpy(o_buffer, bufsize->buffer,(size_t) bufsize->bytes_used);
-
-        return bufsize->bytes_used;
+  if (dbin)
+    db_destroy(dbin);
+  
+  if (error || err_state())
+    err_disp(std_args);
+  
+  if (std_args)
+    ff_destroy_std_args(std_args);
+  
+  /*	memExit(error ? EXIT_FAILURE : EXIT_SUCCESS, "main"); */
+  
+  error = ff_file_to_bufsize(tmp_file, &bufsize); /* check the error
+						     here */
+  unlink(tmp_file); 
+  memcpy(o_buffer, bufsize->buffer,(size_t) bufsize->bytes_used); 	
+  
+  /* return size; */
+  return bufsize->bytes_used;
 }
 
 static int check_standard_input
@@ -219,10 +229,13 @@ static int check_standard_input
 			{
 				size_t records_to_read = 0;
 
-				records_to_read = PINFO_BUFFER_SIZE(pinfo) / PINFO_RECL(pinfo);
+    /* records_to_read = PINFO_BUFFER_SIZE(pinfo) / PINFO_RECL(pinfo); */
+				records_to_read = PINFO_LOCUS_SIZE(pinfo) / PINFO_RECL(pinfo);
 				bytes_to_read = records_to_read * PINFO_RECL(pinfo);
 
-				bytes_read = fread(std_args->input_buffer, 1, bytes_to_read, stdin); 
+				bytes_read = fread(std_args->input_bufsize->buffer, 1,
+						   bytes_to_read, stdin); 
+
 				if (bytes_read != bytes_to_read)
 				{
 					if (!feof(stdin))
@@ -278,7 +291,7 @@ static long bytes_to_process(PROCESS_INFO_LIST finfo_list)
 	return(bytes_to_process);
 }
 
-int new2form(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin)
+int convert_in(FF_STD_ARGS_PTR std_args, DATA_BIN_PTR dbin)
 {
 	int error = 0;
 	int percent_done = 0;

@@ -13,8 +13,8 @@
 // ReZa 6/16/97
 
 /* $Log: FFByte.h,v $
-/* Revision 1.1  1997/10/03 17:01:51  jimg
-/* Initial version from Reza
+/* Revision 1.2  1998/04/16 18:11:01  jimg
+/* Sequence support added by Reza
 /*
  *
  */

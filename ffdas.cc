@@ -40,12 +40,12 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
-// Revision 1.1  1997/10/03 17:02:42  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:24  jimg
+// Sequence support added by Reza
 //
 //
 
-static char rcsid[]={"$Id: ffdas.cc,v 1.1 1997/10/03 17:02:42 jimg Exp $"};
+static char rcsid[]={"$Id: ffdas.cc,v 1.2 1998/04/16 18:11:24 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,16 +126,6 @@ get_attributes(DAS &das, const char *filename, String *error)
 
     AttrTable *attr_table_ptr;
 
-    /*
-    if (ncid == -1) {
-        sprintf (Msgt,"nc_das server: could not open file %s", filename);
-        ErrMsgT(Msgt); //local error message
-	cat((String)"\"",(String)Msgt,(String)" \"",*(error));//remote error message
-	return false;
-    }
-
-    */
-
     // global attributes (no variable attributes in freefrom)
 	attr_table_ptr = das.add_table("FF_GLOBAL", new AttrTable);
 	if (!read_attributes(filename, attr_table_ptr, error))
@@ -159,3 +149,6 @@ main(int argc, char *argv[])
 }
 
 #endif
+
+
+

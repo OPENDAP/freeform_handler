@@ -43,12 +43,12 @@
 // ReZa 6/20/97
 
 // $Log: ffdds.cc,v $
-// Revision 1.1  1997/10/03 17:02:43  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:25  jimg
+// Sequence support added by Reza
 //
 //
 
-static char rcsid[]={"$Id: ffdds.cc,v 1.1 1997/10/03 17:02:43 jimg Exp $"};
+static char rcsid[]={"$Id: ffdds.cc,v 1.2 1998/04/16 18:11:25 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,246 +73,66 @@ static char rcsid[]={"$Id: ffdds.cc,v 1.1 1997/10/03 17:02:43 jimg Exp $"};
 static char Msgt[255];
 #ifdef NEVER
 extern void ErrMsgT(char *Msgt);
-
 extern char *name_path(char *path);
 #endif
-
-
-// This function returns the appropriate DODS BaseType for the given 
-// netCDF data type.
-//
-
-BaseType *
-Get_bt(char *varname, nc_type datatype) 
-{
-    switch (datatype) {
-      case NC_CHAR:
-	return (NewStr(varname));
-
-      case NC_BYTE:
-	return (NewByte(varname));
-	
-      case NC_SHORT:
-      case NC_LONG:
-	return (NewInt32(varname));
-
-      case NC_FLOAT:
-      case NC_DOUBLE:
-	return (NewFloat64(varname));
-	
-      default:
-	return (NewStr(varname));
-    }
-}
-
-// Read given number of variables (nvars) from the opened netCDF file 
-// (ncid) and add them with their appropriate type and dimensions to 
-// the given instance of the DDS class.
-//
-// Returns: false if an error accessing the netcdf file was detected, true
-// otherwise.
-
-bool
-read_class(DDS &dds_table, int ncid, int nvars, String *error)
-{
-  char varname1[MAX_NC_NAME];
-  char varname2[MAX_VAR_DIMS][MAX_NC_NAME];
-  char dimname[MAX_NC_NAME];
-  char dimname2[MAX_NC_NAME];
-  char *var_match[MAX_VAR_DIMS];
-  char *map_name[MAX_VAR_DIMS];
-  int dim_ids[MAX_VAR_DIMS];
-  int dim_szs[MAX_VAR_DIMS];
-  char dim_nms[MAX_VAR_DIMS][MAX_NC_NAME];
-  int tmp_dim_ids[MAX_VAR_DIMS];
-  nc_type typ_match[MAX_VAR_DIMS];
-  int ndims, ndims2, dim_match; 
-  int vars_in_grid = 0;
-  long dim_sz, tmp_sz;  
-  nc_type nctype;
-  Array *ar;
-  Grid *gr;
-  Part pr;
-  
-  //add all the variables in this file to DDS table 
-
-  for (int v1 = 0; v1 < nvars; ++v1) {
-    if (lncvarinq(ncid,v1,varname1,&nctype,&ndims,dim_ids,(int *)0) == -1){
-      sprintf (Msgt,"ncdds server: 
-           could not get variable name or dimension number for variable %d ",v1);
-      ErrMsgT(Msgt); //local error messag
-      cat((String)"\"",(String)Msgt,(String)" \"",*(error));//remote error message
-      return false;
-    }
-
-    BaseType *bt = Get_bt(varname1,nctype);
-    
-    // is an Atomic-class ?
-
-    if (ndims == 0){
-      dds_table.add_var(bt);
-    }
-	
-    // Grid vs. Array type matching
-    
-    else {
-      
-      dim_match = 0;
-	  
-      // match all the dimensions of this variable to other variables
-      int d;
-      for (d = 0; d < ndims; ++d){
-	if (lncdiminq(ncid, dim_ids[d], dimname, &dim_sz) == -1){
-	  sprintf (Msgt,"ncdds server: could not get dimension size for dimension
-                  %d in variable %d ",d,v1);
-	  ErrMsgT(Msgt); //server error messag
-	  cat((String)"\"",(String)Msgt,(String)" \"",*(error));//Client
-	  return false;
-	}
-	dim_szs[d] = (int) dim_sz;
-	(void) strcpy(dim_nms[d],dimname);
-	
-	for (int v2 = 0; v2 < nvars; ++v2) { 
-	  if (lncvarinq(ncid,v2,varname2[v2],&nctype,&ndims2,
-			tmp_dim_ids,(int *)0) == -1){
-	    sprintf (Msgt,"ncdds server: could not get variable name or dimension 
-                    number for variable %d ",v2);
-            ErrMsgT(Msgt); 
-            cat((String)"\"",(String)Msgt,(String)" \"",*(error));
-	    return false;
-	  }
-	  
-	  // Is it a Grid ?     1) variable name = the dimension name
-	  //                    2) The variable has only one dimension
-	  //                    3) It is not itself
-	  //                    4) They are the same size
-	  if ((v1 != v2) && (strcmp(dimname,varname2[v2]) == 0) && 
-	      (ndims2 == 1)){
-	    if (lncdiminq(ncid,tmp_dim_ids[0],(char *)0, &tmp_sz)== -1){
-	      sprintf (Msgt,"ncdds server: could not get dimension size for 
-                    dimension %d in variable %d ",d,v2);
-	      ErrMsgT(Msgt);
-	      cat((String)"\"",(String)Msgt,(String)" \"",*(error));
-	      return false;
-	    }
-	    if (tmp_sz == dim_sz){  // a map part of a grid was identified    
-	      typ_match[dim_match] = nctype; 
-	      var_match[dim_match] = varname2[v2]; 
-	      dim_match++;
-	      
-	      // The variable is now in DDS as map part of a grid and
-	      // its duplicate independent variable will be removed from DDS 
-	      bool added = false;
-	      for (int ii=0; ii<vars_in_grid; ii++)
-		if(strcmp(map_name[ii],varname2[v2])==0)
-		  added = true;
-	      if(!added){
-		map_name[vars_in_grid]=varname2[v2];
-		vars_in_grid++;
-	      }
-
-	      break; // Stop var search, matching variable 
-	            // for the given dimension was found
-	    }
-	  }
-	}		
-	
-	// Stop dimensions search, the variable does not 
-	// fit into a grid, due to a dimension mis-match.
-	// Also, get the size for the remainder of the   
-	// dimensions in the variable.
-	if (dim_match != d+1) {
-	  for (int d2 = d+1; d2 < ndims; ++d2){
-	    if (lncdiminq(ncid, dim_ids[d2], dimname2, &dim_sz) == -1){
-	      sprintf (Msgt,"ncdds server: could not get dimension size 
-                      for dimension %d in variable %d (ncdds)",d2,v1);
-		     ErrMsgT(Msgt);
-		     cat((String)"\"",(String)Msgt,(String)" \"",*(error));
-		     return false;
-	    }
-	    dim_szs[d2] = (int) dim_sz;
-	    (void) strcpy(dim_nms[d2],dimname2);
-	  }
-	  break;
-	}
-      }
-      
-      // Create common array for both Array and Grid types
-      
-      ar = NewArray(varname1);
-      ar->add_var(bt);
-      for (d = 0; d < ndims; ++d) 
-	ar->append_dim(dim_szs[d],dim_nms[d]);
-      
-#ifndef NOGRID
-      
-      if (ndims == dim_match){   // Found Grid type, add it
-	gr = NewGrid(varname1);
-	pr = array;
-	gr->add_var(ar,pr);
-	pr = maps;
-	for ( d = 0; d < ndims; ++d){
-	  ar = new NCArray; 
-	  bt = Get_bt(var_match[d],typ_match[d]);
-	  ar->add_var(bt);     
-	  ar->append_dim(dim_szs[d],dim_nms[d]);
-	  gr->add_var(ar,pr);
-	}
-	dds_table.add_var(gr);
-      }
-      else {                    // must be an Array, add it
-	dds_table.add_var(ar);
-      }
-#else
-      
-      dds_table.add_var(ar);
-      
-#endif
-    }
-  }
-
-  // Remove duplicate variables already in DDS as the map part of a Grid  
-  for(int ii=0; ii<vars_in_grid; ii++)
-    dds_table.del_var(map_name[ii]);
-
-
-  return true;
-}
-
-// Given a reference to an instance of class DDS and a filename that refers
-// to a netcdf file, read the netcdf file and extract all the dimensions of
-// each of its variables. Add the variables and their dimensions to the
-// instance of DDS.
-//
-// Returns: false if an error accessing the netcdf file was detected, true
-// otherwise. 
+ 
+// Array support only, sequnce must be in the external dds file for now.
 
 bool
 read_descriptors(DDS &dds_table, const char *filename, String *error)
 {
-  int ncid = lncopen(filename, NC_NOWRITE);
-  int nvars; 
-  
-  if (ncid == -1) {
-    sprintf (Msgt,"ncdds server: could not open file %s ", filename);
-    ErrMsgT(Msgt); //local error messag
-    cat((String)"\"",(String)Msgt,(String)" \"",*(error));//remote error message
-    return false;
+  int error = 0;
+  int i = 0;
+  int num_names = 0;
+  char **var_names_vector = NULL;
+
+  error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT, &num_names, 
+		 &var_names_vector);
+  if (error)
+    goto main_exit;
+
+  for (i = 0; i < num_names; i++)
+  {
+    int num_dim_names = 0;
+    char **dim_names_vector = NULL;
+
+    error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i], 
+		   &num_dim_names, &dim_names_vector);
+    if (!error)
+    {
+      FF_ARRAY_DIM_INFO_PTR array_dim_info = NULL;
+      int j = 0;
+
+      for (j = 0; j < num_dim_names; j++)
+      {
+        error = db_ask(dbin, DBASK_ARRAY_DIM_INFO, var_names_vector[i], 
+		       dim_names_vector[j], &array_dim_info);
+        if (!error)
+        {
+
+#ifdef TEST
+          printf("Array %s, dimension %s:\n", var_names_vector[i], 
+		 dim_names_vector[j]);
+          printf("Start index is %ld\n", array_dim_info->start_index);
+          printf("End index is %ld\n", array_dim_info->end_index);
+          printf("Granularity is %ld\n", array_dim_info->granularity);
+          printf("Separation is %ld\n", array_dim_info->separation);
+          printf("Grouping is %ld\n\n", array_dim_info->grouping);
+#endif
+          memFree(array_dim_info, "");
+          array_dim_info = NULL;
+        }
+      }
+
+      memFree(dim_names_vector, "");
+      dim_names_vector = NULL;
+    }
   }
-  
-  // how many variables? 
-  if (lncinquire(ncid, (int *)0, &nvars, (int *)0, (int *)0) == -1) {
-    ErrMsgT("Could not inquire about netcdf file (ncdds)");
-    *(error) = (String)"\"ncdds server: Could not inquire about netcdf file \"";
-    return false;
-  }
-  // dataset name
-  dds_table.set_dataset_name(name_path(filename));
-  
-  // read variables class
-  if (!read_class(dds_table,ncid,nvars,error))
-    return false;
-  
+
+  memFree(var_names_vector, "");
+  var_names_vector = NULL;
+}
+
   return true;
 }
 

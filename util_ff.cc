@@ -37,8 +37,8 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
-// Revision 1.1  1997/10/03 17:02:48  jimg
-// Initial version from Reza
+// Revision 1.2  1998/04/16 18:11:26  jimg
+// Sequence support added by Reza
 //
 // Revision 1.3  1996/05/20 21:11:29  jimg
 // make_output_format now returns a string instead of creating a temporary
@@ -54,7 +54,7 @@
 // The initial version of the FreeForm data server.
 //
 
-static char rcsid[]={"$Id: util_ff.cc,v 1.1 1997/10/03 17:02:48 jimg Exp $"};
+static char rcsid[]={"$Id: util_ff.cc,v 1.2 1998/04/16 18:11:26 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -156,7 +156,7 @@ make_output_format(const String &name, const String &type, const int width)
 const String
 makeND_output_format(const String &name, const String &type, const int width,
 		     int ndim, const long *start, const long *edge, const
-		     long * stride, const char * dname)
+		     long * stride, const char **dname)
 {
     ostrstream str;
 
