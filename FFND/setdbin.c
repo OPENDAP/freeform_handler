@@ -2644,7 +2644,7 @@ static int dbset_cache_size
 			if (PINFO_MATE(pinfo) && PINFO_BYTES_LEFT(pinfo))
 			{
 				if (PINFO_MATE_IS_BUFFER(pinfo))
-					cache_size = max(cache_size, PINFO_MATE_BYTES_LEFT(pinfo));
+					cache_size = max(cache_size, max(PINFO_BYTES_LEFT(pinfo), PINFO_MATE_BYTES_LEFT(pinfo))); /* too conservative?  Maybe get rid of PINFO_MATE_BYTES_LEFT */
 				else
 				{
 					unsigned long out_fsize; /* guess output file size */
