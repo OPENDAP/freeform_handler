@@ -15,3 +15,14 @@ bool sel_dods_jdate(int argc, BaseType *argv[], DDS &dds);
 // Selection and projection for yyyy/mm/dd dates.
 void proj_dods_date(int argc, BaseType *argv[], DDS &dds);
 bool sel_dods_date(int argc, BaseType *argv[], DDS &dds);
+
+bool func_time(int argc, BaseType *argv[], DDS &);
+
+void proj_dods_time(int argc, BaseType *argv[], DDS &dds);
+bool sel_dods_time(int argc, BaseType *argv[], DDS &dds);
+
+bool func_date_time(int argc, BaseType *argv[], DDS &);
+
+void proj_dods_date_time(int argc, BaseType *argv[], DDS &dds);
+bool sel_dods_date_time(int argc, BaseType *argv[], DDS &dds);
+
