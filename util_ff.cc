@@ -9,6 +9,10 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.5  1998/08/14 19:44:35  jimg
+// Added return for non-void functions that could return implicitly (without a
+// value).
+//
 // Revision 1.4  1998/08/12 21:21:18  jimg
 // Massive changes from Reza. Compatible with the new FFND library
 //
@@ -33,7 +37,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.4 1998/08/12 21:21:18 jimg Exp $"};
+static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.5 1998/08/14 19:44:35 jimg Exp $"};
 
 #include <iostream.h>
 #include <strstream.h>
@@ -150,7 +154,7 @@ makeND_output_format(const String &name, const String &type, const int width,
 
 const String
 find_ancillary_file(const String &dataset, const String &delimiter,
-		 const String &extension)
+		    const String &extension)
 {
     // cast away DATASET's const...
     String basename = ((String)dataset).before(delimiter);
@@ -192,99 +196,102 @@ format_extension(const String &new_extension)
     return extension;
 }
 
-/* FreeForm data and format initializattion calls (input format only)*/
-static BOOLEAN cmp_array_conduit
-(
- FF_ARRAY_CONDUIT_PTR src_conduit,
- FF_ARRAY_CONDUIT_PTR trg_conduit
- )
+/** FreeForm data and format initializattion calls (input format only) */
+
+static bool 
+cmp_array_conduit(FF_ARRAY_CONDUIT_PTR src_conduit,
+		  FF_ARRAY_CONDUIT_PTR trg_conduit)
 {
-  
-  if (src_conduit->input && trg_conduit->input)
-    return(ff_format_comp(src_conduit->input->fd->format, trg_conduit->input->fd->format));
-  else if (src_conduit->output && trg_conduit->output)
-    return(ff_format_comp(src_conduit->output->fd->format, trg_conduit->output->fd->format));
-  else
-    return 0;
+    if (src_conduit->input && trg_conduit->input)
+	return (bool)ff_format_comp(src_conduit->input->fd->format, 
+				    trg_conduit->input->fd->format);
+    else if (src_conduit->output && trg_conduit->output)
+	return (bool) ff_format_comp(src_conduit->output->fd->format,
+				     trg_conduit->output->fd->format);
+    else
+	return false;
 }
 
-static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
+static int 
+merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
 {
-  int error = 0;  
-  error = list_replace_items((pgenobj_cmp_t)cmp_array_conduit, conduit_list); 
-  return(error);
+    int error = 0;  
+    error = list_replace_items((pgenobj_cmp_t)cmp_array_conduit, 
+			       conduit_list); 
+    return(error);
 }
 
-int SetDodsDB (FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt)
+int 
+SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
 {
-	FORMAT_DATA_LIST format_data_list = NULL;
-	int error = 0;
+    FORMAT_DATA_LIST format_data_list = NULL;
+    int error = 0;
 	
-	assert(dbin_h);
+    assert(dbin_h);
 	
-	if (!dbin_h) {
-	  sprintf(Msgt, "NULL DATA_BIN_HANDLE in %s", ROUTINE_NAME);
-	  return(ERR_API);
+    if (!dbin_h) {
+	sprintf(Msgt, "Error: NULL DATA_BIN_HANDLE in %s", ROUTINE_NAME);
+	return(ERR_API);
+    }
+
+    if (!*dbin_h) {
+	*dbin_h = db_make(std_args->input_file);
+
+	if (!*dbin_h){
+	    sprintf (Msgt, "Error in Standard Data Bin");
+	    return(ERR_MEM_LACK);
 	}
-	if (!*dbin_h)
-	  {
-	    *dbin_h = db_make(std_args->input_file);
-
-	    if (!*dbin_h){
-	      sprintf (Msgt, "Error in Standard Data Bin");
-	      return(ERR_MEM_LACK);
-	    }
-	  }
+    }
 	
-	/* Now set the formats and the auxillary files */
+    /* Now set the formats and the auxillary files */
 	
-	if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file))
-	  {
-	    sprintf(Msgt, "making name table for %s", std_args->input_file);
-	    return(DBSET_READ_EQV);
-	  }
+    if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file)) {
+	sprintf(Msgt, "Error making name table for %s", std_args->input_file);
+	return(DBSET_READ_EQV);
+    }
 	
-	if (db_set(*dbin_h,
-	           DBSET_INPUT_FORMATS,
-	           std_args->input_file,
-	           std_args->output_file,
-	           std_args->input_format_file,
-	           std_args->input_format_buffer,
-	           std_args->input_format_title,
-	           &format_data_list
-		   )
-	    )
-	  {
-	    if (format_data_list)
-	      dll_free_holdings(format_data_list);
+    if (db_set(*dbin_h,
+	       DBSET_INPUT_FORMATS,
+	       std_args->input_file,
+	       std_args->output_file,
+	       std_args->input_format_file,
+	       std_args->input_format_buffer,
+	       std_args->input_format_title,
+	       &format_data_list)) {
+	if (format_data_list)
+	    dll_free_holdings(format_data_list);
 	    
-	    sprintf(Msgt, "setting an input format for %s", std_args->input_file);
-	    return(DBSET_INPUT_FORMATS);
-	  }
+	sprintf(Msgt, "Error setting an input format for %s",
+		std_args->input_file); 
+	return(DBSET_INPUT_FORMATS);
+    }
 	
-	error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
-	dll_free_holdings(format_data_list);
-	if (error)
-	  {
-	    sprintf(Msgt, "creating array information for %s", std_args->input_file);
-	    return(DBSET_CREATE_CONDUITS);
-	  }
+    error = db_set(*dbin_h, DBSET_CREATE_CONDUITS, std_args, format_data_list);
+    dll_free_holdings(format_data_list); // dll == dyn link lib? 8/13/98 jhrg
+    if (error) {
+	sprintf(Msgt, "Error creating array information for %s",
+		std_args->input_file); 
+	return(DBSET_CREATE_CONDUITS);
+    }
 		
-	if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT, std_args->input_file))
-	  {
-	    sprintf(Msgt, "Determining input header file names for %s", std_args->input_file);
-	    return(DBSET_HEADER_FILE_NAMES);
-	  }
+    // I think these next two return calls signal errors. 8/13/98 jhrg
+    if (db_set(*dbin_h, DBSET_HEADER_FILE_NAMES, FFF_INPUT,
+	       std_args->input_file)) {
+	sprintf(Msgt, "Error determining input header file names for %s",
+		std_args->input_file); 
+	return(DBSET_HEADER_FILE_NAMES);
+    }
 	
-	if (db_set(*dbin_h, DBSET_INIT_CONDUITS, FFF_DATA, std_args->records_to_read))
-	  {
-	    sprintf(Msgt, "creating array information for %s", std_args->input_file);
-	    return(DBSET_INIT_CONDUITS);
-	  }
+    if (db_set(*dbin_h, DBSET_INIT_CONDUITS, FFF_DATA,
+	       std_args->records_to_read)) {
+	sprintf(Msgt, "Error creating array information for %s",
+		std_args->input_file); 
+	return(DBSET_INIT_CONDUITS);
+    }
 	
-	error = merge_redundant_conduits((*dbin_h)->array_conduit_list);
-	if(error)
-	  sprintf(Msgt, "merging redundent conduits");
+    error = merge_redundant_conduits((*dbin_h)->array_conduit_list);
+    if(error)
+	sprintf(Msgt, "Error merging redundent conduits");
 	
-	return(error);
+    return(error);
 }
