@@ -8,6 +8,11 @@
 // Implementation of the DODS_Time_Factory class
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.4  1999/05/25 18:37:50  dan
+// Check for empty hour/minute/second variables in a DODS_Time
+// variable, if these variables do not exist set a default value
+// for them to 0.
+//
 // Revision 1.3  1999/05/04 02:55:35  jimg
 // Merge with no-gnu
 //
@@ -25,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.3 1999/05/04 02:55:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.4 1999/05/25 18:37:50 dan Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -64,17 +69,23 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     // Now check that these variables actually exist and that they have
     // sensible types.
 
-    _hours = dds.var(_hours_name);
-    if (_hours->type() != dods_int32_c)
+    if ( _hours ) {
+      _hours = dds.var(_hours_name);
+      if (_hours->type() != dods_int32_c)
 	throw Error(unknown_error, "DODS_Time_Factory: The variable used for hours must be an integer.");
+    }
 
-    _minutes = dds.var(_mins_name);
-    if (_minutes->type() != dods_int32_c)
+    if ( _minutes ) {
+      _minutes = dds.var(_mins_name);
+      if (_minutes->type() != dods_int32_c)
 	throw Error(unknown_error, "DODS_Time_Factory: The variable used for minutes must be an integer.");
+    }
 
-    _seconds = dds.var(_secs_name);
-    if (_seconds->type() != dods_int32_c)
+    if ( _seconds ) {
+      _seconds = dds.var(_secs_name);
+      if (_seconds->type() != dods_int32_c)
 	throw Error(unknown_error, "DODS_Time_Factory: The variable used for seconds must be an integer.");
+    }
 }
 
 DODS_Time
@@ -82,15 +93,24 @@ DODS_Time_Factory::get()
 {
     int hour;
     int *hour_p = &hour;
-    _hours->buf2val((void **)&hour_p);
+    if ( _hours )
+      _hours->buf2val((void **)&hour_p);
+    else
+      hour = 0;
 
     int min;
     int *min_p = &min;
-    _minutes->buf2val((void **)&min_p);
+    if ( _minutes )
+      _minutes->buf2val((void **)&min_p);
+    else
+      min = 0;
 
     int sec;
     int *sec_p = &sec;
-    _seconds->buf2val((void **)&sec_p);
+    if ( _seconds )
+      _seconds->buf2val((void **)&sec_p);
+    else
+      sec = 0;
 
     return DODS_Time(hour, min, sec, _gmt);
 }
