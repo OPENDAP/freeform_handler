@@ -12,6 +12,12 @@
 // ReZa 6/18/97
 
 // $Log: FFStructure.h,v $
+// Revision 1.4  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1998/04/21 17:14:03  jimg
 // Fixes for warnings, etc
 //
@@ -26,16 +32,16 @@
 #endif
 
 #include "Structure.h"
-extern Structure * NewStructure(const String &n = (char *)0);
+extern Structure * NewStructure(const string &n = "");
 
 class FFStructure: public Structure {
 public:
-    FFStructure(const String &n = (char *)0);
+    FFStructure(const string &n = (char *)0);
     virtual ~FFStructure();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 #endif

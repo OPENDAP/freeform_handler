@@ -8,6 +8,12 @@
 // Implementation of the DODS_Time_Factory class
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.3  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.2.8.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.2  1999/01/05 00:40:44  jimg
 // Switched to simpler method names.
 //
@@ -15,18 +21,19 @@
 // Initial version of the DODS_Time factory object. This is a test implementation.
 //
 
+#include <string>
+
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Time_Factory.cc,v 1.2 1999/01/05 00:40:44 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.3 1999/05/04 02:55:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#include "String.h"
-
 #include "AttrTable.h"
 #include "Error.h"
+#include "util.h"
 
 #include "DODS_Time_Factory.h"
 
@@ -40,15 +47,15 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     if (!at)
 	throw Error(unknown_error, "DODS_Time_Factory requires that the DODS_Time attribute be present.");
 
-    String _hours_name = at->get_attr("hours_variable");
-    String _mins_name = at->get_attr("minutes_variable");
-    String _secs_name = at->get_attr("seconds_variable");
-    String _gmt = at->get_attr("gmt_time");
+    string _hours_name = at->get_attr("hours_variable");
+    string _mins_name = at->get_attr("minutes_variable");
+    string _secs_name = at->get_attr("seconds_variable");
+    string _gmt = at->get_attr("gmt_time");
 
     // If the gmt attribute is present that meanas that the times are GMT/UTC
     // times. Set the _gmt flag true, otherwise set it false.
     
-    _gmt.downcase();
+    downcase(_gmt);
     if (_gmt == "true")
 	_gmt = true;
     else

@@ -6,6 +6,12 @@
  * ReZa (Reza Nekovei URI/GSO) 7/10/98
 
  * $Log: FreeForm.h,v $
+ * Revision 1.4  1999/05/04 02:55:37  jimg
+ * Merge with no-gnu
+ *
+ * Revision 1.3.12.1  1999/05/01 04:40:31  brent
+ * converted old String.h to the new std C++ <string> code
+ *
  * Revision 1.3  1998/08/12 21:21:01  jimg
  * Massive changes from Reza. Compatible with the new FFND library
  *
@@ -630,7 +636,7 @@ typedef unsigned long FF_TYPES_t;
 
 typedef struct
 {
-	char       *string;
+	char       *fff_info;
 	FF_TYPES_t  number;
 } FFF_LOOKUP, *FFF_LOOKUP_PTR;
 

@@ -1,5 +1,5 @@
 
-// (c) COPYRIGHT URI/MIT 1998
+// (c) COPYRIGHT URI/MIT 1998-1999
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors:
@@ -9,10 +9,16 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.8  1999/05/04 02:55:37  jimg
+// Merge with no-gnu
+//
 // Revision 1.7  1999/03/17 23:26:11  jimg
 // get_instance() now uses the find_ancillary_file() function. This should help
 // to standardize things, although it is still a hack to read the DAS at this
 // point.
+//
+// Revision 1.6.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.6  1999/01/05 00:46:13  jimg
 // Switched to a template design for some of the CE selection functions.
@@ -44,8 +50,6 @@
 #include <string>
 #include <algo.h>
 
-#include <String.h>
-
 #include "BaseType.h"
 #include "Str.h"
 #include "Structure.h"
@@ -76,7 +80,7 @@ get_instance(DDS &dds)
     static T_Factory *tf = 0;
     if (!tf) {
 	// Hack
-	String name = find_ancillary_file(dds.filename(), "das", "", "");
+	string name = find_ancillary_file(dds.filename(), "das", "", "");
 	DAS das;
 	das.parse(name);
 	// end hack
@@ -129,11 +133,11 @@ comparison(int argc, BaseType *argv[], DDS &dds)
     @param position Add the new variable to this Structure or Sequence. */
 
 void
-new_string_variable(const String &name, DDS &dds, BaseType *position = 0)
+new_string_variable(const string &name, DDS &dds, BaseType *position = 0)
 {
     // Create the new variable
 
-    Str *new_variable = NewStr(name);
+    Str *new_variable = NewStr(name.data());
     new_variable->set_read_p(true); // You must call this before ...
     new_variable->set_synthesized_p(true); // this! Look at BaseType.cc.
 
@@ -203,7 +207,7 @@ Please report this error.");
 
     // Stuff the yyyy/ddd string into DODS_JDate.
     Str *dods_jdate = (Str*)dds.var("DODS_JDate");
-    String s = current.get(yd).chars();
+    string s = current.get(yd).c_str();
     dods_jdate->val2buf(&s);
 
     return true;
@@ -241,7 +245,7 @@ Please report this error.");
 
     // Stuff the yyyy/ddd string into DODS_JDate.
     Str *dods_date = (Str*)dds.var("DODS_Date");
-    String s = current.get().chars();
+    string s = current.get().c_str();
     dods_date->val2buf(&s);
 
     return true;
@@ -277,7 +281,7 @@ Please report this error.");
 
     // Stuff the "hh:mm:ss" string into `DODS_Time'
     Str *dods_time = (Str*)dds.var("DODS_Time");
-    String s = current.get().chars();
+    string s = current.get().c_str();
     dods_time->val2buf(&s);
 
     return true;
@@ -318,7 +322,7 @@ Please report this error.");
 
     // Stuff the yyyy/ddd string into DODS_JDate.
     Str *dods_date_time = (Str*)dds.var("DODS_Date_Time");
-    String s = current.get().chars();
+    string s = current.get().c_str();
     dods_date_time->val2buf(&s);
 
     return true;

@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -11,8 +11,14 @@
 // ReZa 6/18/97
 
 // $Log: FFStr.cc,v $
+// Revision 1.8  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.7  1999/03/26 20:03:31  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.6.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.6  1998/11/13 05:43:08  jimg
 // Formatting changes
@@ -34,7 +40,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.7 1999/03/26 20:03:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFStr.cc,v 1.8 1999/05/04 02:55:36 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -43,22 +49,23 @@ static char rcsid[] __unused__ ={"$Id: FFStr.cc,v 1.7 1999/03/26 20:03:31 jimg E
 #include <assert.h>
 #include <ctype.h>
 #include <strings.h>
+#include <string>
 #include "FFStr.h"
 
 extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
 extern int StrLength; // Set by sequence before String read 
 
-// extern long Get_constraint(int num_dim,String constraint,long *cor,long *edge);
+// extern long Get_constraint(int num_dim,string constraint,long *cor,long *edge);
 
 
 Str *
-NewStr(const String &n)
+NewStr(const string &n)
 {
     return new FFStr(n);
 }
 
-FFStr::FFStr(const String &n) : Str(n)
+FFStr::FFStr(const string &n) : Str(n)
 {
 }
 
@@ -69,7 +76,7 @@ FFStr::ptr_duplicate()
 }
 
 bool
-FFStr::read(const String &dataset, int &)
+FFStr::read(const string &dataset, int &)
 {
     if (read_p())			// nothing to do
 	return true;
@@ -94,7 +101,7 @@ FFStr::read(const String &dataset, int &)
 	TmpBuf[i-j+1]='\0';
 
 	// Fix me; use _buf directly. 10/19/98 jhrg
-	String *Nstr = new String((const char *)TmpBuf);
+	string *Nstr = new string((const char *)TmpBuf);
 
 	val2buf(Nstr);
 	set_read_p(true);

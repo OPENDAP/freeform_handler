@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -12,8 +12,14 @@
 // ReZa 6/18/97
 
 // $Log: FFByte.cc,v $
+// Revision 1.7  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.6  1999/03/26 20:03:31  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.5.12.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.5  1998/08/13 20:24:21  jimg
 // Fixed read mfunc semantics
@@ -29,13 +35,14 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFByte.cc,v 1.6 1999/03/26 20:03:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFByte.cc,v 1.7 1999/05/04 02:55:36 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
 #include <assert.h>
+#include <string>
 
 #include "FFByte.h"
 #include "util_ff.h"
@@ -59,12 +66,12 @@ extern char * BufVal;
 // changing. 
 
 Byte *
-NewByte(const String &n)
+NewByte(const string &n)
 {
     return new FFByte(n);
 }
 
-FFByte::FFByte(const String &n) : Byte(n)
+FFByte::FFByte(const string &n) : Byte(n)
 {
 }
 
@@ -75,7 +82,7 @@ FFByte::ptr_duplicate()
 }
 
 bool
-FFByte::read(const String &dataset, int &error)
+FFByte::read(const string &dataset, int &error)
 {
     if (read_p()) // nothing to do
 	return false;
@@ -91,15 +98,15 @@ FFByte::read(const String &dataset, int &error)
     else {
 #if 0
 	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, dataset);
+	strcpy(ds, dataset.c_str());
 
-	String o_format = make_output_format(name(), type(), width());
+	string o_format = make_output_format(name(), type(), width());
 	char *o_f = new char[o_format.length() + 1];
-	strcpy(o_f, o_format);
+	strcpy(o_f, o_format.c_str());
 
-	String i_format_file = find_ancillary_file(dataset);
+	string i_format_file = find_ancillary_file(dataset);
 	char *if_f = new char[i_format_file.length() + 1];
-	strcpy(if_f, i_format_file);
+	strcpy(if_f, i_format_file.c_str());
 
 	dods_byte *i = new dods_byte[width() + 1];
 	long bytes = read_ff(ds, if_f, o_f, (char *)i, width()+1);

@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Date.h,v $
+// Revision 1.5  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.4.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.4  1999/01/08 22:08:18  jimg
 // Fixed doc++ comments.
 //
@@ -33,7 +39,7 @@
 
 #include <time.h>
 
-#include <String.h>
+#include <string>
 
 #include "BaseType.h"
 #include "date_proc.h"
@@ -80,14 +86,14 @@ public:
 	not 1998.
 
 	@param date_str A string containing the date. */
-    DODS_Date(String date_str);
+    DODS_Date(string date_str);
 
-    /** Build a DODS\_Date by parsing the DODS String contained in #arg#.
+    /** Build a DODS\_Date by parsing the DODS string contained in #arg#.
 
 	Throws Error if #arg# is not a DODS Str object.
 
-	@param arg A DODS String containing the date.
-	@see DODS_Date(String). */
+	@param arg A DODS string containing the date.
+	@see DODS_Date(string). */
     DODS_Date(BaseType *arg);
 
     /** Build a DODS\_Date using year and day-number values. This constructor
@@ -111,9 +117,9 @@ public:
     //@{
     /** Parse the string and assign the value to this object. 
 	@see DODS_Date(string) */
-    void set(String date);
+    void set(string date);
 
-    /** Parse the DODS String and assign the value to this object. 
+    /** Parse the DODS string and assign the value to this object. 
 	@see DODS_Date(BaseType *arg) */
     void set(BaseType *arg);
 
@@ -137,7 +143,7 @@ public:
 	@param format The format of the date.
 	@see date_format.
 	@return The date's string representation. */
-    String get(date_format format = ymd) const;
+    string get(date_format format = ymd) const;
 
     /** @return The year in years A.D. */
     int year() const;

@@ -9,8 +9,14 @@
 // Implementation of the DODS Date/Time class
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.3  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.2.8.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.2  1999/01/05 00:35:35  jimg
-// Removed string class; replaced with the GNU String class. It seems those
+// Removed string class; replaced with the GNU string class. It seems those
 // don't mix well.
 // Switched to simpler method names.
 //
@@ -20,7 +26,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date_Time.cc,v 1.2 1999/01/05 00:35:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.3 1999/05/04 02:55:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -31,6 +37,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date_Time.cc,v 1.2 1999/01/05 00:35:3
 #include <assert.h>
 
 #include <strstream.h>
+#include <string>
 
 #include "Error.h"
 #include "DODS_Date_Time.h"
@@ -38,7 +45,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date_Time.cc,v 1.2 1999/01/05 00:35:3
 
 #define seconds_per_day 86400.0
 
-static String
+static string
 extract_argument(BaseType *arg)
 {
 #ifndef TEST
@@ -48,9 +55,9 @@ extract_argument(BaseType *arg)
     
     // Use String until conversion of String to string is complete. 9/3/98
     // jhrg
-    String *sp = 0;
+    string *sp = NULL;
     arg->buf2val((void **)&sp);
-    String s = sp->chars();
+    string s = sp->c_str();
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -78,7 +85,7 @@ DODS_Date_Time::DODS_Date_Time(DODS_Date d, DODS_Time t) : _date(d), _time(t)
 {
 }
 
-DODS_Date_Time::DODS_Date_Time(String date_time)
+DODS_Date_Time::DODS_Date_Time(string date_time)
 {
     set(date_time);
 }
@@ -110,18 +117,12 @@ DODS_Date_Time::set(DODS_Date d, DODS_Time t)
 }
 
 void
-DODS_Date_Time::set(String date_time)
+DODS_Date_Time::set(string date_time)
 {
     // The format for the date-time string is <date part>:<time part>.
-    int i = date_time.index(":");
-    String date_part = date_time.at(0, i); 
-#if 0
-    // If using the string class... 12/31/98 jhrg
-    string date_part(date_time, 0, i);
-    date_part[i]='\0';		// Hack. Why is this necessary?
-    string time_part(date_time, i+1);
-#endif
-    String time_part = date_time.after(i);
+    size_t i = date_time.find(":");
+    string date_part = date_time.substr(0, i); 
+    string time_part = date_time.substr(i+1, date_time.size());
     
     _date.set(date_part);
     _time.set(time_part);
@@ -201,7 +202,7 @@ DODS_Date_Time::gmt() const
     return _time.gmt();
 }
 
-String 
+string 
 DODS_Date_Time::get(date_format format, bool gmt) const
 {
     switch (format) {
@@ -291,7 +292,7 @@ operator>=(DODS_Date_Time &t1, DODS_Date_Time &t2)
 
 #ifdef DATE_TIME_TEST
 
-/* Input args: 1 String,
+/* Input args: 1 string,
     2 Two strings, 
     5 y, yd, hh, mm, ss,
     6 y, m, d, hh, mm, ss 

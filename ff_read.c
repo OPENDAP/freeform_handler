@@ -7,6 +7,9 @@
 
 /*
  * $Log: ff_read.c,v $
+ * Revision 1.11  1999/05/04 02:55:38  jimg
+ * Merge with no-gnu
+ *
  * Revision 1.10  1998/11/13 05:43:41  jimg
  * Fixed up the TEST_LOGGING stuff.
  *
@@ -40,7 +43,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ff_read.c,v 1.10 1998/11/13 05:43:41 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: ff_read.c,v 1.11 1999/05/04 02:55:38 jimg Exp $"};
 
 #include <freeform.h>
 

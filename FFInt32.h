@@ -12,6 +12,12 @@
 // ReZa 6/18/97
 
 // $Log: FFInt32.h,v $
+// Revision 1.4  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1998/04/21 17:13:54  jimg
 // Fixes for warnings, etc
 //
@@ -26,16 +32,16 @@
 #endif
 
 #include "Int32.h"
-extern Int32 * NewInt32(const String &n = (char *)0);
+extern Int32 * NewInt32(const string &n = "");
 
 class FFInt32: public Int32 {
 public:
-    FFInt32(const String &n = (char *)0);
+    FFInt32(const string &n = "");
     virtual ~FFInt32() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 typedef FFInt32 * FFInt32Ptr;

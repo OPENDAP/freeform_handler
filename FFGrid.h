@@ -18,6 +18,12 @@
 // ReZa 6/18/97
 
 // $Log: FFGrid.h,v $
+// Revision 1.4  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1998/04/21 17:13:51  jimg
 // Fixes for warnings, etc
 //
@@ -32,16 +38,16 @@
 #endif
 
 #include "Grid.h"
-extern Grid * NewGrid(const String &n = (char *)0);
+extern Grid * NewGrid(const string &n = "");
 
 class FFGrid: public Grid {
 public:
-    FFGrid(const String &n = (char *)0);
+    FFGrid(const string &n = "");
     virtual ~FFGrid();
     
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 #endif

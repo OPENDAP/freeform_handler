@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -11,8 +11,14 @@
 // ReZa 6/18/97
 
 // $Log: FFArray.cc,v $
+// Revision 1.9  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.8  1999/03/26 20:03:31  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.7.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.7  1998/11/10 19:23:01  jimg
 // Minor formatting changes...
@@ -37,7 +43,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.8 1999/03/26 20:03:31 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFArray.cc,v 1.9 1999/05/04 02:55:36 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -50,6 +56,7 @@ static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.8 1999/03/26 20:03:31 jimg
 #include <iostream.h>
 
 #include <assert.h>
+#include <string>
 
 #include "config_dap.h"
 
@@ -57,7 +64,7 @@ static char rcsid[] __unused__ ={"$Id: FFArray.cc,v 1.8 1999/03/26 20:03:31 jimg
 #include "util_ff.h"
 
 Array *
-NewArray(const String &n, BaseType *v)
+NewArray(const string &n, BaseType *v)
 {
     return new FFArray(n, v);
 }
@@ -68,7 +75,7 @@ FFArray::ptr_duplicate()
     return new FFArray(*this);
 }
 
-FFArray::FFArray(const String &n, BaseType *v) : Array(n, v)
+FFArray::FFArray(const string &n, BaseType *v) : Array(n, v)
 {
 }
 
@@ -80,14 +87,14 @@ FFArray::~FFArray()
 // return number of elements to read. 
 
 long
-FFArray::Arr_constraint(long *cor, long *step, long *edg, String *dim_nms, 
+FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms, 
 			bool *has_stride)
 {
     long start, stride, stop;
 
     int id = 0;
     long nels = 1;
-    //    String dimname;
+    //    string dimname;
 
     *has_stride = false;
 
@@ -95,14 +102,14 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, String *dim_nms,
 	start = (long) dimension_start(p, true); 
 	stride = (long) dimension_stride(p, true);
 	stop = (long) dimension_stop(p, true);
-	String dimname = dimension_name(p);
+	string dimname = dimension_name(p);
 
 	// Check for empty constraint
 	if(start+stop+stride == 0)
 	    return -1;
 	
 	dim_nms[id] = dimname;
-	//	(void) strcpy(dim_nms[id],(const char *)dimname);
+	//	(void) strcpy(dim_nms[id], dimname.data());
 	
 	cor[id] = start;
 	step[id] = stride;
@@ -243,22 +250,22 @@ seq2vects(T *t, FFArray &array)
 // Returns: False if an error was detected, True otherwise.
 
 bool
-FFArray::read(const String &dataset, int &error)
+FFArray::read(const string &dataset, int &error)
 {    
     if (read_p())  // Nothing to do
         return false;
 
-    // make char * variables to hold String data for read_ff
-    char *ds = new char[dataset.length() + 1];
-    strcpy(ds, (const char*)dataset);
+    // make char * variables to hold string data for read_ff
+    char *ds = new char[dataset.size() + 1];
+    strcpy(ds, dataset.data());
 
     // This was used for original Sequence to Array translation 
-    // String output_format = make_output_format(name(), var()->type_name(), 
+    // string output_format = make_output_format(name(), var()->type_name(), 
     //					      var()->width());
    
     bool has_stride;
     int ndims = dimensions();
-    String *dname = new String[ndims];	       
+    string *dname = new string[ndims];	       
     long *start = new long[ndims];
     long *stride = new long[ndims];
     long *edge = new long[ndims];    
@@ -271,16 +278,16 @@ FFArray::read(const String &dataset, int &error)
       return false;
     }
 
-    String output_format =
+    string output_format =
       makeND_output_format(name(), var()->type(), var()->width(), 
-			     ndims, start, edge, stride, dname);
+			   ndims, start, edge, stride, dname);
 
     char *o_fmt = new char[output_format.length() + 1];
-    strcpy(o_fmt, (const char*)output_format);
+    strcpy(o_fmt, output_format.c_str());
 
-    String input_format_file = find_ancillary_file(dataset);
+    string input_format_file = find_ancillary_file(dataset);
     char *if_fmt = new char[input_format_file.length() + 1];
-    strcpy(if_fmt, input_format_file);
+    strcpy(if_fmt, input_format_file.c_str());
 
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data

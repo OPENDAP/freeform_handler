@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -11,8 +11,14 @@
 // ReZa 6/18/97
 
 // $Log: FFInt32.cc,v $
+// Revision 1.8  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.7  1999/03/26 20:03:31  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.6.12.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.6  1998/08/31 04:06:01  reza
 // Added String support.
@@ -34,7 +40,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFInt32.cc,v 1.7 1999/03/26 20:03:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFInt32.cc,v 1.8 1999/05/04 02:55:36 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -48,12 +54,12 @@ extern long BufPtr;
 extern char *BufVal;
 
 Int32 *
-NewInt32(const String &n)
+NewInt32(const string &n)
 {
     return new FFInt32(n);
 }
 
-FFInt32::FFInt32(const String &n) : Int32(n)
+FFInt32::FFInt32(const string &n) : Int32(n)
 {
 }
 
@@ -64,7 +70,7 @@ FFInt32::ptr_duplicate(){
 }
 
 bool
-FFInt32::read(const String &dataset, int &error)
+FFInt32::read(const string &dataset, int &error)
 {
     if (read_p()) // nothing to do
 	return false;

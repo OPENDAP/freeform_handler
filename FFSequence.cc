@@ -1,5 +1,6 @@
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -10,8 +11,14 @@
 // ReZa 6/16/97
 
 // $Log: FFSequence.cc,v $
+// Revision 1.12  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.11  1999/03/26 20:03:31  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.10.8.1  1999/05/01 04:40:29  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.10  1998/11/13 05:39:15  jimg
 // Minor changes, formatting sanity.
@@ -48,7 +55,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFSequence.cc,v 1.11 1999/03/26 20:03:31 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.12 1999/05/04 02:55:36 jimg Exp $"};
 
 #ifdef _GNUG_
 #pragma implementation
@@ -68,7 +75,7 @@ int StrLength = 0; // Sets string length befor reading it
 extern int StrLens[MaxStr]; // List of string length in this sequence 
 
 Sequence *
-NewSequence(const String &n)
+NewSequence(const string &n)
 {
     return new FFSequence(n);
 }
@@ -83,7 +90,7 @@ FFSequence::ptr_duplicate()
 
 // public
 
-FFSequence::FFSequence(const String &n) : Sequence(n)
+FFSequence::FFSequence(const string &n) : Sequence(n)
 {
 }
 
@@ -92,7 +99,7 @@ FFSequence::~FFSequence()
 }
 
 long
-Records(const String &filename)
+Records(const string &filename)
 {
     int error = 0;
     DATA_BIN_PTR dbin = NULL;
@@ -102,7 +109,7 @@ Records(const String &filename)
     static char Msgt[255];
 
     char * FileName = new char [filename.length()+1];
-    (void) strcpy(FileName, (const char *)filename);
+    (void) strcpy(FileName, filename.c_str());
 
     SetUps = ff_create_std_args();
     if (!SetUps)
@@ -111,9 +118,9 @@ Records(const String &filename)
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
     SetUps->input_file = FileName; 
-    String iff = find_ancillary_file(filename);
+    string iff = find_ancillary_file(filename);
     char *if_f = new char[iff.length() + 1];
-    strcpy(if_f, iff);
+    strcpy(if_f, iff.c_str());
     SetUps->input_format_file = if_f;
     SetUps->output_file = NULL;
 
@@ -139,7 +146,7 @@ Records(const String &filename)
 }
 
 bool 
-FFSequence::read(const String &dataset, int &error)
+FFSequence::read(const string &dataset, int &error)
 {
 
   int StrCnt = 0;
@@ -182,9 +189,9 @@ FFSequence::read(const String &dataset, int &error)
 	strcpy(o_fmt, str.str());
 	str.freeze(0);
 
-	String input_format_file = find_ancillary_file(dataset);
+	string input_format_file = find_ancillary_file(dataset);
 	char *if_fmt = new char[input_format_file.length() + 1];
-	strcpy(if_fmt, input_format_file);
+	strcpy(if_fmt, input_format_file.c_str());
      
 	long num_rec = Records(dataset); // It could come from DDS if sequence length was known
 
@@ -194,7 +201,7 @@ FFSequence::read(const String &dataset, int &error)
 	BufSiz = num_rec * (stbyte - 1);
 	BufVal = (char *)new char[BufSiz];
 	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, (const char*)dataset);
+	strcpy(ds, dataset.c_str());
    
 	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
 	if (bytes == -1) {

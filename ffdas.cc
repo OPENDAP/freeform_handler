@@ -1,36 +1,9 @@
-/*
-  Copyright 1997 The University of Rhode Island and The Massachusetts
-  Institute of Technology.
 
-  Portions of this software were developed by the Graduate School of
-  Oceanography (GSO) at the University of Rhode Island (URI) in collaboration
-  with The Massachusetts Institute of Technology (MIT).
 
-  Access and use of this software shall impose the following obligations and
-  understandings on the user. The user is granted the right, without any fee
-  or cost, to use, copy, modify, alter, enhance and distribute this software,
-  and any derivative works thereof, and its supporting documentation for any
-  purpose whatsoever, provided that this entire notice appears in all copies
-  of the software, derivative works and supporting documentation.  Further,
-  the user agrees to credit URI/MIT in any publications that result from the
-  use of this software or in any product that includes this software. The
-  names URI, MIT and/or GSO, however, may not be used in any advertising or
-  publicity to endorse or promote any products or commercial entity unless
-  specific written permission is obtained from URI/MIT. The user also
-  understands that URI/MIT is not obligated to provide the user with any
-  support, consulting, training or assistance of any kind with regard to the
-  use, operation and performance of this software nor to provide the user
-  with any updates, revisions, new versions or "bug fixes".
-
-  THIS SOFTWARE IS PROVIDED BY URI/MIT "AS IS" AND ANY EXPRESS OR IMPLIED
-  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-  EVENT SHALL URI/MIT BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-  DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
-  PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTUOUS
-  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE ACCESS, USE OR PERFORMANCE
-  OF THIS SOFTWARE.
-*/
+// (c) COPYRIGHT URI/MIT 1997-98
+// Please read the full copyright statement in the file COPYRIGH.  
+//
+// Authors: reza (Reza Nekovei)
 
 // This file contains functions which read the variables and their attributes
 // from a netcdf file and build the in-memeory DAS. These functions form the
@@ -40,8 +13,14 @@
 // ReZa 6/23/97
 
 // $Log: ffdas.cc,v $
+// Revision 1.9  1999/05/04 02:55:38  jimg
+// Merge with no-gnu
+//
 // Revision 1.8  1999/03/26 20:03:32  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.7.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.7  1998/08/31 04:06:13  reza
 // Added String support.
@@ -68,13 +47,14 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdas.cc,v 1.8 1999/03/26 20:03:32 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.9 1999/05/04 02:55:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <iostream.h>
+#include <string>
 
 #include "cgi_util.h"
 #include "DAS.h"
@@ -90,72 +70,75 @@ int StrLens[MaxStr]; // List of string lengths
 // Used by ErrMsgT
 static char Msgt[255];
 
-// reads the attributes and store their names and values in the attribute table.
+// reads the attributes and store their names and values in the attribute
+// table. 
 //
 // Returns: false if an error was detected reading from the freeform format
 // file, true otherwise. 
 
 bool
-read_attributes(const char *filename, AttrTable *at, String *err_msg)
+read_attributes(string filename, AttrTable *at, string *err_msg)
 {
-  int error = 0;
-  FF_BUFSIZE_PTR bufsize = NULL;
-  DATA_BIN_PTR dbin = NULL;
-  FF_STD_ARGS_PTR SetUps = NULL;  
+    int error = 0;
+    size_t pos;
+    FF_BUFSIZE_PTR bufsize = NULL;
+    DATA_BIN_PTR dbin = NULL;
+    FF_STD_ARGS_PTR SetUps = NULL;  
 
-  if(!file_exist(filename)) {
-    sprintf(Msgt, "ff_das: Could not open %s", filename);
-    ErrMsgT(Msgt);  
-    cat((String)"\"", (String)Msgt, (String)" \"", *(err_msg));
-    return false;
+    if (!file_exist(filename.c_str())) {
+	sprintf(Msgt, "ff_das: Could not open %s", filename.c_str());
+	ErrMsgT(Msgt);  
+	*err_msg = (string)"\"" + Msgt + " \"";
+	return false;
     }
     
-  SetUps = ff_create_std_args();
-  if (!SetUps)
-    {
-      sprintf(Msgt, "ff_das: Insufficient memory -- free more memory and try again");
-      ErrMsgT(Msgt);  
-      cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
-      return false;
+    SetUps = ff_create_std_args();
+    if (!SetUps) {
+	sprintf(Msgt, "ff_das: Insufficient memory -- free more memory and try again");
+	ErrMsgT(Msgt);  
+	*err_msg = (string)"\"" + Msgt + " \"";
+	return false;
     }
     
-  /** set the structure values to create the FreeForm DB**/
-  SetUps->user.is_stdin_redirected = 0;
-  SetUps->input_file = (char *)filename;
-  String ds = (char *)filename;
-  String iff = find_ancillary_file(ds);
-  char *if_f = new char[iff.length() + 1];
-  strcpy(if_f, iff);
-  SetUps->input_format_file = if_f;
-  SetUps->output_file = NULL;
+    /** set the structure values to create the FreeForm DB**/
+    SetUps->user.is_stdin_redirected = 0;
 
-  error = SetDodsDB(SetUps, &dbin, Msgt);
-  if (error && error < ERR_WARNING_ONLY)
-    {
-      db_destroy(dbin);
-      ErrMsgT(Msgt);  
-      cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
-      return false;
+    SetUps->input_file = new char[filename.length() + 1];
+    strcpy(SetUps->input_file, filename.c_str());
+
+    string iff = find_ancillary_file(filename);
+    SetUps->input_format_file = new char[iff.length() + 1];
+    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+    SetUps->output_file = NULL;
+
+    error = SetDodsDB(SetUps, &dbin, Msgt);
+    if (error && error < ERR_WARNING_ONLY) {
+	db_destroy(dbin);
+	ErrMsgT(Msgt);  
+	*err_msg = "\"" + (string)Msgt + " \"";
+	return false;
     }
-  error = db_ask(dbin,DBASK_FORMAT_SUMMARY,FFF_INPUT, &bufsize);
-  if(error) {
-    sprintf(Msgt, "ff_das: db_ask can not get Format Summary");
-    ErrMsgT(Msgt);  
-    cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
-    return false;
-  }
 
-  at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
+    error = db_ask(dbin,DBASK_FORMAT_SUMMARY,FFF_INPUT, &bufsize);
+    if (error) {
+	sprintf(Msgt, "ff_das: db_ask can not get Format Summary");
+	ErrMsgT(Msgt);  
+	*err_msg = "\"" + (string)Msgt + " \"";
+	return false;
+    }
 
-  //fix the format of the info. string
-  String FmtInfo = (String)bufsize->buffer;
-  FmtInfo.gsub("\"","`"); 
-  FmtInfo.gsub("\n"," ");
-  FmtInfo.prepend("\"");
-  FmtInfo += "\"";
-  at->append_attr("Native_file", "STRING",(const char *)FmtInfo);
+    at->append_attr("Server", "STRING", "\"DODS FreeFrom based on FFND release "FFND_LIB_VER"\"");
 
-  return true;
+    //fix the format of the info. string
+    string fmt_info = bufsize->buffer;
+    while ((pos = fmt_info.find('"')) < fmt_info.size()) 
+	fmt_info.replace(pos, 1, '`');
+    while ((pos = fmt_info.find('\n')) < fmt_info.size()) 
+	fmt_info.replace(pos, 1, ' ');
+    fmt_info = "\"" + fmt_info + "\"";
+    at->append_attr("Native_file", "STRING", fmt_info);
+
+    return true;
 }
 
 // Given a reference to an instance of class DAS and a filename that refers
@@ -166,18 +149,18 @@ read_attributes(const char *filename, AttrTable *at, String *err_msg)
 // otherwise. 
 
 bool
-get_attributes(DAS &das, const char *filename, String *error)
+get_attributes(DAS &das, string filename, string *error)
 {
 
-  AttrTable *attr_table_ptr;
+    AttrTable *attr_table_ptr;
   
-  // global attributes (no variable attributes in freefrom)
-  attr_table_ptr = das.add_table("FF_GLOBAL", new AttrTable);
-  if (!read_attributes(filename, attr_table_ptr, error))
-    return false;
+    // global attributes (no variable attributes in freefrom)
+    attr_table_ptr = das.add_table("FF_GLOBAL", new AttrTable);
+    if (!read_attributes(filename, attr_table_ptr, error))
+	return false;
 
   
-  return true;
+    return true;
 }
 
 #ifdef TEST
@@ -187,7 +170,7 @@ main(int argc, char *argv[])
 {
     DAS das;
 
-    if(!get_attributes(das, argv[1], ""))
+    if(!get_attributes(&das, (string)argv[1], ""))
 	abort();
 
     das.print();

@@ -9,6 +9,12 @@
 // Implementation of the DODS Date class
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.6  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.5.6.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.5  1999/01/08 22:09:01  jimg
 // Added some comments about errors.
 //
@@ -29,7 +35,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.5 1999/01/08 22:09:01 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.6 1999/05/04 02:55:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -39,6 +45,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.5 1999/01/08 22:09:01 jim
 #include <assert.h>
 
 #include <strstream.h>
+#include <string>
 
 #include "DODS_Date.h"
 #include "debug.h" 
@@ -53,7 +60,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date.cc,v 1.5 1999/01/08 22:09:01 jim
 
 #include "Error.h"
 
-static String
+static string
 extract_argument(BaseType *arg)
 {
 #ifndef TEST
@@ -63,9 +70,9 @@ extract_argument(BaseType *arg)
     
     // Use String until conversion of String to string is complete. 9/3/98
     // jhrg
-    String *sp = 0;
+    string *sp = NULL;
     arg->buf2val((void **)&sp);
-    String s = sp->chars();
+    string s = sp->c_str();
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -92,11 +99,11 @@ DODS_Date::DODS_Date(): _julian_day(0), _year(0), _month(0), _day(0),
 
 DODS_Date::DODS_Date(BaseType *arg)
 {
-    String s = extract_argument(arg);
+    string s = extract_argument(arg);
     set(s);
 }
 
-DODS_Date::DODS_Date(String date_str)
+DODS_Date::DODS_Date(string date_str)
 {
     set(date_str);
 }
@@ -114,7 +121,7 @@ DODS_Date::DODS_Date(int year, int month, int day)
 void
 DODS_Date::set(BaseType *arg)
 {
-    String s = extract_argument(arg);
+    string s = extract_argument(arg);
     set(s);
 }
 
@@ -123,17 +130,20 @@ DODS_Date::set(BaseType *arg)
 // separators, etc. would improve error detection.
 
 void
-DODS_Date::set(String date) 
+DODS_Date::set(string date) 
 {
     // Parse the date_str.
-    istrstream iss(date.chars());
-    char c;
+    istrstream iss(date.c_str());
+    char c;	
+    size_t pos1, pos2;
     iss >> _year;
     iss >> c;
     iss >> _month;
 
     // If there are two slashes, assume a yyyy/mm/dd date.
-    if (date.index("/") != date.index("/", -1)) {
+    pos1 = date.find("/");
+    pos2 = date.rfind("/");
+    if ((pos1 != date.npos) && (pos2 != date.npos) && (pos1 != pos2)) {
 	iss >> c;
 	iss >> _day;
 	// Convert to julian day number and record year, month, ...
@@ -240,7 +250,7 @@ DODS_Date::julian_day() const
     return _julian_day;
 }
 
-String 
+string 
 DODS_Date::get(date_format format) const
 {
     ostrstream oss;
@@ -260,7 +270,7 @@ DODS_Date::get(date_format format) const
 #endif
     }
 
-    String yd = oss.str();
+    string yd = oss.str();
     oss.freeze(0);
     return yd;
 }
@@ -292,12 +302,12 @@ DODS_Date::unix_time() const
 
 int main(int argc, char *argv[])
 {
-    DODS_Date epoc((String)"1970/1/1");
+    DODS_Date epoc((string)"1970/1/1");
     DODS_Date d1;
 
     switch (--argc) {
       case 1:
-	d1.set((String)argv[1]);
+	d1.set((string)argv[1]);
 	break;
       case 2:
 	d1.set(atoi(argv[1]), atoi(argv[2]));

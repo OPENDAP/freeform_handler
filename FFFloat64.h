@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// (c) COPYRIGHT URI/MIT 1997-98
+// (c) COPYRIGHT URI/MIT 1997-99
 // Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
@@ -12,8 +12,14 @@
 // ReZa 6/18/97
 
 // $Log: FFFloat64.h,v $
+// Revision 1.5  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.4  1999/03/26 20:03:31  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.3.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.3  1998/04/21 17:13:47  jimg
 // Fixes for warnings, etc
@@ -29,19 +35,17 @@
 #endif
 
 #include "Float64.h"
-extern Float64 * NewFloat64(const String &n = (char *)0);
+extern Float64 * NewFloat64(const string &n = "");
 
 class FFFloat64: public Float64 {
 public:
-    FFFloat64(const String &n = (char *)0);
+    FFFloat64(const string &n = "");
     virtual ~FFFloat64() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
-
-typedef FFFloat64 * FFFloat64Ptr;
 
 #endif
 

@@ -5,6 +5,9 @@
 
 /* 
  * $Log: config_ff.h.in,v $
+ * Revision 1.2  1999/05/04 02:55:37  jimg
+ * Merge with no-gnu
+ *
  * Revision 1.1  1998/04/21 17:32:00  jimg
  * Fixes for warnings, etc
  *
@@ -79,9 +82,9 @@
 /* GNU gcc/g++ provides a way to mark variables, etc. as unused */
 
 #if defined(__GNUG__) || defined(__GNUC__)
-#define __unused__ __attribute__ ((unused))
+#define not_used __attribute__ ((unused))
 #else
-#define __unused__ 
+#define not_used 
 #endif
 
 #endif /* _CONFIG_FF_H_ */

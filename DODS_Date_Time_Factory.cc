@@ -8,13 +8,19 @@
 // Implementation of the DODS_Date_Time_Factory class
 
 // $Log: DODS_Date_Time_Factory.cc,v $
+// Revision 1.2  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.1.10.1  1999/05/01 04:50:20  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.1  1999/01/22 20:44:35  jimg
 // Added
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date_Time_Factory.cc,v 1.1 1999/01/22 20:44:35 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time_Factory.cc,v 1.2 1999/05/04 02:55:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation

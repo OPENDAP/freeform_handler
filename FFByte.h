@@ -18,6 +18,12 @@
 // ReZa 6/16/97
 
 // $Log: FFByte.h,v $
+// Revision 1.4  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1998/04/21 17:13:44  jimg
 // Fixes for warnings, etc
 //
@@ -32,16 +38,16 @@
 #endif
 
 #include "Byte.h"
-extern Byte * NewByte(const String &n = (char *)0);
+extern Byte * NewByte(const string &n = "");
 
 class FFByte: public Byte {
 public:
-    FFByte(const String &n = (char *)0);
+    FFByte(const string &n = "");
     virtual ~FFByte() {}
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 typedef FFByte * FFBytePtr;

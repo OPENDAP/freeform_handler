@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -15,8 +15,14 @@
 // ReZa 6/20/97
 
 // $Log: ffdds.cc,v $
+// Revision 1.9  1999/05/04 02:55:38  jimg
+// Merge with no-gnu
+//
 // Revision 1.8  1999/03/26 20:03:32  jimg
 // Added support for the Int16, UInt16 and Float32 datatypes
+//
+// Revision 1.7.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.7  1998/08/31 04:06:14  reza
 // Added String support.
@@ -41,7 +47,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: ffdds.cc,v 1.8 1999/03/26 20:03:32 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.9 1999/05/04 02:55:38 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,7 +79,7 @@ int StrLens[MaxStr]; // List of string lengths
 static char Msgt[255];
 
 bool
-read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
+read_descriptors(DDS &dds_table, const string &filename, string &err_msg)
 {
     int error = 0;
     int i = 0;
@@ -91,10 +97,10 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
     Array *ar = NULL;
     Sequence *seq = NULL;
 
-    if(!file_exist(filename)) {
-	sprintf(Msgt, "ff_dds: Could not open %s", filename);
+    if (!file_exist(filename.c_str())) {
+	sprintf(Msgt, "ff_dds: Could not open %s", filename.c_str());
 	ErrMsgT(Msgt);  
-	cat((String)"\"", (String)Msgt, (String)" \"", *(err_msg));
+	err_msg = "\"" + (string)Msgt + " \"";
 	return false;
     }
 
@@ -105,25 +111,26 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
     if (!SetUps) {
 	sprintf(Msgt, "ff_dds: Insufficient memory");
 	ErrMsgT(Msgt);  
-	cat((String)"\"", (String)Msgt, (String)" \"", *(err_msg));
+	err_msg = "\"" + (string)Msgt + " \"";
 	return false;
     }
     
     // Set the structure values to create the FreeForm DB
     SetUps->user.is_stdin_redirected = 0;
-    SetUps->input_file = (char *)filename;
 
-    String iff = find_ancillary_file(filename);
-    char *if_f = new char[iff.length() + 1];
-    strcpy(if_f, iff);
-    SetUps->input_format_file = if_f;
+    SetUps->input_file = new char[filename.length() + 1];
+    strcpy(SetUps->input_file, filename.c_str());
+
+    string iff = find_ancillary_file(filename);
+    SetUps->input_format_file = new char[iff.length() + 1];
+    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
     SetUps->output_file = NULL;
   
     error = SetDodsDB(SetUps, &dbin, Msgt);
     if (error && error < ERR_WARNING_ONLY) {
 	db_destroy(dbin);
 	ErrMsgT(Msgt);  
-	cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+	err_msg = "\"" + (string)Msgt + " \"";
 	return false;
     }
   
@@ -132,7 +139,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
     if (error) {
 	sprintf(Msgt, "ff_dds: db_ask could not get varible list from the input file");
 	ErrMsgT(Msgt);  
-	cat((String)"\"", (String)Msgt, (String)" \"", *(err_msg));
+	err_msg = "\"" + (string)Msgt + " \"";
 	return false;
     }
   
@@ -140,7 +147,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
     if(error){
 	sprintf(Msgt, "ff_dds: db_ask could not get process info. for the input file");
 	ErrMsgT(Msgt);  
-	cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+	err_msg = "\"" + (string)Msgt + " \"";
 	return false;
     }
  
@@ -156,7 +163,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	if (error) {
 	    sprintf(Msgt, "ff_dds: db_ask could not get Array_Dim_names for var. %s", var_names_vector[i]);
 	    ErrMsgT(Msgt);  
-	    cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+	    err_msg = "\"" + (string)Msgt + " \"";
 	    return false;
 	}
 
@@ -190,7 +197,7 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    if(!pinfo) {
 		sprintf(Msgt, "ff_dds: Variable %s was not in found in any of format list",cp);
 		ErrMsgT(Msgt);  
-		cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+		err_msg = "\"" + (string)Msgt + " \"";
 		return false;
 	    }
 
@@ -281,12 +288,12 @@ read_descriptors(DDS &dds_table, const char *filename, String *err_msg)
 	    if (error) {
 		sprintf(Msgt, "ff_dds: db_ask could not get Array_Dim_Info for var. %s",var_names_vector[i]);
 		ErrMsgT(Msgt);  
-		cat((String)"\"",(String)Msgt,(String)" \"",*(err_msg));
+		err_msg = "\"" + (string)Msgt + " \"";
 		return false;
 	    }
       
 	    int DimSiz = (array_dim_info->end_index-array_dim_info->start_index+1)/array_dim_info->granularity;
-	    ar->append_dim(DimSiz, (String)dim_names_vector[j]);
+	    ar->append_dim(DimSiz, (string)dim_names_vector[j]);
 
 #ifdef TEST
 	    printf("Array %s, dimension %s:\n", var_names_vector[i], 
@@ -329,9 +336,9 @@ int
 main(int argc, char *argv[])
 {
     DDS dds;
-    String err;
+    string err;
 
-    if(!read_descriptors(dds, argv[1], &err))
+    if(!read_descriptors(dds, (string)argv[1], &err))
 	abort();
   
     dds.print();

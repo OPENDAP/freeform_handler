@@ -12,6 +12,12 @@
 // ReZa 6/18/97
 
 // $Log: FFStr.h,v $
+// Revision 1.4  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1998/04/21 17:14:01  jimg
 // Fixes for warnings, etc
 //
@@ -28,16 +34,16 @@
 #include <limits.h>
 
 #include "Str.h"
-extern Str * NewStr(const String &n = (char *)0);
+extern Str * NewStr(const string &n = "");
 
 class FFStr: public Str {
 public:
-    FFStr(const String &n = (char *)0);
+    FFStr(const string &n = "");
     virtual ~FFStr() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const String &dataset, int &error);
+    virtual bool read(const string &dataset, int &error);
 };
 
 typedef FFStr * FFStrPtr;

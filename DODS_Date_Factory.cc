@@ -8,13 +8,19 @@
 // Implementation of the DODS_Date_Factory class
 
 // $Log: DODS_Date_Factory.cc,v $
+// Revision 1.2  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.1.10.1  1999/05/01 04:50:20  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.1  1999/01/22 20:44:34  jimg
 // Added
 //
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Date_Factory.cc,v 1.1 1999/01/22 20:44:34 jimg Exp $";
+static char rcsid[] not_used = "$Id: DODS_Date_Factory.cc,v 1.2 1999/05/04 02:55:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -22,7 +28,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Date_Factory.cc,v 1.1 1999/01/22 20:4
 
 #include <stdlib.h>
 
-#include "String.h"
+#include <string>
 
 #include "AttrTable.h"
 #include "Error.h"
@@ -40,11 +46,11 @@ DODS_Date_Factory::DODS_Date_Factory(DDS &dds, DAS &das)
 	throw Error(unknown_error,
 "DODS_Date_Factory requires that the DODS_Date attribute be present.");
 
-    String year_name = at->get_attr("year_variable");
-    String year_base = at->get_attr("year_base");
-    String month_name = at->get_attr("month_variable");
-    String day_name = at->get_attr("day_variable");
-    String year_day_name = at->get_attr("year_day_variable");
+    string year_name = at->get_attr("year_variable");
+    string year_base = at->get_attr("year_base");
+    string month_name = at->get_attr("month_variable");
+    string day_name = at->get_attr("day_variable");
+    string year_day_name = at->get_attr("year_day_variable");
 
     // Check to see if these dates are ymd or yd type dates.
 
@@ -62,7 +68,7 @@ day_variable or year_day_variable be present.");
     if (year_base == "")
 	_year_base = 0;
     else {
-	const char *c = year_base.chars();
+	const char *c = year_base.c_str();
 	char *c2;
 	_year_base = strtol(c, &c2, 0);
 	if (c == c2 || _year_base == LONG_MAX || _year_base == LONG_MIN)

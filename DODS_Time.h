@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Time.h,v $
+// Revision 1.4  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1999/01/08 22:08:19  jimg
 // Fixed doc++ comments.
 //
@@ -28,7 +34,7 @@
 #pragma interface
 #endif
 
-#include <String.h>
+#include <string>
 
 #include "BaseType.h"
 
@@ -72,11 +78,11 @@ public:
 	Time.
 
 	@param time The time string. */
-    DODS_Time(String time);
+    DODS_Time(string time);
 
     /** Build a DODS\_Time by parsing the DODS Str #arg#.
 
-	@see DODS_Time(String).
+	@see DODS_Time(string).
 	@param arg A DODS Str variable, passed as a BaseType pointer. */
     DODS_Time(BaseType *arg);
 
@@ -104,15 +110,15 @@ public:
     /** @name Assignment */
 
     //@{
-    /** Set the value by parsing the String #time#.
+    /** Set the value by parsing the string #time#.
 
 	@param time The time string.
-	@see DODS_Time(String). */
-    void set(String time);
+	@see DODS_Time(string). */
+    void set(string time);
 
     /** Set the value by parsing the DODS Str #arg#.
 
-	@param arg The time string wrapped in a DODS String.
+	@param arg The time string wrapped in a DODS string.
 	@see DODS_Time(BaseType *). */
     void set(BaseType *arg);
 
@@ -142,7 +148,7 @@ public:
 	@param gmt If true append the suffix `GMT' to the time if it a GMT
 	time. If false, ignore gmt. True by default.
 	@return The string representation for this time. */
-    String get(bool gmt = true) const;
+    string get(bool gmt = true) const;
 
     /** @return The number of hours. */
     int hours() const;

@@ -11,6 +11,9 @@
 // ReZa 6/18/97
 
 // $Log: FFGrid.cc,v $
+// Revision 1.6  1999/05/04 02:55:36  jimg
+// Merge with no-gnu
+//
 // Revision 1.5  1998/08/14 19:41:23  jimg
 // Removed unused bool variable.
 //
@@ -25,12 +28,12 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: FFGrid.cc,v 1.5 1998/08/14 19:41:23 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: FFGrid.cc,v 1.6 1999/05/04 02:55:36 jimg Exp $"};
 
 #include "FFGrid.h"
 
 Grid *
-NewGrid(const String &n)
+NewGrid(const string &n)
 {
     return new FFGrid(n);
 }
@@ -45,7 +48,7 @@ FFGrid::ptr_duplicate()
 
 // public
 
-FFGrid::FFGrid(const String &n) : Grid(n)
+FFGrid::FFGrid(const string &n) : Grid(n)
 {
 }
 
@@ -54,7 +57,7 @@ FFGrid::~FFGrid()
 }
 
 bool
-FFGrid::read(const String &dataset, int &error)
+FFGrid::read(const string &dataset, int &error)
 {
     if (read_p()) // nothing to do
         return false;

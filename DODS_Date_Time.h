@@ -8,6 +8,12 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // $Log: DODS_Date_Time.h,v $
+// Revision 1.2  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.1.6.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.1  1999/01/08 22:08:18  jimg
 // Fixed doc++ comments.
 //
@@ -50,7 +56,7 @@ class DODS_Date_Time {
 	DODS\_Date\_Time.
 
 	@param date_time The date/time string. */
-    DODS_Date_Time(String date_time);
+    DODS_Date_Time(string date_time);
 
     /** Create an instance using the string representation of a
 	DODS\_Date\_Time contained in a DODS Str.
@@ -94,7 +100,7 @@ class DODS_Date_Time {
 	DODS\_Date\_Time. 
 
 	@param date_time The date/time string. */
-    void set(String date_time);
+    void set(string date_time);
 
     /** Set an instance using the string representation of a
 	DODS\_Date\_Time contained in a DODS Str.
@@ -160,7 +166,7 @@ class DODS_Date_Time {
 	@param format The format of the date-part.
 	@param gmt Append the GMT suffix to GMT times.
 	@return The string representation f the date-time. */ 
-    String get(date_format format = ymd, bool gmt = true) const;
+    string get(date_format format = ymd, bool gmt = true) const;
 
     /** @return The Julian day number for this date and time. The time part
 	of the day is represented as a fraction. */

@@ -9,6 +9,12 @@
 // Implementation of the DODS Time class
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.4  1999/05/04 02:55:35  jimg
+// Merge with no-gnu
+//
+// Revision 1.3.8.1  1999/05/01 04:40:28  brent
+// converted old String.h to the new std C++ <string> code
+//
 // Revision 1.3  1999/01/05 00:35:55  jimg
 // Removed string class; replaced with the GNU String class. It seems those
 // don't mix well.
@@ -24,7 +30,7 @@
 
 #include "config_dap.h"
 
-static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.3 1999/01/05 00:35:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.4 1999/05/04 02:55:35 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -33,7 +39,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.3 1999/01/05 00:35:55 jim
 #include <stdio.h>
 #include <assert.h>
 
-#include <String.h>
+#include <string> 
 #include <strstream.h>
 #include <iomanip.h>
 
@@ -44,7 +50,7 @@ static char rcsid[] __unused__ ="$Id: DODS_Time.cc,v 1.3 1999/01/05 00:35:55 jim
 
 double DODS_Time::_eps = 1.0e-6;
 
-static String time_syntax_string = \
+static string time_syntax_string = \
 "Invalid time: times must be given as hh:mm or hh:mm:ss with an optional\n\
 suffix of GMT or UTC. In addition, 0 <= hh <=23, 0 <= mm <= 59 and\n\
 0 <= ss <= 59.999999";
@@ -55,7 +61,7 @@ compute_ssm(int hh, int mm, double ss)
     return ((hh * 60 + mm) * 60) + ss;
 }
 
-static String
+static string
 extract_argument(BaseType *arg)
 {
 #ifndef TEST
@@ -64,9 +70,9 @@ extract_argument(BaseType *arg)
     
     // Use String until conversion of String to string is complete. 9/3/98
     // jhrg
-    String *sp = 0;
+    string *sp = NULL;
     arg->buf2val((void **)&sp);
-    String s = sp->chars();
+    string s = sp->c_str();
     delete sp;
 
     DBG(cerr << "s: " << s << endl);
@@ -95,7 +101,7 @@ DODS_Time::DODS_Time(): _hours(-1), _minutes(-1), _seconds(-1),
 {
 }
 
-DODS_Time::DODS_Time(String time_str)
+DODS_Time::DODS_Time(string time_str)
 {
     set(time_str);
 }
@@ -126,26 +132,30 @@ DODS_Time::DODS_Time(int hh, int mm, double ss, bool gmt = false):
 }
 
 void
-DODS_Time::set(String time)
+DODS_Time::set(string time)
 {
         // Parse the date_str.
-    istrstream iss(time.chars());
+    istrstream iss(time.c_str());
     char c;
+    size_t pos1, pos2;
     iss >> _hours;
     iss >> c;
     iss >> _minutes;
 
     // If there are two colons, assume hours:minutes:seconds.
-    if (time.index(":") != time.index(":", -1)) {
+    pos1 = time.find(":");
+    pos2 = time.rfind(":");
+    if ((pos1 != time.npos) && (pos2 != time.npos) && (pos1 != pos2)) {
 	iss >> c;
 	iss >> _seconds;
     }
     
     _sec_since_midnight = compute_ssm(_hours, _minutes, _seconds);
 
-    String gmt;
+    string gmt;
     iss >> gmt;
-    if (gmt == "GMT" || gmt == "gmt" || gmt == "UTC" || gmt == "utc")
+    if (gmt.data() == "GMT" || gmt.data() == "gmt" || gmt.data() == "UTC" 
+	|| gmt.data() == "utc")
 	_gmt = true;
     else
 	_gmt = false;
@@ -266,7 +276,7 @@ DODS_Time::gmt() const
     return _gmt;
 }
 
-String
+string
 DODS_Time::get(bool gmt) const
 {
     ostrstream oss;
@@ -282,7 +292,7 @@ DODS_Time::get(bool gmt) const
     
     oss << ends;
 
-    String time_str = oss.str();
+    string time_str = oss.str();
     oss.freeze(0);
 
     return time_str;

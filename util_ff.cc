@@ -1,6 +1,6 @@
 
-// (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGH.  
+// (c) COPYRIGHT URI/MIT 1997-99
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
@@ -9,6 +9,9 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.12  1999/05/04 02:55:38  jimg
+// Merge with no-gnu
+//
 // Revision 1.11  1999/04/30 14:48:40  dan
 // Modified find_ancillary_file to use the setdbin:find_format_files
 // routine to locate the local FreeForm description file.
@@ -20,6 +23,9 @@
 // Revision 1.8  1999/03/18 00:25:38  jimg
 // Fixed find_ancillary_file(). It now works correctly for files that have .s
 // in their names (not just spearating the basename from the extension.
+//
+// Revision 1.7.12.1  1999/05/01 04:40:30  brent
+// converted old String.h to the new std C++ <string> code
 //
 // Revision 1.7  1998/08/31 04:06:15  reza
 // Added String support.
@@ -58,14 +64,18 @@
 
 #include "config_ff.h"
 
-static char rcsid[] __unused__ ={"$Id: util_ff.cc,v 1.11 1999/04/30 14:48:40 dan Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.12 1999/05/04 02:55:38 jimg Exp $"};
 
 #include <unistd.h>
 
-#include <iostream.h>
-#include <strstream.h>
-#include <fstream.h>
-#include <String.h>
+#include <iostream>
+#include <strstream>
+#include <fstream>
+#include <string>
+
+#include "BaseType.h"
+#include "InternalErr.h"
+#include "dods-limits.h"
 #include "FreeForm.h"
 
 extern "C" int find_format_files(DATA_BIN_PTR, char*, ...);
@@ -78,28 +88,35 @@ extern "C" int find_format_files(DATA_BIN_PTR, char*, ...);
 // Returns: a const char * if the DODS type maps into a FreeForm type,
 // otherwise NULL.
 
-const String
-ff_types(const String &dods_type)
+const string
+ff_types(Type dods_type)
 {
-    if (dods_type == "Byte")
+    switch (dods_type) {
+      case dods_byte_c:
 	return "int8";
-    else if (dods_type == "Int32")
+      case dods_int16_c:
+	return "int16";
+      case dods_uint16_c:
+	return "uint16";
+      case dods_int32_c:
 	return "int32";
-    else if (dods_type == "UInt32")
+      case dods_uint32_c:
 	return "uint32";
-    else if (dods_type == "Float64")
+      case dods_float32_c:
+	return "float32";
+      case dods_float64_c:
 	return "float64";
-    else if (dods_type == "String")
+      case dods_str_c:
 	return "text";
-    else if (dods_type == "Url")
+      case dods_url_c:
 	return "text";
-    else {
+      default:
 	cerr << "ff_types: DODS type " << dods_type
 	     << " does not map to a FreeForm type." << endl;
 	return "";
     }
 }
-	    
+
 // Given the name of a DODS data type, return the precision of the
 // corresponding FreeForm data type.
 //
@@ -107,34 +124,36 @@ ff_types(const String &dods_type)
 // otherwise -1.
 
 int
-ff_prec(const String &dods_type)
+ff_prec(Type dods_type)
 {
-    if (dods_type == "Byte")
+    switch (dods_type) {
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
 	return 0;
-    else if (dods_type == "Int32")
+      case dods_float32_c:
+	return DODS_FLT_DIG;
+      case dods_float64_c:
+	return DODS_DBL_DIG;
+      case dods_str_c:
+      case dods_url_c:
 	return 0;
-    else if (dods_type == "UInt32")
-	return 0;
-    else if (dods_type == "Float64")
-	return 15;
-    else if (dods_type == "String")
-	return 0;
-    else if (dods_type == "Url")
-	return 0;
-    else {
-	cerr << "ff_prec: DODS type " << dods_type
-	    << " does not map to a FreeForm type." << endl;
+      default:
+	cerr << "ff_types: DODS type " << dods_type
+	     << " does not map to a FreeForm type." << endl;
 	return -1;
     }
-}    
+}
 
 /** Make a FreeForm output format specification.
     For the current instance of FFArray, build a FreeForm output format
     specification.
-    @return The format string. */
 
-const String
-make_output_format(const String &name, const String &type, const int width)
+    @return The format string. */
+const string
+make_output_format(const string &name, Type type, const int width)
 {
     ostrstream str;
 
@@ -142,14 +161,17 @@ make_output_format(const String &name, const String &type, const int width)
     str << name << " 1 " << width << " " << ff_types(type) 
 	<< " " << ff_prec(type) << endl;
     
-    return str.str();
+    string ret = str.str();
+    str.freeze(0);
+	
+    return ret;
 }
 
 // format for multi-dimension array 
-const String
-makeND_output_format(const String &name, const String &type, const int width,
+const string
+makeND_output_format(const string &name, Type type, const int width,
 		     int ndim, const long *start, const long *edge, const
-		     long * stride, String *dname)
+		     long * stride, string *dname)
 {
     ostrstream str;
     str << "binary_output_data \"DODS binary output data\"" << endl;
@@ -161,34 +183,21 @@ makeND_output_format(const String &name, const String &type, const int width,
 
     str << " of " << ff_types(type) << " " << ff_prec(type) << endl << "\0";
 
-#ifdef TEST   
-    cout <<str.str();
-#endif   
-
-    return str.str();
+    string ret = str.str();
+    str.freeze(0);
+	
+    return ret;
 }
-
-/** Find the format file using a delimiter character.
-    Given a special sequence of one or more characters, use that to determine
-    the format file name. Assume that the format file ends with EXTENSION.
-
-    NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
-    utility functions format_delimiter() and format_extension().
-
-    @return A const String object which contains the format file name. */
-
-
 
 /** Set or get the format file delimiter.
     If given no argument, return the format file basename delimiter. If given
-    a String argument, set the format file basename delimiter to that string.
+    a string argument, set the format file basename delimiter to that string.
 
     @return A reference to the delimiter string. */
-
-const String &
-format_delimiter(const String &new_delimiter)
+const string &
+format_delimiter(const string &new_delimiter)
 {
-    static String delimiter = ".";
+    static string delimiter = ".";
 
     if (new_delimiter != "")
 	delimiter = new_delimiter;
@@ -197,15 +206,15 @@ format_delimiter(const String &new_delimiter)
 }
 
 /** Set or get the format file extension.
-    If given no argument, retrun the format file extension. If given a String
+    If given no argument, retrun the format file extension. If given a string
     argument, set the format file extension to that string.
 
     @return A reference to the format file extension. */
 
-const String &
-format_extension(const String &new_extension)
+const string &
+format_extension(const string &new_extension)
 {
-    static String extension = ".fmt";
+    static string extension = ".fmt";
 
     if (new_extension != "")
 	extension = new_extension;
@@ -323,74 +332,76 @@ bool
 file_exist(const char * filename)
 {
     return access(filename, F_OK) == 0;
-#if 0
-  FILE *fp = fopen(filename, "r");
-  if(fp){
-    fclose(fp);
-    return true;
-  }
-  else 
-    return false;
-#endif
 }
-const String
-find_ancillary_file(const String &dataset, const String &delimiter,
-		    const String &extension)
-{
-    int delim = dataset.index(delimiter, -1);
-    String basename = ((String)dataset).at(0, delim);
 
-    if ( extension != ".fmt" )
-      return String(basename + extension);
+/** Find the format file using a delimiter character.
+    Given a special sequence of one or more characters, use that to determine
+    the format file name. Assume that the format file ends with EXTENSION.
+
+    NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
+    utility functions format_delimiter() and format_extension().
+
+    @return A const string object which contains the format file name. */
+const string
+find_ancillary_file(const string &dataset, const string &delimiter,
+		    const string &extension)
+{
+    size_t delim = dataset.find(delimiter);
+    string basename = dataset.substr(0, delim);
+
+    if (extension != ".fmt")
+	return string(basename + extension);
 
     else {
-      // 
-      // Use the FreeForm setdbin:find_format_files() to locate
-      // the input format description file.
-      //
-      // find_format_files() requires a valid DATA_BIN_PTR and DATA_BIN.
-      //  - to create one, populate SetUps and call SetDodsDB().
-      //
-      // find_format_files() will return the input format_file name
-      // in the char** formats parameter, if num_formats > 0, then
-      // it returns the first valid format_file name in formats[0].
-      //
+	// 
+	// Use the FreeForm setdbin:find_format_files() to locate
+	// the input format description file.
+	//
+	// find_format_files() requires a valid DATA_BIN_PTR and DATA_BIN.
+	//  - to create one, populate SetUps and call SetDodsDB().
+	//
+	// find_format_files() will return the input format_file name
+	// in the char** formats parameter, if num_formats > 0, then
+	// it returns the first valid format_file name in formats[0].
+	//
 
-      DATA_BIN_PTR dbin = NULL;
-      FF_STD_ARGS_PTR SetUps = NULL;  
-      static char Msgt[255];
-      char **formats;
-      int error = 0;
+	DATA_BIN_PTR dbin = NULL;
+	FF_STD_ARGS_PTR SetUps = NULL;  
+	static char Msgt[255];
+	char **formats;
+	int error = 0;
    
-      char * FileName = new char [dataset.length()+1];
-      (void) strcpy(FileName, (const char *)dataset);
+	char *FileName = new char [dataset.length()+1];
+	(void) strcpy(FileName, dataset.c_str());
       
-      SetUps = ff_create_std_args();
-      if (!SetUps)
-	return -1;
+	SetUps = ff_create_std_args();
+	if (!SetUps)
+	    throw InternalErr("Could not create interface record for FreeForm");
     
-      /** set the structure values to create the FreeForm DB**/
-      SetUps->input_file = FileName; 
-      SetUps->output_file = NULL;
+	/** set the structure values to create the FreeForm DB**/
+	SetUps->input_file = FileName; 
+	SetUps->output_file = NULL;
       
-      error = SetDodsDB(SetUps, &dbin, Msgt);
-      if (error && error < ERR_WARNING_ONLY) {
+	error = SetDodsDB(SetUps, &dbin, Msgt);
+	if (error && error < ERR_WARNING_ONLY) {
+	    db_destroy(dbin);
+	    string msg = "Could not set up FreeForm DB structure.";
+	    msg += (string)"\n" + (string)Msgt;
+	    throw InternalErr(msg);
+	}
+      
+	if (find_format_files(dbin, FileName, &formats)) {
+	    string FormatFile = formats[0];
+	    free(formats[0]);
+	    return string(FormatFile);
+	}
+	else {
+	    string msg = "Could not find an input format for ";
+	    msg += FileName;
+	    db_destroy(dbin);
+	    throw InternalErr(msg);
+	}
+
 	db_destroy(dbin);
-	return -1;
-      }
-      
-      if (find_format_files( dbin, FileName, &formats)) {
-	String FormatFile = (String)formats[0];
-	free(formats[0]);
-	return FormatFile;
-      }
-      else {
-	sprintf(Msgt, "Error setting an input format for %s",
-		FileName); 
-	return(DBSET_INPUT_FORMATS);
-      }
-      db_destroy(dbin);
     }
 }
-    
-    
