@@ -1,5 +1,5 @@
 
-# $Id: Makefile.in,v 1.8 1998/11/10 17:54:27 jimg Exp $
+# $Id: Makefile.in,v 1.9 1998/11/13 05:41:32 jimg Exp $
 
 @SET_MAKE@
 
@@ -81,13 +81,13 @@ DASOBJ = ffdas.o ff_das.o
 all: $(FF_LIBS) ff_das ff_dds ff_dods
 
 ff_das: $(DASOBJ) $(FFOBJ) 
-	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+	$(CXX) $(LDFLAGS) -o ff_das $(DASOBJ) $(FFOBJ) $(LIBS)
 
 ff_dds: $(DDSOBJ) $(FFOBJ)
-	$(CXX) $(LDFLAGS) -o ff_dds $(DDSOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+	$(CXX) $(LDFLAGS) -o ff_dds $(DDSOBJ) $(FFOBJ) $(LIBS)
 
 ff_dods: $(SERVOBJ) $(FFOBJ)
-	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(FLIBS) $(LIBS)
+	$(CXX) $(LDFLAGS) -o ff_dods $(SERVOBJ) $(FFOBJ) $(LIBS)
 
 libfreeform.a: 
 	cd FFND; $(MAKE) $(MFLAGS) $@
@@ -97,9 +97,16 @@ libmaxmin.a:
 
 check: test_read_ff
 
-test_read_ff: read_ff.c libfreeform.a
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) -DTEST -o ff_read.o ff_read.c
-	$(CC) $(LDFLAGS) ff_read.o -o test_read_ff -lfreeform -liberty -lm
+test_read_ff: ff_read.c libfreeform.a libmaxmin.a
+	$(CC) -c -g -O0 $(CPPFLAGS) -DTEST -o ff_read.o ff_read.c
+	$(CC) $(LDFLAGS) ff_read.o -o test_read_ff -lfreeform -liberty -lm \
+	-lmaxmin
+
+# Target to test the date code
+tdate: DODS_Date.cc date_proc.cc
+	$(CXX) -c -g -O0 -DTEST_DATE $(CPPFLAGS) DODS_Date.cc
+	$(CXX) -c -g -O0 $(CPPFLAGS) date_proc.cc
+	$(CXX) $(LDFLAGS) -o tdate DODS_Date.o date_proc.o
 
 install: all
 	$(INSTALL_PROGRAM) -s ff_das $(etcdir)
