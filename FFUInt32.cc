@@ -7,7 +7,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFUInt32.cc,v 1.10 2001/09/28 23:19:43 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFUInt32.cc,v 1.11 2003/02/10 23:01:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -15,6 +15,7 @@ static char rcsid[] not_used = {"$Id: FFUInt32.cc,v 1.10 2001/09/28 23:19:43 jim
 
 #include "FFUInt32.h"
 #include "util_ff.h"
+#include "util.h"
 
 extern long BufPtr;
 extern char *BufVal;
@@ -62,8 +63,14 @@ FFUInt32::read(const string &dataset)
 }
 
 // $Log: FFUInt32.cc,v $
+// Revision 1.11  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.10  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.9.2.2  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
 //
 // Revision 1.9.2.1  2001/05/23 18:14:53  jimg
 // Merged with changes on the release-3-1 branch. This apparently was not

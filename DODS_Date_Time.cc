@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.6 2000/10/11 19:37:55 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.7 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -22,6 +22,8 @@ static char rcsid[] not_used ="$Id: DODS_Date_Time.cc,v 1.6 2000/10/11 19:37:55 
 
 #include <strstream.h>
 #include <string>
+
+using std::ends ;
 
 #include "Error.h"
 #include "DODS_Date_Time.h"
@@ -283,9 +285,9 @@ DODS_Date_Time::get(date_format format, bool gmt) const
 
 	  oss << decday << ends;
 
-	  string yd = oss.str();
+	  string dateString = oss.str();
 	  oss.freeze(0);
-	  return yd;
+	  return dateString;
       }
       default:
 #ifndef TEST
@@ -445,6 +447,17 @@ main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date_Time.cc,v $
+// Revision 1.7  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
+// Revision 1.6.2.2  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
+//
+// Revision 1.6.2.1  2002/11/13 05:58:05  dan
+// Fixed return variable name in get method, changed
+// from 'yd' to 'dateString'.  'yd' is also a value in
+// the enumeration type date_format.
+//
 // Revision 1.6  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

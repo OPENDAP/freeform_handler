@@ -2,7 +2,7 @@
 dnl -*- m4 -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_REVISION($Id: configure.in,v 1.14 2001/10/14 01:36:17 jimg Exp $)
+AC_REVISION($Id: configure.in,v 1.15 2003/02/10 23:01:53 jimg Exp $)
 AC_INIT(FFArray.cc)
 
 AC_CONFIG_HEADER(config_ff.h)
@@ -32,6 +32,7 @@ CXXFLAGS=${CXXFLAGS-"-gstabs -O2 $CXXFLAGS"}
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_AWK
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -58,6 +59,11 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
 
+dnl Checks for specific libraries
+AC_CHECK_LIB(pthread, pthread_testcancel, 
+	[LIBS="$LIBS -lpthread"
+	 AC_DEFINE(_REENTRANT)])
+
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_FUNC_SETVBUF_REVERSED
@@ -70,7 +76,7 @@ DODS_RX_LIB
 DODS_WWW_LIB
 DODS_COMPRESSION_LIB
 
-DODS_XTRALIBS
+dnl DODS_XTRALIBS
 
 DODS_EFENCE
 

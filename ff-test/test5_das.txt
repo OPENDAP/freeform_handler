@@ -17,4 +17,14 @@ Attributes {
         Float64 traj6 0.000000;
         String text "I,S COORDINATES 800102  2.5                                                     TRAJCOR     AVEDT 800207";
     }
+    t {
+    }
+    Bx {
+    }
+    By {
+    }
+    Bz {
+    }
+    Bx2 {
+    }
 }

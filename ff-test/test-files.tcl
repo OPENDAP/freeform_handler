@@ -1,12 +1,17 @@
 
 #
-# $Id: test-files.tcl,v 1.2 2001/09/28 23:19:44 jimg Exp $
+# $Id: test-files.tcl,v 1.3 2003/02/10 23:01:53 jimg Exp $
 #
 # Files to use for testing the FreeForm server programs.
 
 set avhrr "ff-test/1998-6-avhrr.dat"
 set avhrr_das "ff-test/avhrr_das.txt"
 set avhrr_dds "ff-test/avhrr_dds.txt"
+
+# This tests using datatypes other than int32 for the types of stuff feed
+# into the date/time server-side functions. 1/21/2002 jhrg
+set avhrr_t1 "ff-test/1998-6-avhrr-t1.dat"
+set avhrr_t2 "ff-test/1998-6-avhrr-t2.dat"
 
 set jplpath "ff-test/jplpath.dat"
 set jplpath_das "ff-test/jplpath_das.txt"

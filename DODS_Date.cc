@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.11 2001/09/28 23:19:43 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Date.cc,v 1.12 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -450,9 +450,9 @@ DODS_Date::get(date_format format) const
 #endif
     }
 
-    string yd = oss.str();
+    string dateString = oss.str();
     oss.freeze(0);
-    return yd;
+    return dateString;
 }
 
 
@@ -544,8 +544,17 @@ int main(int argc, char *argv[])
 #endif // TEST_DATE
 
 // $Log: DODS_Date.cc,v $
+// Revision 1.12  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.11  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.10.2.3  2002/11/13 05:51:57  dan
+// Modified get(date_format format) method, renaming
+// return variable from 'yd' to 'dateString'.  'yd' is
+// a value of the enumeration date_format and in multi-threaded
+// code this was causing a seg-fault in mutex-lock.
 //
 // Revision 1.10.2.2  2001/09/19 22:40:06  jimg
 // Added simple error checking for malformed dates. Works sometimes... To do

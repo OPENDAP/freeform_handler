@@ -7,4 +7,4 @@ Content-Description: dods_dds
 
 Dataset {
     Float64 xf\[r = 10\]\[c = 20\];
-} dbl_data;
+} dbl_data.bin;

@@ -37,6 +37,7 @@ private:
 
     enum date_format _format;
 
+protected:
     DODS_Date_Factory() {}	/* Prevent the creation of empty objects. */
 
 public:
@@ -51,9 +52,13 @@ public:
 
 	@see get_date()
 	@param dds The DDS of the dataset from which dates are to be read.
-	@param das The DAS of the dataset from which dates are to be read. */
+	@param das The DAS of the dataset from which dates are to be read. 
+	@param attribute_name The name of the attribute container where
+	configuration information for the #date# servers-side function can be
+	found. */
     
-    DODS_Date_Factory(DDS &dds, DAS &das);
+    DODS_Date_Factory(DDS &dds, DAS &das, 
+		      const string &attribute_name = "DODS_Date");
     //@}
 
     /** @name Access */
@@ -62,13 +67,26 @@ public:
 
 	@return The DODS\_Date object associated with the date. */
 
-    DODS_Date get();
+    virtual DODS_Date get();
     //@}
 };
 
 // $Log: DODS_Date_Factory.h,v $
+// Revision 1.4  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.3  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.2.2.2  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
 //
 // Revision 1.2.2.1  2001/05/23 18:26:06  dan
 // Modified to support year/month date representations,

@@ -12,7 +12,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFStr.cc,v 1.9 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFStr.cc,v 1.10 2003/02/10 23:01:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -24,6 +24,7 @@ static char rcsid[] not_used = {"$Id: FFStr.cc,v 1.9 2000/10/11 19:37:56 jimg Ex
 #include <string>
 
 #include "FFStr.h"
+#include "util.h"
 
 extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
@@ -55,7 +56,8 @@ FFStr::read(const string &dataset)
 	char * ptr = BufVal+BufPtr;
 
 	char *TmpBuf = new char[StrLength+1];
-	int i, j;
+#if 0
+	int i,j;
 
 	//remove trailing white space
 	for(i=StrLength-1; i>=0; i--)
@@ -66,6 +68,10 @@ FFStr::read(const string &dataset)
 	for(j=0; j<i; j++)
 	    if(!isspace(*(ptr+j)))
 		break;
+#endif
+
+	int i=StrLength-1;;
+	int j=0;
 
 	strncpy(TmpBuf, ptr+j,i-j+1);
 	TmpBuf[i-j+1]='\0';
@@ -84,6 +90,18 @@ FFStr::read(const string &dataset)
 }
 
 // $Log: FFStr.cc,v $
+// Revision 1.10  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
+// Revision 1.9.2.2  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
+//
+// Revision 1.9.2.1  2002/08/05 16:59:06  dan
+// Updated FFStr::read() such that it no longer strips
+// leading and trailing whitespace from string variables.
+// CAUTION, this new behavior radically changes the behavior
+// of string variables returned from the ff-dods server.
+//
 // Revision 1.9  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

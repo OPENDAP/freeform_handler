@@ -1,5 +1,7 @@
 HTTP/1.0 200 OK
 XDODS-Server: ff/*
+Date: *
+Last-Modified: *
 Content-type: text/plain
 Content-Description: dods_dds
 
@@ -13,4 +15,4 @@ Dataset {
         Int32 ss;
         String DODS_URL;
     } GSO_AVHRR;
-} 1998-6-avhrr;
+} 1998-6-avhrr.dat;

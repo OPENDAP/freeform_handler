@@ -7,4 +7,12 @@ Attributes {
     FF_GLOBAL {
         String Server "DODS FreeFrom based on FFND release 4.*";
     }
+    year {
+    }
+    day {
+    }
+    time {
+    }
+    DODS_URL {
+    }
 }

@@ -15,6 +15,7 @@
  * collect_record_formats
  * destroy_format_list
  * find_format_files
+ * dods_find_format_compressed_files
  * dbset_byte_order
  * dbset_cache_size
  * dbset_header_file_names
@@ -92,6 +93,8 @@
 */
 
 #include <freeform.h>
+#define UNION_DIR_SEPARATORS "/:\\"
+#define DODS_COMPRESSION_SEPARATOR "#"
 
 /*
  * NAME:  trim_format
@@ -2023,8 +2026,9 @@ static int find_dir_format_files
 	int num_found;
 	char *fileext = os_path_return_ext(input_file);
 	char filename[MAX_PATH];
+	char filepath[MAX_PATH];
 
-	os_path_get_parts(input_file, NULL, filename, NULL);
+	os_path_get_parts(input_file, filepath, filename, NULL);
 	if (FF_STRLEN(filename) == 0)
 		return(0);
 
@@ -2034,18 +2038,21 @@ static int find_dir_format_files
 	if (num_found == 1)
 		return(1);
 	
-	/* Search search_dir for ext.fmt */
-	if (num_found == 0)
-		num_found = check_file_exists(&(targets[0]), search_dir, 
-					      fileext, extension);
-	if (num_found == 1)
-		return(1);
-
 	/* Search search_dir for <.>datafile.fmt */
 	if (num_found == 0) {
 	  num_found = check_hidden_file_exists(&(targets[0]), search_dir, 
 					       filename, extension);
 	}
+	if (num_found == 1)
+		return(1);
+
+	/* Search search_dir for ext.fmt */
+	if (num_found == 0 && fileext)
+		num_found = check_file_exists(&(targets[0]), search_dir, 
+					      fileext, extension);
+	else num_found = check_file_exists(&(targets[0]), filepath,
+					   filename, extension);
+
 	if (num_found == 1)
 		return(1);
 
@@ -2199,6 +2206,179 @@ int find_format_files
 	return(num_found);
 }
 
+/* NAME:        dods_find_format_compressed_files
+ *              
+ * PURPOSE:     To search for format files given a
+ *              compressed (data) file name.
+ *
+ * USAGE: number = dods_find_format_compressed_files(dbin, dbin->file_name, &targets);
+ *
+ * RETURNS: Zero, one, or two:  the number of eligible format files found,
+ * targets[0] is input format file name, targets[1] is output format file
+ * name, if found.
+ *
+ * DESCRIPTION: The variable targets is a string vector, type (char (*)[]),
+ * like argv.
+ *
+ * If a format file is not given explicitly on a command line then FreeForm
+ * searches for default format files as detailed below.  FORMAT_DIR refers
+ * to the directory given by the GeoVu keyword "format_dir".  "format_dir"
+ * can also be defined in the operating system variable environment space.  The
+ * default directory refers to the current working directory.  The file's home
+ * directory is given by the path component of datafile, if any.  If there is
+ * no path component, then the file's home directory search is not conducted.
+ *
+ * So, given the data file datafile.ext conduct the following searches for
+ * the default format file(s):
+ *
+ * 0) Recompose the original filename from the 'dods' compressed
+ *    filename created by the Dods_Cache.pm scripts in the dispatch cgi.
+ *
+ * 1) Search FORMAT_DIR for datafile.fmt.
+ *
+ * 2) Search FORMAT_DIR for ext.fmt
+ *
+ * 3) Search the default directory for datafile.fmt.
+ *
+ * 4) Search the default directory for ext.fmt
+ *
+ * Steps 5 - 6 are conducted if datafile has a path component.
+ *
+ * 5) Search the data file's directory for datafile.fmt.
+ *
+ * 6) Search the data file's directory for ext.fmt
+ *
+ * Each successive search step is conducted only if the previous search fails.
+ *
+ * NOTE that in a Windows environment the default directory has the potential
+ * to be changed at any time, and it need not be the same as the application
+ * start-up directory.  If the calling routine is relying on formats to be
+ * found in the default directory, it must ensure that the default directory
+ * has been properly set.
+ *
+ * See the description for find_files() for an explanation of the parameter
+ * targets.
+ *
+ * Modifies to use the new version of find_dir_format_files. The function of
+ * this software is exactly the same. For a DODS version, see the following
+ * function. 8/27/99 jhrg
+ * 
+ * SYSTEM DEPENDENT FUNCTIONS:  
+ *
+ * AUTHOR: Dan Holloway
+ *
+ * COMMENTS:
+ *
+ * KEYWORDS:    
+ *
+ */
+
+#ifdef ROUTINE_NAME
+#undef ROUTINE_NAME
+#endif
+#define ROUTINE_NAME "dods_find_format_compressed_files"
+
+int dods_find_format_compressed_files
+	(
+	 DATA_BIN_PTR dbin,
+	 char *input_file,
+	 char ***targets
+	)
+{
+	enum {NUM_FMT_FILES = 2};
+	char home_dir[MAX_PATH];
+	char format_dir[MAX_PATH];
+	char parent_dir[MAX_PATH];
+	char *parent_dir_ptr = &parent_dir[0];
+	char *format_files[NUM_FMT_FILES] = {NULL, NULL};
+	char uncompressed_filename[MAX_PATH], *temp_cp;
+	int num_found, temp_i = 0;
+
+	assert(input_file);
+	assert(targets);
+	
+	if (!input_file || !targets)
+		return(0);
+	
+	strcpy(uncompressed_filename, input_file);
+	temp_cp = uncompressed_filename;
+
+	/* Strip off cache_dir directory in path */
+	temp_i = strcspn(temp_cp, UNION_DIR_SEPARATORS);
+	if (temp_i < strlen(temp_cp))
+	{
+		do
+		{
+			temp_cp += temp_i + 1;
+			temp_i = strcspn(temp_cp, UNION_DIR_SEPARATORS);
+		}
+		while (temp_i < strlen(temp_cp));
+	}
+
+	/* Replace '#' compression separators with original '/' characters. */
+	temp_i = strcspn(temp_cp, DODS_COMPRESSION_SEPARATOR);
+	if (temp_i < strlen(temp_cp))
+	  temp_cp += temp_i;
+
+        while ((temp_i = strcspn(temp_cp, DODS_COMPRESSION_SEPARATOR)) < strlen(temp_cp)) {
+	  *(temp_cp+temp_i) = '/';
+	}
+
+	*targets = (char **)memCalloc(NUM_FMT_FILES, sizeof(char *), "*targets");
+	if (!*targets)
+	{
+		err_push(ERR_MEM_LACK, NULL);
+		return(0);
+	}
+
+	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
+		format_dir[0] = STR_END;
+	
+	/*os_path_get_parts(input_file, home_dir, NULL, NULL);*/
+	os_path_get_parts(temp_cp, home_dir, NULL, NULL);
+
+	/* Search format_dir first */
+	num_found = find_dir_format_files(temp_cp, format_dir, ".fmt", 
+					  format_files);
+
+	/* Search default directory second */
+	if (num_found == 0)
+		num_found = find_dir_format_files(temp_cp, NULL, ".fmt", 
+						  format_files);
+		
+	/* Search data file's directory last */
+	if (FF_STRLEN(home_dir) && num_found == 0)
+		num_found = find_dir_format_files(temp_cp, home_dir,
+						  ".fmt", format_files);
+
+	os_path_find_parent(home_dir, &parent_dir_ptr);
+
+	/* Recurse up the data file's directory path,
+	   searching first for the ext.<extension>, and then
+	   for hidden format files .ext.<extension> */
+
+	while ((FF_STRLEN(parent_dir) && num_found == 0)) 
+	  {
+	    /* Search parent_dir first */
+	    num_found = find_dir_format_files(temp_cp, parent_dir, ".fmt",
+					  format_files);
+
+	    strcpy(home_dir, parent_dir);
+	    os_path_find_parent(home_dir, &parent_dir_ptr);
+	  }
+
+	if (num_found >= 1)
+		(*targets)[0] = format_files[0];
+	else
+	{
+		format_files[0] = NULL;
+		memFree(*targets, "*targets");
+	}
+
+	/*strcpy(input_file, stored_input_filename);*/
+	return(num_found);
+}
+
 /* The DODS version of find_format_files. This function applies the same
    search alogithm as the FF library uses to search for .fmt files for files
    that end in any (given) suffix. It takes four params (as to the original
@@ -2257,7 +2437,8 @@ int dods_find_format_files
 		num_found = find_dir_format_files(input_file, home_dir, 
 						  extension, format_files);
 
-	os_path_find_parent(home_dir, &parent_dir_ptr);
+	if (num_found == 0)
+	  os_path_find_parent(home_dir, &parent_dir_ptr);
 
 	/* Recurse up the data file's directory path,
 	   searching first for the ext.<extension>, and then
@@ -2449,6 +2630,11 @@ static int make_format_eqv_list
 			number = find_format_files(dbin, input_data_file_name, &found_files);
 			if (number)
 				fmt_fname = found_files[0];
+			else {
+			  number = dods_find_format_compressed_files(dbin, input_data_file_name, &found_files);
+			  if (number)
+			    fmt_fname = found_files[0];
+			}
 		}
 	} /* if no file name and no buffer */
 			

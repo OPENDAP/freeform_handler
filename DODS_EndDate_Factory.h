@@ -11,11 +11,8 @@
 #ifndef _dods_enddate_factory_h
 #define _dods_enddate_factory_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
-
 #include "DODS_Date.h"
+#include "DODS_Date_Factory.h"
 #include "DAS.h"
 #include "DDS.h"
 #include "BaseType.h"
@@ -27,17 +24,8 @@
     @author Daniel Holloway
     @author James Gallagher */
 
-class DODS_EndDate_Factory {
+class DODS_EndDate_Factory : public DODS_Date_Factory {
 private:
-    int _year_base;
-
-    BaseType *_year;
-    BaseType *_month;
-    BaseType *_day;
-    BaseType *_year_day;
-
-    enum date_format _format;
-
     DODS_EndDate_Factory() {}	/* Prevent the creation of empty objects. */
 
 public:
@@ -54,20 +42,25 @@ public:
 	@param dds The DDS of the dataset from which dates are to be read.
 	@param das The DAS of the dataset from which dates are to be read. */
     
-    DODS_EndDate_Factory(DDS &dds, DAS &das);
-    //@}
-
-    /** @name Access */
-    //@{
-    /** Read a date value from a dataset.
-
-	@return The DODS\_Date object associated with the date. */
-
-    DODS_Date get();
+    DODS_EndDate_Factory(DDS &dds, DAS &das)
+	: DODS_Date_Factory(dds, das, "DODS_EndDate") {}
     //@}
 };
 
 // $Log: DODS_EndDate_Factory.h,v $
+// Revision 1.4  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
+// Revision 1.3.2.1  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
+//
 // Revision 1.3  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

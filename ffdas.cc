@@ -12,7 +12,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.14 2001/09/28 23:19:43 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.15 2003/02/10 23:01:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +31,9 @@ static char rcsid[] not_used = {"$Id: ffdas.cc,v 1.14 2001/09/28 23:19:43 jimg E
 // Hack. Header files from the WWW library (which are included from Connect.h
 // within cgi_util.h) also define BOOLEAN. Suppressing the definition avoids
 // a warning (g++ 2.8.1) or error (egcs). 3/26/99 jhrg
+#if 0
 #define _BOOLEAN_DEFINED	
+#endif
 #include "FreeForm.h"
 #include "util_ff.h"
 #include "freeform.h"
@@ -238,6 +240,103 @@ read_attributes(string filename, AttrTable *at) throw(Error)
     header_to_attributes(at, dbin); // throws Error
 }
 
+static void
+add_variable_containers(DAS &das, const string &filename) throw(Error)
+{
+    if (!file_exist(filename.c_str())) {
+	throw Error(string("ff_dds: Could not open file ")
+		    + path_to_filename(filename) + string("."));
+    }
+
+    // Setup the DB access.
+    FF_STD_ARGS_PTR SetUps = ff_create_std_args();
+    if (!SetUps) {
+	throw Error("Insufficient memory");
+    }
+
+    SetUps->user.is_stdin_redirected = 0;
+    SetUps->input_file = new char[filename.length() + 1];
+    strcpy(SetUps->input_file, filename.c_str());
+    SetUps->output_file = NULL;
+  
+    // Set the structure values to create the FreeForm DB
+    char Msgt[255];
+    DATA_BIN_PTR dbin = NULL;
+    int error = SetDodsDB(SetUps, &dbin, Msgt);
+    if (error && error < ERR_WARNING_ONLY) {
+	db_destroy(dbin);
+	string msg;
+	msg = string(Msgt) + string(" FreeForm error code: ");
+	append_long_to_string((long)error, 10, msg);
+	throw Error(msg);
+    }
+  
+    // Get the names of all the variables.
+    int num_names = 0;
+    char **var_names_vector = NULL;
+    error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, 
+		       &num_names, &var_names_vector);
+    if (error) {
+	string msg;
+	msg = string("Could not get varible list from the input file.\n")
+	    + string(" FreeForm error code: ");
+	append_long_to_string((long)error, 10, msg);
+	throw Error(msg);
+    }
+
+    // I don't understand why this has to happen here, but maybe it's moved
+    // outside the loop because FreeForm is designed so that the pinfo list
+    // only needs to be accessed once and can be used when working with
+    // any/all of the variables. 4/4/2002 jhrg
+    PROCESS_INFO_LIST pinfo_list = NULL;
+    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, 
+		   &pinfo_list);
+    if(error){
+	string msg = (string)"Could not get process info for the input file."
+	    + " FreeForm error code: ";
+	append_long_to_string((long)error, 10, msg);
+	throw Error(msg);
+    }
+ 
+     // For each variable, figure out what its name really is (arrays have
+    // funny names).
+    for (int i=0; i<num_names; i++) { 
+	int num_dim_names = 0;
+	char **dim_names_vector = NULL;
+	error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i], 
+		       &num_dim_names, &dim_names_vector);
+	if (error) {
+	    string msg;
+	    msg = string("Could not get array dimension names for variable: ")
+		+ string(var_names_vector[i]) 
+		+ string(", FreeForm error code: ");
+	    append_long_to_string((long)error, 10, msg);
+	    throw Error(msg);
+	}
+
+	// Note: FreeForm array names are returned appened to their format
+	// name with '::'.
+	char *cp = NULL;
+	if (num_dim_names == 0)	// sequence names
+	    cp = var_names_vector[i];
+	else 	  
+	    cp = strstr(var_names_vector[i], "::")+2;
+
+	// We need this to figure out if this variable is the/a EOL
+	// valriable. We read the pinfo_list just before starting this
+	// for-loop. 
+	pinfo_list = dll_first(pinfo_list);
+	PROCESS_INFO_PTR pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
+	FORMAT_PTR iformat = PINFO_FORMAT(pinfo);
+	VARIABLE_PTR var = ff_find_variable(cp, iformat);	
+
+	// For some formats: Freefrom sends an extra EOL variable at the end of
+	// the list. Add an attribute container for all the other variables.
+	if(!IS_EOL(var))
+	    das.add_table(cp, new AttrTable);
+    }
+}
+
 // Given a reference to an instance of class DAS and a filename that refers
 // to a freefrom file, read the format file and extract the existing
 // attributes and add them to the instance of DAS.
@@ -249,10 +348,14 @@ void
 get_attributes(DAS &das, string filename) throw(Error)
 {
     AttrTable *attr_table_p = new AttrTable;
-  
-    read_attributes(filename, attr_table_p);
 
-    (void) das.add_table("FF_GLOBAL", attr_table_p);
+    das.add_table("FF_GLOBAL", attr_table_p);
+    read_attributes(filename, attr_table_p);
+    // Add a table/container for each variable. See bug 284. The DAP spec
+    // calls for each variable to have an attribute container, even if it is
+    // empty. Previously the server did not have containers for all the
+    // variables. 4/4/2002 jhrg
+    add_variable_containers(das, filename);
 }
 
 #ifdef TEST
@@ -277,8 +380,29 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: ffdas.cc,v $
+// Revision 1.15  2003/02/10 23:01:53  jimg
+// Merged with 3.2.5
+//
 // Revision 1.14  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.13.4.6  2002/06/21 00:31:40  jimg
+// I changed many files throughout the source so that the 'make World' build
+// works with the new versions of Connect and libdap++ that use libcurl.
+// Most of these changes are either to Makefiles, configure scripts or to
+// the headers included by various C++ files. In a few places the oddities
+// of libwww forced us to hack up code and I've undone those and some of the
+// clients had code that supported libwww's generous tracing capabilities
+// (that's one part of libwww I'll miss); I had to remove support for that.
+// Once this code compiles and more work is done on Connect, I'll return to
+// each of these changes and polish them.
+//
+// Revision 1.13.4.5  2002/04/04 21:41:43  jimg
+// Added a new function add_variable_containers(...) which scans the FreeForm
+// file and adds an Attribute container for each variable (as per the DAP spec,
+// see bug 284). There's a fair amount of code duplication between the various
+// functions that query the FF API; that may be inevitable unless we build our
+// own layer on top of it.
 //
 // Revision 1.13.4.4  2001/09/17 06:41:29  reza
 // Fixed error reporting bugs.

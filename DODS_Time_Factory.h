@@ -32,7 +32,8 @@ private:
     BaseType *_seconds;
     bool _gmt;
 
-    DODS_Time_Factory() {}	/* Prevent the creation of empty objects. */
+protected:
+    DODS_Time_Factory() {}
 
 public:
 
@@ -44,11 +45,13 @@ public:
 	objects. The DODS\_Time\_Factory member function #get_time()# will
 	return DODS\_Time objects.
 
-	@see get_time()
+	@see get()
 	@param dds The DDS of the dataset from which times are to be read.
-	@param das The DAS of the dataset from which times are to be read. */
-    
-    DODS_Time_Factory(DDS &dds, DAS &das);
+	@param das The DAS of the dataset from which times are to be read.
+	@param attribute_name The name of the attribute container in the DAS
+	that holds configuration inforamtion for the instance of DODS_Time. */
+    DODS_Time_Factory(DDS &dds, DAS &das, 
+		      const string &attribute_name = "DODS_Time");
     //@}
 
     /** @name Access */
@@ -57,13 +60,26 @@ public:
     /** Read a time value from a dataset.
 
 	@return The DODS\_Time object associated with the time. */
-    DODS_Time get();
+    virtual DODS_Time get();
     //@}
 };
 
 // $Log: DODS_Time_Factory.h,v $
+// Revision 1.6  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.5  2001/10/14 01:36:17  jimg
 // Merged with release-3-2-4.
+//
+// Revision 1.4.2.2  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
 //
 // Revision 1.4.2.1  2001/10/11 17:42:09  jimg
 // Fixed a bug in the Time, StartTime and EndTime factory calsses. A local

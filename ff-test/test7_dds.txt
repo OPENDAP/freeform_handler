@@ -1,5 +1,7 @@
 HTTP/1.0 200 OK
 XDODS-Server: ff/*
+Date: *
+Last-Modified: *
 Content-type: text/plain
 Content-Description: dods_dds
 
@@ -10,4 +12,4 @@ Dataset {
         String time;
         String DODS_URL;
     } pathfinder;
-} test7;
+} test7.dat;

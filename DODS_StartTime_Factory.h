@@ -12,10 +12,11 @@
 #define _dods_starttime_factory_h
 
 #ifdef __GNUG__
-#pragma interface
+// #pragma interface
 #endif
 
 #include "DODS_Time.h"
+#include "DODS_Time_Factory.h"
 #include "DAS.h"
 #include "DDS.h"
 #include "BaseType.h"
@@ -27,12 +28,8 @@
     @author Daniel Holloway
     @author James Gallagher */
 
-class DODS_StartTime_Factory {
+class DODS_StartTime_Factory : public DODS_Time_Factory {
 private:
-    BaseType *_hours;
-    BaseType * _minutes;
-    BaseType *_seconds;
-    bool _gmt;
 
     DODS_StartTime_Factory() {}	/* Prevent the creation of empty objects. */
 
@@ -50,16 +47,8 @@ public:
 	@param dds The DDS of the dataset from which times are to be read.
 	@param das The DAS of the dataset from which times are to be read. */
     
-    DODS_StartTime_Factory(DDS &dds, DAS &das);
-    //@}
-
-    /** @name Access */
-
-    //@{
-    /** Read a time value from a dataset.
-
-	@return The DODS\_Time object associated with the time. */
-    DODS_Time get();
+    DODS_StartTime_Factory(DDS &dds, DAS &das)
+	: DODS_Time_Factory(dds, das, "DODS_StartTime") {}
     //@}
 };
 

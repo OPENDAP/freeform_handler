@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "dods-datatypes.h"
 #include "BaseType.h"
 
 /** The DODS Time object. This provides a way to translate between various
@@ -39,8 +40,8 @@
 
 class DODS_Time {
 private:
-    int _hours;			// 0--23; regular wall time
-    int _minutes;		// 0--59
+    dods_uint32 _hours;		// 0--23; regular wall time
+    dods_uint32 _minutes;	// 0--59
     double _seconds;		// 0--59.9...
     double _sec_since_midnight;
     bool _gmt;
@@ -73,7 +74,7 @@ public:
 	@param hh The hours, 0-23.
 	@param mm The minutes, 0-59.
 	@param gmt True if the time is a GMT time, false otherwise. */
-    DODS_Time(int hh, int mm, bool gmt = false);
+    DODS_Time(dods_uint32 hh, dods_uint32 mm, bool gmt = false);
 
     /** Build a DODS\_Time.
 
@@ -81,7 +82,7 @@ public:
 	@param mm The minutes, 0--59.
 	@param ss The seconds, 0--59. May contain a fractional component.
 	@param gmt True if the time is a GMT time, false otherwise. */
-    DODS_Time(int hh, int mm, double ss, bool gmt = false);
+    DODS_Time(dods_uint32 hh, dods_uint32 mm, double ss, bool gmt = false);
 
     /** Build an empty DODS\_Time.
 
@@ -190,6 +191,19 @@ public:
 };
 
 // $Log: DODS_Time.h,v $
+// Revision 1.7  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
+// Revision 1.6.2.1  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
+//
 // Revision 1.6  2000/10/11 19:37:55  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

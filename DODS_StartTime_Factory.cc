@@ -8,9 +8,13 @@
 
 // Implementation of the DODS_Time_Factory class
 
+// This file is no longer needed. See DODS_StartTime_Factory.h
+// 1/20/2002 jhrg
+
+#if 0
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_StartTime_Factory.cc,v 1.3 2001/10/14 01:36:17 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_StartTime_Factory.cc,v 1.4 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -32,7 +36,7 @@ DODS_StartTime_Factory::DODS_StartTime_Factory(DDS &dds, DAS &das)
     
     AttrTable *at = das.get_table("DODS_StartTime");
     if (!at)
-	throw Error("DODS_StartTime_Factory requires that the DODS_Time attribute be present.");
+	throw Error("DODS_StartTime_Factory requires that the DODS_StartTime attribute be present.");
 
     string hours_name = at->get_attr("hours_variable");
     string mins_name = at->get_attr("minutes_variable");
@@ -91,6 +95,8 @@ DODS_StartTime_Factory::get()
 
     return DODS_Time(hour, min, sec, _gmt);
 }
+#endif
+
 
 
 

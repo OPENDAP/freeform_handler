@@ -9,4 +9,6 @@ Attributes {
         Int16 count 13;
         String description "This is a file header";
     }
+    value {
+    }
 }

@@ -19,7 +19,6 @@
 #endif
 
 #include "Int32.h"
-extern Int32 * NewInt32(const string &n = "");
 
 class FFInt32: public Int32 {
 public:
@@ -32,6 +31,12 @@ public:
 };
 
 // $Log: FFInt32.h,v $
+// Revision 1.7  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
+// Revision 1.6.2.1  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
+//
 // Revision 1.6  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

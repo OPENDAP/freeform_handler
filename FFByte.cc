@@ -13,7 +13,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFByte.cc,v 1.9 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFByte.cc,v 1.10 2003/02/10 23:01:52 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
@@ -23,6 +23,7 @@ static char rcsid[] not_used = {"$Id: FFByte.cc,v 1.9 2000/10/11 19:37:56 jimg E
 
 #include "FFByte.h"
 #include "util_ff.h"
+#include "util.h"
 
 extern long BufPtr;
 extern char * BufVal;
@@ -79,6 +80,12 @@ FFByte::read(const string &dataset)
 }
 
 // $Log: FFByte.cc,v $
+// Revision 1.10  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
+// Revision 1.9.2.1  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
+//
 // Revision 1.9  2000/10/11 19:37:56  jimg
 // Moved the CVS log entries to the end of files.
 // Changed the definition of the read method to match the dap library.

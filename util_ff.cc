@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.17 2001/09/28 23:19:43 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.18 2003/02/10 23:01:53 jimg Exp $"};
 
 #include <unistd.h>
 
@@ -19,14 +19,21 @@ static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.17 2001/09/28 23:19:43 jimg 
 #include <fstream>
 #include <string>
 
+using std::ostrstream ;
+using std::cerr ;
+using std::endl ;
+using std::ends ;
+
 #include "BaseType.h"
 #include "InternalErr.h"
 #include "dods-limits.h"
 #include "debug.h"
+#include "util_ff.h"
 
 #include "FreeForm.h"
 
 extern "C" int dods_find_format_files(DATA_BIN_PTR, char*, const char*, ...);
+extern "C" int dods_find_format_compressed_files(DATA_BIN_PTR, char*, char***, ...);
 
 #define DODS_DATA_PRX "dods-"	// prefix for temp format file names
 
@@ -347,6 +354,12 @@ find_ancillary_file(const string &dataset, const string &delimiter,
 	    free(formats[0]);
 	    return string(FormatFile);
 	}
+	else if (dods_find_format_compressed_files(dbin, FileName, 
+						   &formats)) {
+	    string FormatFile = formats[0];
+	    free(formats[0]);
+	    return string(FormatFile);
+	}
 	else {
 	    string msg = "Could not find an input format for ";
 	    msg += FileName;
@@ -360,9 +373,195 @@ find_ancillary_file(const string &dataset, const string &delimiter,
 #endif
 }
 
+// These functions are used by the Date/Time Factory classes but they might
+// be generally useful in writing server-side functions. 1/21/2002 jhrg
+
+bool
+is_integer_type(BaseType *btp)
+{
+    switch (btp->type()) {
+      case dods_null_c:
+	return false;
+
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+	return true;
+
+      case dods_float32_c:
+      case dods_float64_c:
+      case dods_str_c:
+      case dods_url_c:
+      case dods_array_c:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_grid_c:
+      default:
+	return false;
+    }
+}
+
+bool
+is_float_type(BaseType *btp)
+{
+    switch (btp->type()) {
+      case dods_null_c:
+      case dods_byte_c:
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+	return false;
+
+      case dods_float32_c:
+      case dods_float64_c:
+	return true;
+
+      case dods_str_c:
+      case dods_url_c:
+      case dods_array_c:
+      case dods_list_c:
+      case dods_structure_c:
+      case dods_sequence_c:
+      case dods_grid_c:
+      default:
+	return false;
+    }
+}
+
+/** Get the value of the BaseType Variable. If it's not something that we can
+    convert to an interger, throw InternalErr. */
+
+dods_uint32
+get_integer_value(BaseType *var) throw(InternalErr)
+{
+    if (!var)
+	return 0;
+
+    switch (var->type()) {
+      case dods_byte_c: {
+	  dods_byte value = 0;
+	  dods_byte *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return dods_uint32(value);
+      }
+
+      case dods_int16_c: {
+	  dods_int16 value = 0;
+	  dods_int16 *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return dods_uint32(value);
+      }
+
+      case dods_int32_c: {
+	  dods_int32 value = 0;
+	  dods_int32 *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return dods_uint32(value);
+      }
+
+      case dods_uint16_c: {
+	  dods_uint16 value = 0;
+	  dods_uint16 *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return dods_uint32(value);
+      }
+      case dods_uint32_c: {
+	  dods_uint32 value = 0;
+	  dods_uint32 *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return value;
+      }
+
+      default:
+	throw InternalErr(__FILE__, __LINE__, 
+	  "Tried to get an integer value for a non-integer datatype!");
+    }
+}
+
+dods_float64
+get_float_value(BaseType *var) throw(InternalErr)
+{
+    if (!var)
+	return 0.0;
+
+    switch (var->type()) {
+      case dods_int16_c:
+      case dods_uint16_c:
+      case dods_int32_c:
+      case dods_uint32_c:
+	return get_integer_value(var);
+
+      case dods_float32_c: {
+	  dods_float32 value = 0;
+	  dods_float32 *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return dods_float64(value);
+      }
+	
+      case dods_float64_c: {
+	  dods_float64 value = 0;
+	  dods_float64 *value_p = &value;
+	  if (var)
+	      var->buf2val((void **)&value_p);
+
+	  return value;
+      }
+
+      default:
+	throw InternalErr(__FILE__, __LINE__, 
+	  "Tried to get an integer value for a non-integer datatype!");
+    }
+
+}
+
 // $Log: util_ff.cc,v $
+// Revision 1.18  2003/02/10 23:01:53  jimg
+// Merged with 3.2.5
+//
 // Revision 1.17  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.16.2.5  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
+//
+// Revision 1.16.2.4  2002/07/08 19:27:06  jimg
+// Added a fix to both get_integer_value and get_float_value so that they
+// return 0 (0.0) if the BaseType object is null. These functions were
+// orginally added as a fix for Bug 62 but in so doing I didn't take the
+// `null object' case into account (my bad). This fixes that and matches the
+// logic in DODS_Time_Factory::get() (look at revision 1.7.2.2 at the code
+// inside the #if 0 ... #endif block.
+//
+// Revision 1.16.2.3  2002/02/26 18:08:28  dan
+// Added call to dods_find_format_compressed_files to handle
+// the case where the input datafile may have started as a
+// compressed file, and the name was munged by Dods_Cache.pm
+//
+// Revision 1.16.2.2  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
 //
 // Revision 1.16.2.1  2001/05/23 18:14:53  jimg
 // Merged with changes on the release-3-1 branch. This apparently was not

@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = "$Id: DODS_Date_Factory.cc,v 1.5 2001/09/28 23:19:43 jimg Exp $";
+static char rcsid[] not_used = "$Id: DODS_Date_Factory.cc,v 1.6 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -22,17 +22,23 @@ static char rcsid[] not_used = "$Id: DODS_Date_Factory.cc,v 1.5 2001/09/28 23:19
 #include "Error.h"
 
 #include "DODS_Date_Factory.h"
+#include "dods-datatypes.h"
+#include "util_ff.h"
 
-DODS_Date_Factory::DODS_Date_Factory(DDS &dds, DAS &das)
+// attribute_name defaults to "DODS_Date." 1/21/2002 jhrg
+DODS_Date_Factory::DODS_Date_Factory(DDS &dds, DAS &das, 
+				     const string &attribute_name)
 {
     // Read the names of the variables which encode year, month and
     // day from the DAS. These are contained in the DODS_Date attribute
     // container. 
     
-    AttrTable *at = das.get_table("DODS_Date");
+    AttrTable *at = das.get_table(attribute_name);
     if (!at)
 	throw Error(unknown_error,
-"DODS_Date_Factory requires that the DODS_Date attribute be present.");
+		    string("DODS_Date_Factory requires that the ")
+		    + attribute_name 
+		    + string("DODS_Date attribute be present."));
 
     string year_name = at->get_attr("year_variable");
     string year_base = at->get_attr("year_base");
@@ -91,14 +97,12 @@ day_variable or year_day_variable be present.");
     switch (_format) {
       case ymd: {
 	  _month = dds.var(month_name);
-	  if ((_month->type() != dods_int16_c) && (_month->type() != dods_uint16_c) &&
-	      (_month->type() != dods_int32_c) && (_month->type() != dods_uint32_c))
+	  if (!is_integer_type(_month))
 	      throw Error(unknown_error, 
 "DODS_Date_Factory: The variable used for the month must be an integer.");
 
 	  _day = dds.var(day_name);
-	  if ((_day->type() != dods_int16_c) && (_day->type() != dods_uint16_c) &&
-	      (_day->type() != dods_int32_c) && (_day->type() != dods_uint32_c))
+	  if (!is_integer_type(_day))
 	      throw Error(unknown_error, 
 "DODS_Date_Factory: The variable used for days must be an integer.");
 	  _year_day = NULL;
@@ -109,16 +113,14 @@ day_variable or year_day_variable be present.");
 	  _month = NULL;
 	  _day = NULL;
 	  _year_day = dds.var(year_day_name);
-	  if ((_year->type() != dods_int16_c) && (_year->type() != dods_uint16_c) &&
-	      (_year->type() != dods_int32_c) && (_year->type() != dods_uint32_c))
+	  if (!is_integer_type(_year))
 	      throw Error(unknown_error, 
 "DODS_Date_Factory: The variable used for the year-day must be an integer.");
 	  break;
       }
       case ym: {
 	_month = dds.var(month_name);
-	if ((_month->type() != dods_int16_c) && (_month->type() != dods_uint16_c) && 
-	    (_month->type() != dods_int32_c) && (_month->type() != dods_uint32_c))
+	if (!is_integer_type(_month))
 	  throw Error(unknown_error, 
 		      "DODS_Date_Factory: The variable used for the month must be an integer.");
 	_day = NULL;
@@ -136,37 +138,26 @@ day_variable or year_day_variable be present.");
 DODS_Date
 DODS_Date_Factory::get()
 {
-    int year;
-    int *year_p = &year;
-    _year->buf2val((void **)&year_p);
+    dods_uint32 year = get_integer_value(_year);
 
     switch (_format) {
       case ymd: {
-	  int month;
-	  int *month_p = &month;
-	  _month->buf2val((void **)&month_p);
-
-	  int day;
-	  int *day_p = &day;
-	  _day->buf2val((void **)&day_p);
+	  dods_uint32 month = get_integer_value(_month);
+	  dods_uint32 day = get_integer_value(_day);
 
 	  return DODS_Date(year + _year_base, month, day);
 	  break;
       }
 
       case yd: {
-	  int year_day;
-	  int *year_day_p = &year_day;
-	  _year_day->buf2val((void **)&year_day_p);
+	  dods_uint32 year_day = get_integer_value(_year_day);
 
 	  return DODS_Date(year + _year_base, year_day);
 	  break;
       }
 
       case ym: {
-	  int month;
-	  int *month_p = &month;
-	  _month->buf2val((void **)&month_p);
+	  dods_uint32 month = get_integer_value(_month);
 
 	  int day = _month_day;
 	  date_format fmt = ym;
@@ -182,8 +173,21 @@ DODS_Date_Factory::get()
 }
 
 // $Log: DODS_Date_Factory.cc,v $
+// Revision 1.6  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.5  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.4.2.3  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
 //
 // Revision 1.4.2.2  2001/05/23 19:04:31  jimg
 // Changed NULL to 0 in an assignment to _year_base (which is an int) because

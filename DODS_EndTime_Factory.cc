@@ -8,9 +8,13 @@
 
 // Implementation of the DODS_Time_Factory class
 
+#if 0
+// *** This file is no linger needed. See DODS_EndTime_Factory.h
+// 1/20/2002 jhrg
+
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_EndTime_Factory.cc,v 1.3 2001/10/14 01:36:17 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_EndTime_Factory.cc,v 1.4 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -90,6 +94,7 @@ DODS_EndTime_Factory::get()
 
     return DODS_Time(hour, min, sec, _gmt);
 }
+#endif
 
 
 

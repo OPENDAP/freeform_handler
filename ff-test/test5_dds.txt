@@ -1,5 +1,7 @@
 HTTP/1.0 200 OK
 XDODS-Server: ff/*
+Date: *
+Last-Modified: *
 Content-type: text/plain
 Content-Description: dods_dds
 
@@ -11,4 +13,4 @@ Dataset {
         Float64 Bz;
         Float64 Bx2;
     } ISEE3_data;
-} test5;
+} test5.dab;

@@ -15,7 +15,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.12 2001/09/28 23:19:43 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.13 2003/02/10 23:01:53 jimg Exp $"};
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,7 +29,9 @@ static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.12 2001/09/28 23:19:43 jimg Ex
 #include "cgi_util.h" 
 #include "util.h"
 
+#if 0
 #define _BOOLEAN_DEFINED	// Hack. See ffdas.cc 3/25/99 jhrg
+#endif
 #include "FreeForm.h"
 
 #include "DDS.h"
@@ -319,8 +321,22 @@ main(int argc, char *argv[])
 #endif
 
 // $Log: ffdds.cc,v $
+// Revision 1.13  2003/02/10 23:01:53  jimg
+// Merged with 3.2.5
+//
 // Revision 1.12  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.11.4.3  2002/06/21 00:31:40  jimg
+// I changed many files throughout the source so that the 'make World' build
+// works with the new versions of Connect and libdap++ that use libcurl.
+// Most of these changes are either to Makefiles, configure scripts or to
+// the headers included by various C++ files. In a few places the oddities
+// of libwww forced us to hack up code and I've undone those and some of the
+// clients had code that supported libwww's generous tracing capabilities
+// (that's one part of libwww I'll miss); I had to remove support for that.
+// Once this code compiles and more work is done on Connect, I'll return to
+// each of these changes and polish them.
 //
 // Revision 1.11.4.2  2001/09/17 06:41:29  reza
 // Fixed error reporting bugs.

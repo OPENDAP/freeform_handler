@@ -12,4 +12,4 @@ Dataset {
         Int32 seconds;
         String DODS_URL;
     } JPL_Pathfinder;
-} jplpath;
+} jplpath.dat;

@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.10 2001/09/28 23:19:43 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time.cc,v 1.11 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -81,7 +81,7 @@ DODS_Time::fraction() const
 // Don't test this ctor with OK since a null Time is not OK for use but we
 // want to be able to make one and then call set_time(). 12/16/98 jhrg
 
-DODS_Time::DODS_Time(): _hours(-1), _minutes(-1), _seconds(-1),
+DODS_Time::DODS_Time(): _hours(0), _minutes(0), _seconds(-1),
     _sec_since_midnight(-1), _gmt(false)
 {
 }
@@ -96,7 +96,7 @@ DODS_Time::DODS_Time(BaseType *arg)
     set(extract_argument(arg));
 }
 
-DODS_Time::DODS_Time(int hh, int mm, bool gmt = false):
+DODS_Time::DODS_Time(dods_uint32 hh, dods_uint32 mm, bool gmt):
     _hours(hh), _minutes(mm), _seconds(0), _gmt(gmt)
 {
     _sec_since_midnight = compute_ssm(hh, mm, 0);
@@ -106,7 +106,7 @@ DODS_Time::DODS_Time(int hh, int mm, bool gmt = false):
 #endif
 }
 
-DODS_Time::DODS_Time(int hh, int mm, double ss, bool gmt = false):
+DODS_Time::DODS_Time(dods_uint32 hh, dods_uint32 mm, double ss, bool gmt):
     _hours(hh), _minutes(mm), _seconds(ss), _gmt(gmt)
 {
     _sec_since_midnight = compute_ssm(hh, mm, ss);
@@ -167,13 +167,13 @@ DODS_Time::set(BaseType *arg)
 }    
 
 void 
-DODS_Time::set(int hh, int mm, bool gmt = false)
+DODS_Time::set(int hh, int mm, bool gmt)
 {
     set(hh, mm, 0, gmt);
 }
 
 void 
-DODS_Time::set(int hh, int mm, double ss, bool gmt = false)
+DODS_Time::set(int hh, int mm, double ss, bool gmt)
 {
    _hours = hh;
    _minutes = mm;
@@ -202,8 +202,8 @@ DODS_Time::set_epsilon(double eps)
 int
 operator==(DODS_Time &t1, DODS_Time &t2)
 {
-    return t1.seconds_since_midnight() + t1._eps >= t2.seconds_since_midnight()
-    && t1.seconds_since_midnight() - t2._eps <= t2.seconds_since_midnight();
+    return t1.seconds_since_midnight()+t1._eps >= t2.seconds_since_midnight()
+    && t1.seconds_since_midnight()-t1._eps <= t2.seconds_since_midnight();
 }
 
 int
@@ -293,8 +293,24 @@ DODS_Time::get(bool gmt) const
 }
 
 // $Log: DODS_Time.cc,v $
+// Revision 1.11  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.10  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.9.2.3  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
+//
+// Revision 1.9.2.2  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
 //
 // Revision 1.9.2.1  2001/05/23 18:26:31  dan
 // Modified to support year/month date representations,

@@ -1,5 +1,7 @@
 HTTP/1.0 200 OK
 XDODS-Server: ff/*
+Date: *
+Last-Modified: *
 Content-type: text/plain
 Content-Description: dods_dds
 
@@ -8,4 +10,4 @@ Dataset {
     Int32 inger2\[j = 5\];
     Float32 reel1\[i = 4\]\[j = 5\];
     Int32 inger3\[j = 5\];
-} t3;
+} t3.dat;

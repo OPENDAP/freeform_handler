@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.8 2001/10/14 01:36:17 jimg Exp $";
+static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.9 2003/02/10 23:01:52 jimg Exp $";
 
 #ifdef __GNUG__
 #pragma implementation
@@ -19,19 +19,25 @@ static char rcsid[] not_used ="$Id: DODS_Time_Factory.cc,v 1.8 2001/10/14 01:36:
 
 #include "AttrTable.h"
 #include "Error.h"
+#include "InternalErr.h"
+#include "dods-datatypes.h"
 #include "util.h"
+#include "util_ff.h"
 
 #include "DODS_Time_Factory.h"
 
-DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
+// attribute_name defaults to "DODS_TIME".
+DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das, 
+				     const string &attribute_name)
 {
     // Read the names of the variables which encode hours, minutes and
     // seconds from the DAS. These are contained in the DODS_Time attribute
     // container. 
     
-    AttrTable *at = das.get_table("DODS_Time");
+    AttrTable *at = das.get_table(attribute_name);
     if (!at)
-	throw Error("DODS_Time_Factory requires that the DODS_Time attribute be present.");
+	throw Error(string("DODS_Time_Factory requires that the ")
+		    + attribute_name + string(" attribute be present."));
 
     string hours_name = at->get_attr("hours_variable");
     string mins_name = at->get_attr("minutes_variable");
@@ -51,21 +57,22 @@ DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das)
     // sensible types.
 
     _hours = dds.var(hours_name);
-    if ( _hours && _hours->type() != dods_int32_c)
+    if (_hours && !is_integer_type(_hours))
 	throw Error("DODS_Time_Factory: The variable used for hours must be an integer.");
 
     _minutes = dds.var(mins_name);
-    if ( _minutes && _minutes->type() != dods_int32_c)
+    if (_minutes && !is_integer_type(_minutes))
 	throw Error("DODS_Time_Factory: The variable used for minutes must be an integer.");
 
     _seconds = dds.var(secs_name);
-    if ( _seconds && _seconds->type() != dods_int32_c)
+    if (_seconds && !(is_integer_type(_seconds) || is_float_type(_seconds)))
 	throw Error("DODS_Time_Factory: The variable used for seconds must be an integer.");
 }
 
 DODS_Time
 DODS_Time_Factory::get()
 {
+#if 0
     int hour;
     int *hour_p = &hour;
     if ( _hours )
@@ -88,11 +95,28 @@ DODS_Time_Factory::get()
       sec = 0;
 
     return DODS_Time(hour, min, sec, _gmt);
+#endif
+
+    return DODS_Time(get_integer_value(_hours), get_integer_value(_minutes),
+		     get_float_value(_seconds), _gmt);
 }
 
 // $Log: DODS_Time_Factory.cc,v $
+// Revision 1.9  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.8  2001/10/14 01:36:17  jimg
 // Merged with release-3-2-4.
+//
+// Revision 1.7.2.2  2002/01/22 02:19:35  jimg
+// Fixed bug 62. Users built fmt files that used types other than int32
+// for date and time components (e.g. int16). I fixed the factory classes
+// so that DODS_Date and DODS_Time objects will be built correctly when
+// any of the integer (or in the case of seconds, float) data types are
+// used. In so doing I also refactored the factory classes so that code
+// duplication was reduced (by using inhertiance).
+// Added two tests for the new capabilities (see date_time.1.exp, the last
+// two tests).
 //
 // Revision 1.7.2.1  2001/10/11 17:42:09  jimg
 // Fixed a bug in the Time, StartTime and EndTime factory calsses. A local

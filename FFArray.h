@@ -22,8 +22,6 @@
 
 #include "Array.h"
 
-extern Array * NewArray(const string &n = "", BaseType *v = 0);
-
 class FFArray: public Array {
 private:
     long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
@@ -44,8 +42,14 @@ public:
 };
 
 // $Log: FFArray.h,v $
+// Revision 1.10  2003/02/10 23:01:52  jimg
+// Merged with 3.2.5
+//
 // Revision 1.9  2001/09/28 23:19:43  jimg
 // Merged with 3.2.3.
+//
+// Revision 1.8.2.2  2002/12/18 23:30:42  pwest
+// gcc3.2 compile corrections, mainly regarding the using statement
 //
 // Revision 1.8.2.1  2001/05/23 18:14:53  jimg
 // Merged with changes on the release-3-1 branch. This apparently was not

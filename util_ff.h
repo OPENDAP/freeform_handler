@@ -4,7 +4,7 @@
 //
 // jhrg 4/2/96
 
-// $Id: util_ff.h,v 1.8 2000/10/11 19:37:56 jimg Exp $
+// $Id: util_ff.h,v 1.9 2003/02/10 23:01:53 jimg Exp $
 
 #ifndef _util_ff_h
 #define _util_ff_h
@@ -12,6 +12,9 @@
 #include "FreeForm.h"
 
 #include "BaseType.h"
+#include "Error.h"
+#include "InternalErr.h"
+#include "dods-datatypes.h"
 
 #define MaxStr 100
 
@@ -39,5 +42,15 @@ bool file_exist(const char * filename);
 
 extern "C" long read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer, unsigned long size);
 
+bool is_integer_type(BaseType *btp);
+bool is_float_type(BaseType *btp);
+dods_uint32 get_integer_value(BaseType *var) throw(InternalErr);
+dods_float64 get_float_value(BaseType *var) throw(InternalErr);
 
 #endif // _util_ff_h_
+
+
+
+
+
+
