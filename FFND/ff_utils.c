@@ -1778,10 +1778,6 @@ See the FreeForm User's Guide for detailed information.\n"
 	
 	/* End Processing */
 	
-	bytes_remaining = db_ask(dbin, DBASK_BYTES_TO_PROCESS, FFF_OUTPUT);
-	if (bytes_remaining)
-		error = err_push(ERR_PROCESS_DATA + ERR_WARNING_ONLY, "%ld BYTES OF DATA NOT WRITTEN.", bytes_remaining);
-
 	if (!error || error > ERR_WARNING_ONLY)
 	{
 		error = update_output_file_header(dbin);
@@ -1794,6 +1790,10 @@ See the FreeForm User's Guide for detailed information.\n"
 
 	if (std_args->cv_maxmin_only)
 		print_maxmins(dbin, newform_log, to_user);
+
+	bytes_remaining = db_ask(dbin, DBASK_BYTES_TO_PROCESS, FFF_OUTPUT);
+	if (bytes_remaining)
+		error = err_push(ERR_PROCESS_DATA + ERR_WARNING_ONLY, "%ld BYTES OF DATA NOT WRITTEN.", bytes_remaining);
 
 	db_destroy(dbin);
 
