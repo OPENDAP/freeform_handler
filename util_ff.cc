@@ -9,11 +9,38 @@
 // jhrg 3/29/96
 
 // $Log: util_ff.cc,v $
+// Revision 1.14  2000/04/20 16:52:27  jimg
+// Merged with release-3-1-4 code.
+//
+// Revision 1.12.8.5  2000/04/20 16:36:19  jimg
+// I moved Dan's fix of int8 --> uint8 for dods_byte here. The fix was
+// originally checked in on the trunk.
+//
 // Revision 1.13  2000/04/20 13:57:38  dan
 // Modified ff_types to return the FreeForm type 'uint8'
 // for the DODS type 'byte'.  This is consistent with the
 // current behavior of dods_byte but will cause FreeForm
 // datasets using the 'int8' datatype to fail.
+// Revision 1.12.8.4  1999/08/28 06:35:49  jimg
+// Added debug.h include
+//
+// Revision 1.12.8.3  1999/08/28 06:09:35  jimg
+// Removed extraneous debug code.
+//
+// Revision 1.12.8.2  1999/08/28 05:16:16  jimg
+// Replaced the call to find_format_files with a call to
+// dods_find_format_files. The latter takes the `format' file suffix as a
+// parameter and so can be used to search for files the end in something
+// other than .fmt. Thus, find_ancillary_files() now uses the same procedure
+// to file all ancillary and format files.
+//
+// Revision 1.12.8.1  1999/08/28 01:29:56  jimg
+// Fixed and error where the output_format string was not built properly. It
+// was not terminated by a null; instead the *string* "\0" was used. That
+// caused strings to sometimes contain parts of previous output_format
+// strings, particularly when the previous strings were longer than the
+// current string. The bad strings confused the FF format parser and produce
+// garbage output.
 //
 // Revision 1.12  1999/05/04 02:55:38  jimg
 // Merge with no-gnu
@@ -56,10 +83,9 @@
 // Sequence support added by Reza
 //
 // Revision 1.3  1996/05/20 21:11:29  jimg
-// make_output_format now returns a string instead of creating a temporary
-// file.
-// find_format_file was changed to `find_ancillary_file' to better reflect what
-// it actually does.
+// Make_output_format now returns a string instead of creating a temporary
+// file. find_format_file was changed to `find_ancillary_file' to better
+// reflect what it actually does.
 //
 // Revision 1.2  1996/04/17 20:40:10  jimg
 // First release version of the DODS-FreeForm data server. This works with
@@ -70,7 +96,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.13 2000/04/20 13:57:38 dan Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.14 2000/04/20 16:52:27 jimg Exp $"};
 
 #include <unistd.h>
 
