@@ -12,16 +12,15 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.14 2003/02/10 23:01:52 jimg Exp $"};
+static char rcsid[] not_used = {"$Id: FFSequence.cc,v 1.15 2003/05/14 19:28:02 jimg Exp $"};
 
 #ifdef __GNUG__
 #pragma implementation
 #endif
 
-#include <strstream.h>
+#include <sstream>
 
-using std::endl ;
-using std::ends ;
+using namespace std;
 
 #include "Error.h"
 #include "FFSequence.h"
@@ -33,7 +32,7 @@ extern char *BufVal;
 extern long BufSiz;
 
 int StrLength = 0; // Sets string length befor reading it
-extern int StrLens[MaxStr]; // List of string length in this sequence 
+int StrLens[MaxStr]; // List of string length in this sequence 
 
 Sequence *
 NewSequence(const string &n)
@@ -120,7 +119,7 @@ FFSequence::read(const string &dataset)
 
     if (!BufVal) { // Make the cache
 	// Create the output Sequence format
-	ostrstream str;
+	ostringstream str;
 	int endbyte = 0;
 	int stbyte = 1;
 
@@ -141,14 +140,11 @@ FFSequence::read(const string &dataset)
 		<< " " << ff_prec(var(p)->type()) << endl;
 	    stbyte = endbyte + 1;
 	}
-	str << ends;
 
 	DBG(cerr << str.str());
       
-	str.freeze(1);
-	char *o_fmt = new char[strlen(str.str()) + 1];
-	strcpy(o_fmt, str.str());
-	str.freeze(0);
+	char *o_fmt = new char[str.str().length() + 1];
+	strcpy(o_fmt, str.str().c_str());
 
 	string input_format_file = find_ancillary_file(dataset);
 	char *if_fmt = new char[input_format_file.length() + 1];
@@ -189,6 +185,9 @@ FFSequence::read(const string &dataset)
 }
 
 // $Log: FFSequence.cc,v $
+// Revision 1.15  2003/05/14 19:28:02  jimg
+// Replaced strstream with sstream
+//
 // Revision 1.14  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5
 //

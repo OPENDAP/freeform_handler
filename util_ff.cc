@@ -10,19 +10,14 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.18 2003/02/10 23:01:53 jimg Exp $"};
+static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.19 2003/05/14 19:30:33 jimg Exp $"};
 
 #include <unistd.h>
 
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <fstream>
 #include <string>
-
-using std::ostrstream ;
-using std::cerr ;
-using std::endl ;
-using std::ends ;
 
 #include "BaseType.h"
 #include "InternalErr.h"
@@ -31,6 +26,8 @@ using std::ends ;
 #include "util_ff.h"
 
 #include "FreeForm.h"
+
+using namespace std;
 
 extern "C" int dods_find_format_files(DATA_BIN_PTR, char*, const char*, ...);
 extern "C" int dods_find_format_compressed_files(DATA_BIN_PTR, char*, char***, ...);
@@ -110,16 +107,13 @@ ff_prec(Type dods_type)
 const string
 make_output_format(const string &name, Type type, const int width)
 {
-    ostrstream str;
+    ostringstream str;
 
     str << "binary_output_data \"DODS binary output data\"" << endl;
     str << name << " 1 " << width << " " << ff_types(type) 
 	<< " " << ff_prec(type) << endl;
     
-    string ret = str.str();
-    str.freeze(0);
-	
-    return ret;
+    return str.str();
 }
 
 // format for multi-dimension array 
@@ -128,7 +122,7 @@ makeND_output_format(const string &name, Type type, const int width,
 		     int ndim, const long *start, const long *edge, const
 		     long * stride, string *dname)
 {
-    ostrstream str;
+    ostringstream str;
     str << "binary_output_data \"DODS binary output data\"" << endl;
     str << name << " 1 " << width << " ARRAY";
 
@@ -136,13 +130,11 @@ makeND_output_format(const string &name, Type type, const int width,
 	str << "[" << "\"" << dname[i] << "\" " << start[i]+1 << " to "
 	    << start[i]+(edge[i]-1)*stride[i]+1 <<" by " << stride[i] << " ]";
 
-    str << " of " << ff_types(type) << " " << ff_prec(type) << endl << ends;
+    str << " of " << ff_types(type) << " " << ff_prec(type) << endl;
 
-    string ret = str.str();
-    DBG(cerr << "ND output format: " << ret << endl);
-    str.freeze(0);
+    DBG(cerr << "ND output format: " << str.str() << endl);
 	
-    return ret;
+    return str.str();
 }
 
 /** Set or get the format file delimiter.
@@ -531,6 +523,9 @@ get_float_value(BaseType *var) throw(InternalErr)
 }
 
 // $Log: util_ff.cc,v $
+// Revision 1.19  2003/05/14 19:30:33  jimg
+// Replaced strstream with sstream
+//
 // Revision 1.18  2003/02/10 23:01:53  jimg
 // Merged with 3.2.5
 //
