@@ -9,6 +9,11 @@
 // expressions. 
 
 // $Log: ce_functions.cc,v $
+// Revision 1.7  1999/03/17 23:26:11  jimg
+// get_instance() now uses the find_ancillary_file() function. This should help
+// to standardize things, although it is still a hack to read the DAS at this
+// point.
+//
 // Revision 1.6  1999/01/05 00:46:13  jimg
 // Switched to a template design for some of the CE selection functions.
 // There's more to do here, but its OK...
@@ -48,6 +53,7 @@
 #include "DDS.h"
 #include "Error.h"
 #include "util.h"
+#include "cgi_util.h"
 #include "debug.h"
 
 #include "date_proc.h"
@@ -70,9 +76,9 @@ get_instance(DDS &dds)
     static T_Factory *tf = 0;
     if (!tf) {
 	// Hack
-	String name = dds.filename();
+	String name = find_ancillary_file(dds.filename(), "das", "", "");
 	DAS das;
-	das.parse(name + ".das");
+	das.parse(name);
 	// end hack
 	tf = new T_Factory(dds, das);
     }
