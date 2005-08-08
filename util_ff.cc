@@ -10,7 +10,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: util_ff.cc,v 1.21 2004/07/09 17:54:25 jimg Exp $"};
+static char rcsid[] not_used ={"$Id$"};
 
 #ifndef WIN32
 #include <unistd.h>

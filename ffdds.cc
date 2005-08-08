@@ -15,7 +15,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: ffdds.cc,v 1.14 2003/05/14 19:30:03 jimg Exp $"};
+static char rcsid[] not_used ={"$Id$"};
 
 #include <stdio.h>
 #include <stdlib.h>

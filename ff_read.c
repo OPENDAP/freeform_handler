@@ -6,7 +6,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: ff_read.c,v 1.12 2001/09/28 23:19:43 jimg Exp $"};
+static char rcsid[] not_used ={"$Id$"};
 
 #include <freeform.h>
 

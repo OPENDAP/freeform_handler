@@ -11,7 +11,7 @@
 #include "config_ff.h"
 
 static char rcsid[]#include "config_ff.h"
-="$Id: DODS_EndDecimal_Year_Factory.cc,v 1.2 2000/08/31 22:16:53 jimg Exp $";
+="$Id$";
 
 #ifdef __GNUG__
 #pragma implementation

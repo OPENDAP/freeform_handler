@@ -9,7 +9,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_Date_Time_Factory.cc,v 1.4 2000/10/11 19:37:55 jimg Exp $";
+static char rcsid[] not_used ="$Id$";
 
 #ifdef __GNUG__
 #pragma implementation

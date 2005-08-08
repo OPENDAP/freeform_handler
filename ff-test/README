@@ -1,5 +1,5 @@
 
-	$Id: README,v 1.4 2001/09/28 23:19:43 jimg Exp $
+	$Id$
 
 Notes: I've changed the way the data output from the server is tested. The
 tests now use geturl (which was fixed/modified so that it can be used in this

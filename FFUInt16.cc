@@ -6,7 +6,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: FFUInt16.cc,v 1.2 2000/10/11 19:37:56 jimg Exp $"};
+static char rcsid[] not_used ={"$Id$"};
 
 #ifdef __GNUG__
 #pragma implementation

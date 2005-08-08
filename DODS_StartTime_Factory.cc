@@ -14,7 +14,7 @@
 #if 0
 #include "config_ff.h"
 
-static char rcsid[] not_used ="$Id: DODS_StartTime_Factory.cc,v 1.4 2003/02/10 23:01:52 jimg Exp $";
+static char rcsid[] not_used ="$Id$";
 
 #ifdef __GNUG__
 #pragma implementation

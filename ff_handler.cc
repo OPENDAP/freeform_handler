@@ -25,7 +25,7 @@
  
 #include "config_ff.h"
 
-static char not_used rcsid[]={"$Id: ff_handler.cc,v 1.1 2003/05/14 19:26:44 jimg Exp $"};
+static char not_used rcsid[]={"$Id$"};
 
 #include <iostream>
 #include <string>

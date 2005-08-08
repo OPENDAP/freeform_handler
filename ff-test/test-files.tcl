@@ -1,6 +1,6 @@
 
 #
-# $Id: test-files.tcl,v 1.3 2003/02/10 23:01:53 jimg Exp $
+# $Id$
 #
 # Files to use for testing the FreeForm server programs.
 

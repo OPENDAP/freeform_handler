@@ -1,7 +1,7 @@
 
 # Tcl/Expect code for the FreeForm server tests.
 # 
-# $Id: unix.exp,v 1.5 2003/05/14 18:15:41 jimg Exp $
+# $Id$
 
 set version {ff/3.0.0a}
 

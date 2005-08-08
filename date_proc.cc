@@ -8,7 +8,7 @@
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id: date_proc.cc,v 1.8 2001/09/28 23:19:43 jimg Exp $"};
+static char rcsid[] not_used ={"$Id$"};
 
 #include <assert.h>
 

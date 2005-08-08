@@ -1,5 +1,5 @@
 #
-# $Id: dds.1.exp,v 1.1 2003/05/14 18:15:06 jimg Exp $
+# $Id$
 
 global comp_output		# contains output from ff_dds_start
 global verbose			# this and srcdir are set by runtest.exp

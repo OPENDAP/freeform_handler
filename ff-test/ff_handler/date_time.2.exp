@@ -1,6 +1,6 @@
 
 #
-# $Id: date_time.2.exp,v 1.1 2003/05/14 18:15:06 jimg Exp $
+# $Id$
 #
 # Tests for the date/time interface. Test mixing the interfaces.
 
