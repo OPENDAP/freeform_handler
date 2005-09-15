@@ -50,4 +50,6 @@ dap_ff_handler_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR)
 dap_ff_handler_LDADD = FFND/libfreeform.a FFND/libmaxmin.a
 
+EXTRA_DIST = COPYRIGHT
+
 CLEANFILES = *~
