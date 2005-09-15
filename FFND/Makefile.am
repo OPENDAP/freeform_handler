@@ -17,7 +17,7 @@ noinst_LIBRARIES = libfreeform.a libmaxmin.a
 
 noinst_PROGRAMS = readfile newform chkform bufform checkvar
 
-libfreeform_a_SOURCES = $(FF_SRCS)
+libfreeform_a_SOURCES = $(FF_SRCS) $(FF_HDRS)
 
 libmaxmin_a_SOURCES = mm_make.c
 
@@ -49,3 +49,7 @@ FF_SRCS = afm2bfm.c avlins.c avlfree.c cv_units.c dbevents.c dl_lists.c \
 	  eqn_util.c error.c eval_eqn.c ff_utils.c file2buf.c formlist.c \
 	  freeform.c makedbin.c makeform.c name_tab.c ndarray.c os_utils.c \
 	  proclist.c setdbin.c showdbin.c  
+
+FF_HDRS = avl.h err.h ff_types.h memtrack.h ndarray.h		\
+	avltree.h eval_eqn.h freeform.h menuindx.h os_utils.h	\
+	dl_lists.h ff2psdts.h maxmin.h name_tab.h

@@ -13,7 +13,7 @@ SUBDIRS = FFND
 
 # There are some defines which must be set with you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
-AM_CPPFLAGS = -DFREEFORM -IFFND
+AM_CPPFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 
 bin_PROGRAMS = dap_ff_handler
 
@@ -34,7 +34,7 @@ HANDLER_HDR = ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h      \
 	DODS_StartDate_Factory.h DODS_StartDate_Time_Factory.h		      \
 	DODS_StartDecimal_Year_Factory.h DODS_StartTime_Factory.h	      \
 	DODS_Time_Factory.h DODS_Time.h FreeForm.h read_ff.h util_ff.h \
-	FFTypeFactory.h
+	FFTypeFactory.h config_ff.h
 
 
 HANDLER_SRC = util_ff.cc ff_read.c ff_handler.cc ffdds.cc ffdas.cc	\
