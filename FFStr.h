@@ -14,9 +14,6 @@
 #ifndef _ffstr_h
 #define _ffstr_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include <limits.h>
 

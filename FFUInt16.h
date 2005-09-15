@@ -8,9 +8,6 @@
 #ifndef _ffuint16_h
 #define _ffuint16_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "UInt16.h"
 

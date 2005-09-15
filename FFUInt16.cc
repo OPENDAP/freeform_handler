@@ -8,9 +8,6 @@
 
 static char rcsid[] not_used ={"$Id$"};
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include "FFUInt16.h"
 #include "util_ff.h"

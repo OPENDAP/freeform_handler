@@ -14,9 +14,6 @@
 #ifndef _ffstructure_h
 #define _ffstructure_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Structure.h"
 extern Structure * NewStructure(const string &n = "");

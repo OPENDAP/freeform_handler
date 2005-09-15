@@ -46,9 +46,6 @@
 #ifndef _dods_date_h
 #define _dods_date_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include <time.h>
 

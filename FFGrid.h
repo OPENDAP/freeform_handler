@@ -20,9 +20,6 @@
 #ifndef _ffgrid_h
 #define _ffgrid_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Grid.h"
 

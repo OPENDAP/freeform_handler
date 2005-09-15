@@ -14,9 +14,6 @@
 #ifndef _ffuint32_h
 #define _ffuint32_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "UInt32.h"
 

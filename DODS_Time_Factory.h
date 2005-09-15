@@ -10,9 +10,6 @@
 #ifndef _dods_time_factory_h
 #define _dods_time_factory_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "DODS_Time.h"
 #include "DAS.h"

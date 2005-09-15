@@ -8,9 +8,6 @@
 #ifndef _ffint16_h
 #define _ffint16_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Int16.h"
 

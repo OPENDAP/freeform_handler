@@ -14,9 +14,6 @@
 #ifndef _ffurl_h
 #define _ffurl_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Url.h"
 extern Url * NewUrl(const string &n = "");

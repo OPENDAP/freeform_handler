@@ -14,9 +14,6 @@
 #ifndef _fffloat64_h
 #define _fffloat64_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Float64.h"
 

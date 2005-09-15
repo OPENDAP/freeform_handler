@@ -14,9 +14,6 @@
 #ifndef _ffarray_h
 #define _ffarray_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include <string>
 

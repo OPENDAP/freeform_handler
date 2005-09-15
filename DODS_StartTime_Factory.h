@@ -11,9 +11,6 @@
 #ifndef _dods_starttime_factory_h
 #define _dods_starttime_factory_h
 
-#ifdef __GNUG__
-// #pragma interface
-#endif
 
 #include "DODS_Time.h"
 #include "DODS_Time_Factory.h"

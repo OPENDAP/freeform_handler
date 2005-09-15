@@ -14,9 +14,6 @@
 #ifndef _ffint32_h
 #define _ffint32_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Int32.h"
 

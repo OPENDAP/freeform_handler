@@ -10,9 +10,6 @@
 #ifndef _dods_decimal_year_h
 #define _dods_decimal_year_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "DODS_Date.h"
 #include "DODS_Time.h"

@@ -13,9 +13,6 @@
 static char rcsid[]#include "config_ff.h"
 ="$Id$";
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>

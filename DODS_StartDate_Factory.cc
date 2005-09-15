@@ -15,9 +15,6 @@
 
 static char rcsid[] not_used = "$Id$";
 
-#ifdef __GNUG__
-#pragma implementation
-#endif
 
 #include <stdlib.h>
 #include <string>

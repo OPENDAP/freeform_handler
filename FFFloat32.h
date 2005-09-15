@@ -8,9 +8,6 @@
 #ifndef _fffloat32_h
 #define _fffloat32_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Float32.h"
 

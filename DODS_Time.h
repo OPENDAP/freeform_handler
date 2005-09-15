@@ -10,9 +10,6 @@
 #ifndef _dods_time_h
 #define _dods_time_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include <string>
 

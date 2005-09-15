@@ -12,9 +12,6 @@
 #ifndef _ffdods_h
 #define _ffdods_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 /*
  * FF_STD_ARGS

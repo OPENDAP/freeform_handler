@@ -20,9 +20,6 @@
 #ifndef _ffbyte_h
 #define _ffbyte_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Byte.h"
 

@@ -22,9 +22,6 @@
 #ifndef _dods_startdate_time_factory_h
 #define _dods_startdate_time_factory_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "DODS_Date_Time.h"
 #include "DODS_StartDate_Factory.h"

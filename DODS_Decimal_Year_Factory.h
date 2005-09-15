@@ -11,9 +11,6 @@
 #ifndef _dods_Decimal_Year_factory_h
 #define _dods_Decimal_Year_factory_h
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "DODS_Decimal_Year.h"
 #include "DODS_Date_Factory.h"

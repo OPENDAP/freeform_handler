@@ -14,9 +14,6 @@
 #ifndef _ffsequence_h
 #define _ffsequence_h 1
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "Sequence.h"
 extern Sequence * NewSequence(const string &n = "");
