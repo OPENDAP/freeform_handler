@@ -21,11 +21,13 @@ static char rcsid[] not_used ={"$Id$"};
 #include "FFGrid.h"
 #include "util.h"
 
+#if 0
 Grid *
 NewGrid(const string &n)
 {
     return new FFGrid(n);
 }
+#endif
 
 // protected
 

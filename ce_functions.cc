@@ -142,7 +142,7 @@ new_string_variable(const string &name, DDS &dds, BaseType *position = 0)
 {
     // Create the new variable
 
-    Str *new_variable = NewStr(name.c_str());
+    Str *new_variable = dds.get_factory()->NewStr(name.c_str());
     new_variable->set_read_p(true); // You must call this before ...
     new_variable->set_synthesized_p(true); // this! Look at BaseType.cc.
 

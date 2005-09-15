@@ -20,11 +20,13 @@ static char rcsid[] not_used = {"$Id$"};
 extern long BufPtr;
 extern char *BufVal;
 
+#if 0
 UInt32 *
 NewUInt32(const string &n)
 {
     return new FFUInt32(n);
 }
+#endif
 
 FFUInt32::FFUInt32(const string &n) : UInt32(n)
 {

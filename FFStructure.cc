@@ -23,11 +23,13 @@ static char rcsid[] not_used = {"$Id$"};
 #include "InternalErr.h"
 #include "FFStructure.h"
 
+#if 0
 Structure *
 NewStructure(const string &n)
 {
     return new FFStructure(n);
 }
+#endif
 
 BaseType *
 FFStructure::ptr_duplicate()

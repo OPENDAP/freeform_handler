@@ -18,11 +18,13 @@ static char rcsid[] not_used ={"$Id$"};
 extern long BufPtr;
 extern char *BufVal;
 
+#if 0
 Int16 *
 NewInt16(const string &n)
 {
     return new FFInt16(n);
 }
+#endif
 
 FFInt16::FFInt16(const string &n) : Int16(n)
 {

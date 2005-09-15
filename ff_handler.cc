@@ -35,6 +35,7 @@ static char not_used rcsid[]={"$Id$"};
 #include "DAS.h"
 #include "DataDDS.h"
 
+#include "FFTypeFactory.h"
 #include "ObjectType.h"
 #include "cgi_util.h"
 #include "ce_functions.h"
@@ -42,7 +43,7 @@ static char not_used rcsid[]={"$Id$"};
 long BufPtr = 0; // cache pointer
 long BufSiz =0; // Cache size
 char *BufVal = NULL; // cache buffer
-const string cgi_version = DODS_SERVER_VERSION;
+const string cgi_version = PACKAGE_VERSION;
 
 extern void read_descriptors(DDS &das, const string &filename) throw(Error);
 extern void get_attributes(DAS &das, string filename) throw(Error);
@@ -96,7 +97,8 @@ main(int argc, char *argv[])
 	  }
 
 	  case DODSFilter::DDS_Response: {
-	    DDS dds;
+	      FFTypeFactory ff_factory;
+	    DDS dds(&ff_factory);
 
 	    read_descriptors(dds, df.get_dataset_name());
 	    df.read_ancillary_dds(dds);
@@ -105,7 +107,8 @@ main(int argc, char *argv[])
 	  }
 
 	  case DODSFilter::DataDDS_Response: {
-	    DDS dds;
+	      FFTypeFactory ff_factory;
+	    DDS dds(&ff_factory);
 
 	    register_functions(dds);
 	    dds.filename(df.get_dataset_name());

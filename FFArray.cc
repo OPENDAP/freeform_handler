@@ -34,11 +34,13 @@ static char rcsid[] not_used ={"$Id$"};
 #include "util_ff.h"
 #include "util.h"
 
+#if 0
 Array *
 NewArray(const string &n, BaseType *v)
 {
     return new FFArray(n, v);
 }
+#endif
 
 BaseType *
 FFArray::ptr_duplicate()

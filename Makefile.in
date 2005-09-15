@@ -20,7 +20,6 @@
 #
 # $Id$
 
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -41,15 +40,18 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+build_triplet = @build@
+host_triplet = @host@
 bin_PROGRAMS = dap_ff_handler$(EXEEXT)
-subdir = .
-DIST_COMMON = README $(am__configure_deps) $(noinst_HEADERS) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(top_srcdir)/configure ChangeLog \
-	INSTALL TODO conf/compile conf/depcomp conf/install-sh \
+DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(top_srcdir)/configure ChangeLog INSTALL TODO conf/compile \
+	conf/config.guess conf/config.sub conf/depcomp conf/install-sh \
 	conf/missing
+subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/conf/libdap.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -75,12 +77,12 @@ am__objects_2 = util_ff.$(OBJEXT) ff_read.$(OBJEXT) \
 	DODS_StartTime_Factory.$(OBJEXT) \
 	DODS_StartDate_Time_Factory.$(OBJEXT) \
 	DODS_EndDate_Factory.$(OBJEXT) DODS_EndTime_Factory.$(OBJEXT) \
-	DODS_EndDate_Time_Factory.$(OBJEXT)
+	DODS_EndDate_Time_Factory.$(OBJEXT) FFTypeFactory.$(OBJEXT)
 am__objects_3 =
 am_dap_ff_handler_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_3)
 dap_ff_handler_OBJECTS = $(am_dap_ff_handler_OBJECTS)
-dap_ff_handler_LDADD = $(LDADD)
+dap_ff_handler_DEPENDENCIES = FFND/libfreeform.a FFND/libmaxmin.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/conf/depcomp
 am__depfiles_maybe = depfiles
@@ -101,7 +103,6 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
-HEADERS = $(noinst_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
@@ -133,6 +134,9 @@ CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DAP_CFLAGS = @DAP_CFLAGS@
+DAP_CONFIG = @DAP_CONFIG@
+DAP_LIBS = @DAP_LIBS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -181,10 +185,18 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -203,6 +215,10 @@ target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign check-news
 ACLOCAL_AMFLAGS = -I conf
 SUBDIRS = FFND
+
+# There are some defines which must be set with you build code which uses
+# FreeForm.h. Add them here. 4/17/98 jhrg
+AM_CPPFLAGS = -DFREEFORM -IFFND
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
 	FFFloat32.cc FFInt16.cc FFStr.cc FFUInt32.cc
@@ -218,7 +234,8 @@ HANDLER_HDR = ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h      \
 	DODS_EndDecimal_Year_Factory.h DODS_EndTime_Factory.h		      \
 	DODS_StartDate_Factory.h DODS_StartDate_Time_Factory.h		      \
 	DODS_StartDecimal_Year_Factory.h DODS_StartTime_Factory.h	      \
-	DODS_Time_Factory.h DODS_Time.h FreeForm.h read_ff.h util_ff.h
+	DODS_Time_Factory.h DODS_Time.h FreeForm.h read_ff.h util_ff.h \
+	FFTypeFactory.h
 
 HANDLER_SRC = util_ff.cc ff_read.c ff_handler.cc ffdds.cc ffdas.cc	\
 	ce_functions.cc date_proc.cc DODS_Date.cc			\
@@ -227,12 +244,13 @@ HANDLER_SRC = util_ff.cc ff_read.c ff_handler.cc ffdds.cc ffdas.cc	\
 	DODS_StartDate_Factory.cc DODS_StartTime_Factory.cc		\
 	DODS_StartDate_Time_Factory.cc					\
 	DODS_EndDate_Factory.cc DODS_EndTime_Factory.cc			\
-	DODS_EndDate_Time_Factory.cc
+	DODS_EndDate_Time_Factory.cc FFTypeFactory.cc
 
 dap_ff_handler_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR)
 
-noinst_HEADERS = config_ff.h
+dap_ff_handler_LDADD = FFND/libfreeform.a FFND/libmaxmin.a
+CLEANFILES = *~
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -343,6 +361,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFSequence.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFStr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFStructure.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFTypeFactory.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFUInt16.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFUInt32.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFUrl.Po@am__quote@
@@ -665,7 +684,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(PROGRAMS) $(HEADERS) config.h
+all-am: Makefile $(PROGRAMS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)"; do \
@@ -688,6 +707,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)

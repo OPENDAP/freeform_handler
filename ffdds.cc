@@ -69,7 +69,7 @@ read_descriptors(DDS &dds_table, const string &filename) throw (Error)
   Sequence *seq = NULL;
 
   if (!file_exist(filename.c_str())) {
-    string msg = (string)"ff_dds: Could not open file " + path_to_filename(filename) 
+    string msg = (string)"Could not open file " + path_to_filename(filename) 
       + ".";
     throw Error(msg);
   }
@@ -179,12 +179,12 @@ read_descriptors(DDS &dds_table, const string &filename) throw (Error)
       if(newseq) {
 	newseq = false;
 	// The format name cannot contain spaces! 8/12/98 jhrg
-	seq = NewSequence(iformat->name);
+	seq = dds_table.get_factory()->NewSequence(iformat->name);
       }
       is_array=false;
     }
     else {
-      ar = NewArray(cp);
+      ar = dds_table.get_factory()->NewArray(cp);
       newseq = true; // An array terminates the old sequence
       is_array = true;
     }
@@ -194,51 +194,51 @@ read_descriptors(DDS &dds_table, const string &filename) throw (Error)
     case FFV_TEXT:
       StrLens[StrNum]=var->end_pos - var->start_pos + 1;
       StrNum++;	    
-      bt = NewStr(cp);
+      bt = dds_table.get_factory()->NewStr(cp);
       break;
 	  
     case FFV_INT8:
-      bt = NewByte(cp);
+      bt = dds_table.get_factory()->NewByte(cp);
       break;
 	  
     case FFV_UINT8:
-      bt = NewByte(cp);	// Byte is unsigned.
+      bt = dds_table.get_factory()->NewByte(cp);	// Byte is unsigned.
       break;
 	  
     case FFV_INT16:
-      bt = NewInt16(cp);
+      bt = dds_table.get_factory()->NewInt16(cp);
       break;
 	  
     case FFV_UINT16:
-      bt = NewUInt16(cp);
+      bt = dds_table.get_factory()->NewUInt16(cp);
       break;
 
     case FFV_INT32:
-      bt = NewInt32(cp);
+      bt = dds_table.get_factory()->NewInt32(cp);
       break;
 	  
     case FFV_UINT32:
-      bt = NewUInt32(cp);
+      bt = dds_table.get_factory()->NewUInt32(cp);
       break;
 	  
     case FFV_INT64:
-      bt = NewInt32(cp);	// Ouch!
+      bt = dds_table.get_factory()->NewInt32(cp);	// Ouch!
       break;
 	  
     case FFV_UINT64:
-      bt = NewUInt32(cp);
+      bt = dds_table.get_factory()->NewUInt32(cp);
       break;
 	  
     case FFV_FLOAT32:
-      bt = NewFloat32(cp);
+      bt = dds_table.get_factory()->NewFloat32(cp);
       break;
 	  
     case FFV_FLOAT64:
-      bt = NewFloat64(cp);
+      bt = dds_table.get_factory()->NewFloat64(cp);
       break;
 	  
     case FFV_ENOTE:
-      bt = NewFloat64(cp);
+      bt = dds_table.get_factory()->NewFloat64(cp);
       break;
 
     default:

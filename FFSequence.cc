@@ -35,11 +35,13 @@ extern long BufSiz;
 int StrLength = 0; // Sets string length befor reading it
 int StrLens[MaxStr]; // List of string length in this sequence 
 
+#if 0
 Sequence *
 NewSequence(const string &n)
 {
     return new FFSequence(n);
 }
+#endif
 
 // protected
 

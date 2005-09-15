@@ -37,26 +37,21 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = readfile$(EXEEXT) newform$(EXEEXT) chkform$(EXEEXT) \
+build_triplet = @build@
+host_triplet = @host@
+noinst_PROGRAMS = readfile$(EXEEXT) newform$(EXEEXT) chkform$(EXEEXT) \
 	bufform$(EXEEXT) checkvar$(EXEEXT)
 subdir = FFND
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/conf/libdap.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"
-libLIBRARIES_INSTALL = $(INSTALL_DATA)
-LIBRARIES = $(lib_LIBRARIES)
+LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
 libfreeform_a_AR = $(AR) $(ARFLAGS)
@@ -74,21 +69,20 @@ libmaxmin_a_AR = $(AR) $(ARFLAGS)
 libmaxmin_a_LIBADD =
 am_libmaxmin_a_OBJECTS = mm_make.$(OBJEXT)
 libmaxmin_a_OBJECTS = $(am_libmaxmin_a_OBJECTS)
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS)
+PROGRAMS = $(noinst_PROGRAMS)
 bufform_SOURCES = bufform.c
 bufform_OBJECTS = bufform-bufform.$(OBJEXT)
 bufform_DEPENDENCIES = libfreeform.a libmaxmin.a
-am_checkvar_OBJECTS = checkvar.$(OBJEXT)
+am_checkvar_OBJECTS = checkvar-checkvar.$(OBJEXT)
 checkvar_OBJECTS = $(am_checkvar_OBJECTS)
 checkvar_DEPENDENCIES = libfreeform.a libmaxmin.a
 am_chkform_OBJECTS = chkform-chkform.$(OBJEXT)
 chkform_OBJECTS = $(am_chkform_OBJECTS)
 chkform_DEPENDENCIES = libfreeform.a libmaxmin.a
-am_newform_OBJECTS = newform.$(OBJEXT)
+am_newform_OBJECTS = newform-newform.$(OBJEXT)
 newform_OBJECTS = $(am_newform_OBJECTS)
 newform_DEPENDENCIES = libfreeform.a libmaxmin.a
-am_readfile_OBJECTS = readfile.$(OBJEXT)
+am_readfile_OBJECTS = readfile-readfile.$(OBJEXT)
 readfile_OBJECTS = $(am_readfile_OBJECTS)
 readfile_DEPENDENCIES = libfreeform.a libmaxmin.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -124,6 +118,9 @@ CXX = @CXX@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DAP_CFLAGS = @DAP_CFLAGS@
+DAP_CONFIG = @DAP_CONFIG@
+DAP_LIBS = @DAP_LIBS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -172,10 +169,18 @@ am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
 bindir = @bindir@
+build = @build@
 build_alias = @build_alias@
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
+host = @host@
 host_alias = @host_alias@
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -202,20 +207,23 @@ AM_CPPFLAGS = -DFREEFORM
 # the --disable-shared is not required, but it seems to help with debuggers.
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
-lib_LIBRARIES = libfreeform.a libmaxmin.a
+noinst_LIBRARIES = libfreeform.a libmaxmin.a
 libfreeform_a_SOURCES = $(FF_SRCS)
 libmaxmin_a_SOURCES = mm_make.c
 readfile_SOURCES = readfile.c
+readfile_CPPFLAGS = -DFREEFORM
 readfile_LDADD = libfreeform.a libmaxmin.a
 newform_SOURCES = newform.c
+newform_CPPFLAGS = -DFREEFORM
 newform_LDADD = libfreeform.a libmaxmin.a
 chkform_SOURCES = chkform.c
-chkform_CPPFLAGS = -DFF_MAIN
+chkform_CPPFLAGS = -DFF_MAIN -DFREEFORM
 chkform_LDADD = libfreeform.a libmaxmin.a
 bufform_SORUCES = bufform.c
-bufform_CPPFLAGS = -DFF_MAIN
+bufform_CPPFLAGS = -DFF_MAIN -DFREEFORM
 bufform_LDADD = libfreeform.a libmaxmin.a
 checkvar_SOURCES = checkvar.c
+checkvar_CPPFLAGS = -DFREEFORM
 checkvar_LDADD = libfreeform.a libmaxmin.a
 EXTRA_DIST = 
 CLEANFILES = *~
@@ -257,35 +265,9 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-libLIBRARIES: $(lib_LIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(libdir)" || $(mkdir_p) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=$(am__strip_dir) \
-	    echo " $(libLIBRARIES_INSTALL) '$$p' '$(DESTDIR)$(libdir)/$$f'"; \
-	    $(libLIBRARIES_INSTALL) "$$p" "$(DESTDIR)$(libdir)/$$f"; \
-	  else :; fi; \
-	done
-	@$(POST_INSTALL)
-	@list='$(lib_LIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    p=$(am__strip_dir) \
-	    echo " $(RANLIB) '$(DESTDIR)$(libdir)/$$p'"; \
-	    $(RANLIB) "$(DESTDIR)$(libdir)/$$p"; \
-	  else :; fi; \
-	done
 
-uninstall-libLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LIBRARIES)'; for p in $$list; do \
-	  p=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(libdir)/$$p'"; \
-	  rm -f "$(DESTDIR)$(libdir)/$$p"; \
-	done
-
-clean-libLIBRARIES:
-	-test -z "$(lib_LIBRARIES)" || rm -f $(lib_LIBRARIES)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 libfreeform.a: $(libfreeform_a_OBJECTS) $(libfreeform_a_DEPENDENCIES) 
 	-rm -f libfreeform.a
 	$(libfreeform_a_AR) libfreeform.a $(libfreeform_a_OBJECTS) $(libfreeform_a_LIBADD)
@@ -294,29 +276,9 @@ libmaxmin.a: $(libmaxmin_a_OBJECTS) $(libmaxmin_a_DEPENDENCIES)
 	-rm -f libmaxmin.a
 	$(libmaxmin_a_AR) libmaxmin.a $(libmaxmin_a_OBJECTS) $(libmaxmin_a_LIBADD)
 	$(RANLIB) libmaxmin.a
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
-	  else :; fi; \
-	done
 
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
-	done
-
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 bufform$(EXEEXT): $(bufform_OBJECTS) $(bufform_DEPENDENCIES) 
 	@rm -f bufform$(EXEEXT)
 	$(LINK) $(bufform_LDFLAGS) $(bufform_OBJECTS) $(bufform_LDADD) $(LIBS)
@@ -343,7 +305,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avlfree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avlins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bufform-bufform.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checkvar.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/checkvar-checkvar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chkform-chkform.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cv_units.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dbevents.Po@am__quote@
@@ -360,10 +322,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mm_make.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/name_tab.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ndarray.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/newform.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/newform-newform.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os_utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proclist.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile-readfile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/setdbin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/showdbin.Po@am__quote@
 
@@ -395,6 +357,20 @@ bufform-bufform.obj: bufform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(bufform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bufform-bufform.obj `if test -f 'bufform.c'; then $(CYGPATH_W) 'bufform.c'; else $(CYGPATH_W) '$(srcdir)/bufform.c'; fi`
 
+checkvar-checkvar.o: checkvar.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(checkvar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT checkvar-checkvar.o -MD -MP -MF "$(DEPDIR)/checkvar-checkvar.Tpo" -c -o checkvar-checkvar.o `test -f 'checkvar.c' || echo '$(srcdir)/'`checkvar.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/checkvar-checkvar.Tpo" "$(DEPDIR)/checkvar-checkvar.Po"; else rm -f "$(DEPDIR)/checkvar-checkvar.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='checkvar.c' object='checkvar-checkvar.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(checkvar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o checkvar-checkvar.o `test -f 'checkvar.c' || echo '$(srcdir)/'`checkvar.c
+
+checkvar-checkvar.obj: checkvar.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(checkvar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT checkvar-checkvar.obj -MD -MP -MF "$(DEPDIR)/checkvar-checkvar.Tpo" -c -o checkvar-checkvar.obj `if test -f 'checkvar.c'; then $(CYGPATH_W) 'checkvar.c'; else $(CYGPATH_W) '$(srcdir)/checkvar.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/checkvar-checkvar.Tpo" "$(DEPDIR)/checkvar-checkvar.Po"; else rm -f "$(DEPDIR)/checkvar-checkvar.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='checkvar.c' object='checkvar-checkvar.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(checkvar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o checkvar-checkvar.obj `if test -f 'checkvar.c'; then $(CYGPATH_W) 'checkvar.c'; else $(CYGPATH_W) '$(srcdir)/checkvar.c'; fi`
+
 chkform-chkform.o: chkform.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(chkform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT chkform-chkform.o -MD -MP -MF "$(DEPDIR)/chkform-chkform.Tpo" -c -o chkform-chkform.o `test -f 'chkform.c' || echo '$(srcdir)/'`chkform.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/chkform-chkform.Tpo" "$(DEPDIR)/chkform-chkform.Po"; else rm -f "$(DEPDIR)/chkform-chkform.Tpo"; exit 1; fi
@@ -408,6 +384,34 @@ chkform-chkform.obj: chkform.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='chkform.c' object='chkform-chkform.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(chkform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o chkform-chkform.obj `if test -f 'chkform.c'; then $(CYGPATH_W) 'chkform.c'; else $(CYGPATH_W) '$(srcdir)/chkform.c'; fi`
+
+newform-newform.o: newform.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(newform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT newform-newform.o -MD -MP -MF "$(DEPDIR)/newform-newform.Tpo" -c -o newform-newform.o `test -f 'newform.c' || echo '$(srcdir)/'`newform.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/newform-newform.Tpo" "$(DEPDIR)/newform-newform.Po"; else rm -f "$(DEPDIR)/newform-newform.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='newform.c' object='newform-newform.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(newform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o newform-newform.o `test -f 'newform.c' || echo '$(srcdir)/'`newform.c
+
+newform-newform.obj: newform.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(newform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT newform-newform.obj -MD -MP -MF "$(DEPDIR)/newform-newform.Tpo" -c -o newform-newform.obj `if test -f 'newform.c'; then $(CYGPATH_W) 'newform.c'; else $(CYGPATH_W) '$(srcdir)/newform.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/newform-newform.Tpo" "$(DEPDIR)/newform-newform.Po"; else rm -f "$(DEPDIR)/newform-newform.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='newform.c' object='newform-newform.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(newform_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o newform-newform.obj `if test -f 'newform.c'; then $(CYGPATH_W) 'newform.c'; else $(CYGPATH_W) '$(srcdir)/newform.c'; fi`
+
+readfile-readfile.o: readfile.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(readfile_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT readfile-readfile.o -MD -MP -MF "$(DEPDIR)/readfile-readfile.Tpo" -c -o readfile-readfile.o `test -f 'readfile.c' || echo '$(srcdir)/'`readfile.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/readfile-readfile.Tpo" "$(DEPDIR)/readfile-readfile.Po"; else rm -f "$(DEPDIR)/readfile-readfile.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='readfile.c' object='readfile-readfile.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(readfile_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o readfile-readfile.o `test -f 'readfile.c' || echo '$(srcdir)/'`readfile.c
+
+readfile-readfile.obj: readfile.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(readfile_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT readfile-readfile.obj -MD -MP -MF "$(DEPDIR)/readfile-readfile.Tpo" -c -o readfile-readfile.obj `if test -f 'readfile.c'; then $(CYGPATH_W) 'readfile.c'; else $(CYGPATH_W) '$(srcdir)/readfile.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/readfile-readfile.Tpo" "$(DEPDIR)/readfile-readfile.Po"; else rm -f "$(DEPDIR)/readfile-readfile.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='readfile.c' object='readfile-readfile.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(readfile_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o readfile-readfile.obj `if test -f 'readfile.c'; then $(CYGPATH_W) 'readfile.c'; else $(CYGPATH_W) '$(srcdir)/readfile.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
@@ -489,9 +493,6 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -519,7 +520,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libLIBRARIES \
+clean-am: clean-generic clean-noinstLIBRARIES clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -540,7 +541,7 @@ info-am:
 
 install-data-am:
 
-install-exec-am: install-binPROGRAMS install-libLIBRARIES
+install-exec-am:
 
 install-info: install-info-am
 
@@ -565,21 +566,18 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-info-am \
-	uninstall-libLIBRARIES
+uninstall-am: uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libLIBRARIES ctags distclean \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-noinstLIBRARIES clean-noinstPROGRAMS ctags distclean \
 	distclean-compile distclean-generic distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am \
-	install-libLIBRARIES install-man install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-data install-data-am install-exec install-exec-am \
+	install-info install-info-am install-man install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-info-am \
-	uninstall-libLIBRARIES
+	uninstall-am uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

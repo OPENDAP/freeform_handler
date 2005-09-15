@@ -21,11 +21,13 @@ static char rcsid[] not_used = {"$Id$"};
 #include "InternalErr.h"
 #include "FFUrl.h"
 
+#if 0
 Url *
 NewUrl(const string &n)
 {
     return new FFUrl(n);
 }
+#endif
 
 FFUrl::FFUrl(const string &n) : Url(n)
 {

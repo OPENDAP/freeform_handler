@@ -32,11 +32,13 @@ extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
 extern int StrLength; // Set by sequence before String read 
 
+#if 0
 Str *
 NewStr(const string &n)
 {
     return new FFStr(n);
 }
+#endif
 
 FFStr::FFStr(const string &n) : Str(n)
 {

@@ -19,11 +19,13 @@ static char rcsid[] not_used ={"$Id$"};
 extern long BufPtr;
 extern char *BufVal;
 
+#if 0
 Float32 *
 NewFloat32(const string &n)
 {
     return new FFFloat32(n);
 }
+#endif
 
 FFFloat32::FFFloat32(const string &n) : Float32(n)
 {
