@@ -53,14 +53,6 @@ extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
 extern int StrLength; // Set by sequence before String read 
 
-#if 0
-Str *
-NewStr(const string &n)
-{
-    return new FFStr(n);
-}
-#endif
-
 FFStr::FFStr(const string &n) : Str(n)
 {
 }
@@ -81,7 +73,13 @@ FFStr::read(const string &dataset)
 	char * ptr = BufVal+BufPtr;
 
 	char *TmpBuf = new char[StrLength+1];
-#if 0
+#if 1
+	// This code prunes both trailing and leading spaces from strings.
+	// Spaces are often added to URLs in file server data sets since the
+	// URL length can vary but in FF a field is a fixed size. However, if
+	// you want the FF handler to return _exactly_ the string data, this
+	// should be turned off. Once the subject of much debate... jhrg
+
 	int i,j;
 
 	//remove trailing white space
@@ -93,15 +91,14 @@ FFStr::read(const string &dataset)
 	for(j=0; j<i; j++)
 	    if(!isspace(*(ptr+j)))
 		break;
-#endif
-
+#else
 	int i=StrLength-1;;
 	int j=0;
+#endif
 
 	strncpy(TmpBuf, ptr+j,i-j+1);
 	TmpBuf[i-j+1]='\0';
 
-	// Fix me; use _buf directly. 10/19/98 jhrg
 	string *Nstr = new string((const char *)TmpBuf);
 
 	val2buf(Nstr);

@@ -1,7 +1,3 @@
-* CGI: DODS server failed for local (a non-CGI run): You asked me to insert the synthesized variable in*
-something that did not exist or was not a Structure*
-or a Sequence.
-"You asked me to insert the synthesized variable in*
-something that did not exist or was not a Structure*
-or a Sequence."
-
+"You asked me to insert the synthesized variable in 
+something that did not exist or was not a constructor 
+type (e.g., a structure, sequence, ...)."
