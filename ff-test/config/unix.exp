@@ -3,16 +3,17 @@
 # 
 # $Id$
 
-set version {ff/3.0.0a}
+set version {ff/3.5.0}
 
-set geturl {../../bin/geturl}
+global GETDAP
+if ![info exists GETDAP] then {
+    set GETDAP [transform getdap]
+}
 
 # Read the common code for tests.
 
-if {[info exists env(DODS_ROOT)] && [file exists $env(DODS_ROOT)/etc/common_tests.exp]} {
-    source $env(DODS_ROOT)/etc/common_tests.exp
-} elseif {[file exists ../../etc/common_tests.exp]} {
-    source ../../etc/common_tests.exp
+if {[file exists common_tests.exp]} {
+    source common_tests.exp
 } else {
     send_user "Could not load common tests!"
     exit(1)
@@ -28,16 +29,16 @@ proc ff_das_start { {args ""} {file ""}} {
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_handler -o das -v $version $args ...\n"
+	    send_user "Testing dap_ff_handler -o das -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_handler -o das -v $version $args" comp_output
+	catch "exec ./dap_ff_handler -o das -v $version $args" comp_output
     } else {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_handler -o das -v $version $args >& $file ...\n"
+	    send_user "Testing dap_ff_handler -o das -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_handler -o das -v $version $args >& $file" comp_output
+	catch "exec ./dap_ff_handler -o das -v $version $args >& $file" comp_output
     }
 }
 
@@ -60,16 +61,16 @@ proc ff_dds_start { {args ""} {file ""}} {
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_handler -o dds -v $version $args ...\n"
+	    send_user "Testing dap_ff_handler -o dds -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_handler -o dds -v $version $args" comp_output
+	catch "exec ./dap_ff_handler -o dds -v $version $args" comp_output
     } else {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_handler -o dds -v $version $args >& $file ...\n"
+	    send_user "Testing dap_ff_handler -o dds -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_handler -o dds -v $version $args >& $file" comp_output
+	catch "exec ./dap_ff_handler -o dds -v $version $args >& $file" comp_output
     }
 }
 
@@ -81,7 +82,7 @@ proc ff_dds_exit {} {
 }
 
 proc ff_dds_version {} {
-    send_user "ff_handler -o dds test suite 1.0\n"
+    send_user "dap_ff_handler -o dds test suite 1.0\n"
 }
 
 proc ff_dods_start { {args ""} {file ""}} {
@@ -89,20 +90,20 @@ proc ff_dods_start { {args ""} {file ""}} {
     global comp_output
     global spawn_id
     global version
-    global geturl
+    global GETDAP
 
     if ![string compare $file ""] {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_handler -o dods -v $version $args ...\n"
+	    send_user "Testing dap_ff_handler -o dods -v $version $args ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_handler -o dods -v $version $args | $geturl -s -" comp_output
+	catch "exec ./dap_ff_handler -o dods -v $version $args | $GETDAP -s -" comp_output
     } else {
 	if {$verbose >= 1} {
-	    send_user "Testing ff_handler -o dods -v $version $args >& $file ...\n"
+	    send_user "Testing dap_ff_handler -o dods -v $version $args >& $file ...\n"
 	    exp_internal 1
 	}
-	catch "exec ./ff_handler -o dods -v $version $args >& $file | $geturl -s -" comp_output
+	catch "exec ./dap_ff_handler -o dods -v $version $args >& $file | $GETDAP -s -" comp_output
     }
 }
 
@@ -114,5 +115,5 @@ proc ff_dods_exit {} {
 }
 
 proc ff_dods_version {} {
-    send_user "ff_handler -o dods test suite 1.0\n"
+    send_user "dap_ff_handler -o dods test suite 1.0\n"
 }

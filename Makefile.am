@@ -5,7 +5,7 @@
 #
 # $Id: Makefile.am 12158 2005-09-13 22:38:50Z jimg $
 
-AUTOMAKE_OPTIONS = foreign check-news
+AUTOMAKE_OPTIONS = foreign check-news dejagnu
 
 ACLOCAL_AMFLAGS = -I conf
 
@@ -50,6 +50,10 @@ dap_ff_handler_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR)
 dap_ff_handler_LDADD = FFND/libfreeform.a FFND/libmaxmin.a
 
-EXTRA_DIST = COPYRIGHT
+DEJATOOL = dap_ff_handler
 
-CLEANFILES = *~
+RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir ff-test
+
+EXTRA_DIST = ff-test COPYRIGHT
+
+CLEANFILES = *~ *.sum *.log
