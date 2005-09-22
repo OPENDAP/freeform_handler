@@ -54,6 +54,16 @@ DEJATOOL = dap_ff_handler
 
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir ff-test
 
-EXTRA_DIST = ff-test COPYRIGHT
+EXTRA_DIST = ff-test COPYRIGHT COPYING freeform_handler.spec
 
 CLEANFILES = *~ *.sum *.log
+
+###########################################################################
+
+# Build linux RPMs
+
+srpm:
+	rpmbuild -ts freeform_handler-@PACKAGE_VERSION@.tar.gz
+
+rpm:
+	rpmbuild -tb freeform_handler-@PACKAGE_VERSION@.tar.gz

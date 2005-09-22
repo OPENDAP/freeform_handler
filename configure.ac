@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(dap_ff_handler, 3.5.0, dods-tech@unidata.ucar.edu)
+AC_INIT([freeform_handler], [3.5.0], [dods-tech@unidata.ucar.edu])
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
 
@@ -17,18 +17,6 @@ AC_PROG_INSTALL
 AC_PROG_LEX
 AC_PROG_RANLIB
 AC_PROG_YACC
-
-# Checks for libraries.
-# FIXME: Replace `main' with a function in `-lfreeform':
-AC_CHECK_LIB([freeform], [main])
-# FIXME: Replace `main' with a function in `-lib':
-AC_CHECK_LIB([ib], [main])
-# FIXME: Replace `main' with a function in `-liberty':
-AC_CHECK_LIB([iberty], [main])
-# FIXME: Replace `main' with a function in `-lm':
-AC_CHECK_LIB([m], [main])
-# FIXME: Replace `main' with a function in `-lmaxmin':
-AC_CHECK_LIB([maxmin], [main])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -76,7 +64,7 @@ case "$host" in
 	         CPPFLAGS="$CPPFLAGS -DIRIX"
 	     fi ;;
     *)       echo "Either this machine is not supported by FreeForm or"
-	     echo "the configure script needs to be fixed?" ;;
+	     echo "the configure script needs to be fixed" ;;
 esac
 
 AC_CONFIG_FILES([FFND/Makefile
