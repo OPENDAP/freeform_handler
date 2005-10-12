@@ -1,7 +1,7 @@
 
 	$Id$
 
-Installing the FreeForm server for the OPenDAP server.
+Installing the FreeForm server for the OPeNDAP server.
 
 ---------------------------------------------------------------------------
 
@@ -40,6 +40,9 @@ REQUIREMENTS
   o You need the libdap library to build and install this software. If you're
     using Linux, this means either building form source or using the libdap
     and libdap-devel RPM packages.
+    
+  o To use this software with our data server, you will need the OPeNDAP
+    dap-server software package.
 
   o The README file has some information about writing the format files used
     to describe data so that it can be served by the software. More complete
@@ -63,9 +66,3 @@ NOTES
     - DBG2: more elaborate program instrumentation -- by convention this is
       used for output that is half a page or more, while DEBUG is used for
       single line output.
-
------------------------------------------------------------------------------
-
-Good Luck :-)
-Reza Nekovei
-

@@ -3,6 +3,6 @@
 
 Updated for version 3.5.0
 
-THis version of the FreeForm format handler is essentially the same as the
+This version of the FreeForm format handler is essentially the same as the
 previous version (3.4) with the exception that it now builds like the other
 handlers and works with the dap-server 3.5 base software.
