@@ -37,12 +37,12 @@ Building from Our SVN Repository
 
 REQUIREMENTS
 
-  o You need the libdap library to build and install this software. If you're
-    using Linux, this means either building form source or using the libdap
-    and libdap-devel RPM packages.
+  o You need the libdap library version 3.5.3 to build and install this
+    software. If you're using Linux, this means either building form source
+    or using the libdap and libdap-devel RPM packages.
     
   o To use this software with our data server, you will need the OPeNDAP
-    dap-server software package.
+    dap-server software package, version 3.5.1.
 
   o The README file has some information about writing the format files used
     to describe data so that it can be served by the software. More complete
