@@ -27,7 +27,6 @@
 
 static char not_used rcsid[]={"$Id$"};
 
-#include <iostream>
 #include <string>
 
 #include "DODSFilter.h"
@@ -131,7 +130,7 @@ main(int argc, char *argv[])
 	}
     }
     catch (Error &e) {
-	set_mime_text(cout, dods_error, cgi_version);
+	set_mime_text(stdout, dods_error, cgi_version);
 	e.print(cout);
 	return 1;
     }
