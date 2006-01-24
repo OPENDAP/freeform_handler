@@ -131,7 +131,7 @@ main(int argc, char *argv[])
     }
     catch (Error &e) {
 	set_mime_text(stdout, dods_error, cgi_version);
-	e.print(cout);
+	e.print(stdout);
 	return 1;
     }
 
