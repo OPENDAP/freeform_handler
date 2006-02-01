@@ -42,8 +42,8 @@ class FFStr;
 class FFUrl;
 class FFArray;
 class FFStructure;
-class NBSequence;
-class NBGrid;
+class FFSequence;
+class FFGrid;
 
 /** A factory for the FF Data Handler types.
 

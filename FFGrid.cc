@@ -78,9 +78,14 @@ FFGrid::read(const string &dataset)
     array_var()->read(dataset);
 
     // read maps elements
+    Grid::Map_iter i = map_begin();
+    while (i != map_end())
+        (*i++)->read(dataset);
+#if 0        
     for (Pix p = first_map_var(); p; next_map_var(p)) {
 	map_var(p)->read(dataset);
     }
+#endif
 
     set_read_p(true);
 

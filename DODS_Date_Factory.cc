@@ -39,11 +39,12 @@ static char rcsid[] not_used = "$Id$";
 #include <stdlib.h>
 #include <string>
 
-#include "AttrTable.h"
-#include "Error.h"
+#include <AttrTable.h>
+#include <Error.h>
+#include <dods-datatypes.h>
+#include <dods-limits.h>
 
 #include "DODS_Date_Factory.h"
-#include "dods-datatypes.h"
 #include "util_ff.h"
 
 // attribute_name defaults to "DODS_Date." 1/21/2002 jhrg
@@ -89,7 +90,7 @@ day_variable or year_day_variable be present.");
 	const char *c = year_base.c_str();
 	char *c2;
 	_year_base = strtol(c, &c2, 0);
-	if (c == c2 || _year_base == LONG_MAX || _year_base == LONG_MIN)
+	if (c == c2 || _year_base == DODS_LONG_MAX || _year_base == DODS_LONG_MIN)
 	    throw Error(unknown_error,
 "The year_base attribute value cannot be converted to a valid integer.");
     }
@@ -102,7 +103,7 @@ day_variable or year_day_variable be present.");
 	const char *c = month_day_name.c_str();
 	char *c2;
 	_month_day = strtol(c, &c2, 0);
-	if (c == c2 || _month_day == LONG_MAX || _month_day == LONG_MIN)
+	if (c == c2 || _month_day == DODS_LONG_MAX || _month_day == DODS_LONG_MIN)
 	    throw Error(unknown_error,
 "The month_day attribute value cannot be converted to a valid integer.");
     }

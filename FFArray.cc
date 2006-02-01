@@ -88,16 +88,21 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 
     int id = 0;
     long nels = 1;
-    //    string dimname;
-
     *has_stride = false;
 
+    Array:Dim_iter i = dim_begin();
+    while (i != dim_end()) {
+        start = (long) dimension_start(i, true); 
+        stride = (long) dimension_stride(i, true);
+        stop = (long) dimension_stop(i, true);
+        string dimname = dimension_name(i);
+#if 0
     for (Pix p = first_dim(); p ; next_dim(p), id++) {
 	start = (long) dimension_start(p, true); 
 	stride = (long) dimension_stride(p, true);
 	stop = (long) dimension_stop(p, true);
 	string dimname = dimension_name(p);
-
+#endif
 	// Check for empty constraint
 	if(start+stop+stride == 0)
 	    return -1;
@@ -113,6 +118,9 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 	
 	if (stride != 1)
 	    *has_stride = true;
+
+        ++id;
+        ++i;
     }
     return nels;
 }
@@ -126,13 +134,19 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
     int start, stride, stop;
     int id = 0;
     long nels = 1;
-
     *has_stride = false;
 
+    Array:Dim_iter i = dim_begin();
+    while (i != dim_end()) {
+        start = (long) dimension_start(i, true); 
+        stride = (long) dimension_stride(i, true);
+        stop = (long) dimension_stop(i, true);
+#if 0
     for (Pix p = first_dim(); p ; next_dim(p), id++) {
       start = dimension_start(p, true); 
       stride = dimension_stride(p, true);
       stop = dimension_stop(p, true);
+#endif
       // Check for empty constraint
       if(start+stop+stride == 0)
 	return -1;
@@ -143,6 +157,9 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
       nels *= edg[id];      // total number of values for variable
       if (stride != 1)
 	*has_stride = true;
+
+      ++id;
+      ++i;
     }
     return nels;
 }
@@ -190,48 +207,46 @@ hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index,
 //
 // Returns: void
 
-template <class T>
-static void
-seq2vects(T *t, FFArray &array)
-{  
-  bool has_stride;
-  int ndim = array.dimensions();
-  long *start = new long[ndim];
-  long *stride = new long[ndim];
-  long *edge = new long[ndim];
+template < class T > 
+static void 
+seq2vects(T * t, FFArray & array)
+{
+    bool has_stride;
+    int ndim = array.dimensions();
+    long *start = new long[ndim];
+    long *stride = new long[ndim];
+    long *edge = new long[ndim];
 
-  long count = array.Seq_constraint(start, stride, edge, &has_stride);  
+    long count = array.Seq_constraint(start, stride, edge, &has_stride);
 
-  if (count != -1) {		// non-null hyperslab
-    T *t_hs = new T[count];
-    int *dimsz = new int[array.dimensions()];
-    int i; Pix p;
-    
-    for (p = array.first_dim(), i = 0; p; array.next_dim(p), ++i)
-      dimsz[i]= array.dimension_size(p);
-    
-    hyper_get(t_hs, t, array.var()->width(), ndim, 0, dimsz, start, edge);
-    
-    // reading is done (dont need to read each individual array value)
-    array.set_read_p(true);  
-    // put values in the buffers
-    array.val2buf((void *)t_hs);
-    
-    delete[] t_hs;
-    delete[] dimsz;
-  }
-  else {
-    // reading is done (dont need to read each individual array value)
-    array.set_read_p(true);  
-    // put values in the buffers
-    array.val2buf((void *)t);    
-  }
-    // clean up
-    delete[] start;
-    delete[] stride;
-    delete[] edge;
+    if (count != -1) {          // non-null hyperslab
+        T *t_hs = new T[count];
+        int *dimsz = new int[array.dimensions()];
+
+        int i = 0;
+        Array::Dim_iter p = array.dim_begin();
+        while (p != array.dim_end()) {
+            dimsz[i] = array.dimension_size(p);
+            ++i;
+            ++p;
+        }
+
+        hyper_get(t_hs, t, array.var()->width(), ndim, 0, dimsz, start, edge);
+
+        array.set_read_p(true);         // reading is done
+        array.val2buf((void *) t_hs);   // put values in the buffer
+
+        delete[]t_hs;
+        delete[]dimsz;
+    } else {
+        array.set_read_p(true);
+        array.val2buf((void *) t);
+    }
+
+    delete[]start;
+    delete[]stride;
+    delete[]edge;
 }
-
 
 // Read cardinal types and ctor types separately. Cardinal types are
 // stored in arrays of the C++ data type while ctor types are stored

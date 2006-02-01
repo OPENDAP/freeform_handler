@@ -47,18 +47,12 @@ static char rcsid[] not_used = {"$Id$"};
 #include <iostream>
 #include <string>
 
-#include "cgi_util.h"
-#include "util.h"
-#include "DAS.h"
-#include "Error.h"
-#include "InternalErr.h"
+#include <cgi_util.h>
+#include <util.h>
+#include <DAS.h>
+#include <Error.h>
+#include <InternalErr.h>
 
-// Hack. Header files from the WWW library (which are included from Connect.h
-// within cgi_util.h) also define BOOLEAN. Suppressing the definition avoids
-// a warning (g++ 2.8.1) or error (egcs). 3/26/99 jhrg
-#if 0
-#define _BOOLEAN_DEFINED	
-#endif
 #include "FreeForm.h"
 #include "util_ff.h"
 #include "freeform.h"
