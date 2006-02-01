@@ -1,8 +1,9 @@
 HTTP/1.0 200 OK
 XDODS-Server: ff/*
+XDAP-Protocol: *
 Date: *
 Last-Modified: *
-Content-type: text/plain
+Content-Type: text/plain
 Content-Description: dods_dds
 
 Dataset {
