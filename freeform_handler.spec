@@ -4,12 +4,12 @@ Version:         3.5.0
 Release:         1
 License:         GPL
 Group:           System Environment/Daemons 
-Source0:         http://www.opendap.org/pub/3.5/source/%{name}-%{version}.tar.gz
+Source0:         ftp://ftp.unidata.ucar.edu/pub/opendap/source/%{name}-%{version}.tar.gz
 URL:             http://www.opendap.org/
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.5.2
-Requires:        dap-server >= 3.5.0
+BuildRequires:   libdap-devel
+Requires:        dap-server
 
 %description 
 This is the foreeform data handler for our data server. It reads ASCII,
@@ -21,6 +21,7 @@ responses that are compatible with DAP2 and the dap-server 3.5 software.
 
 %build
 %configure
+make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -35,5 +36,5 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
-* Thu Sep 21 2005 James Gallagher <jgallagher@opendap.org> 3.5.0
+* Thu Sep 21 2005 James Gallagher <jgallagher@opendap.org> 3.5.0-1
 - initial release
