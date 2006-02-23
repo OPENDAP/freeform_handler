@@ -1107,10 +1107,18 @@ struct struct_ff_format_data
 	FF_BUFSIZE_PTR data;
 	struct struct_fd_state
 	{
+#if 0
+                /* Replaced with code below 2/23/06 jhrg do to compiler */
+                /* warning on 64-bit machine. */
 		unsigned int byte_order : 1; /*	1=big endian (Unix), 0=little endian */
 		unsigned int new_record : 1; /* 1=new data that hasn't been accessed yet */
 		unsigned int locked     : 1;
 		unsigned int unused     : 13;
+#endif
+                unsigned int byte_order; /* 1=big endian (Unix), 0=little endian */
+                unsigned int new_record; /* 1=new data that hasn't been accessed yet */
+                unsigned int locked;
+                unsigned int unused;    /* Not sure we need this. jhrg */
 	} state;
 };
 

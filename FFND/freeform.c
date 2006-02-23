@@ -1010,7 +1010,7 @@ void fd_destroy_format_data(FORMAT_DATA_PTR fd)
 	fd->state.byte_order = 0;
 	fd->state.new_record = 0;
 	fd->state.locked     = 0;
-	fd->state.unused = UINT_MAX; /* Changed from ULONG_MAX to UINT_MAX 
+	fd->state.unused = (unsigned)UINT_MAX; /* Changed from ULONG_MAX to UINT_MAX 
                                         for 64-bit machines. jhrg 2/10/06 */
 	
 	memFree(fd, "fd");
