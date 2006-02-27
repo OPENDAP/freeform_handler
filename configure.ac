@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([freeform_handler], [3.5.0], [dods-tech@unidata.ucar.edu])
+AC_INIT([freeform_handler], [3.6.0], [dods-tech@unidata.ucar.edu])
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
 
@@ -41,7 +41,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor isascii memmove memset pow sqrt strcasecmp strchr strcspn strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
 
 dnl Checks for specific libraries
-AC_CHECK_LIBDAP([3.5.3],
+AC_CHECK_LIBDAP([3.6.0],
  [
   LIBS="$LIBS $DAP_LIBS"
   CPPFLAGS="$CPPFLAGS $DAP_CFLAGS"

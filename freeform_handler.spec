@@ -1,6 +1,6 @@
 Summary:         FreeForm data handler for the OPeNDAP Data server
 Name:            freeform_handler
-Version:         3.5.0
+Version:         3.6.0
 Release:         1
 License:         GPL
 Group:           System Environment/Daemons 
@@ -8,8 +8,8 @@ Source0:         ftp://ftp.unidata.ucar.edu/pub/opendap/source/%{name}-%{version
 URL:             http://www.opendap.org/
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel
-Requires:        dap-server
+BuildRequires:   libdap-devel >= 3.6.0
+Requires:        dap-server >= 3.6.0
 
 %description 
 This is the foreeform data handler for our data server. It reads ASCII,
@@ -36,5 +36,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
+* Mon Feb 27 2006 James Gallagher <jgallagher@opendap.org> 3.6.0-1
+- Updated version numbers for 3.6.0
+
 * Thu Sep 21 2005 James Gallagher <jgallagher@opendap.org> 3.5.0-1
 - initial release

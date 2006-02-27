@@ -1,3 +1,122 @@
+2006-02-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixed tests to match the new XDAP (versus XDAP-Protocl) header and
+	also include the XOPeNDAP-Server header.
+
+2006-02-14  James Gallagher <jgallagher@opendap.org>
+
+	freeform_handler.spec: add libdap-devel as a BuildRequires. From a
+	patch by Patrice Dumas
+
+2006-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Removed warnings from DODS_Date_Factory.cc, FFArray.cc, ffdas.cc,
+	FFGrid.cc and FFTypeFactory.h. Remvoed NCTypeFactory.cc
+
+2006-02-01  James Gallagher <jgallagher@opendap.org>
+
+	Updates to the tests in ff-test
+
+2006-01-24  James Gallagher <jgallagher@opendap.org>
+
+	Modified ff_handler.cc so that it no longer calls any of the
+	libdap iostreams methods (which have been removed from libdap).
+
+2006-01-19  James Gallagher <jgallagher@opendap.org>
+
+	Changed set_mime-test() in ff_handler.cc so that it uses stdout
+	and not cout. I removed the iostreams versions of the
+	set_mime...() function from libdap in version 3.6.
+
+2005-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Added version numbers.
+
+2005-10-13  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2005-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Update configure's required version of libdap to 3.5.3.
+
+2005-10-12  James Gallagher <jgallagher@opendap.org>
+
+	Updates to the documentation files.
+
+2005-09-22  James Gallagher <jgallagher@opendap.org>
+
+	Added a spec file for RPMs
+
+2005-09-16  James Gallagher <jgallagher@opendap.org>
+
+	Fixed errors that showed up in the tests. Spaces were not being
+	removed from string values (which was fixed in 3.4 but must not
+	have been merged back to the trunk) and tests with error responses
+	used the wrong text for comparison
+	(not really a bug...).
+
+2005-09-16  James Gallagher <jgallagher@opendap.org>
+
+	Added support for the dejagnu testsuite.
+
+2005-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2005-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated README, INSTALL and fixed the distcheck target.
+
+2005-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Updated the copyright info.
+
+2005-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Removed GUNG pragma
+
+2005-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Added automake files plus TypeFactory stuff I forgot for the last
+	check in.
+
+2005-09-15  James Gallagher <jgallagher@opendap.org>
+
+	Added Factory class support.
+
+2005-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Many changes
+
+2005-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Removed
+
+2005-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Use config.h...
+
+2005-08-08  root
+
+	Auto reset of Subversion properties
+
+2005-07-05  Rob Morris <Robert.O.Morris@jpl.nasa.gov>
+
+	Set eol-style to native on all text file in the trunk
+
+2004-07-09  James Gallagher <jgallagher@opendap.org>
+
+	Merged with release-3-4-3FCS.
+
+2004-07-09  James Gallagher <jgallagher@opendap.org>
+
+	07/09/04 jhrg
+
 2004-07-09  James Gallagher  <jimg@comet.dods.org>
 
 	* Merged with release-3-4-3FCS.
@@ -8,7 +127,8 @@
 
 2004-02-16  James Gallagher  <jimg@comet.dods.org>
 
-        * Updated to remove '-gstabs' for 'alpha' platform computers. (dan)
+        * Updated to remove '-gstabs' for 'alpha' platform computers.
+	(dan)
 
 2003-02-10    <jimg@dcz.dods.org>
 
@@ -31,7 +151,7 @@
 	than int32 for the date and time components. While this is not a
 	particularly big deal, users won't be told that int16 isn't
 	allowed when all they want is a number that runs from 0 to 59. See
-	Bug 62. 
+	Bug 62.
 
 2001-10-13  James Gallagher  <jimg@dcz.dods.org>
 
@@ -49,7 +169,7 @@
 2001-09-28  James Gallagher  <jimg@dcz.dods.org>
 
 	* Merged 3.2.3. The next merge should use release-3-2-3 -j
-	release-3-2. 
+	release-3-2.
 
 2001-09-26  James Gallagher  <jimg@dcz.dods.org>
 
@@ -175,7 +295,7 @@
 1999-05-04  James Gallagher  <jimg@dcz.dods.org>
 
 	* Added version.h based version to dispatch script (set by
-	configure). 
+	configure).
 
 	* Now uses the 3.0 DAP
 
@@ -244,7 +364,7 @@
 
 1998-09-17  James Gallagher  <jimg@dcz.cvo.oneworld.com>
 
-	* Fixed many bugs. 
+	* Fixed many bugs.
 
 	* Added a date() CE function. It is a collection of functions,
 	waiting to become an object...
