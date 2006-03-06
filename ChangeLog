@@ -1,3 +1,22 @@
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Increased the release number to two.
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Applied a patch from Patrice Dumas which corrected version numbers
+	in the README and .spec files.
+
+2006-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated documentation (README, NEWS, ChangeLog) and version info in
+	configure.ac and freeform_handler.spec
+
+2006-02-23  James Gallagher <jgallagher@opendap.org>
+
+	Fixed tests to match the new XDAP (versus XDAP-Protocl) header and also
+	include the XOPeNDAP-Server header.
+
 2006-02-23  James Gallagher <jgallagher@opendap.org>
 
 	Fixed tests to match the new XDAP (versus XDAP-Protocl) header and
