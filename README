@@ -18,7 +18,7 @@ Installation Guide that can be found at www.opendap.org.
 
 dap_ff_handler is a data handler which uses National Geophysical Data Center's
 FreeForm/FFND to serve data. The handler requires the OPeNDAP dap-server
-software version 3.6.
+software above version 3.5.
 
 The handler can read binary, ASCII, and dBASE data files using FreeForm/FFND
 format descriptions. It can return both array and sequence data types. The
