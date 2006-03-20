@@ -83,7 +83,7 @@ FFByte::ptr_duplicate()
 }
 
 bool
-FFByte::read(const string &dataset)
+FFByte::read(const string &)
 {
     if (read_p()) // nothing to do
 	return false;

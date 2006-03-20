@@ -52,6 +52,7 @@ private:
     DODS_EndDate_Factory() {}	/* Prevent the creation of empty objects. */
 
 public:
+    virtual ~DODS_EndDate_Factory() {}
 
     /** Note that the default constructor is private.
 	@name Constructors */

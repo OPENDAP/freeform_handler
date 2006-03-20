@@ -58,7 +58,7 @@ FFInt16::ptr_duplicate(){
 }
 
 bool
-FFInt16::read(const string &dataset)
+FFInt16::read(const string &)
 {
     if (read_p()) // nothing to do
 	return false;

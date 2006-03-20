@@ -88,8 +88,9 @@ extract_argument(BaseType *arg)
 bool
 DODS_Time::OK() const
 {
-    return _hours >= 0 && _hours <= 23
-	&& _minutes >= 0 && _minutes <= 59
+    // _hours and _minutes are unsigned.
+    return /* _hours >= 0 && */ _hours <= 23
+	/* && _minutes >= 0 */ && _minutes <= 59
 	&& _seconds >= 0.0 && _seconds < 60.0;
 }
 
@@ -294,7 +295,7 @@ DODS_Time::gmt() const
 }
 
 string
-DODS_Time::get(bool gmt) const
+DODS_Time::get(bool) const
 {
     ostringstream oss;
     // Pad with leading zeros and use fixed fields of two chars for hours and

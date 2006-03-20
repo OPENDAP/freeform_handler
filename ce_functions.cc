@@ -272,7 +272,7 @@ func_enddate_time(int argc, BaseType *argv[], DDS &dds)
 // and date-times. 5/30/99 jhrg
 
 bool
-sel_dods_jdate(int argc, BaseType *argv[], DDS &dds)
+sel_dods_jdate(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -312,7 +312,7 @@ Expected zero or one arguments.");
 // Same as the above function, but for ymd dates.
 
 bool
-sel_dods_date(int argc, BaseType *argv[], DDS &dds)
+sel_dods_date(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -350,7 +350,7 @@ Expected zero or one arguments.");
 
 
 bool
-sel_dods_time(int argc, BaseType *argv[], DDS &dds)
+sel_dods_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -390,7 +390,7 @@ Expected zero or one arguments.");
 // `projection function' is run. 
 
 bool
-sel_dods_date_time(int argc, BaseType *argv[], DDS &dds)
+sel_dods_date_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -433,7 +433,7 @@ Expected zero or one arguments.");
 // `projection function' is run. 
 
 bool
-sel_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
+sel_dods_decimal_year(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -477,7 +477,7 @@ Expected zero or one arguments.");
 // `projection function' is run. 
 
 bool
-sel_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds)
+sel_dods_startdecimal_year(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -521,7 +521,7 @@ Expected zero or one arguments.");
 // `projection function' is run. 
 
 bool
-sel_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds)
+sel_dods_enddecimal_year(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -562,7 +562,7 @@ Expected zero or one arguments.");
 /************************ DODS_StartDate functions *************************/
 
 bool
-sel_dods_startdate(int argc, BaseType *argv[], DDS &dds)
+sel_dods_startdate(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -599,7 +599,7 @@ Expected zero or one arguments.");
 /************************ DODS_StartTime functions *************************/
 
 bool
-sel_dods_starttime(int argc, BaseType *argv[], DDS &dds)
+sel_dods_starttime(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -639,7 +639,7 @@ Expected zero or one arguments.");
 // `projection function' is run. 
 
 bool
-sel_dods_startdate_time(int argc, BaseType *argv[], DDS &dds)
+sel_dods_startdate_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -679,7 +679,7 @@ Expected zero or one arguments.");
 /************************ DODS_EndDate functions *************************/
 
 bool
-sel_dods_enddate(int argc, BaseType *argv[], DDS &dds)
+sel_dods_enddate(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -716,7 +716,7 @@ Expected zero or one arguments.");
 /************************ DODS_EndTime functions *************************/
 
 bool
-sel_dods_endtime(int argc, BaseType *argv[], DDS &dds)
+sel_dods_endtime(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,
@@ -756,7 +756,7 @@ Expected zero or one arguments.");
 // `projection function' is run. 
 
 bool
-sel_dods_enddate_time(int argc, BaseType *argv[], DDS &dds)
+sel_dods_enddate_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
 	throw Error(malformed_expr,

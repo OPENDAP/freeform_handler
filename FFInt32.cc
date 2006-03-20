@@ -65,7 +65,7 @@ FFInt32::ptr_duplicate(){
 }
 
 bool
-FFInt32::read(const string &dataset)
+FFInt32::read(const string &)
 {
     if (read_p()) // nothing to do
 	return false;

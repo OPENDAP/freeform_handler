@@ -74,6 +74,7 @@ private:
     DODS_StartDate_Factory() {}	/* Prevent the creation of empty objects. */
 
 public:
+    virtual ~DODS_StartDate_Factory() {}
 
     /** Note that the default constructor is private.
 	@name Constructors */

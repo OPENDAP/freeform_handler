@@ -59,7 +59,7 @@ FFFloat32::ptr_duplicate()
 }
  
 bool
-FFFloat32::read(const string &dataset)
+FFFloat32::read(const string &)
 {
     if (read_p()) // nothing to do
 	return false;

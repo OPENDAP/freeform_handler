@@ -56,6 +56,7 @@ protected:
     DODS_Time_Factory() {}
 
 public:
+    virtual ~DODS_Time_Factory() {}
 
     /** Note that the default constructor is private.
 	@name Constructors */

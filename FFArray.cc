@@ -90,7 +90,7 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
     long nels = 1;
     *has_stride = false;
 
-    Array:Dim_iter i = dim_begin();
+    Array::Dim_iter i = dim_begin();
     while (i != dim_end()) {
         start = (long) dimension_start(i, true); 
         stride = (long) dimension_stride(i, true);
@@ -136,7 +136,7 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
     long nels = 1;
     *has_stride = false;
 
-    Array:Dim_iter i = dim_begin();
+    Array::Dim_iter i = dim_begin();
     while (i != dim_end()) {
         start = (long) dimension_start(i, true); 
         stride = (long) dimension_stride(i, true);

@@ -64,7 +64,7 @@ FFStr::ptr_duplicate()
 }
 
 bool
-FFStr::read(const string &dataset)
+FFStr::read(const string &)
 {
     if (read_p())			// nothing to do
 	return false;
