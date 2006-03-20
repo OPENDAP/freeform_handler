@@ -56,7 +56,7 @@ case "$host" in
     *hp*)    CPPFLAGS="$CPPFLAGS -DHP9000" ;;
     *alpha*) CPPFLAGS="$CPPFLAGS -DDEC_ALPHA" ;;
     *sun*)   CPPFLAGS="$CPPFLAGS -DSUN" ;;
-    *powerpc*)   CPPFLAGS="$CPPFLAGS -DNETBSD" ;;
+    *darwin*)   CPPFLAGS="$CPPFLAGS -DLINUX" ;;
     *sgi*)   if test $ac_cv_sizeof_long -eq 4
 	     then
 	         CPPFLAGS="$CPPFLAGS -DIRIS4"
