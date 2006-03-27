@@ -44,23 +44,28 @@ compare_stdout "$t3.data" "$test_name: $t3 dataset" 0 "match"
 # I added a constraint to show how it's handled with the common_tests.exp
 # code. Note also that []s in the test string need to be escaped but only
 # with one backslash. 5/22/2001 jhrg
+#
+# I changed these tests to 'expect fail' because they use binary data files
+# written on a little-endian machine, so on big-endian machines freeform
+# will read the correct number of bytes but not the correct values. 3/26/06 jhrg
+
 ff_dods_start "-e xf\\\[8:9\\\]\\\[18:19\\\] $dbl_data" 
-compare_stdout "$dbl_data.data" "$test_name: $dbl_data dataset" 0 "match"
+compare_stdout "$dbl_data.data" "$test_name: $dbl_data dataset" 1 "match"
 
 ff_dods_start "$dbl_data2" 
-compare_stdout "$dbl_data2.data" "$test_name: $dbl_data2 dataset" 0 "match"
+compare_stdout "$dbl_data2.data" "$test_name: $dbl_data2 dataset" 1 "match"
 
 ff_dods_start "$dbl_data3" 
-compare_stdout "$dbl_data3.data" "$test_name: $dbl_data3 dataset" 0 "match"
+compare_stdout "$dbl_data3.data" "$test_name: $dbl_data3 dataset" 1 "match"
 
 ff_dods_start "$int_data" 
-compare_stdout "$int_data.data" "$test_name: $int_data dataset" 0 "match"
+compare_stdout "$int_data.data" "$test_name: $int_data dataset" 1 "match"
 
 ff_dods_start "$int_data2" 
-compare_stdout "$int_data2.data" "$test_name: $int_data2 dataset" 0 "match"
+compare_stdout "$int_data2.data" "$test_name: $int_data2 dataset" 1 "match"
 
 ff_dods_start "$int_data3" 
-compare_stdout "$int_data3.data" "$test_name: $int_data3 dataset" 0 "match"
+compare_stdout "$int_data3.data" "$test_name: $int_data3 dataset" 1 "match"
 
 
 
