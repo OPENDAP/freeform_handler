@@ -1,6 +1,6 @@
 Summary:         FreeForm data handler for the OPeNDAP Data server
 Name:            freeform_handler
-Version:         3.6.0
+Version:         3.6.1
 Release:         2
 License:         LGPL
 Group:           System Environment/Daemons 
@@ -36,6 +36,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
+* Mon Mar 26 2006 James Gallagher <jgallagher@opendap.org> 3.6.1-1
+- Update to 3.6.1: Mac OS/X fixes.
+
 * Mon Feb 27 2006 James Gallagher <jgallagher@opendap.org> 3.6.0-1
 - Update to 3.6.0
 

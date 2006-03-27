@@ -1,3 +1,49 @@
+2006-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Changed the data.1.exp test file so that tests with binary data are
+	marked 'expect fail.' This way when the tests are run on big-endian
+	machines (the binary files were written on a little endian machine)
+	the tests don't cause the entire suite to fail. Someday we might
+	implement a flag to twidle the bytes of binary data... Then we could
+	make these tests work.
+
+2006-03-21  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	configure.ac: Changed the uname test from powerpc to darwin. This is
+	needed so that configure can set a compile-time constant for Freeform.h
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	Added 1998-6-avhrr.dat.data.
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	Updated test result for avhrr.data.
+
+2006-03-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed warnings in many files that arose from unused parameters.
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.6.0-2.
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Increased the release number to two.
+
+2006-03-06  James Gallagher <jgallagher@opendap.org>
+
+	Applied a patch from Patrice Dumas which corrected version numbers
+	in the README and .spec files.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2006-03-06  James Gallagher <jgallagher@opendap.org>
 
 	Increased the release number to two.

@@ -1,6 +1,20 @@
 
  $Id$
 
+Version 3.6.1
+
+Fixes for Mac OS/X:
+1. A compile-time issue was resolved. With Tiger, configure did not set the 
+compile-time symbol FREEFORM to the correct value. This caused the compile to 
+fail.
+2. Since the Mac is a big-endian machine (well, excpet for the new intel macs...)
+some of the binary data tests failed. I've marked those as expected to fail so
+that the whole suite does not fail beacuse of this.
+
+Note that we are not making binary packages for OS/X, so this will be a source-
+only release. These changes will not affect the Linux distributions. The test
+changes may affect the Solaris dist, but not in an operational way.
+
 Version 3.6.0
 
 Updated rpm spec file using a patch from Patrice Dumas.
