@@ -41,6 +41,7 @@
 #include "Structure.h"
 #include "Sequence.h"
 #include "DDS.h"
+#include "ConstraintEvaluator.h"
 #include "Error.h"
 #include "util.h"
 #include "cgi_util.h"
@@ -295,7 +296,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_jdate(int argc, BaseType *argv[], DDS &dds)
+proj_dods_jdate(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -306,7 +307,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_jdate, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_jdate, 0); // 0 == no BaseType args
 }
 
 // Same as the above function, but for ymd dates.
@@ -332,7 +333,7 @@ Please report this error.");
 }
 
 void
-proj_dods_date(int argc, BaseType *argv[], DDS &dds)
+proj_dods_date(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -343,7 +344,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_date, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_date, 0); // 0 == no BaseType args
 }
 
 /************************ DODS_Time functions *************************/
@@ -368,7 +369,7 @@ Please report this error.");
 }
 
 void
-proj_dods_time(int argc, BaseType *argv[], DDS &dds)
+proj_dods_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -381,7 +382,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_time, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_time, 0); // 0 == no BaseType args
 }
 
 /*************************** Date/Time functions *************************/
@@ -411,7 +412,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_date_time(int argc, BaseType *argv[], DDS &dds)
+proj_dods_date_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -424,7 +425,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_date_time, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_date_time, 0); // 0 == no BaseType args
 }
 
 /*************************** Decimal/Year functions *************************/
@@ -455,7 +456,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds)
+proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -468,7 +469,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_decimal_year, 0); // 0 == no BaseType args
 }
 
 /*************************** Decimal/Year functions *************************/
@@ -499,7 +500,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds)
+proj_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -512,7 +513,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_startdecimal_year, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_startdecimal_year, 0); // 0 == no BaseType args
 }
 
 /*************************** Decimal/Year functions *************************/
@@ -543,7 +544,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds)
+proj_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -556,7 +557,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_enddecimal_year, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_enddecimal_year, 0); // 0 == no BaseType args
 }
 
 /************************ DODS_StartDate functions *************************/
@@ -582,7 +583,7 @@ Please report this error.");
 }
 
 void
-proj_dods_startdate(int argc, BaseType *argv[], DDS &dds)
+proj_dods_startdate(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -593,7 +594,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_startdate, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_startdate, 0); // 0 == no BaseType args
 }
 
 /************************ DODS_StartTime functions *************************/
@@ -617,7 +618,7 @@ Please report this error.");
 }
 
 void
-proj_dods_starttime(int argc, BaseType *argv[], DDS &dds)
+proj_dods_starttime(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -630,7 +631,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_starttime, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_starttime, 0); // 0 == no BaseType args
 }
 
 /*************************** StartDate/Time functions *************************/
@@ -660,7 +661,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_startdate_time(int argc, BaseType *argv[], DDS &dds)
+proj_dods_startdate_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -673,7 +674,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_startdate_time, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_startdate_time, 0); // 0 == no BaseType args
 }
 
 /************************ DODS_EndDate functions *************************/
@@ -699,7 +700,7 @@ Please report this error.");
 }
 
 void
-proj_dods_enddate(int argc, BaseType *argv[], DDS &dds)
+proj_dods_enddate(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -710,7 +711,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_enddate, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_enddate, 0); // 0 == no BaseType args
 }
 
 /************************ DODS_EndTime functions *************************/
@@ -734,7 +735,7 @@ Please report this error.");
 }
 
 void
-proj_dods_endtime(int argc, BaseType *argv[], DDS &dds)
+proj_dods_endtime(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -747,7 +748,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_endtime, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_endtime, 0); // 0 == no BaseType args
 }
 
 /*************************** EndDate/Time functions *************************/
@@ -777,7 +778,7 @@ Please report this error.");
 // for the matching selection function (above) to be called.
 
 void
-proj_dods_enddate_time(int argc, BaseType *argv[], DDS &dds)
+proj_dods_enddate_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
 	throw Error(malformed_expr,
@@ -790,7 +791,7 @@ Expected zero or one arguments.");
 
     // Add the selection function to the CE
 
-    dds.append_clause(sel_dods_enddate_time, 0); // 0 == no BaseType args
+    ce.append_clause(sel_dods_enddate_time, 0); // 0 == no BaseType args
 }
 
 // $Log: ce_functions.cc,v $

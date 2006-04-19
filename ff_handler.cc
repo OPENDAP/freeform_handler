@@ -33,6 +33,7 @@ static char not_used rcsid[]={"$Id$"};
 #include "DDS.h"
 #include "DAS.h"
 #include "DataDDS.h"
+#include "ConstraintEvaluator.h"
 
 #include "FFTypeFactory.h"
 #include "ObjectType.h"
@@ -48,35 +49,35 @@ extern void read_descriptors(DDS &das, const string &filename) throw(Error);
 extern void get_attributes(DAS &das, string filename) throw(Error);
 
 void
-register_functions(DDS &dds)
+register_functions(ConstraintEvaluator &ce)
 {
-    dds.add_function("date", func_date);
-    dds.add_function("date_range", func_date_range);
-    dds.add_function("start_date", func_startdate);
-    dds.add_function("end_date", func_enddate);
-    dds.add_function("DODS_JDate", proj_dods_jdate);
-    dds.add_function("DODS_Date", proj_dods_date);
-    dds.add_function("DODS_StartDate", proj_dods_startdate);
-    dds.add_function("DODS_EndDate", proj_dods_enddate);
+    ce.add_function("date", func_date);
+    ce.add_function("date_range", func_date_range);
+    ce.add_function("start_date", func_startdate);
+    ce.add_function("end_date", func_enddate);
+    ce.add_function("DODS_JDate", proj_dods_jdate);
+    ce.add_function("DODS_Date", proj_dods_date);
+    ce.add_function("DODS_StartDate", proj_dods_startdate);
+    ce.add_function("DODS_EndDate", proj_dods_enddate);
 
-    dds.add_function("time", func_time);
-    dds.add_function("start_time", func_starttime);
-    dds.add_function("end_time", func_endtime);
-    dds.add_function("DODS_Time", proj_dods_time);
-    dds.add_function("DODS_StartTime", proj_dods_starttime);
-    dds.add_function("DODS_EndTime", proj_dods_endtime);
+    ce.add_function("time", func_time);
+    ce.add_function("start_time", func_starttime);
+    ce.add_function("end_time", func_endtime);
+    ce.add_function("DODS_Time", proj_dods_time);
+    ce.add_function("DODS_StartTime", proj_dods_starttime);
+    ce.add_function("DODS_EndTime", proj_dods_endtime);
 
-    dds.add_function("date_time", func_date_time);
-    dds.add_function("start_date_time", func_startdate_time);
-    dds.add_function("end_date_time", func_enddate_time);
-    dds.add_function("DODS_Date_Time", proj_dods_date_time);
-    dds.add_function("DODS_StartDate_Time", proj_dods_startdate_time);
-    dds.add_function("DODS_EndDate_Time", proj_dods_enddate_time);
+    ce.add_function("date_time", func_date_time);
+    ce.add_function("start_date_time", func_startdate_time);
+    ce.add_function("end_date_time", func_enddate_time);
+    ce.add_function("DODS_Date_Time", proj_dods_date_time);
+    ce.add_function("DODS_StartDate_Time", proj_dods_startdate_time);
+    ce.add_function("DODS_EndDate_Time", proj_dods_enddate_time);
 
     // Use date() and date_time() comparison functions.
-    dds.add_function("DODS_Decimal_Year", proj_dods_decimal_year);
-    dds.add_function("DODS_StartDecimal_Year", proj_dods_startdecimal_year);
-    dds.add_function("DODS_EndDecimal_Year", proj_dods_enddecimal_year);
+    ce.add_function("DODS_Decimal_Year", proj_dods_decimal_year);
+    ce.add_function("DODS_StartDecimal_Year", proj_dods_startdecimal_year);
+    ce.add_function("DODS_EndDecimal_Year", proj_dods_enddecimal_year);
 }
 
 int 
@@ -96,26 +97,47 @@ main(int argc, char *argv[])
 	  }
 
 	  case DODSFilter::DDS_Response: {
-	      FFTypeFactory ff_factory;
+	    FFTypeFactory ff_factory;
 	    DDS dds(&ff_factory);
+            ConstraintEvaluator ce;
 
 	    read_descriptors(dds, df.get_dataset_name());
 	    df.read_ancillary_dds(dds);
-	    df.send_dds(dds, true);
+	    df.send_dds(dds, ce, true);
 	    break;
 	  }
 
 	  case DODSFilter::DataDDS_Response: {
-	      FFTypeFactory ff_factory;
+            FFTypeFactory ff_factory;
 	    DDS dds(&ff_factory);
+            ConstraintEvaluator ce;
 
-	    register_functions(dds);
+	    register_functions(ce);
 	    dds.filename(df.get_dataset_name());
 	    read_descriptors(dds, df.get_dataset_name()); 
 	    df.read_ancillary_dds(dds);
-	    df.send_data(dds, stdout);
+	    df.send_data(dds, ce, stdout);
 	    break;
 	  }
+
+          case DODSFilter::DDX_Response: {
+            FFTypeFactory ff_factory;
+            DDS dds(&ff_factory);
+            DAS das;
+            ConstraintEvaluator ce;
+
+            register_functions(ce);
+            dds.filename(df.get_dataset_name());
+            read_descriptors(dds, df.get_dataset_name()); 
+
+            get_attributes(das, df.get_dataset_name());
+            df.read_ancillary_das(das);
+
+            dds.transfer_attributes(&das);
+
+            df.send_ddx(dds, ce, stdout);
+            break;
+          }
 
 	  case DODSFilter::Version_Response: {
 	    if (df.get_cgi_version() == "")
