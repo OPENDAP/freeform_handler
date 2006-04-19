@@ -41,9 +41,9 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor isascii memmove memset pow sqrt strcasecmp strchr strcspn strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
 
 dnl Checks for specific libraries
-AC_CHECK_LIBDAP([3.6.0],
+AC_CHECK_LIBDAP([3.7.0],
  [
-  LIBS="$LIBS $DAP_LIBS"
+  LIBS="$LIBS $DAP_SERVER_LIBS"
   CPPFLAGS="$CPPFLAGS $DAP_CFLAGS"
  ],
  [ AC_MSG_ERROR([Cannot find libdap])
