@@ -28,6 +28,8 @@
 
 #include <string>
 
+#include "BaseTypeFactory.h"
+
 // Class declarations; Make sure to include the corresponding headers in the
 // implementation file.
 

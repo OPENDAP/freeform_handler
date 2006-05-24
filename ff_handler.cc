@@ -48,38 +48,6 @@ const string cgi_version = PACKAGE_VERSION;
 extern void read_descriptors(DDS &das, const string &filename) throw(Error);
 extern void get_attributes(DAS &das, string filename) throw(Error);
 
-void
-register_functions(ConstraintEvaluator &ce)
-{
-    ce.add_function("date", func_date);
-    ce.add_function("date_range", func_date_range);
-    ce.add_function("start_date", func_startdate);
-    ce.add_function("end_date", func_enddate);
-    ce.add_function("DODS_JDate", proj_dods_jdate);
-    ce.add_function("DODS_Date", proj_dods_date);
-    ce.add_function("DODS_StartDate", proj_dods_startdate);
-    ce.add_function("DODS_EndDate", proj_dods_enddate);
-
-    ce.add_function("time", func_time);
-    ce.add_function("start_time", func_starttime);
-    ce.add_function("end_time", func_endtime);
-    ce.add_function("DODS_Time", proj_dods_time);
-    ce.add_function("DODS_StartTime", proj_dods_starttime);
-    ce.add_function("DODS_EndTime", proj_dods_endtime);
-
-    ce.add_function("date_time", func_date_time);
-    ce.add_function("start_date_time", func_startdate_time);
-    ce.add_function("end_date_time", func_enddate_time);
-    ce.add_function("DODS_Date_Time", proj_dods_date_time);
-    ce.add_function("DODS_StartDate_Time", proj_dods_startdate_time);
-    ce.add_function("DODS_EndDate_Time", proj_dods_enddate_time);
-
-    // Use date() and date_time() comparison functions.
-    ce.add_function("DODS_Decimal_Year", proj_dods_decimal_year);
-    ce.add_function("DODS_StartDecimal_Year", proj_dods_startdecimal_year);
-    ce.add_function("DODS_EndDecimal_Year", proj_dods_enddecimal_year);
-}
-
 int 
 main(int argc, char *argv[])
 {

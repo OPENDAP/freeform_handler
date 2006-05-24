@@ -31,6 +31,8 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 
+void register_functions(ConstraintEvaluator &ce) ;
+
 bool func_date(int argc, BaseType *argv[], DDS &);
 bool func_date_range(int argc, BaseType *argv[], DDS &);
 

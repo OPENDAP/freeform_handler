@@ -17,6 +17,12 @@ AM_CPPFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 
 bin_PROGRAMS = dap_ff_handler
 
+if OPENDAPSERVER
+    lib_LTLIBRARIES = libff_handler.la libff_module.la
+else
+    lib_LTLIBRARIES = libff_handler.la
+endif
+
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
 	FFFloat32.cc FFInt16.cc FFStr.cc FFUInt32.cc
@@ -37,7 +43,7 @@ HANDLER_HDR = ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h      \
 	FFTypeFactory.h config_ff.h
 
 
-HANDLER_SRC = util_ff.cc ff_read.c ff_handler.cc ffdds.cc ffdas.cc	\
+HANDLER_SRC = util_ff.cc ff_read.c ffdds.cc ffdas.cc	\
 	ce_functions.cc date_proc.cc DODS_Date.cc			\
 	DODS_Time.cc DODS_Time_Factory.cc DODS_Date_Factory.cc		\
 	DODS_Date_Time.cc DODS_Date_Time_Factory.cc			\
@@ -46,9 +52,18 @@ HANDLER_SRC = util_ff.cc ff_read.c ff_handler.cc ffdds.cc ffdas.cc	\
 	DODS_EndDate_Factory.cc DODS_EndTime_Factory.cc			\
 	DODS_EndDate_Time_Factory.cc FFTypeFactory.cc
 
-dap_ff_handler_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
-	$(HANDLER_HDR)
-dap_ff_handler_LDADD = FFND/libfreeform.a FFND/libmaxmin.a
+SERVER_SRC = FFRequestHandler.cc FFModule.cc
+
+SERVER_HDR = FFRequestHandler.h FFModule.h
+
+libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) $(HANDLER_HDR)
+
+libff_module_la_SOURCES = $(SERVER_SRC) $(SERVER_HDR)
+libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
+libff_module_la_LDFLAGS = libff_handler.la -LFFND -lfreeform -lmaxmin $(BES_LDFLAGS)
+
+dap_ff_handler_SOURCES =  ff_handler.cc
+dap_ff_handler_LDADD = libff_handler.la FFND/libfreeform.a FFND/libmaxmin.a
 
 DEJATOOL = dap_ff_handler
 

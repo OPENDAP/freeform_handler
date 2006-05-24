@@ -17,6 +17,7 @@ AC_PROG_INSTALL
 AC_PROG_LEX
 AC_PROG_RANLIB
 AC_PROG_YACC
+AC_PROG_LIBTOOL
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -48,6 +49,27 @@ AC_CHECK_LIBDAP([3.7.0],
  ],
  [ AC_MSG_ERROR([Cannot find libdap])
 ])
+
+AC_ARG_WITH([bes],
+            [AS_HELP_STRING([--with-bes=PATH],[bes install root directory])],
+            [BES_PATH=${withval}], 
+            [BES_PATH="/usr/local"])
+
+dnl Simple test for BES. A better test would look something like the libdap
+dnl macro written by Patrice. This will get us going... If --with-bes is not
+dnl given, then don't build the bes code. jhrg 10/3/05
+if test -x "${BES_PATH}/bin/bes-config"
+then
+    AM_CONDITIONAL([OPENDAPSERVER], [true])
+    BES_CPPFLAGS="`${BES_PATH}/bin/bes-config --cflags`"
+    AC_SUBST([BES_CPPFLAGS])
+    BES_LDFLAGS="`${BES_PATH}/bin/bes-config --libs`"
+    AC_SUBST([BES_LDFLAGS])
+    BES_MODULE_DIR="`${BES_PATH}/bin/bes-config --prefix`/lib/bes"
+    AC_SUBST([BES_MODULE_DIR])
+else
+    AM_CONDITIONAL([OPENDAPSERVER], [false])
+fi
 
 AC_CANONICAL_HOST
 
