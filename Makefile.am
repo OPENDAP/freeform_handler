@@ -13,7 +13,8 @@ SUBDIRS = FFND
 
 # There are some defines which must be set with you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
-AM_CPPFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
+AM_CXXFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
+AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 
 bin_PROGRAMS = dap_ff_handler
 
@@ -58,7 +59,7 @@ SERVER_HDR = FFRequestHandler.h FFModule.h
 
 libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) $(HANDLER_HDR)
 
-libff_module_la_SOURCES = $(SERVER_SRC) $(SERVER_HDR)
+libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(SERVER_SRC) $(FFTYPE_HDR) $(HANDLER_HDR) $(SERVER_HDR)
 libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libff_module_la_LDFLAGS = libff_handler.la -LFFND -lfreeform -lmaxmin $(BES_LDFLAGS)
 
