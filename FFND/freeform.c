@@ -1007,11 +1007,13 @@ void fd_destroy_format_data(FORMAT_DATA_PTR fd)
 	fd->format = NULL;
 	fd->data = NULL;
 	
+        fd->state.unused = 0x1FFF; /* Replaced (unsigned)UINT_MAX; w/0x1FFF
+                                      jhrg 6/13/06 */
+                                   /* Changed from ULONG_MAX to UINT_MAX 
+                                      for 64-bit machines. jhrg 2/10/06 */
 	fd->state.byte_order = 0;
 	fd->state.new_record = 0;
 	fd->state.locked     = 0;
-	fd->state.unused = (unsigned)UINT_MAX; /* Changed from ULONG_MAX to UINT_MAX 
-                                        for 64-bit machines. jhrg 2/10/06 */
 	
 	memFree(fd, "fd");
 	memTrace("Leaving");
