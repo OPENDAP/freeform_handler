@@ -18,10 +18,10 @@ AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 
 bin_PROGRAMS = dap_ff_handler
 
+lib_LTLIBRARIES = libff_handler.la
 if OPENDAPSERVER
-    lib_LTLIBRARIES = libff_handler.la libff_module.la
-else
-    lib_LTLIBRARIES = libff_handler.la
+    lib_besdir=$(prefix)/lib/bes
+    lib_bes_LTLIBRARIES = libff_module.la
 endif
 
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\

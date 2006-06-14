@@ -34,13 +34,13 @@
 using std::endl ;
 
 #include "FFModule.h"
-#include "DODSRequestHandlerList.h"
+#include "BESRequestHandlerList.h"
 #include "FFRequestHandler.h"
-#include "ContainerStorageList.h"
-#include "ContainerStorageCatalog.h"
-#include "DirectoryCatalog.h"
-#include "CatalogList.h"
-#include "DODSLog.h"
+#include "BESContainerStorageList.h"
+#include "BESContainerStorageCatalog.h"
+#include "BESCatalogDirectory.h"
+#include "BESCatalogList.h"
+#include "BESLog.h"
 
 #define FF_NAME "ff"
 #define FF_CATALOG "catalog"
@@ -48,41 +48,41 @@ using std::endl ;
 void
 FFModule::initialize()
 {
-    if( DODSLog::TheLog()->is_verbose() )
-	(*DODSLog::TheLog()) << "Initializing FF:" << endl ;
+    if( BESLog::TheLog()->is_verbose() )
+	(*BESLog::TheLog()) << "Initializing FF:" << endl ;
 
-    if( DODSLog::TheLog()->is_verbose() )
-	(*DODSLog::TheLog()) << "    adding " << FF_NAME << " request handler" 
+    if( BESLog::TheLog()->is_verbose() )
+	(*BESLog::TheLog()) << "    adding " << FF_NAME << " request handler" 
 		      << endl ;
-    DODSRequestHandlerList::TheList()->add_handler( FF_NAME, new FFRequestHandler( FF_NAME ) ) ;
+    BESRequestHandlerList::TheList()->add_handler( FF_NAME, new FFRequestHandler( FF_NAME ) ) ;
 
-    if( DODSLog::TheLog()->is_verbose() )
-	(*DODSLog::TheLog()) << "    adding " << FF_NAME << " catalog" 
+    if( BESLog::TheLog()->is_verbose() )
+	(*BESLog::TheLog()) << "    adding " << FF_NAME << " catalog" 
 		      << endl ;
-    CatalogList::TheCatalogList()->add_catalog( new DirectoryCatalog( FF_CATALOG ) ) ;
+    BESCatalogList::TheCatalogList()->add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
 
-    if( DODSLog::TheLog()->is_verbose() )
-	(*DODSLog::TheLog()) << "Adding Catalog Container Storage" << endl;
-    ContainerStorageCatalog *csc = new ContainerStorageCatalog( FF_CATALOG ) ;
-    ContainerStorageList::TheList()->add_persistence( csc ) ;
+    if( BESLog::TheLog()->is_verbose() )
+	(*BESLog::TheLog()) << "Adding Catalog Container Storage" << endl;
+    BESContainerStorageCatalog *csc = new BESContainerStorageCatalog( FF_CATALOG ) ;
+    BESContainerStorageList::TheList()->add_persistence( csc ) ;
 }
 
 void
 FFModule::terminate()
 {
-    if( DODSLog::TheLog()->is_verbose() )
-	(*DODSLog::TheLog()) << "Removing FF Handlers" << endl;
-    DODSRequestHandler *rh = DODSRequestHandlerList::TheList()->remove_handler( FF_NAME ) ;
+    if( BESLog::TheLog()->is_verbose() )
+	(*BESLog::TheLog()) << "Removing FF Handlers" << endl;
+    BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( FF_NAME ) ;
     if( rh ) delete rh ;
 
-    if( DODSLog::TheLog()->is_verbose() )
-	(*DODSLog::TheLog()) << "Removing catalog Container Storage" << endl;
-    ContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
+    if( BESLog::TheLog()->is_verbose() )
+	(*BESLog::TheLog()) << "Removing catalog Container Storage" << endl;
+    BESContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
 }
 
 extern "C"
 {
-    OPeNDAPAbstractModule *maker()
+    BESAbstractModule *maker()
     {
 	return new FFModule ;
     }

@@ -32,9 +32,9 @@
 #ifndef A_FFModule_H
 #define A_FFModule_H 1
 
-#include "OPeNDAPAbstractModule.h"
+#include "BESAbstractModule.h"
 
-class FFModule : public OPeNDAPAbstractModule
+class FFModule : public BESAbstractModule
 {
 public:
     				FFModule() {}

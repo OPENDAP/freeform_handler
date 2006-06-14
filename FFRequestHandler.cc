@@ -37,13 +37,13 @@
 
 #include "DAS.h"
 #include "DDS.h"
-#include "DODSInfo.h"
-#include "DODSResponseNames.h"
-#include "DODSContainer.h"
-#include "DODSResponseHandler.h"
-#include "DODSVersionInfo.h"
-#include "OPeNDAPDataNames.h"
-#include "DODSHandlerException.h"
+#include "BESInfo.h"
+#include "BESResponseNames.h"
+#include "BESContainer.h"
+#include "BESResponseHandler.h"
+#include "BESVersionInfo.h"
+#include "BESDataNames.h"
+#include "BESHandlerException.h"
 
 long BufPtr = 0; // cache pointer
 long BufSiz =0; // Cache size
@@ -53,7 +53,7 @@ extern void read_descriptors(DDS &das, const string &filename) throw(Error);
 extern void get_attributes(DAS &das, string filename) throw(Error);
 
 FFRequestHandler::FFRequestHandler( string name )
-    : DODSRequestHandler( name )
+    : BESRequestHandler( name )
 {
     add_handler( DAS_RESPONSE, FFRequestHandler::ff_build_das ) ;
     add_handler( DDS_RESPONSE, FFRequestHandler::ff_build_dds ) ;
@@ -67,7 +67,7 @@ FFRequestHandler::~FFRequestHandler()
 }
 
 bool
-FFRequestHandler::ff_build_das( DODSDataHandlerInterface &dhi )
+FFRequestHandler::ff_build_das( BESDataHandlerInterface &dhi )
 {
     DAS *das = (DAS *)dhi.response_handler->get_response_object() ;
 
@@ -77,7 +77,7 @@ FFRequestHandler::ff_build_das( DODSDataHandlerInterface &dhi )
 }
 
 bool
-FFRequestHandler::ff_build_dds( DODSDataHandlerInterface &dhi )
+FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
 {
     DDS *dds = (DDS *)dhi.response_handler->get_response_object() ;
 
@@ -95,7 +95,7 @@ FFRequestHandler::ff_build_dds( DODSDataHandlerInterface &dhi )
 }
 
 bool
-FFRequestHandler::ff_build_data( DODSDataHandlerInterface &dhi )
+FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
 {
     DDS *dds = (DDS *)dhi.response_handler->get_response_object() ;
 
@@ -116,18 +116,18 @@ FFRequestHandler::ff_build_data( DODSDataHandlerInterface &dhi )
 }
 
 bool
-FFRequestHandler::ff_build_help( DODSDataHandlerInterface &dhi )
+FFRequestHandler::ff_build_help( BESDataHandlerInterface &dhi )
 {
-    DODSInfo *info = (DODSInfo *)dhi.response_handler->get_response_object() ;
+    BESInfo *info = (BESInfo *)dhi.response_handler->get_response_object() ;
     //info->add_data( (string)"No help currently available for netCDF handler.\n" ) ;
 
     return true ;
 }
 
 bool
-FFRequestHandler::ff_build_version( DODSDataHandlerInterface &dhi )
+FFRequestHandler::ff_build_version( BESDataHandlerInterface &dhi )
 {
-    DODSVersionInfo *info = (DODSVersionInfo *)dhi.response_handler->get_response_object() ;
+    BESVersionInfo *info = (BESVersionInfo *)dhi.response_handler->get_response_object() ;
     info->addHandlerVersion( PACKAGE_NAME, PACKAGE_VERSION ) ;
     return true ;
 }

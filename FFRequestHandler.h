@@ -28,18 +28,18 @@
 #ifndef I_FFRequestHandler_H
 #define I_FFRequestHandler_H 1
 
-#include "DODSRequestHandler.h"
+#include "BESRequestHandler.h"
 
-class FFRequestHandler : public DODSRequestHandler {
+class FFRequestHandler : public BESRequestHandler {
 public:
 			FFRequestHandler( string name ) ;
     virtual		~FFRequestHandler( void ) ;
 
-    static bool		ff_build_das( DODSDataHandlerInterface &dhi ) ;
-    static bool		ff_build_dds( DODSDataHandlerInterface &dhi ) ;
-    static bool		ff_build_data( DODSDataHandlerInterface &dhi ) ;
-    static bool		ff_build_help( DODSDataHandlerInterface &dhi ) ;
-    static bool		ff_build_version( DODSDataHandlerInterface &dhi ) ;
+    static bool		ff_build_das( BESDataHandlerInterface &dhi ) ;
+    static bool		ff_build_dds( BESDataHandlerInterface &dhi ) ;
+    static bool		ff_build_data( BESDataHandlerInterface &dhi ) ;
+    static bool		ff_build_help( BESDataHandlerInterface &dhi ) ;
+    static bool		ff_build_version( BESDataHandlerInterface &dhi ) ;
 };
 
 #endif
