@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([freeform_handler], [3.6.1], [dods-tech@unidata.ucar.edu])
+AC_INIT([freeform_handler], [3.7.0], [dods-tech@unidata.ucar.edu])
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
 
@@ -15,7 +15,7 @@ AC_PROG_CC
 AC_PROG_AWK
 AC_PROG_INSTALL
 AC_PROG_LEX
-AC_PROG_RANLIB
+# AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_LIBTOOL
 
@@ -68,10 +68,19 @@ then
     BES_MODULE_DIR="`${BES_PATH}/bin/bes-config --prefix`/lib/bes"
     AC_SUBST([BES_MODULE_DIR])
 else
-    AM_CONDITIONAL([OPENDAPSERVER], [false])
+    AC_CHECK_BES([3.1.0],
+    [
+        BES_LDFLAGS=$BES_LIBS
+        # I think the AC_SUBST([BES_MODULE_DIR]) in bes.m4 will put that 
+        # symbol in the output. Same for BES_CPPFLAGS. jhrg 5/1/06
+        AM_CONDITIONAL([OPENDAPSERVER], [true])
+    ],
+    [ AM_CONDITIONAL([OPENDAPSERVER], [false])
+    ])
+
 fi
 
-AC_CANONICAL_HOST
+dnl AC_CANONICAL_HOST
 
 case "$host" in
     *linux*) CPPFLAGS="$CPPFLAGS -DLINUX" ;;

@@ -13,33 +13,31 @@ AM_CPPFLAGS = -DFREEFORM
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-noinst_LIBRARIES = libfreeform.a libmaxmin.a
+lib_LTLIBRARIES = libfreeform.la
 
 noinst_PROGRAMS = readfile newform chkform bufform checkvar
 
-libfreeform_a_SOURCES = $(FF_SRCS) $(FF_HDRS)
-
-libmaxmin_a_SOURCES = mm_make.c
+libfreeform_la_SOURCES = $(FF_SRCS) $(FF_HDRS)
 
 readfile_SOURCES = readfile.c
 readfile_CPPFLAGS = -DFREEFORM
-readfile_LDADD = libfreeform.a libmaxmin.a
+readfile_LDADD = libfreeform.la
 
 newform_SOURCES = newform.c
 newform_CPPFLAGS = -DFREEFORM
-newform_LDADD = libfreeform.a libmaxmin.a
+newform_LDADD = libfreeform.la
 
 chkform_SOURCES = chkform.c
 chkform_CPPFLAGS = -DFF_MAIN -DFREEFORM
-chkform_LDADD = libfreeform.a libmaxmin.a
+chkform_LDADD = libfreeform.la
 
 bufform_SORUCES = bufform.c
 bufform_CPPFLAGS = -DFF_MAIN -DFREEFORM
-bufform_LDADD = libfreeform.a libmaxmin.a
+bufform_LDADD = libfreeform.la
 
 checkvar_SOURCES = checkvar.c
 checkvar_CPPFLAGS = -DFREEFORM
-checkvar_LDADD = libfreeform.a libmaxmin.a
+checkvar_LDADD = libfreeform.la
 
 EXTRA_DIST = 
 
@@ -48,7 +46,7 @@ CLEANFILES = *~
 FF_SRCS = afm2bfm.c avlins.c avlfree.c cv_units.c dbevents.c dl_lists.c \
 	  eqn_util.c error.c eval_eqn.c ff_utils.c file2buf.c formlist.c \
 	  freeform.c makedbin.c makeform.c name_tab.c ndarray.c os_utils.c \
-	  proclist.c setdbin.c showdbin.c  
+	  proclist.c setdbin.c showdbin.c mm_make.c
 
 FF_HDRS = avl.h err.h ff_types.h memtrack.h ndarray.h		\
 	avltree.h eval_eqn.h freeform.h menuindx.h os_utils.h	\

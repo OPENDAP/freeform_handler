@@ -1,14 +1,14 @@
 Summary:         FreeForm data handler for the OPeNDAP Data server
 Name:            freeform_handler
-Version:         3.6.1
-Release:         2
+Version:         3.7.0
+Release:         1
 License:         LGPL
 Group:           System Environment/Daemons 
 Source0:         ftp://ftp.unidata.ucar.edu/pub/opendap/source/%{name}-%{version}.tar.gz
 URL:             http://www.opendap.org/
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.6.0
+BuildRequires:   libdap-devel >= 3.7.0
 #Requires:        dap-server
 
 %description 

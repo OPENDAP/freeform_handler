@@ -1,3 +1,48 @@
+2006-06-13  James Gallagher <jgallagher@opendap.org>
+
+	freeform.c: fixed a warning about the state structure and bit fields.
+	libdap.m4: Updated.
+
+2006-05-26  Patrick West <pwest@ucar.edu>
+
+	include ff type classes in module library
+
+2006-05-25  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2006-05-24  Patrick West <pwest@ucar.edu>
+
+	bes enabled
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	Added libdap.m4 and updated the version number of libdap
+	in configure.ac
+
+2006-04-19  James Gallagher <jgallagher@opendap.org>
+
+	ce_functions.{cc,h}, ff_handler.cc: Updated for libdap 3.7.0. Added
+	the ConstraintEvaluator object, support for the DDX return and modified
+	the 'projection functions' so they take a CE as a fourth argument.
+
+2006-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Fixed a syntax error in configure.ac
+
+2006-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Updated to version 3.6.1.
+
+2006-03-27  James Gallagher <jgallagher@opendap.org>
+
+	Changed the data.1.exp test file so that tests with binary data are
+	marked 'expect fail.' This way when the tests are run on big-endian
+	machines (the binary files were written on a little endian machine)
+	the tests don't cause the entire suite to fail. Someday we might
+	implement a flag to twidle the bytes of binary data... Then we could
+	make these tests work.
+
 2006-03-27  James Gallagher <jgallagher@opendap.org>
 
 	Changed the data.1.exp test file so that tests with binary data are
