@@ -43,7 +43,6 @@
 #include "BESResponseHandler.h"
 #include "BESVersionInfo.h"
 #include "BESDataNames.h"
-#include "BESHandlerException.h"
 
 long BufPtr = 0; // cache pointer
 long BufSiz =0; // Cache size
@@ -119,7 +118,13 @@ bool
 FFRequestHandler::ff_build_help( BESDataHandlerInterface &dhi )
 {
     BESInfo *info = (BESInfo *)dhi.response_handler->get_response_object() ;
-    //info->add_data( (string)"No help currently available for netCDF handler.\n" ) ;
+    string handles = (string)DAS_RESPONSE
+                     + "," + DDS_RESPONSE
+                     + "," + DATA_RESPONSE
+                     + "," + HELP_RESPONSE
+                     + "," + VERS_RESPONSE ;
+    info->add_tag( "handles", handles ) ;
+    info->add_tag( "version", PACKAGE_STRING ) ;
 
     return true ;
 }
