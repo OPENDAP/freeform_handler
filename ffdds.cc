@@ -74,7 +74,7 @@ static char rcsid[] not_used ={"$Id$"};
 extern int StrLens[MaxStr]; // List of string lengths
 
 void
-read_descriptors(DDS &dds_table, const string &filename) throw (Error)
+ff_read_descriptors(DDS &dds_table, const string &filename) throw (Error)
 {
   int error = 0;
   int i = 0;
@@ -331,7 +331,7 @@ main(int argc, char *argv[])
     string err;
 
     try {
-      read_descriptors(dds, (string)argv[1]);
+      ff_read_descriptors(dds, (string)argv[1]);
       dds.print();
     }
     catch (Error &e) {

@@ -364,7 +364,7 @@ add_variable_containers(DAS &das, const string &filename) throw(Error)
 // otherwise. 
 
 void
-get_attributes(DAS &das, string filename) throw(Error)
+ff_get_attributes(DAS &das, string filename) throw(Error)
 {
     AttrTable *attr_table_p = new AttrTable;
 
@@ -385,7 +385,7 @@ main(int argc, char *argv[])
     DAS das;
 
     try {
-      get_attributes(&das, (string)argv[1]);
+      ff_get_attributes(&das, (string)argv[1]);
       das.print();
     }
     catch (Error &e) {

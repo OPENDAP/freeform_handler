@@ -48,8 +48,8 @@ long BufPtr = 0; // cache pointer
 long BufSiz =0; // Cache size
 char *BufVal = NULL; // cache buffer
 
-extern void read_descriptors(DDS &das, const string &filename) throw(Error);
-extern void get_attributes(DAS &das, string filename) throw(Error);
+extern void ff_read_descriptors(DDS &dds, const string &filename) throw(Error);
+extern void ff_get_attributes(DAS &das, string filename) throw(Error);
 
 FFRequestHandler::FFRequestHandler( string name )
     : BESRequestHandler( name )
@@ -70,7 +70,7 @@ FFRequestHandler::ff_build_das( BESDataHandlerInterface &dhi )
 {
     DAS *das = (DAS *)dhi.response_handler->get_response_object() ;
 
-    get_attributes( *das, dhi.container->get_real_name() ) ;
+    ff_get_attributes( *das, dhi.container->get_real_name() ) ;
 
     return true ;
 }
@@ -83,7 +83,7 @@ FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
     FFTypeFactory *factory = new FFTypeFactory ;
     dds->set_factory( factory ) ;
 
-    read_descriptors( *dds, dhi.container->get_real_name() ) ;
+    ff_read_descriptors( *dds, dhi.container->get_real_name() ) ;
 
     dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 
@@ -104,7 +104,7 @@ FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
     // FIX: WHAT NOW???
     //register_functions(ce);
     dds->filename( dhi.container->get_real_name() ) ;
-    read_descriptors( *dds, dhi.container->get_real_name() ) ; 
+    ff_read_descriptors( *dds, dhi.container->get_real_name() ) ; 
 
     dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 

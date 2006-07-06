@@ -45,8 +45,8 @@ long BufSiz =0; // Cache size
 char *BufVal = NULL; // cache buffer
 const string cgi_version = PACKAGE_VERSION;
 
-extern void read_descriptors(DDS &das, const string &filename) throw(Error);
-extern void get_attributes(DAS &das, string filename) throw(Error);
+extern void ff_read_descriptors(DDS &dds, const string &filename) throw(Error);
+extern void ff_get_attributes(DAS &das, string filename) throw(Error);
 
 int 
 main(int argc, char *argv[])
@@ -58,7 +58,7 @@ main(int argc, char *argv[])
 	  case DODSFilter::DAS_Response: {
 	    DAS das;
 
-	    get_attributes(das, df.get_dataset_name());
+	    ff_get_attributes(das, df.get_dataset_name());
 	    df.read_ancillary_das(das);
 	    df.send_das(das);
 	    break;
@@ -69,7 +69,7 @@ main(int argc, char *argv[])
 	    DDS dds(&ff_factory);
             ConstraintEvaluator ce;
 
-	    read_descriptors(dds, df.get_dataset_name());
+	    ff_read_descriptors(dds, df.get_dataset_name());
 	    df.read_ancillary_dds(dds);
 	    df.send_dds(dds, ce, true);
 	    break;
@@ -82,7 +82,7 @@ main(int argc, char *argv[])
 
 	    register_functions(ce);
 	    dds.filename(df.get_dataset_name());
-	    read_descriptors(dds, df.get_dataset_name()); 
+	    ff_read_descriptors(dds, df.get_dataset_name()); 
 	    df.read_ancillary_dds(dds);
 	    df.send_data(dds, ce, stdout);
 	    break;
@@ -96,9 +96,9 @@ main(int argc, char *argv[])
 
             register_functions(ce);
             dds.filename(df.get_dataset_name());
-            read_descriptors(dds, df.get_dataset_name()); 
+            ff_read_descriptors(dds, df.get_dataset_name()); 
 
-            get_attributes(das, df.get_dataset_name());
+            ff_get_attributes(das, df.get_dataset_name());
             df.read_ancillary_das(das);
 
             dds.transfer_attributes(&das);
