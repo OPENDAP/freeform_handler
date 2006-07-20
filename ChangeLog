@@ -1,3 +1,35 @@
+2006-07-06  Patrick West <pwest@ucar.edu>
+
+	dap_cmdmodule library renamed to dap_cmd_module so that all loaded
+	module libraries are named <something>_module
+
+2006-07-06  James Gallagher <jgallagher@opendap.org>
+
+	NCTypeFactory.h: Deleted
+	
+	ff_handler.cc, ffdas.cc, ffdds.cc, FFRequestHandler.cc: Renamed
+	read_descriptors() to ff_read_descriptors() to avoid a name
+	collision with the nc handler's function with the same name.
+	Renamed get_attributes, too.
+
+2006-06-30  Patrick West <pwest@ucar.edu>
+
+	In the help response added begin and end tags called handler to
+	separate the different hander help responses and added a tag
+	called name within the handler tag to say which handler this help
+	is for
+
+2006-06-28  Patrick West <pwest@ucar.edu>
+
+	bes exception updates, cleaned up configuration file
+
+2006-06-15  James Gallagher <jgallagher@opendap.org>
+
+	Modified the build documentation for the 3.7 source release. Also
+	modified the Makefile.am files so that libfreeform will be built
+	as a shared library, which is needed to link that into the
+	ff_module SO.
+
 2006-06-13  James Gallagher <jgallagher@opendap.org>
 
 	freeform.c: fixed a warning about the state structure and bit fields.

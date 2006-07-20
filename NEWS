@@ -1,6 +1,13 @@
 
  $Id$
 
+Version 3.7.1
+
+Fixed a bug (#435) where functions in different handlers with the same names
+clashed when the handlers were loaded as shared object libraries. 
+
+Patrick fixed a problem with the help text.
+
 Version 3.7.0
 
 This version of the FreeForm handler includes an executable for use with
@@ -11,12 +18,14 @@ tested with Server3, although there should be no problems.
 Version 3.6.1
 
 Fixes for Mac OS/X:
-1. A compile-time issue was resolved. With Tiger, configure did not set the 
-compile-time symbol FREEFORM to the correct value. This caused the compile to 
+
+1. A compile-time issue was resolved. With Tiger, configure did not set the
+compile-time symbol FREEFORM to the correct value. This caused the compile to
 fail.
-2. Since the Mac is a big-endian machine (well, excpet for the new intel macs...)
-some of the binary data tests failed. I've marked those as expected to fail so
-that the whole suite does not fail beacuse of this.
+
+2. Since the Mac is a big-endian machine (well, excpet for the new intel
+macs...) some of the binary data tests failed. I've marked those as expected
+to fail so that the whole suite does not fail beacuse of this.
 
 Note that we are not making binary packages for OS/X, so this will be a source-
 only release. These changes will not affect the Linux distributions. The test
