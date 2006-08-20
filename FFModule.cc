@@ -42,22 +42,21 @@ using std::endl ;
 #include "BESCatalogList.h"
 #include "BESLog.h"
 
-#define FF_NAME "ff"
 #define FF_CATALOG "catalog"
 
 void
-FFModule::initialize()
+FFModule::initialize( const string &modname )
 {
     if( BESLog::TheLog()->is_verbose() )
 	(*BESLog::TheLog()) << "Initializing FF:" << endl ;
 
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "    adding " << FF_NAME << " request handler" 
+	(*BESLog::TheLog()) << "    adding " << modname << " request handler" 
 		      << endl ;
-    BESRequestHandlerList::TheList()->add_handler( FF_NAME, new FFRequestHandler( FF_NAME ) ) ;
+    BESRequestHandlerList::TheList()->add_handler( modname, new FFRequestHandler( modname ) ) ;
 
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "    adding " << FF_NAME << " catalog" 
+	(*BESLog::TheLog()) << "    adding " << FF_CATALOG << " catalog" 
 		      << endl ;
     BESCatalogList::TheCatalogList()->add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
 
@@ -68,11 +67,11 @@ FFModule::initialize()
 }
 
 void
-FFModule::terminate()
+FFModule::terminate( const string &modname )
 {
     if( BESLog::TheLog()->is_verbose() )
 	(*BESLog::TheLog()) << "Removing FF Handlers" << endl;
-    BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( FF_NAME ) ;
+    BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( modname ) ;
     if( rh ) delete rh ;
 
     if( BESLog::TheLog()->is_verbose() )

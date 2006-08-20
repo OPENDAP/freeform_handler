@@ -70,7 +70,7 @@ FFRequestHandler::ff_build_das( BESDataHandlerInterface &dhi )
 {
     DAS *das = (DAS *)dhi.response_handler->get_response_object() ;
 
-    ff_get_attributes( *das, dhi.container->get_real_name() ) ;
+    ff_get_attributes( *das, dhi.container->access() ) ;
 
     return true ;
 }
@@ -83,7 +83,7 @@ FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
     FFTypeFactory *factory = new FFTypeFactory ;
     dds->set_factory( factory ) ;
 
-    ff_read_descriptors( *dds, dhi.container->get_real_name() ) ;
+    ff_read_descriptors( *dds, dhi.container->access() ) ;
 
     dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 
@@ -103,8 +103,8 @@ FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
 
     // FIX: WHAT NOW???
     //register_functions(ce);
-    dds->filename( dhi.container->get_real_name() ) ;
-    ff_read_descriptors( *dds, dhi.container->get_real_name() ) ; 
+    dds->filename( dhi.container->access() ) ;
+    ff_read_descriptors( *dds, dhi.container->access() ) ; 
 
     dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 

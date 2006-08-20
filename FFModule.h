@@ -39,8 +39,8 @@ class FFModule : public BESAbstractModule
 public:
     				FFModule() {}
     virtual		    	~FFModule() {}
-    virtual void		initialize() ;
-    virtual void		terminate() ;
+    virtual void		initialize( const string &modname ) ;
+    virtual void		terminate( const string &modname ) ;
 } ;
 
 #endif // A_FFModule_H
