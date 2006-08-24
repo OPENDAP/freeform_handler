@@ -30,6 +30,11 @@
 // Authors:
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
+#ifndef _ff_ce_functions_h
+#define _ff_ce_functions_h 1
+
+class DDS ;
+class ConstraintEvaluator ;
 
 void register_functions(ConstraintEvaluator &ce) ;
 
@@ -100,10 +105,5 @@ bool sel_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds);
 void proj_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 bool sel_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds);
 
-
-
-
-
-
-
+#endif // _ff_ce_functions_h
 

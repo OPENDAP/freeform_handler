@@ -34,6 +34,7 @@
 
 #include "config_ff.h"
 #include "FFTypeFactory.h"
+#include "ce_functions.h"
 
 #include "DAS.h"
 #include "DDS.h"
@@ -85,7 +86,8 @@ FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
 
     ff_read_descriptors( *dds, dhi.container->access() ) ;
 
-    dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
+    register_functions( dhi.ce ) ;
+    dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
 
     dds->set_factory( NULL ) ;
     delete factory ;
@@ -101,12 +103,11 @@ FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
     FFTypeFactory *factory = new FFTypeFactory ;
     dds->set_factory( factory ) ;
 
-    // FIX: WHAT NOW???
-    //register_functions(ce);
     dds->filename( dhi.container->access() ) ;
     ff_read_descriptors( *dds, dhi.container->access() ) ; 
 
-    dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
+    register_functions( dhi.ce ) ;
+    dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
 
     dds->set_factory( NULL ) ;
     delete factory ;
