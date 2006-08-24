@@ -38,7 +38,7 @@ static char not_used rcsid[]={"$Id$"};
 #include "FFTypeFactory.h"
 #include "ObjectType.h"
 #include "cgi_util.h"
-#include "ce_functions.h"
+#include "ff_ce_functions.h"
 
 long BufPtr = 0; // cache pointer
 long BufSiz =0; // Cache size

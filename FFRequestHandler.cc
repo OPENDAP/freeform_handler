@@ -34,7 +34,7 @@
 
 #include "config_ff.h"
 #include "FFTypeFactory.h"
-#include "ce_functions.h"
+#include "ff_ce_functions.h"
 
 #include "DAS.h"
 #include "DDS.h"

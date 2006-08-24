@@ -47,7 +47,7 @@ FFTYPE_HDR = FFArray.h FFFloat32.h FFInt16.h FFStr.h FFUInt32.h	\
 	FFByte.h FFFloat64.h FFInt32.h FFStructure.h FFUrl.h	\
 	FFGrid.h FFSequence.h FFUInt16.h
 
-HANDLER_HDR = ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h      \
+HANDLER_HDR = ff_ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h   \
 	DODS_Date_Time_Factory.h DODS_Date_Time.h DODS_Decimal_Year_Factory.h \
 	DODS_Decimal_Year.h DODS_EndDate_Factory.h			      \
 	DODS_EndDate_Time_Factory.h					      \
@@ -59,7 +59,7 @@ HANDLER_HDR = ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h      \
 
 
 HANDLER_SRC = util_ff.cc ff_read.c ffdds.cc ffdas.cc		\
-	ce_functions.cc date_proc.cc DODS_Date.cc		\
+	ff_ce_functions.cc date_proc.cc DODS_Date.cc		\
 	DODS_Time.cc DODS_Time_Factory.cc DODS_Date_Factory.cc	\
 	DODS_Date_Time.cc DODS_Date_Time_Factory.cc		\
 	DODS_StartDate_Factory.cc DODS_StartTime_Factory.cc	\
