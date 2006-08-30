@@ -86,7 +86,7 @@ FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
 
     ff_read_descriptors( *dds, dhi.container->access() ) ;
 
-    register_functions( dhi.ce ) ;
+    ff_register_functions( dhi.ce ) ;
     dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
 
     dds->set_factory( NULL ) ;
@@ -106,7 +106,7 @@ FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
     dds->filename( dhi.container->access() ) ;
     ff_read_descriptors( *dds, dhi.container->access() ) ; 
 
-    register_functions( dhi.ce ) ;
+    ff_register_functions( dhi.ce ) ;
     dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
 
     dds->set_factory( NULL ) ;

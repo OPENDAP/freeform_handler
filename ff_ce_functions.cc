@@ -63,45 +63,13 @@
 
 #include "ff_ce_functions.h"
 
-void
-register_functions(ConstraintEvaluator &ce)
-{
-    ce.add_function("date", func_date);
-    ce.add_function("date_range", func_date_range);
-    ce.add_function("start_date", func_startdate);
-    ce.add_function("end_date", func_enddate);
-    ce.add_function("DODS_JDate", proj_dods_jdate);
-    ce.add_function("DODS_Date", proj_dods_date);
-    ce.add_function("DODS_StartDate", proj_dods_startdate);
-    ce.add_function("DODS_EndDate", proj_dods_enddate);
-
-    ce.add_function("time", func_time);
-    ce.add_function("start_time", func_starttime);
-    ce.add_function("end_time", func_endtime);
-    ce.add_function("DODS_Time", proj_dods_time);
-    ce.add_function("DODS_StartTime", proj_dods_starttime);
-    ce.add_function("DODS_EndTime", proj_dods_endtime);
-
-    ce.add_function("date_time", func_date_time);
-    ce.add_function("start_date_time", func_startdate_time);
-    ce.add_function("end_date_time", func_enddate_time);
-    ce.add_function("DODS_Date_Time", proj_dods_date_time);
-    ce.add_function("DODS_StartDate_Time", proj_dods_startdate_time);
-    ce.add_function("DODS_EndDate_Time", proj_dods_enddate_time);
-
-    // Use date() and date_time() comparison functions.
-    ce.add_function("DODS_Decimal_Year", proj_dods_decimal_year);
-    ce.add_function("DODS_StartDecimal_Year", proj_dods_startdecimal_year);
-    ce.add_function("DODS_EndDecimal_Year", proj_dods_enddecimal_year);
-}
-
 /** Read an instance of T using a Factory for objects of type T. The Factory
     class for T must read configuration information from the DAS.
 
     @return An instance of the class T. */
 
 template<class T, class T_Factory>
-T
+static T
 get_instance(DDS &dds)
 {
     static T_Factory *tf = 0;
@@ -131,7 +99,7 @@ get_instance(DDS &dds)
     two arguments given. */
 
 template<class T, class T_Factory>
-bool
+static bool
 comparison(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc < 1 || argc > 2)
@@ -170,7 +138,7 @@ comparison(int argc, BaseType *argv[], DDS &dds)
     two arguments given. */
 
 template<class T1, class T1_Factory, class T2, class T2_Factory>
-bool
+static bool
 range_comparison(int argc, BaseType *argv[], DDS &dds)
 {
     if (argc != 2)
@@ -196,7 +164,7 @@ range_comparison(int argc, BaseType *argv[], DDS &dds)
     @param dds The DDS of the dataset.
     @param position Add the new variable to this Structure or Sequence. */
 
-void
+static void
 new_string_variable(const string &name, DDS &dds, BaseType *position = 0)
 {
     // Create the new variable
@@ -238,43 +206,43 @@ type (e.g., a structure, sequence, ...).");
     dds.mark(name, true); // Don't just call set_send_p()!
 }
 
-bool
+static bool
 func_date(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date, DODS_Date_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_startdate(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date, DODS_StartDate_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_enddate(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date, DODS_EndDate_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_date_range(int argc, BaseType *argv[], DDS &dds)
 {
     return range_comparison<DODS_Date, DODS_StartDate_Factory, DODS_Date, DODS_EndDate_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Time, DODS_Time_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_starttime(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Time, DODS_StartTime_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_endtime(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Time, DODS_EndTime_Factory>(argc, argv, dds);
@@ -282,19 +250,19 @@ func_endtime(int argc, BaseType *argv[], DDS &dds)
 
 // This comparision function should be used for decimal dates. 5/29/99 jhrg
 
-bool
+static bool
 func_date_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date_Time, DODS_Date_Time_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_startdate_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date_Time, DODS_StartDate_Time_Factory>(argc, argv, dds);
 }
 
-bool
+static bool
 func_enddate_time(int argc, BaseType *argv[], DDS &dds)
 {
     return comparison<DODS_Date_Time, DODS_EndDate_Time_Factory>(argc, argv, dds);
@@ -306,7 +274,7 @@ func_enddate_time(int argc, BaseType *argv[], DDS &dds)
 // The date and date_time functions should now recognize decimal format years
 // and date-times. 5/30/99 jhrg
 
-bool
+static bool
 sel_dods_jdate(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -329,7 +297,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_jdate(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -346,7 +314,7 @@ Expected zero or one arguments.");
 
 // Same as the above function, but for ymd dates.
 
-bool
+static bool
 sel_dods_date(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -366,7 +334,7 @@ Please report this error.");
     return true;
 }
 
-void
+static void
 proj_dods_date(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -384,7 +352,7 @@ Expected zero or one arguments.");
 /************************ DODS_Time functions *************************/
 
 
-bool
+static bool
 sel_dods_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -402,7 +370,7 @@ Please report this error.");
     return true;
 }
 
-void
+static void
 proj_dods_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -424,7 +392,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
 
-bool
+static bool
 sel_dods_date_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -445,7 +413,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_date_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -467,7 +435,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
 
-bool
+static bool
 sel_dods_decimal_year(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -489,7 +457,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_decimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -511,7 +479,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
 
-bool
+static bool
 sel_dods_startdecimal_year(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -533,7 +501,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -555,7 +523,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
 
-bool
+static bool
 sel_dods_enddecimal_year(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -577,7 +545,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -596,7 +564,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_StartDate functions *************************/
 
-bool
+static bool
 sel_dods_startdate(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -616,7 +584,7 @@ Please report this error.");
     return true;
 }
 
-void
+static void
 proj_dods_startdate(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -633,7 +601,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_StartTime functions *************************/
 
-bool
+static bool
 sel_dods_starttime(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -651,7 +619,7 @@ Please report this error.");
     return true;
 }
 
-void
+static void
 proj_dods_starttime(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -673,7 +641,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
 
-bool
+static bool
 sel_dods_startdate_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -694,7 +662,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_startdate_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -713,7 +681,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_EndDate functions *************************/
 
-bool
+static bool
 sel_dods_enddate(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -733,7 +701,7 @@ Please report this error.");
     return true;
 }
 
-void
+static void
 proj_dods_enddate(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -750,7 +718,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_EndTime functions *************************/
 
-bool
+static bool
 sel_dods_endtime(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -768,7 +736,7 @@ Please report this error.");
     return true;
 }
 
-void
+static void
 proj_dods_endtime(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -790,7 +758,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run. 
 
-bool
+static bool
 sel_dods_enddate_time(int argc, BaseType *[], DDS &dds)
 {
     if (argc != 0)
@@ -811,7 +779,7 @@ Please report this error.");
 // A projection function: This adds a new variable to the DDS and arranges
 // for the matching selection function (above) to be called.
 
-void
+static void
 proj_dods_enddate_time(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce)
 {
     if (argc < 0 || argc > 1)
@@ -826,5 +794,37 @@ Expected zero or one arguments.");
     // Add the selection function to the CE
 
     ce.append_clause(sel_dods_enddate_time, 0); // 0 == no BaseType args
+}
+
+void
+ff_register_functions(ConstraintEvaluator &ce)
+{
+    ce.add_function("date", func_date);
+    ce.add_function("date_range", func_date_range);
+    ce.add_function("start_date", func_startdate);
+    ce.add_function("end_date", func_enddate);
+    ce.add_function("DODS_JDate", proj_dods_jdate);
+    ce.add_function("DODS_Date", proj_dods_date);
+    ce.add_function("DODS_StartDate", proj_dods_startdate);
+    ce.add_function("DODS_EndDate", proj_dods_enddate);
+
+    ce.add_function("time", func_time);
+    ce.add_function("start_time", func_starttime);
+    ce.add_function("end_time", func_endtime);
+    ce.add_function("DODS_Time", proj_dods_time);
+    ce.add_function("DODS_StartTime", proj_dods_starttime);
+    ce.add_function("DODS_EndTime", proj_dods_endtime);
+
+    ce.add_function("date_time", func_date_time);
+    ce.add_function("start_date_time", func_startdate_time);
+    ce.add_function("end_date_time", func_enddate_time);
+    ce.add_function("DODS_Date_Time", proj_dods_date_time);
+    ce.add_function("DODS_StartDate_Time", proj_dods_startdate_time);
+    ce.add_function("DODS_EndDate_Time", proj_dods_enddate_time);
+
+    // Use date() and date_time() comparison functions.
+    ce.add_function("DODS_Decimal_Year", proj_dods_decimal_year);
+    ce.add_function("DODS_StartDecimal_Year", proj_dods_startdecimal_year);
+    ce.add_function("DODS_EndDecimal_Year", proj_dods_enddecimal_year);
 }
 

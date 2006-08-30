@@ -36,7 +36,13 @@
 class DDS ;
 class ConstraintEvaluator ;
 
-void register_functions(ConstraintEvaluator &ce) ;
+void ff_register_functions(ConstraintEvaluator &ce) ;
+
+#if 0
+
+// These are not defined as static functions to keep them out of the global
+// namespace. This was done to prevent name collisions when this code is used
+// to build a BES module. jhrg 8/30/06
 
 bool func_date(int argc, BaseType *argv[], DDS &);
 bool func_date_range(int argc, BaseType *argv[], DDS &);
@@ -104,6 +110,7 @@ bool sel_dods_startdecimal_year(int argc, BaseType *argv[], DDS &dds);
 
 void proj_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds, ConstraintEvaluator &ce);
 bool sel_dods_enddecimal_year(int argc, BaseType *argv[], DDS &dds);
+#endif
 
 #endif // _ff_ce_functions_h
 

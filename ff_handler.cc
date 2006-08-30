@@ -80,7 +80,7 @@ main(int argc, char *argv[])
 	    DDS dds(&ff_factory);
             ConstraintEvaluator ce;
 
-	    register_functions(ce);
+	    ff_register_functions(ce);
 	    dds.filename(df.get_dataset_name());
 	    ff_read_descriptors(dds, df.get_dataset_name()); 
 	    df.read_ancillary_dds(dds);
@@ -94,7 +94,7 @@ main(int argc, char *argv[])
             DAS das;
             ConstraintEvaluator ce;
 
-            register_functions(ce);
+            ff_register_functions(ce);
             dds.filename(df.get_dataset_name());
             ff_read_descriptors(dds, df.get_dataset_name()); 
 
