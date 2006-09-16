@@ -26,14 +26,13 @@ endif
 
 libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR)
+libff_handler_la_LIBADD = FFND/libfreeform.la
 
 libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR) $(SERVER_SRC) $(SERVER_HDR)
-
-libff_handler_la_LIBADD = FFND/libfreeform.la
-
 libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
-libff_module_la_LIBADD = libff_handler.la FFND/libfreeform.la $(BES_LDFLAGS)
+libff_module_la_LDFLAGS = -avoid-version -module 
+libff_module_la_LIBADD = $(BES_LIBS)
 
 dap_ff_handler_SOURCES = ff_handler.cc
 dap_ff_handler_LDADD = libff_handler.la FFND/libfreeform.la 
