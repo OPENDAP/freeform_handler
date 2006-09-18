@@ -1,3 +1,79 @@
+2006-09-17  Patrick West <pwest@ucar.edu>
+
+	Dropped dependency on FFND library accidentally when moving to the
+	new no-version loadable modules for BES. The dependency has been
+	re-added in the Makefile.am file.
+
+	M    Makefile.am
+
+2006-09-15  Patrick West <pwest@ucar.edu>
+
+	Changed the _module library to not use version information and to
+	be built as a module. Update the bes.m4 file to use the
+	--modulesdir flag to bes-config to get the name of the module
+	directory, which is lib/bes. Added default host and port to
+	opendap.ini, as well as ascii_module, usage_module and www_module
+	for testing.
+
+	M    opendap.ini
+	M    conf/bes.m4
+	M    Makefile.am
+
+2006-08-30  James Gallagher <jgallagher@opendap.org>
+
+	Changed the name of register_functions in ff_ce_functions.cc/h to
+	'ff_register_functions'. Updated the calls to this function in
+	FFRequestHandler and ff_handler.cc. I also made all of the other
+	functions in ff_ce_functions static to avoid name collisions when
+	the code is loaded as a BES module.
+
+2006-08-24  Patrick West <pwest@ucar.edu>
+
+	Renamed ce_functions to ff_ce_functions because there is already a
+	ce_functions in libdap. In opendap.ini added the default port,
+	socket, and secure settings so don't have to specify on the
+	command line.
+	
+	M    FFRequestHandler.cc
+	D    ce_functions.cc
+	M    opendap.ini
+	D    ce_functions.h
+	A    ff_ce_functions.cc
+	M    ff_handler.cc
+	A    ff_ce_functions.h
+	M    Makefile.am
+
+2006-08-24  Patrick West <pwest@ucar.edu>
+
+	Setting the post constraint in the data handler interface to be
+	used when sending the response object. Calling the register_funcs
+	function in ce_functions after creating the dds or datadds to
+	register the free form constraint functions in the constraint
+	evaluator of the data handler interface.
+	
+	M    FFRequestHandler.cc
+	M    ce_functions.h
+
+2006-08-19  Patrick West <pwest@ucar.edu>
+
+	Had extra characters at the end of the TypeMatch parameter.
+	Removed them.
+
+2006-08-19  Patrick West <pwest@ucar.edu>
+
+	Passing the name of the module to the initialize and terminate
+	methods of the Module class so that it is set in the bes
+	configuration file instead of hard-coded
+
+2006-08-01  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Applied Patrice Dumas' patch which add the freeform
+	library the ff_handler library's link.
+
+2006-07-20  James Gallagher <jgallagher@opendap.org>
+
+	Upadted version number and NEWS/ChangeLog for 3.7.1
+
 2006-07-06  Patrick West <pwest@ucar.edu>
 
 	dap_cmdmodule library renamed to dap_cmd_module so that all loaded

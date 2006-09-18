@@ -1,6 +1,12 @@
 
  $Id$
 
+Version 3.7.2
+
+Now builds as a libtool module.
+
+The module name is no longer hardcoded.
+
 Version 3.7.1
 
 Fixed a bug (#435) where functions in different handlers with the same names
