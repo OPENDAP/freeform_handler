@@ -30,20 +30,28 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <sstream>
+
+using std::ostringstream ;
+
 #include "FFRequestHandler.h"
 
 #include "config_ff.h"
 #include "FFTypeFactory.h"
 #include "ff_ce_functions.h"
 
-#include "DAS.h"
-#include "DDS.h"
+#include "BESDASResponse.h"
+#include "BESDDSResponse.h"
+#include "BESDataDDSResponse.h"
 #include "BESInfo.h"
 #include "BESResponseNames.h"
 #include "BESContainer.h"
 #include "BESResponseHandler.h"
 #include "BESVersionInfo.h"
 #include "BESDataNames.h"
+
+#include "BESHandlerException.h"
+#include "Error.h"
 
 long BufPtr = 0; // cache pointer
 long BufSiz =0; // Cache size
@@ -69,9 +77,29 @@ FFRequestHandler::~FFRequestHandler()
 bool
 FFRequestHandler::ff_build_das( BESDataHandlerInterface &dhi )
 {
-    DAS *das = (DAS *)dhi.response_handler->get_response_object() ;
+    BESDASResponse *bdas =
+	dynamic_cast<BESDASResponse *>(dhi.response_handler->get_response_object() ) ;
+    DAS *das = bdas->get_das() ;
 
-    ff_get_attributes( *das, dhi.container->access() ) ;
+    try
+    {
+	ff_get_attributes( *das, dhi.container->access() ) ;
+    }
+    catch( Error &e )
+    {
+	ostringstream s ;
+	s << "libdap exception building Freeform DAS"
+	  << ": error_code = " << e.get_error_code()
+	  << ": " << e.get_error_message() ;
+	BESHandlerException ex( s.str(), __FILE__, __LINE__ ) ;
+	throw ex ;
+    }
+    catch( ... )
+    {
+	string s = "unknown exception caught building Freeform DAS" ;
+	BESHandlerException ex( s, __FILE__, __LINE__ ) ;
+	throw ex ;
+    }
 
     return true ;
 }
@@ -79,18 +107,39 @@ FFRequestHandler::ff_build_das( BESDataHandlerInterface &dhi )
 bool
 FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
 {
-    DDS *dds = (DDS *)dhi.response_handler->get_response_object() ;
+    BESDDSResponse *bdds =
+	dynamic_cast<BESDDSResponse *>( dhi.response_handler->get_response_object() ) ;
+    DDS *dds = bdds->get_dds() ;
+    ConstraintEvaluator &ce = bdds->get_ce() ;
 
-    FFTypeFactory *factory = new FFTypeFactory ;
-    dds->set_factory( factory ) ;
+    try
+    {
+	FFTypeFactory *factory = new FFTypeFactory ;
+	dds->set_factory( factory ) ;
 
-    ff_read_descriptors( *dds, dhi.container->access() ) ;
+	ff_read_descriptors( *dds, dhi.container->access() ) ;
 
-    ff_register_functions( dhi.ce ) ;
-    dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
+	ff_register_functions( ce ) ;
+	dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
 
-    dds->set_factory( NULL ) ;
-    delete factory ;
+	dds->set_factory( NULL ) ;
+	delete factory ;
+    }
+    catch( Error &e )
+    {
+	ostringstream s ;
+	s << "libdap exception building Freeform DDS"
+	  << ": error_code = " << e.get_error_code()
+	  << ": " << e.get_error_message() ;
+	BESHandlerException ex( s.str(), __FILE__, __LINE__ ) ;
+	throw ex ;
+    }
+    catch( ... )
+    {
+	string s = "unknown exception caught building Freeform DDS" ;
+	BESHandlerException ex( s, __FILE__, __LINE__ ) ;
+	throw ex ;
+    }
 
     return true ;
 }
@@ -98,19 +147,40 @@ FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
 bool
 FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
 {
-    DDS *dds = (DDS *)dhi.response_handler->get_response_object() ;
+    BESDataDDSResponse *bdds =
+	dynamic_cast<BESDataDDSResponse *>( dhi.response_handler->get_response_object() ) ;
+    DataDDS *dds = bdds->get_dds() ;
+    ConstraintEvaluator &ce = bdds->get_ce() ;
 
-    FFTypeFactory *factory = new FFTypeFactory ;
-    dds->set_factory( factory ) ;
+    try
+    {
+	FFTypeFactory *factory = new FFTypeFactory ;
+	dds->set_factory( factory ) ;
 
-    dds->filename( dhi.container->access() ) ;
-    ff_read_descriptors( *dds, dhi.container->access() ) ; 
+	dds->filename( dhi.container->access() ) ;
+	ff_read_descriptors( *dds, dhi.container->access() ) ; 
 
-    ff_register_functions( dhi.ce ) ;
-    dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
+	ff_register_functions( ce ) ;
+	dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
 
-    dds->set_factory( NULL ) ;
-    delete factory ;
+	dds->set_factory( NULL ) ;
+	delete factory ;
+    }
+    catch( Error &e )
+    {
+	ostringstream s ;
+	s << "libdap exception building Freeform DataDDS"
+	  << ": error_code = " << e.get_error_code()
+	  << ": " << e.get_error_message() ;
+	BESHandlerException ex( s.str(), __FILE__, __LINE__ ) ;
+	throw ex ;
+    }
+    catch( ... )
+    {
+	string s = "unknown exception caught building Freeform DataDDS" ;
+	BESHandlerException ex( s, __FILE__, __LINE__ ) ;
+	throw ex ;
+    }
 
     return true ;
 }
