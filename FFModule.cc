@@ -79,6 +79,19 @@ FFModule::terminate( const string &modname )
     BESContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
 }
 
+/** @brief dumps information about this object
+ *
+ * Displays the pointer value of this instance
+ *
+ * @param strm C++ i/o stream to dump the information to
+ */
+void
+FFModule::dump( ostream &strm ) const
+{
+    strm << BESIndent::LMarg << "FFModule::dump - ("
+			     << (void *)this << ")" << endl ;
+}
+
 extern "C"
 {
     BESAbstractModule *maker()
