@@ -147,6 +147,10 @@ FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
 bool
 FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
 {
+    BufPtr = 0; // cache pointer
+    BufSiz =0; // Cache size
+    BufVal = NULL; // cache buffer
+
     BESDataDDSResponse *bdds =
 	dynamic_cast<BESDataDDSResponse *>( dhi.response_handler->get_response_object() ) ;
     DataDDS *dds = bdds->get_dds() ;
