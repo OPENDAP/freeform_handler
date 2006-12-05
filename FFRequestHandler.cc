@@ -74,137 +74,128 @@ FFRequestHandler::~FFRequestHandler()
 {
 }
 
-bool
-FFRequestHandler::ff_build_das( BESDataHandlerInterface &dhi )
+bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 {
     BESDASResponse *bdas =
-	dynamic_cast<BESDASResponse *>(dhi.response_handler->get_response_object() ) ;
-    DAS *das = bdas->get_das() ;
+        dynamic_cast <
+        BESDASResponse * >(dhi.response_handler->get_response_object());
+    DAS *das = bdas->get_das();
 
-    try
-    {
-	ff_get_attributes( *das, dhi.container->access() ) ;
+    try {
+        ff_get_attributes(*das, dhi.container->access());
     }
-    catch( Error &e )
-    {
-	ostringstream s ;
-	s << "libdap exception building Freeform DAS"
-	  << ": error_code = " << e.get_error_code()
-	  << ": " << e.get_error_message() ;
-	BESHandlerException ex( s.str(), __FILE__, __LINE__ ) ;
-	throw ex ;
+    catch(Error & e) {
+        ostringstream s;
+        s << "libdap exception building Freeform DAS"
+            << ": error_code = " << e.get_error_code()
+            << ": " << e.get_error_message();
+        BESHandlerException ex(s.str(), __FILE__, __LINE__);
+        throw ex;
     }
-    catch( ... )
-    {
-	string s = "unknown exception caught building Freeform DAS" ;
-	BESHandlerException ex( s, __FILE__, __LINE__ ) ;
-	throw ex ;
+    catch(...) {
+        string s = "unknown exception caught building Freeform DAS";
+        BESHandlerException ex(s, __FILE__, __LINE__);
+        throw ex;
     }
 
-    return true ;
+    return true;
 }
 
-bool
-FFRequestHandler::ff_build_dds( BESDataHandlerInterface &dhi )
+bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 {
     BESDDSResponse *bdds =
-	dynamic_cast<BESDDSResponse *>( dhi.response_handler->get_response_object() ) ;
-    DDS *dds = bdds->get_dds() ;
-    ConstraintEvaluator &ce = bdds->get_ce() ;
+        dynamic_cast <
+        BESDDSResponse * >(dhi.response_handler->get_response_object());
+    DDS *dds = bdds->get_dds();
+    ConstraintEvaluator & ce = bdds->get_ce();
 
-    try
-    {
-	FFTypeFactory *factory = new FFTypeFactory ;
-	dds->set_factory( factory ) ;
+    try {
+        FFTypeFactory *factory = new FFTypeFactory;
+        dds->set_factory(factory);
 
-	ff_read_descriptors( *dds, dhi.container->access() ) ;
+        ff_read_descriptors(*dds, dhi.container->access());
 
-	ff_register_functions( ce ) ;
-	dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
-
-	dds->set_factory( NULL ) ;
-	delete factory ;
+        ff_register_functions(ce);
+        dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
+#if 0
+        // see ticket 720
+        dds->set_factory(NULL);
+        delete factory;
+#endif
     }
-    catch( Error &e )
-    {
-	ostringstream s ;
-	s << "libdap exception building Freeform DDS"
-	  << ": error_code = " << e.get_error_code()
-	  << ": " << e.get_error_message() ;
-	BESHandlerException ex( s.str(), __FILE__, __LINE__ ) ;
-	throw ex ;
+    catch(Error & e) {
+        ostringstream s;
+        s << "libdap exception building Freeform DDS"
+            << ": error_code = " << e.get_error_code()
+            << ": " << e.get_error_message();
+        BESHandlerException ex(s.str(), __FILE__, __LINE__);
+        throw ex;
     }
-    catch( ... )
-    {
-	string s = "unknown exception caught building Freeform DDS" ;
-	BESHandlerException ex( s, __FILE__, __LINE__ ) ;
-	throw ex ;
+    catch(...) {
+        string s = "unknown exception caught building Freeform DDS";
+        BESHandlerException ex(s, __FILE__, __LINE__);
+        throw ex;
     }
 
-    return true ;
+    return true;
 }
 
-bool
-FFRequestHandler::ff_build_data( BESDataHandlerInterface &dhi )
+bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 {
-    BufPtr = 0; // cache pointer
-    BufSiz =0; // Cache size
-    BufVal = NULL; // cache buffer
+    BufPtr = 0;                 // cache pointer
+    BufSiz = 0;                 // Cache size
+    BufVal = NULL;              // cache buffer
 
     BESDataDDSResponse *bdds =
-	dynamic_cast<BESDataDDSResponse *>( dhi.response_handler->get_response_object() ) ;
-    DataDDS *dds = bdds->get_dds() ;
-    ConstraintEvaluator &ce = bdds->get_ce() ;
+        dynamic_cast<BESDataDDSResponse*>(dhi.response_handler->get_response_object());
+    DataDDS *dds = bdds->get_dds();
+    ConstraintEvaluator & ce = bdds->get_ce();
 
-    try
-    {
-	FFTypeFactory *factory = new FFTypeFactory ;
-	dds->set_factory( factory ) ;
+    try {
+        FFTypeFactory *factory = new FFTypeFactory;
+        dds->set_factory(factory);
 
-	dds->filename( dhi.container->access() ) ;
-	ff_read_descriptors( *dds, dhi.container->access() ) ; 
+        dds->filename(dhi.container->access());
+        ff_read_descriptors(*dds, dhi.container->access());
 
-	ff_register_functions( ce ) ;
-	dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint() ;
-
-	dds->set_factory( NULL ) ;
-	delete factory ;
+        ff_register_functions(ce);
+        dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
+#if 0
+        // see ticket 720
+        dds->set_factory(NULL);
+        delete factory;
+#endif
     }
-    catch( Error &e )
-    {
-	ostringstream s ;
-	s << "libdap exception building Freeform DataDDS"
-	  << ": error_code = " << e.get_error_code()
-	  << ": " << e.get_error_message() ;
-	BESHandlerException ex( s.str(), __FILE__, __LINE__ ) ;
-	throw ex ;
+    catch(Error & e) {
+        ostringstream s;
+        s << "libdap exception building Freeform DataDDS"
+            << ": error_code = " << e.get_error_code()
+            << ": " << e.get_error_message();
+        BESHandlerException ex(s.str(), __FILE__, __LINE__);
+        throw ex;
     }
-    catch( ... )
-    {
-	string s = "unknown exception caught building Freeform DataDDS" ;
-	BESHandlerException ex( s, __FILE__, __LINE__ ) ;
-	throw ex ;
+    catch(...) {
+        string s = "unknown exception caught building Freeform DataDDS";
+        BESHandlerException ex(s, __FILE__, __LINE__);
+        throw ex;
     }
 
-    return true ;
+    return true;
 }
 
-bool
-FFRequestHandler::ff_build_help( BESDataHandlerInterface &dhi )
+bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)
 {
-    BESInfo *info = (BESInfo *)dhi.response_handler->get_response_object() ;
-    info->begin_tag( "Handler" ) ;
-    info->add_tag( "name", PACKAGE_NAME ) ;
-    string handles = (string)DAS_RESPONSE
-                     + "," + DDS_RESPONSE
-                     + "," + DATA_RESPONSE
-                     + "," + HELP_RESPONSE
-                     + "," + VERS_RESPONSE ;
-    info->add_tag( "handles", handles ) ;
-    info->add_tag( "version", PACKAGE_STRING ) ;
-    info->end_tag( "Handler" ) ;
+    BESInfo *info =
+        (BESInfo *)dhi.response_handler->get_response_object();
+    info->begin_tag("Handler");
+    info->add_tag("name", PACKAGE_NAME);
+    string handles = (string) DAS_RESPONSE + "," + DDS_RESPONSE
+        + "," + DATA_RESPONSE + "," + HELP_RESPONSE + "," + VERS_RESPONSE;
+    info->add_tag("handles", handles);
+    info->add_tag("version", PACKAGE_STRING);
+    info->end_tag("Handler");
 
-    return true ;
+    return true;
 }
 
 bool
