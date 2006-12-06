@@ -25,7 +25,8 @@
 
 #include "config_ff.h"
 
-static char not_used rcsid[]={"$Id$"};
+static char not_used rcsid[] =
+    { "$Id$" };
 
 #include <string>
 
@@ -40,89 +41,103 @@ static char not_used rcsid[]={"$Id$"};
 #include "cgi_util.h"
 #include "ff_ce_functions.h"
 
-long BufPtr = 0; // cache pointer
-long BufSiz =0; // Cache size
-char *BufVal = NULL; // cache buffer
+long BufPtr = 0;                // cache pointer
+long BufSiz = 0;                // Cache size
+char *BufVal = NULL;            // cache buffer
 const string cgi_version = PACKAGE_VERSION;
 
-extern void ff_read_descriptors(DDS &dds, const string &filename) throw(Error);
-extern void ff_get_attributes(DAS &das, string filename) throw(Error);
+extern void ff_read_descriptors(DDS & dds,
+                                const string & filename) throw(Error);
+extern void ff_get_attributes(DAS & das, string filename) throw(Error);
 
-int 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    try { 
-	DODSFilter df(argc, argv);
+    try {
+        DODSFilter df(argc, argv);
 
-	switch (df.get_response()) {
-	  case DODSFilter::DAS_Response: {
-	    DAS das;
+        switch (df.get_response()) {
+        case DODSFilter::DAS_Response:{
+                DAS das;
 
-	    ff_get_attributes(das, df.get_dataset_name());
-	    df.read_ancillary_das(das);
-	    df.send_das(das);
-	    break;
-	  }
+                ff_get_attributes(das, df.get_dataset_name());
+                df.read_ancillary_das(das);
+                df.send_das(das);
+                break;
+            }
 
-	  case DODSFilter::DDS_Response: {
-	    FFTypeFactory ff_factory;
-	    DDS dds(&ff_factory);
-            ConstraintEvaluator ce;
+        case DODSFilter::DDS_Response:{
+                FFTypeFactory ff_factory;
+                DDS dds(&ff_factory);
+                DAS das;
+                ConstraintEvaluator ce;
 
-	    ff_read_descriptors(dds, df.get_dataset_name());
-	    df.read_ancillary_dds(dds);
-	    df.send_dds(dds, ce, true);
-	    break;
-	  }
+                ff_register_functions(ce);
+                dds.filename(df.get_dataset_name());
+                ff_read_descriptors(dds, df.get_dataset_name());
 
-	  case DODSFilter::DataDDS_Response: {
-            FFTypeFactory ff_factory;
-	    DDS dds(&ff_factory);
-            ConstraintEvaluator ce;
+                ff_get_attributes(das, df.get_dataset_name());
+                df.read_ancillary_das(das);
 
-	    ff_register_functions(ce);
-	    dds.filename(df.get_dataset_name());
-	    ff_read_descriptors(dds, df.get_dataset_name()); 
-	    df.read_ancillary_dds(dds);
-	    df.send_data(dds, ce, stdout);
-	    break;
-	  }
+                dds.transfer_attributes(&das);
 
-          case DODSFilter::DDX_Response: {
-            FFTypeFactory ff_factory;
-            DDS dds(&ff_factory);
-            DAS das;
-            ConstraintEvaluator ce;
+                df.send_dds(dds, ce, true);
+                break;
+            }
 
-            ff_register_functions(ce);
-            dds.filename(df.get_dataset_name());
-            ff_read_descriptors(dds, df.get_dataset_name()); 
+        case DODSFilter::DataDDS_Response:{
+                FFTypeFactory ff_factory;
+                DDS dds(&ff_factory);
+                DAS das;
+                ConstraintEvaluator ce;
 
-            ff_get_attributes(das, df.get_dataset_name());
-            df.read_ancillary_das(das);
+                ff_register_functions(ce);
+                dds.filename(df.get_dataset_name());
+                ff_read_descriptors(dds, df.get_dataset_name());
 
-            dds.transfer_attributes(&das);
+                ff_get_attributes(das, df.get_dataset_name());
+                df.read_ancillary_das(das);
 
-            df.send_ddx(dds, ce, stdout);
-            break;
-          }
+                dds.transfer_attributes(&das);
 
-	  case DODSFilter::Version_Response: {
-	    if (df.get_cgi_version() == "")
-		df.set_cgi_version(cgi_version);
-	    df.send_version_info();
+                df.send_data(dds, ce, stdout);
+                break;
+            }
 
-	    break;
-	  }
+        case DODSFilter::DDX_Response:{
+                FFTypeFactory ff_factory;
+                DDS dds(&ff_factory);
+                DAS das;
+                ConstraintEvaluator ce;
 
-	  default:
-	    df.print_usage();	// Throws Error
-	}
+                ff_register_functions(ce);
+                dds.filename(df.get_dataset_name());
+                ff_read_descriptors(dds, df.get_dataset_name());
+
+                ff_get_attributes(das, df.get_dataset_name());
+                df.read_ancillary_das(das);
+
+                dds.transfer_attributes(&das);
+
+                df.send_ddx(dds, ce, stdout);
+                break;
+            }
+
+        case DODSFilter::Version_Response:{
+                if (df.get_cgi_version() == "")
+                    df.set_cgi_version(cgi_version);
+                df.send_version_info();
+
+                break;
+            }
+
+        default:
+            df.print_usage();   // Throws Error
+        }
     }
-    catch (Error &e) {
-	set_mime_text(stdout, dods_error, cgi_version);
-	e.print(stdout);
-	return 1;
+    catch(Error & e) {
+        set_mime_text(stdout, dods_error, cgi_version);
+        e.print(stdout);
+        return 1;
     }
 
     return 0;

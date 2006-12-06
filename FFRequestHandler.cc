@@ -22,7 +22,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // FFRequestHandler.cc
 
 #include <sys/types.h>
@@ -32,7 +32,7 @@
 
 #include <sstream>
 
-using std::ostringstream ;
+using std::ostringstream;
 
 #include "FFRequestHandler.h"
 
@@ -51,23 +51,26 @@ using std::ostringstream ;
 #include "BESDataNames.h"
 
 #include "BESHandlerException.h"
-#include "Error.h"
 
-long BufPtr = 0; // cache pointer
-long BufSiz =0; // Cache size
-char *BufVal = NULL; // cache buffer
+#include <DDS.h>
+#include <Error.h>
 
-extern void ff_read_descriptors(DDS &dds, const string &filename) throw(Error);
-extern void ff_get_attributes(DAS &das, string filename) throw(Error);
+long BufPtr = 0;                // cache pointer
+long BufSiz = 0;                // Cache size
+char *BufVal = NULL;            // cache buffer
 
-FFRequestHandler::FFRequestHandler( string name )
-    : BESRequestHandler( name )
+extern void ff_read_descriptors(DDS & dds,
+                                const string & filename) throw(Error);
+extern void ff_get_attributes(DAS & das, string filename) throw(Error);
+
+FFRequestHandler::FFRequestHandler(string name)
+:  BESRequestHandler(name)
 {
-    add_handler( DAS_RESPONSE, FFRequestHandler::ff_build_das ) ;
-    add_handler( DDS_RESPONSE, FFRequestHandler::ff_build_dds ) ;
-    add_handler( DATA_RESPONSE, FFRequestHandler::ff_build_data ) ;
-    add_handler( HELP_RESPONSE, FFRequestHandler::ff_build_help ) ;
-    add_handler( VERS_RESPONSE, FFRequestHandler::ff_build_version ) ;
+    add_handler(DAS_RESPONSE, FFRequestHandler::ff_build_das);
+    add_handler(DDS_RESPONSE, FFRequestHandler::ff_build_dds);
+    add_handler(DATA_RESPONSE, FFRequestHandler::ff_build_data);
+    add_handler(HELP_RESPONSE, FFRequestHandler::ff_build_help);
+    add_handler(VERS_RESPONSE, FFRequestHandler::ff_build_version);
 }
 
 FFRequestHandler::~FFRequestHandler()
@@ -113,9 +116,14 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         FFTypeFactory *factory = new FFTypeFactory;
         dds->set_factory(factory);
 
+        ff_register_functions(ce);
+        dds->filename(dhi.container->access());
         ff_read_descriptors(*dds, dhi.container->access());
 
-        ff_register_functions(ce);
+        DAS das;
+        ff_get_attributes(das, dhi.container->access());
+        dds->transfer_attributes(&das);
+
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 #if 0
         // see ticket 720
@@ -147,18 +155,24 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
     BufVal = NULL;              // cache buffer
 
     BESDataDDSResponse *bdds =
-        dynamic_cast<BESDataDDSResponse*>(dhi.response_handler->get_response_object());
+        dynamic_cast <
+        BESDataDDSResponse *
+        >(dhi.response_handler->get_response_object());
     DataDDS *dds = bdds->get_dds();
     ConstraintEvaluator & ce = bdds->get_ce();
 
     try {
         FFTypeFactory *factory = new FFTypeFactory;
         dds->set_factory(factory);
-
+        
+        ff_register_functions(ce);
         dds->filename(dhi.container->access());
         ff_read_descriptors(*dds, dhi.container->access());
 
-        ff_register_functions(ce);
+        DAS das;
+        ff_get_attributes(das, dhi.container->access());
+        dds->transfer_attributes(&das);
+        
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 #if 0
         // see ticket 720
@@ -186,7 +200,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)
 {
     BESInfo *info =
-        (BESInfo *)dhi.response_handler->get_response_object();
+        (BESInfo *) dhi.response_handler->get_response_object();
     info->begin_tag("Handler");
     info->add_tag("name", PACKAGE_NAME);
     string handles = (string) DAS_RESPONSE + "," + DDS_RESPONSE
@@ -198,11 +212,10 @@ bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)
     return true;
 }
 
-bool
-FFRequestHandler::ff_build_version( BESDataHandlerInterface &dhi )
+bool FFRequestHandler::ff_build_version(BESDataHandlerInterface & dhi)
 {
-    BESVersionInfo *info = (BESVersionInfo *)dhi.response_handler->get_response_object() ;
-    info->addHandlerVersion( PACKAGE_NAME, PACKAGE_VERSION ) ;
-    return true ;
+    BESVersionInfo *info =
+        (BESVersionInfo *) dhi.response_handler->get_response_object();
+    info->addHandlerVersion(PACKAGE_NAME, PACKAGE_VERSION);
+    return true;
 }
-
