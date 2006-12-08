@@ -1,3 +1,92 @@
+2006-12-06  James Gallagher <jgallagher@opendap.org>
+
+	ff_handler.cc: Made the DDS and DataDDS returns use a 'fully
+	loaded' DDS (one with attribtues) just like the DDX return.
+	FFRequestHandler.cc: The DDS and DataDDS responses now use
+	a fully loaded DDS. These changes mean that server side functions
+	which depend on attributes will now work.
+
+2006-12-05  James Gallagher <jgallagher@opendap.org>
+
+	FFRequestHandler.cc: Fix for ticekt #720: The DDS and DataDDS
+	type factories were being deleted and then the CE was being
+	evaluated; this breaks when the CE contains a constant since
+	the factory is used to make a variable to hold the constant's
+	value. I removed the delete calls and add code to the BES to
+	handle the clean up of the DDS/Factory.
+
+2006-12-04  Patrick West <pwest@ucar.edu>
+
+	Three global variables are used to read data in Free Form handler.
+	In the cgi version the code is run once and only once, but in the
+	BES one server can handle multiple requests for data, for ascii,
+	etc... So, these three global variables must be reset each time a
+	read is done on the data.
+
+	M    freeform_handler/FFRequestHandler.cc
+	M    freeform_handler/opendap.ini
+
+2006-11-23  Patrick West <pwest@ucar.edu>
+
+	Added a dump method to the Module class for BES debugging.
+	M    freeform_handler/FFModule.cc
+	M    freeform_handler/FFModule.h
+
+2006-11-03  Patrick West <pwest@ucar.edu>
+
+	Was setting BES_LDFLAGS but was using BES_LIBS. Now setting and using
+	BES_LIBS.
+	M    configure.ac
+	M    conf/bes.m4
+
+2006-11-02  Patrick West <pwest@ucar.edu>
+
+	ConstraintEvaluator is now a part of the BESDDSResponse and
+	BESDataDDSResponse classes instead of BESDataHandlerInterface. Any Error
+	exceptions need to be caught in the request handlers and converted into
+	BESHandlerException, which is the non-fatal exception.
+	M    freeform_handler/FFRequestHandler.cc
+
+2006-09-27  Patrick West <pwest@ucar.edu>
+
+	--without-bes now works for the different handler directories as well as for
+	the dap-server directory. cedar-handler requires bes. If --without-bes is
+	not specified then either --with-bes is looked at if specified, or the
+	bes-config script is looked for.
+	M    fits-handler/configure.ac
+	M    netcdf_handler/configure.ac
+	M    freeform_handler/configure.ac
+	M    hdf4_handler/configure.ac
+	M    hdf5_handler/configure.ac
+	M    jgofs_handler/configure.ac
+	M    cdf-handler/configure.ac
+	M    dap-server/configure.ac
+	M    fits-handler/configure.ac
+	M    netcdf_handler/configure.ac
+	M    freeform_handler/configure.ac
+	M    hdf4_handler/configure.ac
+	M    hdf5_handler/configure.ac
+	M    jgofs_handler/configure.ac
+	M    cdf-handler/configure.ac
+	M    dap-server/configure.ac
+
+2006-09-18  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.7.2
+
+2006-09-17  Patrick West <pwest@ucar.edu>
+
+	Dropped dependency on FFND library accidentally when moving to the new
+	no-version loadable modules for BES. The dependency has been re-added in the
+	Makefile.am file.
+	M    Makefile.am
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2006-09-17  Patrick West <pwest@ucar.edu>
 
 	Dropped dependency on FFND library accidentally when moving to the
