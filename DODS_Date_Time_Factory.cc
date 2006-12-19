@@ -45,8 +45,7 @@ static char rcsid[] not_used ="$Id$";
 // Build DODS_Date_Factory and DODS_Time_Factory objects using the DAS
 // information. 
 
-DODS_Date_Time_Factory::DODS_Date_Time_Factory(DDS &dds, DAS &das) :
-    _ddf(dds, das), _dtf(dds, das)
+DODS_Date_Time_Factory::DODS_Date_Time_Factory(DDS &dds) : _ddf(dds), _dtf(dds)
 {
 }
 

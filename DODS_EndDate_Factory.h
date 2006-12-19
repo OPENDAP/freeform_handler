@@ -66,8 +66,7 @@ public:
 	@param dds The DDS of the dataset from which dates are to be read.
 	@param das The DAS of the dataset from which dates are to be read. */
     
-    DODS_EndDate_Factory(DDS &dds, DAS &das)
-	: DODS_Date_Factory(dds, das, "DODS_EndDate") {}
+    DODS_EndDate_Factory(DDS &dds) : DODS_Date_Factory(dds, "DODS_EndDate") {}
     //@}
 };
 

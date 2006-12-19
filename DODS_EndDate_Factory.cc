@@ -49,13 +49,13 @@ static char rcsid[] not_used = "$Id$";
 
 #include "DODS_EndDate_Factory.h"
 
-DODS_EndDate_Factory::DODS_EndDate_Factory(DDS &dds, DAS &das)
+DODS_EndDate_Factory::DODS_EndDate_Factory(DDS &dds)
 {
     // Read the names of the variables which encode year, month and
     // day from the DAS. These are contained in the DODS_Date attribute
     // container. 
     
-    AttrTable *at = das.get_table("DODS_EndDate");
+    AttrTable *at = dds.get_attr_table().find_container(attribute_name);
     if (!at)
 	throw Error(unknown_error,
 "DODS_EndDate_Factory requires that the DODS_EndDate attribute be present.");

@@ -47,8 +47,8 @@ static char rcsid[]#include "config_ff.h"
 // Build DODS_EndDate_Factory and DODS_EndTime_Factory objects using the DAS
 // information. 
 
-DODS_EndDecimal_Year_Factory::DODS_EndDecimal_Year_Factory(DDS &dds, DAS &das) :
-  _ddf(dds, das), _dtf(dds, das)
+DODS_EndDecimal_Year_Factory::DODS_EndDecimal_Year_Factory(DDS &dds) :
+  _ddf(dds), _dtf(dds)
 {
 }
 

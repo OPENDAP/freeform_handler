@@ -68,8 +68,7 @@ public:
 	@param dds The DDS of the dataset from which times are to be read.
 	@param das The DAS of the dataset from which times are to be read. */
     
-    DODS_StartTime_Factory(DDS &dds, DAS &das)
-	: DODS_Time_Factory(dds, das, "DODS_StartTime") {}
+    DODS_StartTime_Factory(DDS &dds) : DODS_Time_Factory(dds, "DODS_StartTime") {}
     //@}
 };
 

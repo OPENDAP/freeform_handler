@@ -46,8 +46,8 @@ static char rcsid[] not_used ="$Id$";
 // Build DODS_StartDate_Factory and DODS_StartTime_Factory objects using the DAS
 // information. 
 
-DODS_StartDecimal_Year_Factory::DODS_StartDecimal_Year_Factory(DDS &dds, DAS &das) :
-  _ddf(dds, das), _dtf(dds, das)
+DODS_StartDecimal_Year_Factory::DODS_StartDecimal_Year_Factory(DDS &dds) :
+  _ddf(dds), _dtf(dds)
 {
 }
 

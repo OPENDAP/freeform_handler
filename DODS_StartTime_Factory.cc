@@ -49,13 +49,13 @@ static char rcsid[] not_used ="$Id$";
 
 #include "DODS_StartTime_Factory.h"
 
-DODS_StartTime_Factory::DODS_StartTime_Factory(DDS &dds, DAS &das)
+DODS_StartTime_Factory::DODS_StartTime_Factory(DDS &dds)
 {
     // Read the names of the variables which encode hours, minutes and
     // seconds from the DAS. These are contained in the DODS_StartTime attribute
     // container. 
     
-    AttrTable *at = das.get_table("DODS_StartTime");
+    AttrTable *at = dds.get_attr_table().find_container("DODS_StartTime");
     if (!at)
 	throw Error("DODS_StartTime_Factory requires that the DODS_StartTime attribute be present.");
 

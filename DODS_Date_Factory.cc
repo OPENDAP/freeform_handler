@@ -48,14 +48,13 @@ static char rcsid[] not_used = "$Id$";
 #include "util_ff.h"
 
 // attribute_name defaults to "DODS_Date." 1/21/2002 jhrg
-DODS_Date_Factory::DODS_Date_Factory(DDS &dds, DAS &das, 
-				     const string &attribute_name)
+DODS_Date_Factory::DODS_Date_Factory(DDS &dds, const string &attribute_name)
 {
     // Read the names of the variables which encode year, month and
     // day from the DAS. These are contained in the DODS_Date attribute
     // container. 
     
-    AttrTable *at = das.get_table(attribute_name);
+    AttrTable *at = dds.get_attr_table().find_container(attribute_name);
     if (!at)
 	throw Error(unknown_error,
 		    string("DODS_Date_Factory requires that the ")

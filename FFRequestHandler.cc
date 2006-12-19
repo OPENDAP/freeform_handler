@@ -54,6 +54,7 @@ using std::ostringstream;
 
 #include <DDS.h>
 #include <Error.h>
+#include <cgi_util.h>
 
 long BufPtr = 0;                // cache pointer
 long BufSiz = 0;                // Cache size
@@ -86,6 +87,8 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 
     try {
         ff_get_attributes(*das, dhi.container->access());
+        string name = find_ancillary_file(dhi.container->access(), "das", "", "");
+        das->parse(name);
     }
     catch(Error & e) {
         ostringstream s;
@@ -122,6 +125,9 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 
         DAS das;
         ff_get_attributes(das, dhi.container->access());
+        string name = find_ancillary_file(dhi.container->access(), "das", "", "");
+        das.parse(name);
+        
         dds->transfer_attributes(&das);
 
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
@@ -171,6 +177,9 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
         DAS das;
         ff_get_attributes(das, dhi.container->access());
+        string name = find_ancillary_file(dds->filename(), "das", "", "");
+        das.parse(name);
+        
         dds->transfer_attributes(&das);
         
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();

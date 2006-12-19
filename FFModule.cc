@@ -48,20 +48,21 @@ void
 FFModule::initialize( const string &modname )
 {
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "Initializing FF:" << endl ;
+	    (*BESLog::TheLog()) << "Initializing FF:" << endl ;
 
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "    adding " << modname << " request handler" 
-		      << endl ;
+        (*BESLog::TheLog()) << "    adding " << modname << " request handler" 
+		    << endl ;
     BESRequestHandlerList::TheList()->add_handler( modname, new FFRequestHandler( modname ) ) ;
 
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "    adding " << FF_CATALOG << " catalog" 
-		      << endl ;
+        (*BESLog::TheLog()) << "    adding " << FF_CATALOG << " catalog" 
+		    << endl ;
     BESCatalogList::TheCatalogList()->add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
 
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "Adding Catalog Container Storage" << endl;
+        (*BESLog::TheLog()) << "Adding Catalog Container Storage" << endl;
+
     BESContainerStorageCatalog *csc = new BESContainerStorageCatalog( FF_CATALOG ) ;
     BESContainerStorageList::TheList()->add_persistence( csc ) ;
 }
@@ -70,12 +71,15 @@ void
 FFModule::terminate( const string &modname )
 {
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "Removing FF Handlers" << endl;
+        (*BESLog::TheLog()) << "Removing FF Handlers" << endl;
+
     BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( modname ) ;
+
     if( rh ) delete rh ;
 
     if( BESLog::TheLog()->is_verbose() )
-	(*BESLog::TheLog()) << "Removing catalog Container Storage" << endl;
+        (*BESLog::TheLog()) << "Removing catalog Container Storage" << endl;
+
     BESContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
 }
 
@@ -96,7 +100,7 @@ extern "C"
 {
     BESAbstractModule *maker()
     {
-	return new FFModule ;
+        return new FFModule ;
     }
 }
 

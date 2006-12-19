@@ -48,14 +48,13 @@ static char rcsid[] not_used ="$Id$";
 #include "DODS_Time_Factory.h"
 
 // attribute_name defaults to "DODS_TIME".
-DODS_Time_Factory::DODS_Time_Factory(DDS &dds, DAS &das, 
-				     const string &attribute_name)
+DODS_Time_Factory::DODS_Time_Factory(DDS &dds, const string &attribute_name)
 {
     // Read the names of the variables which encode hours, minutes and
     // seconds from the DAS. These are contained in the DODS_Time attribute
     // container. 
     
-    AttrTable *at = das.get_table(attribute_name);
+    AttrTable *at = dds.get_attr_table().find_container(attribute_name);
     if (!at)
 	throw Error(string("DODS_Time_Factory requires that the ")
 		    + attribute_name + string(" attribute be present."));

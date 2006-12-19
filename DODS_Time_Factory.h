@@ -71,8 +71,7 @@ public:
 	@param das The DAS of the dataset from which times are to be read.
 	@param attribute_name The name of the attribute container in the DAS
 	that holds configuration inforamtion for the instance of DODS_Time. */
-    DODS_Time_Factory(DDS &dds, DAS &das, 
-		      const string &attribute_name = "DODS_Time");
+    DODS_Time_Factory(DDS &dds, const string &attribute_name = "DODS_Time");
     //@}
 
     /** @name Access */

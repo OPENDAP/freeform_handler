@@ -64,7 +64,7 @@ public:
 	@param dds The DDS of the dataset from which dates are to be read.
 	@param das The DAS of the dataset from which dates are to be read. */
     
-    DODS_Decimal_Year_Factory(DDS &dds, DAS &das);
+    DODS_Decimal_Year_Factory(DDS &dds);
     //@}
 
     /** @name Access */
