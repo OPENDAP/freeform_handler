@@ -88,7 +88,8 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
     try {
         ff_get_attributes(*das, dhi.container->access());
         string name = find_ancillary_file(dhi.container->access(), "das", "", "");
-        das->parse(name);
+        if (!name.empty())
+            das->parse(name);
     }
     catch(Error & e) {
         ostringstream s;
@@ -126,7 +127,8 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         DAS das;
         ff_get_attributes(das, dhi.container->access());
         string name = find_ancillary_file(dhi.container->access(), "das", "", "");
-        das.parse(name);
+        if (!name.empty())
+            das.parse(name);
         
         dds->transfer_attributes(&das);
 
@@ -178,7 +180,9 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         DAS das;
         ff_get_attributes(das, dhi.container->access());
         string name = find_ancillary_file(dds->filename(), "das", "", "");
-        das.parse(name);
+        if (!name.empty())
+            das.parse(name);
+
         
         dds->transfer_attributes(&das);
         
