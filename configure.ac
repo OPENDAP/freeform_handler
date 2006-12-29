@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([freeform_handler], [3.7.2], [dods-tech@unidata.ucar.edu])
+AC_INIT([freeform_handler], [3.7.3], [dods-tech@unidata.ucar.edu])
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
 
@@ -42,7 +42,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor isascii memmove memset pow sqrt strcasecmp strchr strcspn strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
 
 dnl Checks for specific libraries
-AC_CHECK_LIBDAP([3.7.0],
+AC_CHECK_LIBDAP([3.7.3],
  [
   LIBS="$LIBS $DAP_SERVER_LIBS"
   CPPFLAGS="$CPPFLAGS $DAP_CFLAGS"
@@ -67,7 +67,7 @@ then
 	BES_MODULE_DIR="`${BES_PATH}/bin/bes-config --modulesdir`"
 	AC_SUBST([BES_MODULE_DIR])
     else
-	AC_CHECK_BES([3.1.0],
+	AC_CHECK_BES([3.3.1],
 	[
 	    # I think the AC_SUBST([BES_MODULE_DIR]) in bes.m4 will put that 
 	    # symbol in the output. Same for BES_CPPFLAGS. jhrg 5/1/06

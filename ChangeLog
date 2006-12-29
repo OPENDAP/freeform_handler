@@ -1,3 +1,27 @@
+;; Local Variables:
+;; coding: utf-8
+;; End:
+2006-12-20  James Gallagher <jgallagher@opendap.org>
+
+	FFRequestHandler.cc: Fix for ticket 752. Files could not be read
+	because I goofed when adding support for ancillary DAS files. The
+	code added dis not test for the case where a file is not found. Now
+	it does.
+
+2006-12-19  James Gallagher <jgallagher@opendap.org>
+
+	Lots of changes for a simple fix to ticket 730. The static object
+	pointer in ff_ce_functions.cc:get_instance() worked only for the
+	first call of the handler. I removed the static object pointer and
+	streamlined the way factory classes were used. This meant changing
+	the calling parameters for every factory in the date/time functions.
+	I also changed the code so that the DDS is always loaded with
+	attributes so the hack used to read in the DAS is now gone.
+
+2006-12-08  James Gallagher <jgallagher@opendap.org>
+
+	ChangeLog checkpoint
+
 2006-12-06  James Gallagher <jgallagher@opendap.org>
 
 	ff_handler.cc: Made the DDS and DataDDS returns use a 'fully
