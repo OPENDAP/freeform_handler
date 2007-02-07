@@ -30,10 +30,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <sstream>
-
-using std::ostringstream;
-
 #include "FFRequestHandler.h"
 
 #include "config_ff.h"
@@ -50,7 +46,7 @@ using std::ostringstream;
 #include "BESVersionInfo.h"
 #include "BESDataNames.h"
 
-#include "BESHandlerException.h"
+#include "BESDapHandlerException.h"
 
 #include <DDS.h>
 #include <Error.h>
@@ -92,11 +88,8 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
             das->parse(name);
     }
     catch(Error & e) {
-        ostringstream s;
-        s << "libdap exception building Freeform DAS"
-            << ": error_code = " << e.get_error_code()
-            << ": " << e.get_error_message();
-        BESHandlerException ex(s.str(), __FILE__, __LINE__);
+        BESDapHandlerException ex( e.get_error_message(), __FILE__, __LINE__,
+				   e.get_error_code() ) ;
         throw ex;
     }
     catch(...) {
@@ -140,11 +133,8 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 #endif
     }
     catch(Error & e) {
-        ostringstream s;
-        s << "libdap exception building Freeform DDS"
-            << ": error_code = " << e.get_error_code()
-            << ": " << e.get_error_message();
-        BESHandlerException ex(s.str(), __FILE__, __LINE__);
+        BESDapHandlerException ex( e.get_error_message(), __FILE__, __LINE__,
+				   e.get_error_code() ) ;
         throw ex;
     }
     catch(...) {
@@ -194,11 +184,8 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 #endif
     }
     catch(Error & e) {
-        ostringstream s;
-        s << "libdap exception building Freeform DataDDS"
-            << ": error_code = " << e.get_error_code()
-            << ": " << e.get_error_message();
-        BESHandlerException ex(s.str(), __FILE__, __LINE__);
+        BESDapHandlerException ex( e.get_error_message(), __FILE__, __LINE__,
+				   e.get_error_code() ) ;
         throw ex;
     }
     catch(...) {
