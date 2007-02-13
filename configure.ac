@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([freeform_handler], [3.7.3], [dods-tech@unidata.ucar.edu])
+AC_INIT([freeform_handler], [3.7.4], [dods-tech@unidata.ucar.edu])
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
 
@@ -50,38 +50,14 @@ AC_CHECK_LIBDAP([3.7.4],
  [ AC_MSG_ERROR([Cannot find libdap])
 ])
 
-AC_ARG_WITH([bes],
-            [AS_HELP_STRING([--with-bes=PATH],[bes install root directory])],
-            [BES_PATH=${withval}], 
-            [BES_PATH="/usr/local"])
-
-if test "${BES_PATH}" != "no"
-then
-    if test -x "${BES_PATH}/bin/bes-config"
-    then
-	AM_CONDITIONAL([OPENDAPSERVER], [true])
-	BES_CPPFLAGS="`${BES_PATH}/bin/bes-config --cflags`"
-	AC_SUBST([BES_CPPFLAGS])
-	BES_LIBS="`${BES_PATH}/bin/bes-config --dap-libs`"
-	AC_SUBST([BES_LIBS])
-	BES_MODULE_DIR="`${BES_PATH}/bin/bes-config --modulesdir`"
-	AC_SUBST([BES_MODULE_DIR])
-    else
-	AC_CHECK_BES([3.3.1],
-	[
-	    # I think the AC_SUBST([BES_MODULE_DIR]) in bes.m4 will put that 
-	    # symbol in the output. Same for BES_CPPFLAGS. jhrg 5/1/06
-	    AM_CONDITIONAL([OPENDAPSERVER], [true])
-	],
-	[ AM_CONDITIONAL([OPENDAPSERVER], [false])
-	])
-
-    fi
-else
-    AM_CONDITIONAL([OPENDAPSERVER], [false])
-fi
-
-dnl AC_CANONICAL_HOST
+AC_CHECK_BES([3.4.0],
+[
+    # I think the AC_SUBST([BES_MODULE_DIR]) in bes.m4 will put that 
+    # symbol in the output. Same for BES_CPPFLAGS. jhrg 5/1/06
+    AM_CONDITIONAL([OPENDAPSERVER], [true])
+],
+[ AM_CONDITIONAL([OPENDAPSERVER], [false])
+])
 
 case "$host" in
     *linux*) CPPFLAGS="$CPPFLAGS -DLINUX" ;;

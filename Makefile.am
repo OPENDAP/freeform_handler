@@ -20,7 +20,7 @@ bin_PROGRAMS = dap_ff_handler
 
 lib_LTLIBRARIES = libff_handler.la
 if OPENDAPSERVER
-    lib_besdir=$(prefix)/lib/bes
+    lib_besdir=$(libdir)/bes
     lib_bes_LTLIBRARIES = libff_module.la
 endif
 
@@ -85,5 +85,5 @@ CLEANFILES = *~ *.sum *.log
 srpm:
 	rpmbuild -ts freeform_handler-@PACKAGE_VERSION@.tar.gz
 
-rpm:
+rpm: dist
 	rpmbuild -tb freeform_handler-@PACKAGE_VERSION@.tar.gz
