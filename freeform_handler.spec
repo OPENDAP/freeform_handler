@@ -36,7 +36,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/dap_ff_handler
 %{_libdir}/
-%{_prefix}/lib/bes/
+%{_libdir}/bes/
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
