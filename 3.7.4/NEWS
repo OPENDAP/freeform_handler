@@ -1,0 +1,63 @@
+
+ $Id$
+
+Version 3.7.4
+
+Improved error handling.
+
+Comes bundled with test data.
+
+Build fixes.
+
+Version 3.7.3
+
+Updates for the 1.4 release of Server 4. Also included are bug fixes, memory
+leak fixes, and performance enhencements.
+
+Version 3.7.2
+
+Now builds as a libtool module.
+
+The module name is no longer hardcoded.
+
+Version 3.7.1
+
+Fixed a bug (#435) where functions in different handlers with the same names
+clashed when the handlers were loaded as shared object libraries. 
+
+Patrick fixed a problem with the help text.
+
+Version 3.7.0
+
+This version of the FreeForm handler includes an executable for use with
+Server3 and a shared-object library (aka module) for use with Server4. This
+is a source release to support the Server4 1.2 beta release and has not been
+tested with Server3, although there should be no problems.
+
+Version 3.6.1
+
+Fixes for Mac OS/X:
+
+1. A compile-time issue was resolved. With Tiger, configure did not set the
+compile-time symbol FREEFORM to the correct value. This caused the compile to
+fail.
+
+2. Since the Mac is a big-endian machine (well, excpet for the new intel
+macs...) some of the binary data tests failed. I've marked those as expected
+to fail so that the whole suite does not fail beacuse of this.
+
+Note that we are not making binary packages for OS/X, so this will be a source-
+only release. These changes will not affect the Linux distributions. The test
+changes may affect the Solaris dist, but not in an operational way.
+
+Version 3.6.0
+
+Updated rpm spec file using a patch from Patrice Dumas.
+
+Updated the code so that it compiles with libdap 3.6.0.
+
+Version 3.5.0
+
+This version of the FreeForm format handler is essentially the same as the
+previous version (3.4) with the exception that it now builds like the other
+handlers and works with the dap-server 3.5 base software.

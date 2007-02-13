@@ -1,0 +1,24 @@
+HTTP/1.0 200 OK
+XDODS-Server: ff/*
+XOPeNDAP-Server: *
+XDAP: *
+Date: *
+Last-Modified: *
+Content-Type: text/plain
+Content-Description: dods_das
+
+Attributes {
+    FF_GLOBAL {
+        String Server "DODS FreeFrom based on FFND release 4.*";
+    }
+    fvar1 {
+    }
+    svar1 {
+    }
+    usvar1 {
+    }
+    lvar1 {
+    }
+    ulvar1 {
+    }
+}

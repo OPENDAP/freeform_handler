@@ -1,0 +1,20 @@
+HTTP/1.0 200 OK
+XDODS-Server: ff/*
+XOPeNDAP-Server: *
+XDAP: *
+Date: *
+Last-Modified: *
+Content-Type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        String satellite;
+        Int32 year;
+        Int32 day_num;
+        Int32 hh;
+        Int32 mm;
+        Int32 ss;
+        String DODS_URL;
+    } GSO_AVHRR;
+} 1998-6-avhrr.dat;

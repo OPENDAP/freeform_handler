@@ -1,0 +1,72 @@
+#
+# $Id$
+
+global comp_output		# contains output from ff_dds_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+source "ff-test/test-files.tcl"
+
+set test_name "Data Access Tests"
+
+# The `1' in compare_stdout means call xfail if the test fails.
+
+ff_dods_start "$avhrr"
+compare_stdout "$avhrr.data" "$test_name: $avhrr dataset" 0 "match"
+
+ff_dods_start "$test0"
+compare_stdout "$test0.data" "$test_name: $test0 dataset" 0 "match"
+
+ff_dods_start "$test1"
+compare_stdout "$test1.data" "$test_name: $test1 dataset" 0 "match"
+
+ff_dods_start "$test4"
+compare_stdout "$test4.data" "$test_name: $test4 dataset" 0 "match"
+
+ff_dods_start "$test5"
+compare_stdout "$test5.data" "$test_name: $test5 dataset" 0 "match"
+
+ff_dods_start "$test6"
+compare_stdout "$test6.data" "$test_name: $test6 dataset" 0 "match"
+
+ff_dods_start "$test7"
+compare_stdout "$test7.data" "$test_name: $test7 dataset" 0 "match"
+
+ff_dods_start "$test8"
+compare_stdout "$test8.data" "$test_name: $test8 dataset" 0 "match"
+
+ff_dods_start "$test9"
+compare_stdout "$test9.data" "$test_name: $test9 dataset" 0 "match"
+
+ff_dods_start "$t3"
+compare_stdout "$t3.data" "$test_name: $t3 dataset" 0 "match"
+
+# I added a constraint to show how it's handled with the common_tests.exp
+# code. Note also that []s in the test string need to be escaped but only
+# with one backslash. 5/22/2001 jhrg
+#
+# I changed these tests to 'expect fail' because they use binary data files
+# written on a little-endian machine, so on big-endian machines freeform
+# will read the correct number of bytes but not the correct values. 3/26/06 jhrg
+
+ff_dods_start "-e xf\\\[8:9\\\]\\\[18:19\\\] $dbl_data" 
+compare_stdout "$dbl_data.data" "$test_name: $dbl_data dataset" 1 "match"
+
+ff_dods_start "$dbl_data2" 
+compare_stdout "$dbl_data2.data" "$test_name: $dbl_data2 dataset" 1 "match"
+
+ff_dods_start "$dbl_data3" 
+compare_stdout "$dbl_data3.data" "$test_name: $dbl_data3 dataset" 1 "match"
+
+ff_dods_start "$int_data" 
+compare_stdout "$int_data.data" "$test_name: $int_data dataset" 1 "match"
+
+ff_dods_start "$int_data2" 
+compare_stdout "$int_data2.data" "$test_name: $int_data2 dataset" 1 "match"
+
+ff_dods_start "$int_data3" 
+compare_stdout "$int_data3.data" "$test_name: $int_data3 dataset" 1 "match"
+
+
+
+

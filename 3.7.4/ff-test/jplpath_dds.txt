@@ -1,0 +1,19 @@
+HTTP/1.0 200 OK
+XDODS-Server: ff/*
+XOPeNDAP-Server: *
+XDAP: *
+Date: *
+Last-Modified: *
+Content-Type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        Int32 year;
+        Int32 day;
+        Int32 hours;
+        Int32 minutes;
+        Int32 seconds;
+        String DODS_URL;
+    } JPL_Pathfinder;
+} jplpath.dat;

@@ -1,0 +1,18 @@
+HTTP/1.0 200 OK
+XDODS-Server: ff/*
+XOPeNDAP-Server: *
+XDAP: *
+Date: *
+Last-Modified: *
+Content-Type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        Float64 t;
+        Float64 Bx;
+        Float64 By;
+        Float64 Bz;
+        Float64 Bx2;
+    } ISEE3_data;
+} test6.dab;

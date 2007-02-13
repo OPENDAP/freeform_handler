@@ -1,0 +1,69 @@
+#
+# $Id$
+
+global comp_output		# contains output from ff_dds_start
+global verbose			# this and srcdir are set by runtest.exp
+global srcdir
+
+source "ff-test/test-files.tcl"
+
+set test_name "Date Interface Tests"
+
+# The `1' in compare_stdout means call xfail if the test fails.
+
+# Test the Date interface.
+
+# Single argument to date()
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998/6/21\")"
+compare_stdout "ff-test/avhrr_date_ce1.bin" "$test_name: Single date" 0 "match"
+
+# Two arguments to date()
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998/6/21\",\"1998/6/23\")"
+compare_stdout "ff-test/avhrr_date_ce2.bin" "$test_name: Date range" 0 "match"
+
+# Return values from DODS_Date()
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date(GSO_AVHRR)&date(\"1998/6/21\")"
+compare_stdout "ff-test/avhrr_date_ce3.bin" "$test_name: Date return" 0 "match"
+
+# Return values from DODS_JDate()
+ff_dods_start "$avhrr -e DODS_URL,DODS_JDate(GSO_AVHRR)&date(\"1998/6/21\")"
+compare_stdout "ff-test/avhrr_date_ce4.bin" "$test_name: JDate return" 0 "match"
+
+# Single year-day argument to date()
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998/181\")"
+compare_stdout "ff-test/avhrr_date_ce5.bin" "$test_name: Single year-day date" 0 "match"
+
+# Two year-day arguments to date()
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998/181\",\"1998/185\")"
+compare_stdout "ff-test/avhrr_date_ce6.bin" "$test_name: Date year-day range" 0 "match"
+
+# Bad syntax to date(), etc.
+# NB: These all fail right now since date parsing is not exactly bullet
+# proof... 1/6/99 jhrg
+
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998/6/\")"
+compare_stdout /dev/null "$test_name: Bad date syntax" 1
+
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998.6.21\")"
+compare_stdout /dev/null "$test_name: Bad date syntax" 1
+
+ff_dods_start "$avhrr -e DODS_URL&date(\"6/21/1998\")"
+compare_stdout /dev/null "$test_name: Bad date syntax" 1
+
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998.181\")"
+compare_stdout /dev/null "$test_name: Bad date syntax" 1
+
+ff_dods_start "$avhrr -e DODS_URL&date(\"1998/6/21\",)"
+compare_stdout /dev/null "$test_name: Bad date call syntax" 1
+
+ff_dods_start "$avhrr -e DODS_URL&date()"
+compare_stdout /dev/null "$test_name: Bad date call syntax" 1
+
+# Check bad syntax to the projection functions DODS_Date() and DODS_JDate()
+
+ff_dods_start "$avhrr -e DODS_URL,DODS_Date(GSO_AVHR)&date(\"1998/6/21\")"
+compare_stdout "ff-test/avhrr_date_ce7.err" "$test_name: Misspelled variable name to DODS_Date()" 0 "match"
+
+ff_dods_start "$avhrr -e DODS_URL,DODS_JDate(GSO_AVHR)&date(\"1998/6/21\")"
+compare_stdout "ff-test/avhrr_date_ce8.err" "$test_name: Misspelled variable name to DODS_JDate()" 0 "match"
+

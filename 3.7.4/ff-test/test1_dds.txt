@@ -1,0 +1,18 @@
+HTTP/1.0 200 OK
+XDODS-Server: ff/*
+XOPeNDAP-Server: *
+XDAP: *
+Date: *
+Last-Modified: *
+Content-Type: text/plain
+Content-Description: dods_dds
+
+Dataset {
+    Sequence {
+        Int32 fvar1;
+        Int16 svar1;
+        UInt16 usvar1;
+        Int32 lvar1;
+        UInt32 ulvar1;
+    } ASCII_data;
+} test1.dat;
