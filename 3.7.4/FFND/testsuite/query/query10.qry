@@ -1,2 +1,0 @@
-([usvar] > 4000) && ([usvar] < 6000)
-This query selects records where usvar is sandwiched between 4000 and 6000

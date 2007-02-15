@@ -1,9 +1,0 @@
-#!/bin/csh 
-#
-ls -l trash >&seeit
-awk -f `pwd`/../chktrash.a seeit || exit 2 
-exit 0
-#rm seeit
-#cat trash 
-#rm trash
-
