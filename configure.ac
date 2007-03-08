@@ -77,4 +77,6 @@ esac
 
 AC_CONFIG_FILES([FFND/Makefile
                  Makefile])
+AC_CONFIG_FILES([install-in-bes-conf.sh], [chmod +x install-in-bes-conf.sh])
+
 AC_OUTPUT
