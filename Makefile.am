@@ -19,9 +19,11 @@ AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 bin_PROGRAMS = dap_ff_handler
 
 lib_LTLIBRARIES = libff_handler.la
+
 if OPENDAPSERVER
-    lib_besdir=$(libdir)/bes
-    lib_bes_LTLIBRARIES = libff_module.la
+lib_besdir=$(libdir)/bes
+lib_bes_LTLIBRARIES = libff_module.la
+dist_bin_SCRIPTS = configure-ff-data.sh
 endif
 
 libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
@@ -74,10 +76,34 @@ DEJATOOL = dap_ff_handler
 
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir ff-test
 
-EXTRA_DIST = ff-test COPYRIGHT COPYING freeform_handler.spec
+EXTRA_DIST = ff-test data COPYRIGHT COPYING freeform_handler.spec
 
 CLEANFILES = *~ *.sum *.log
 
+if OPENDAPSERVER
+
+EXTRA_DIST += configure-ff-data.sh.in
+CLEANFILES += configure-ff-data.sh
+	
+sample_datadir = $(datadir)/hyrax/data/ff
+sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
+	data/1998-6-avhrr.fmt data/avhrr.fmt data/gsodock.fmt
+
+do_subst = sed -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
+		   	   -e 's,[@]libdir[@],$(libdir),g'
+				  
+configure-ff-data.sh: configure-ff-data.sh.in Makefile
+	$(do_subst) < $(srcdir)/configure-ff-data.sh.in > configure-ff-data.sh
+	chmod +x configure-ff-data.sh
+
+# This makes sure that the handler modifies the bes  which confiure found
+# even with distcheck is run.
+install-data-hook: configure-ff-data.sh
+	(bes_prefix=`bes-config --prefix` && \
+	 ./configure-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes)
+
+endif
+	
 ###########################################################################
 
 # Build linux RPMs

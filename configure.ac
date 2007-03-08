@@ -1,4 +1,4 @@
-#                                               -*- Autoconf -*-
+# -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
@@ -78,6 +78,7 @@ esac
 AC_CONFIG_FILES([FFND/Makefile
                  Makefile])
 
-AC_CONFIG_FILES([install-in-bes-conf.sh], [chmod +x install-in-bes-conf.sh])
+# Build this using the Makefile.am as per the automake 1.10 manual, p.79
+# AC_CONFIG_FILES([install-in-bes-conf.sh], [chmod +x install-in-bes-conf.sh])
 
 AC_OUTPUT

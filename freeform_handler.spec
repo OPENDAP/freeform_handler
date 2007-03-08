@@ -9,10 +9,10 @@ URL:             http://www.opendap.org/
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:   libdap-devel >= 3.7.4
-#Requires:        dap-server
+#Requires:        bes
 
 %description 
-This is the foreeform data handler for our data server. It reads ASCII,
+This is the freeform data handler for our data server. It reads ASCII,
 binary and DB4 files which have been described using FreeForm and returns DAP
 responses that are compatible with DAP2 and the dap-server software. This
 package contains both the OPeNDAP CGI server 'handlers' and the new OPeNDAP 4
@@ -29,14 +29,27 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 
+# pre: commands to run before install; post: commnds run after install;
+# preun; postun for commands before and after uninstall
+
+# Only try to configure the bes.conf file if the bes can be found.
+%post
+if bes-config --version >/dev/null 2>&1
+then
+	bes_prefix=`bes-config --prefix`
+	configure-ff-data.sh $bes_prefix/etc/bes/bes.conf $bes_prefix/lib/bes
+fi
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
 %{_bindir}/dap_ff_handler
+%{_bindir}/configure-ff-data.sh
 %{_libdir}/
 %{_libdir}/bes/
+%{_datadir}/hyrax/data/ff
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog
