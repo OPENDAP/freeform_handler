@@ -90,7 +90,8 @@ sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
 	data/1998-6-avhrr.fmt data/avhrr.fmt data/gsodock.fmt
 
 do_subst = sed -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
-		   	   -e 's,[@]libdir[@],$(libdir),g'
+		   	   -e 's,[@]libdir[@],$(libdir),g' \
+		   	   -e 's,[@]datadir[@],$(datadir),g'
 				  
 configure-ff-data.sh: configure-ff-data.sh.in Makefile
 	$(do_subst) < $(srcdir)/configure-ff-data.sh.in > configure-ff-data.sh

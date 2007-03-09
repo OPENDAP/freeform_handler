@@ -3,7 +3,7 @@
 # Run this after 'install' completes to edit the bes.conf scrip so that it
 # will be correctly configured for the handler and the sample data.
 #
-# Usage: install-in-bes-conf.sh [<bes.conf file to modify> [<bes modules dir>]]
+# Usage: configure-ff-data.sh [<bes.conf file to modify> [<bes modules dir>]]
 
 bes_conf=${1:-"@sysconfdir@/bes/bes.conf"}
 bes_modules_dir=${2:-"@libdir@/bes"}
@@ -31,7 +31,7 @@ sed "s%^\(BES.modules=.*\)%\1,$handler%" < $bes_conf > tmp.conf
 mv tmp.conf $bes_conf
 
 # Add the handler module line (e.g., BES.module.ff) to the conf file
-module="BES.module.ff=$bes_modules_dir/libff_module.so;"
+module="BES.module.ff=$bes_modules_dir/libff_module.so"
 
 awk "BEGIN {bes_module_found=0}
 	 /^BES\.module\./ {bes_module_found=1}
