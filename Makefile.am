@@ -84,15 +84,16 @@ if OPENDAPSERVER
 
 EXTRA_DIST += configure-ff-data.sh.in
 CLEANFILES += configure-ff-data.sh
-	
+
 sample_datadir = $(datadir)/hyrax/data/ff
 sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
-	data/1998-6-avhrr.fmt data/avhrr.fmt data/gsodock.fmt
+	data/1998-6-avhrr.fmt data/avhrr.fmt data/gsodock.fmt \
+	data/1998-6-avhrr.dat.das data/avhrr.dat.das
 
 do_subst = sed -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
 		   	   -e 's,[@]libdir[@],$(libdir),g' \
 		   	   -e 's,[@]datadir[@],$(datadir),g'
-				  
+
 configure-ff-data.sh: configure-ff-data.sh.in Makefile
 	$(do_subst) < $(srcdir)/configure-ff-data.sh.in > configure-ff-data.sh
 	chmod +x configure-ff-data.sh
@@ -104,7 +105,7 @@ install-data-hook: configure-ff-data.sh
 	 ./configure-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes)
 
 endif
-	
+
 ###########################################################################
 
 # Build linux RPMs
