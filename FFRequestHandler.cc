@@ -50,6 +50,7 @@
 
 #include <DDS.h>
 #include <Error.h>
+#include <escaping.h>
 #include <cgi_util.h>
 
 long BufPtr = 0;                // cache pointer
@@ -153,9 +154,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
     BufVal = NULL;              // cache buffer
 
     BESDataDDSResponse *bdds =
-        dynamic_cast <
-        BESDataDDSResponse *
-        >(dhi.response_handler->get_response_object());
+        dynamic_cast <BESDataDDSResponse *>(dhi.response_handler->get_response_object());
     DataDDS *dds = bdds->get_dds();
     ConstraintEvaluator & ce = bdds->get_ce();
 
@@ -175,7 +174,9 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
         
         dds->transfer_attributes(&das);
-        
+#if 0        
+        dhi.data[POST_CONSTRAINT] = www2id(dhi.container->get_constraint(), "%", "%20");
+#endif
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
 #if 0
         // see ticket 720
