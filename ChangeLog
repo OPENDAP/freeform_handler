@@ -1,3 +1,89 @@
+2007-03-12  James Gallagher <jgallagher@opendap.org>
+
+	Added <escaping.h> to FFRequestHandler.cc
+
+2007-03-11  James Gallagher <jgallagher@opendap.org>
+
+	Added the two ancillary das files from the data directory so that
+	the bes tests work 'out of the box'.
+
+	M    Makefile.am
+
+2007-03-09  James Gallagher <jgallagher@opendap.org>
+
+	Final changes for the default configuration and data install for
+	ticket #764.
+
+	M    freeform_handler.spec
+	M    configure-ff-data.sh.in
+	M    Makefile.am
+
+2007-03-08  James Gallagher <jgallagher@opendap.org>
+
+	More change for ticket 764 (install test data and configure the
+	handler in the bes). I made a shell script that modifies the
+	bes.conf, testing to see if it has already been run first. I've
+	modified the Makefile.am to build the script and install it in
+	$prefix/bin when the bes is present. The .spec file has also been
+	modified, although I have not done a complete test because that
+	requires the bes rpm package be installed first.
+
+	D    install-in-bes-conf.sh.in
+	M    freeform_handler.spec
+	M    configure.ac
+	A    configure-ff-data.sh.in
+	M    Makefile.am
+
+2007-03-08  James Gallagher <jgallagher@opendap.org>
+
+	The install-in-bes-conf.sh script is is set to execute.
+
+	M    configure.ac
+
+2007-03-08  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-03-07  James Gallagher <jgallagher@opendap.org>
+
+	Modified configure.ac so that install-in-bes-conf.sh gets built.
+
+2007-03-07  James Gallagher <jgallagher@opendap.org>
+
+	Added
+
+2007-03-07  James Gallagher <jgallagher@opendap.org>
+
+	Removed exec property, set text and binary are appropriate.
+
+	_M   data/avhrr.dat.das
+	_M   data/gsodock.dat
+	_M   data/1998-6-avhrr.fmt
+	_M   data/1998-6-avhrr.dat
+	_M   data/avhrr.fmt
+	_M   data/avhrr.dat
+	_M   data/1998-6-avhrr.dat.das
+	_M   data/gsodock.fmt
+
+2007-02-15  James Gallagher <jgallagher@opendap.org>
+
+	I mistakenly put the tagged 3.7.4 here instead of under tags... So
+	now I'm removing it.
+
+	D    3.7.4
+
+2007-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Tagged freeform_handler 3.7.4
+
+2007-02-13  James Gallagher <jgallagher@opendap.org>
+
+	freeform_handler.spec: Now works with the bes stuff.
+
+2007-02-13  James Gallagher <jgallagher@opendap.org>
+
+	Update freeform_handler for release 3.7.4
+
 2007-02-08  Nathan Potter <ndp@coas.oregonstate.edu>
 
 	freeform_handler: Changed Server4 name to Hyrax as needed.
