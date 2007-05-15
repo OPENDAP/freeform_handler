@@ -101,8 +101,13 @@ configure-ff-data.sh: configure-ff-data.sh.in Makefile
 # This makes sure that the handler modifies the bes  which confiure found
 # even with distcheck is run.
 install-data-hook: configure-ff-data.sh
-	(bes_prefix=`bes-config --prefix` && \
-	 ./configure-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes)
+	(bes_prefix=`bes-config --prefix` ; \
+	if test "$$bes_prefix" = "/usr" ; \
+	 then \
+	    ./configure-ff-data.sh /etc/bes/bes.conf /usr/lib/bes ;\
+	else \
+	    ./configure-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
+	fi)
 
 endif
 
@@ -110,7 +115,7 @@ endif
 
 # Build linux RPMs
 
-srpm:
+srpm: dist
 	rpmbuild -ts freeform_handler-@PACKAGE_VERSION@.tar.gz
 
 rpm: dist
