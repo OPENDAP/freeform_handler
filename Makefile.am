@@ -120,3 +120,20 @@ srpm: dist
 
 rpm: dist
 	rpmbuild -tb freeform_handler-@PACKAGE_VERSION@.tar.gz
+
+###########################################################################
+#
+# Build OS/X Packages.
+
+PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker*
+
+pkg:
+	rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
+	./configure --prefix=/usr $(PKG_CONFIGURE_FLAGS)
+	make configure-ff-data.sh
+	cp configure-ff-data.sh configure-ff-data.sh.macosx
+	./configure --prefix=`pwd`/mac_osx $(PKG_CONFIGURE_FLAGS)
+	make clean install
+	mv configure-ff-data.sh.macosx mac_osx/bin/configure-ff-data.sh
+	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
+
