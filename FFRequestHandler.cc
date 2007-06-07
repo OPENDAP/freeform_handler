@@ -61,7 +61,7 @@ extern void ff_read_descriptors(DDS & dds,
                                 const string & filename) throw(Error);
 extern void ff_get_attributes(DAS & das, string filename) throw(Error);
 
-FFRequestHandler::FFRequestHandler(string name)
+FFRequestHandler::FFRequestHandler(const string &name)
 :  BESRequestHandler(name)
 {
     add_handler(DAS_RESPONSE, FFRequestHandler::ff_build_das);

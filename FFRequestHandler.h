@@ -32,7 +32,7 @@
 
 class FFRequestHandler : public BESRequestHandler {
 public:
-			FFRequestHandler( string name ) ;
+			FFRequestHandler( const string &name ) ;
     virtual		~FFRequestHandler( void ) ;
 
     static bool		ff_build_das( BESDataHandlerInterface &dhi ) ;
