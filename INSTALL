@@ -27,7 +27,10 @@ BUILDING THE SOFTWARE
     You must have the DejaGNU test software installed on your computer to run
     the tests.
 
-3) Install the server components in $prefix by running `make install.'
+3a) Install the server components in $prefix by running `make install.'
+
+3b) If you want to install the test data *and modify the bes.conf file*, run
+    the script bes-ff-data.sh.
 
 Building from Our SVN Repository
 
