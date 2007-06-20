@@ -1,4 +1,3 @@
-
 # Automake file for freeform-handler
 #
 # 9/14/2005 jhrg
@@ -23,7 +22,7 @@ lib_LTLIBRARIES = libff_handler.la
 if OPENDAPSERVER
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
-dist_bin_SCRIPTS = configure-ff-data.sh
+dist_bin_SCRIPTS = bes-ff-data.sh
 endif
 
 libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
@@ -82,8 +81,8 @@ CLEANFILES = *~ *.sum *.log
 
 if OPENDAPSERVER
 
-EXTRA_DIST += configure-ff-data.sh.in
-CLEANFILES += configure-ff-data.sh
+EXTRA_DIST += bes-ff-data.sh.in
+CLEANFILES += bes-ff-data.sh
 
 sample_datadir = $(datadir)/hyrax/data/ff
 sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
@@ -91,22 +90,22 @@ sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
 	data/1998-6-avhrr.dat.das data/avhrr.dat.das
 
 do_subst = sed -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
-		   	   -e 's,[@]libdir[@],$(libdir),g' \
-		   	   -e 's,[@]datadir[@],$(datadir),g'
+	-e 's,[@]libdir[@],$(libdir),g' \
+	-e 's,[@]datadir[@],$(datadir),g'
 
-configure-ff-data.sh: configure-ff-data.sh.in Makefile
-	$(do_subst) < $(srcdir)/configure-ff-data.sh.in > configure-ff-data.sh
-	chmod +x configure-ff-data.sh
+bes-ff-data.sh: bes-ff-data.sh.in Makefile
+	$(do_subst) < $(srcdir)/bes-ff-data.sh.in > bes-ff-data.sh
+	chmod +x bes-ff-data.sh
 
 # This makes sure that the handler modifies the bes  which confiure found
 # even with distcheck is run.
-install-data-hook: configure-ff-data.sh
+install-data-hook: bes-ff-data.sh
 	(bes_prefix=`bes-config --prefix` ; \
 	if test "$$bes_prefix" = "/usr" ; \
-	 then \
-	    ./configure-ff-data.sh /etc/bes/bes.conf /usr/lib/bes ;\
+	then \
+	    ./bes-ff-data.sh /etc/bes/bes.conf /usr/lib/bes ;\
 	else \
-	    ./configure-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
+	    ./bes-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
 	fi)
 
 endif
@@ -130,10 +129,10 @@ PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/P
 pkg:
 	rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
 	./configure --prefix=/usr $(PKG_CONFIGURE_FLAGS)
-	make configure-ff-data.sh
-	cp configure-ff-data.sh configure-ff-data.sh.macosx
+	make bes-ff-data.sh
+	cp bes-ff-data.sh bes-ff-data.sh.macosx
 	./configure --prefix=`pwd`/mac_osx $(PKG_CONFIGURE_FLAGS)
 	make clean install
-	mv configure-ff-data.sh.macosx mac_osx/bin/configure-ff-data.sh
+	mv bes-ff-data.sh.macosx mac_osx/bin/bes-ff-data.sh
 	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
 
