@@ -97,7 +97,7 @@ bes-ff-data.sh: bes-ff-data.sh.in Makefile
 	$(do_subst) < $(srcdir)/bes-ff-data.sh.in > bes-ff-data.sh
 	chmod +x bes-ff-data.sh
 
-# This makes sure that the handler modifies the bes  which confiure found
+# This makes sure that the handler modifies the bes
 # even with distcheck is run.
 install-data-hook: bes-ff-data.sh
 	(bes_prefix=`bes-config --prefix` ; \
