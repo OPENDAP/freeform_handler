@@ -83,8 +83,9 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
     DAS *das = bdas->get_das();
 
     try {
-        ff_get_attributes(*das, dhi.container->access());
-        string name = find_ancillary_file(dhi.container->access(), "das", "", "");
+	string accessed = dhi.container->access() ;
+        ff_get_attributes(*das, accessed);
+        string name = find_ancillary_file(accessed, "das", "", "");
         if (!name.empty())
             das->parse(name);
     }
@@ -115,12 +116,13 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         dds->set_factory(factory);
 
         ff_register_functions(ce);
-        dds->filename(dhi.container->access());
-        ff_read_descriptors(*dds, dhi.container->access());
+	string accessed = dhi.container->access();
+        dds->filename(accessed);
+        ff_read_descriptors(*dds, accessed);
 
         DAS das;
-        ff_get_attributes(das, dhi.container->access());
-        string name = find_ancillary_file(dhi.container->access(), "das", "", "");
+        ff_get_attributes(das, accessed);
+        string name = find_ancillary_file(accessed, "das", "", "");
         if (!name.empty())
             das.parse(name);
         
@@ -163,12 +165,13 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         dds->set_factory(factory);
         
         ff_register_functions(ce);
-        dds->filename(dhi.container->access());
-        ff_read_descriptors(*dds, dhi.container->access());
+	string accessed = dhi.container->access();
+        dds->filename(accessed);
+        ff_read_descriptors(*dds, accessed);
 
         DAS das;
-        ff_get_attributes(das, dhi.container->access());
-        string name = find_ancillary_file(dds->filename(), "das", "", "");
+        ff_get_attributes(das, accessed);
+        string name = find_ancillary_file(accessed, "das", "", "");
         if (!name.empty())
             das.parse(name);
 
