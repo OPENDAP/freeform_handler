@@ -8,8 +8,8 @@ Source0:         ftp://ftp.unidata.ucar.edu/pub/opendap/source/%{name}-%{version
 URL:             http://www.opendap.org/
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.7.4
-#Requires:        bes
+BuildRequires:   libdap-devel >= 3.7.5
+BuildRequires:   bes-devel
 
 %description 
 This is the freeform data handler for our data server. It reads ASCII,
@@ -22,37 +22,31 @@ Data Server (aka Hyrax) modules.
 %setup -q
 
 %build
-%configure
+%configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT install
-
-# pre: commands to run before install; post: commnds run after install;
-# preun; postun for commands before and after uninstall
-
-%post -p /sbin/ldconfig
-
-# Only try to configure the bes.conf file if the bes can be found.
-if bes-config --version >/dev/null 2>&1
-then
-	bes_prefix=`bes-config --prefix`
-	configure-ff-data.sh $bes_prefix/etc/bes/bes.conf $bes_prefix/lib/bes
-fi
-
-%postun -p /sbin/ldconfig
+make DESTDIR=$RPM_BUILD_ROOT install INSTALL="install -p"
+rm $RPM_BUILD_ROOT%{_libdir}/*.la
+rm $RPM_BUILD_ROOT%{_libdir}/*.so
+rm $RPM_BUILD_ROOT%{_libdir}/bes/libff_module.la
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
 %files
 %defattr(-,root,root,-)
 %{_bindir}/dap_ff_handler
-%{_bindir}/configure-ff-data.sh
-%{_libdir}/
-%{_libdir}/bes/
-%{_datadir}/hyrax/data/ff
+%{_bindir}/bes-ff-data.sh
+%{_libdir}/libff_handler.so.*
+%{_libdir}/libfreeform.so.*
+%{_libdir}/bes/libff_module.so
+%{_datadir}/hyrax/
 %doc COPYING COPYRIGHT NEWS README
 
 %changelog

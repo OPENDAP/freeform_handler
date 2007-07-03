@@ -99,7 +99,7 @@ bes-ff-data.sh: bes-ff-data.sh.in Makefile
 
 # This makes sure that the handler modifies the bes
 # even with distcheck is run.
-install-data-hook: bes-ff-data.sh
+bes-conf: bes-ff-data.sh
 	(bes_prefix=`bes-config --prefix` ; \
 	if test "$$bes_prefix" = "/usr" ; \
 	then \
