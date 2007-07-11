@@ -40,47 +40,45 @@ using std::endl ;
 #include "BESContainerStorageCatalog.h"
 #include "BESCatalogDirectory.h"
 #include "BESCatalogList.h"
-#include "BESLog.h"
+#include "BESDebug.h"
 
 #define FF_CATALOG "catalog"
 
 void
 FFModule::initialize( const string &modname )
 {
-    if( BESLog::TheLog()->is_verbose() )
-	    (*BESLog::TheLog()) << "Initializing FF:" << endl ;
+    BESDEBUG( "Initializing FF module " << modname << endl )
 
-    if( BESLog::TheLog()->is_verbose() )
-        (*BESLog::TheLog()) << "    adding " << modname << " request handler" 
-		    << endl ;
-    BESRequestHandlerList::TheList()->add_handler( modname, new FFRequestHandler( modname ) ) ;
+    BESDEBUG( "    adding " << modname << " request handler" << endl )
+    BESRequestHandler *handler = new FFRequestHandler( modname ) ;
+    BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
 
-    if( BESLog::TheLog()->is_verbose() )
-        (*BESLog::TheLog()) << "    adding " << FF_CATALOG << " catalog" 
-		    << endl ;
+    BESDEBUG( "    adding " << FF_CATALOG << " catalog" << endl )
     BESCatalogList::TheCatalogList()->add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
 
-    if( BESLog::TheLog()->is_verbose() )
-        (*BESLog::TheLog()) << "Adding Catalog Container Storage" << endl;
-
+    BESDEBUG( "    adding catalog container storage" << FF_CATALOG << endl )
     BESContainerStorageCatalog *csc = new BESContainerStorageCatalog( FF_CATALOG ) ;
     BESContainerStorageList::TheList()->add_persistence( csc ) ;
+
+    BESDEBUG( "Done Initializing FF module " << modname << endl )
 }
 
 void
 FFModule::terminate( const string &modname )
 {
-    if( BESLog::TheLog()->is_verbose() )
-        (*BESLog::TheLog()) << "Removing FF Handlers" << endl;
+    BESDEBUG( "Cleaning FF module " << modname << endl )
 
+    BESDEBUG( "    removing FF Handler" << modname << endl )
     BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( modname ) ;
-
     if( rh ) delete rh ;
 
-    if( BESLog::TheLog()->is_verbose() )
-        (*BESLog::TheLog()) << "Removing catalog Container Storage" << endl;
-
+    BESDEBUG( "    removing catalog container storage" << FF_CATALOG << endl )
     BESContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
+
+    BESDEBUG( "    removing " << FF_CATALOG << " catalog" << endl )
+    BESCatalogList::TheCatalogList()->del_catalog( FF_CATALOG ) ;
+
+    BESDEBUG( "Done Cleaning FF module " << modname << endl )
 }
 
 /** @brief dumps information about this object
