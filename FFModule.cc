@@ -47,38 +47,41 @@ using std::endl ;
 void
 FFModule::initialize( const string &modname )
 {
-    BESDEBUG( "Initializing FF module " << modname << endl )
+    BESDEBUG( "ff", "Initializing FF module " << modname << endl )
 
-    BESDEBUG( "    adding " << modname << " request handler" << endl )
+    BESDEBUG( "ff", "    adding " << modname << " request handler" << endl )
     BESRequestHandler *handler = new FFRequestHandler( modname ) ;
     BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
 
-    BESDEBUG( "    adding " << FF_CATALOG << " catalog" << endl )
+    BESDEBUG( "ff", "    adding " << FF_CATALOG << " catalog" << endl )
     BESCatalogList::TheCatalogList()->add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
 
-    BESDEBUG( "    adding catalog container storage" << FF_CATALOG << endl )
+    BESDEBUG( "ff", "    adding catalog container storage" << FF_CATALOG << endl )
     BESContainerStorageCatalog *csc = new BESContainerStorageCatalog( FF_CATALOG ) ;
     BESContainerStorageList::TheList()->add_persistence( csc ) ;
 
-    BESDEBUG( "Done Initializing FF module " << modname << endl )
+    BESDEBUG( "ff", "    adding ff debug context" << endl )
+    BESDebug::Register( "ff" ) ;
+
+    BESDEBUG( "ff", "Done Initializing FF module " << modname << endl )
 }
 
 void
 FFModule::terminate( const string &modname )
 {
-    BESDEBUG( "Cleaning FF module " << modname << endl )
+    BESDEBUG( "ff", "Cleaning FF module " << modname << endl )
 
-    BESDEBUG( "    removing FF Handler" << modname << endl )
+    BESDEBUG( "ff", "    removing FF Handler" << modname << endl )
     BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( modname ) ;
     if( rh ) delete rh ;
 
-    BESDEBUG( "    removing catalog container storage" << FF_CATALOG << endl )
+    BESDEBUG( "ff", "    removing catalog container storage" << FF_CATALOG << endl )
     BESContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
 
-    BESDEBUG( "    removing " << FF_CATALOG << " catalog" << endl )
+    BESDEBUG( "ff", "    removing " << FF_CATALOG << " catalog" << endl )
     BESCatalogList::TheCatalogList()->del_catalog( FF_CATALOG ) ;
 
-    BESDEBUG( "Done Cleaning FF module " << modname << endl )
+    BESDEBUG( "ff", "Done Cleaning FF module " << modname << endl )
 }
 
 /** @brief dumps information about this object
