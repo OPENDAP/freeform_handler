@@ -112,6 +112,15 @@ endif
 
 ###########################################################################
 
+# Fortify targets. These 
+
+.PHONY: fortify
+fortify:
+	sourceanalyzer -b freeform_handler $(MAKE)
+	sourceanalyzer -b freeform_handler -scan -f freeform_handler.fpr
+
+###########################################################################
+
 # Build linux RPMs
 
 srpm: dist
