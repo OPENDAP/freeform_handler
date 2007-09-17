@@ -226,6 +226,7 @@ static int cv_multiply_value(
 	if (last_underscore)
 		*last_underscore = STR_END;
 
+    assert(strlen(v_name) < sizeof(v_name) -1);
 	assert(sizeof(v_name) - strlen(v_name) > strlen(var_extension));
 	strncat(v_name, var_extension, sizeof(v_name) - strlen(v_name) - 1);
 	v_name[sizeof(v_name) - 1] = STR_END;
@@ -1280,15 +1281,15 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 		switch(string_number)
 		{
 		case 0:		/* Date String is mm/dd/yy */
-		 	sprintf(month_str, "%02d", atoi(strtok(ch_ptr, "/:, ")));
-		 	sprintf(day_str, "%02d", atoi(strtok(NULL, "/:, ")));
-		 	sprintf(year_str, "%02d", atoi(strtok(NULL, "/:, ")));
+		 	snprintf(month_str, 4, "%02d", atoi(strtok(ch_ptr, "/:, ")));
+		 	snprintf(day_str, 4, "%02d", atoi(strtok(NULL, "/:, ")));
+		 	snprintf(year_str, 5, "%02d", atoi(strtok(NULL, "/:, ")));
 		break;
 
 		case 1:		/* Date String is dd/mm/yy */
-		 	sprintf(day_str, "%02d", atoi(strtok(ch_ptr, "/:, ")));
-		 	sprintf(month_str, "%02d", atoi(strtok(NULL, "/:, ")));
-		 	sprintf(year_str, "%02d", atoi(strtok(NULL, "/:, ")));
+		 	snprintf(day_str, 4, "%02d", atoi(strtok(ch_ptr, "/:, ")));
+		 	snprintf(month_str, 4, "%02d", atoi(strtok(NULL, "/:, ")));
+		 	snprintf(year_str, 5, "%02d", atoi(strtok(NULL, "/:, ")));
 		break;
 
 		case 2:		/* Date String is yymmdd */
@@ -3871,8 +3872,8 @@ int cv_mag_diff(
 	if (!error)
 	{
 		*minus = '\0';
-		strcat(magnitude_1, name_copy);
-		strcat(magnitude_2, minus + 1);
+		strncat(magnitude_1, name_copy, 63);
+		strncat(magnitude_2, minus + 1, 63);
 
 		/* Find the first magnitude */
 		var_mag_1 = ff_find_variable(magnitude_1, input);
@@ -5115,8 +5116,8 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 		switch(string_number)
 		{
 		case 0:		/* Time String is hh:mm:ss */
-		 	sprintf(hour, "%02d", atoi(strtok(ch_ptr, "/:|, ")));
-		 	sprintf(minute, "%02d", atoi(strtok(NULL, "/:|, ")));
+		 	snprintf(hour, 4, "%02d", atoi(strtok(ch_ptr, "/:|, ")));
+		 	snprintf(minute, 4, "%02d", atoi(strtok(NULL, "/:|, ")));
 			if (string_length < 6)
 				*second = STR_END;
 			else
@@ -5165,7 +5166,7 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	switch(string_number)
 	{
 	case 0:		/* Time String is hh:mm:ss */
-	 	sprintf(ch_ptr,"%s:%s:%s", hour, minute, second);
+	 	snprintf(ch_ptr, sizeof(output), "%s:%s:%s", hour, minute, second);
 		break;
 
 	case 1:		/* Date String is hhmmss */

@@ -116,77 +116,77 @@ header_to_attributes(AttrTable *at, DATA_BIN_PTR dbin) throw(Error)
 	  case FFV_INT8:
 	    unsigned char int8;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT8, &int8);
-	    sprintf(text,"%d",int8);
+	    snprintf(text, sizeof(text), "%d",int8);
 	    at->append_attr(var->name, "BYTE", text);
 	    break;
 
 	  case FFV_INT16:
 	    short int16;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT16, &int16);
-	    sprintf(text,"%d",int16);
+	    snprintf(text, sizeof(text), "%d",int16);
 	    at->append_attr(var->name, "INT16", text);
 	    break;
 
 	  case FFV_INT32:
 	    int int32;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT32, &int32);
-	    sprintf(text,"%d",int32);
+	    snprintf(text, sizeof(text), "%d",int32);
 	    at->append_attr(var->name, "INT32", text);
 	    break;
 
 	  case FFV_INT64:
 	    long int64;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT64, &int64);
-	    sprintf(text,"%ld",int64);
+	    snprintf(text, sizeof(text), "%ld",int64);
 	    at->append_attr(var->name, "INT32", text);
 	    break;
 
 	  case FFV_UINT8:
 	    unsigned char uint8;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT8, &uint8);
-	    sprintf(text,"%d",uint8);
+	    snprintf(text, sizeof(text), "%d",uint8);
 	    at->append_attr(var->name, "BYTE", text);
 	    break;
 
 	  case FFV_UINT16:
 	    unsigned short uint16;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT16, &uint16);
-	    sprintf(text,"%d",uint16);
+	    snprintf(text, sizeof(text), "%d",uint16);
 	    at->append_attr(var->name, "UINT16", text);
 	    break;
 
 	  case FFV_UINT32:
 	    unsigned int uint32;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT32, &uint32);
-	    sprintf(text,"%u",uint32);
+	    snprintf(text, sizeof(text), "%u",uint32);
 	    at->append_attr(var->name, "UINT32", text);
 	    break;
 
 	  case FFV_UINT64:
 	    unsigned long uint64;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT64, &uint64);
-	    sprintf(text,"%lu",uint64);
+	    snprintf(text, sizeof(text), "%lu",uint64);
 	    at->append_attr(var->name, "UINT32", text);
 	    break;
 
 	  case FFV_FLOAT32:
 	    float float32;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_FLOAT32, &float32);
-	    sprintf(text,"%f",float32);
+	    snprintf(text, sizeof(text), "%f",float32);
 	    at->append_attr(var->name, "FLOAT32", text);
 	    break;
 
 	  case FFV_FLOAT64:
 	    double float64;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_FLOAT64, &float64);
-	    sprintf(text,"%f",float64);
+	    snprintf(text, sizeof(text), "%f",float64);
 	    at->append_attr(var->name, "FLOAT64", text);
 	    break;
 
 	  case FFV_ENOTE:
 	    double enote;
 	    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_ENOTE, &enote);
-	    sprintf(text,"%e",enote);
+	    snprintf(text, sizeof(text), "%e",enote);
 	    at->append_attr(var->name, "FLOAT64", text);
 	    break;
 

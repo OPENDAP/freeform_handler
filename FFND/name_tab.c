@@ -605,7 +605,8 @@ static int parse_line_into_tokens_by_case
 					++ch_ptr;
 				else
 				{
-					if (!count_tokens_only)
+					/* Added '&& num_tokens < MAX_TOKENS-1' jhrg */
+					if (!count_tokens_only && num_tokens < MAX_TOKENS-1)
 						tokens[num_tokens] = ch_ptr;
 
 					if (num_tokens + 1 < NUM_CONSTANT_TOKENS)
@@ -639,7 +640,8 @@ static int parse_line_into_tokens_by_case
 					++ch_ptr;
 				else
 				{
-					if (!count_tokens_only)
+					/* Added '&& num_tokens < MAX_TOKENS-1' jhrg */
+					if (!count_tokens_only && num_tokens < MAX_TOKENS-1)
 						tokens[num_tokens] = ch_ptr;
 
 					while (!isspace((int)*ch_ptr) && *ch_ptr != STR_END && strcspn(ch_ptr, UNION_EOL_CHARS))

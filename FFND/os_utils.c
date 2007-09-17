@@ -435,7 +435,7 @@ void *os_mac_load_env(char *buffer)
  *
  * GLOBALS:	
  *
- * AUTHOR:	Tom Carey, adapted from code by Theodore W. Liz‰rd
+ * AUTHOR:	Tom Carey, adapted from code by Theodore W. Lizï¿½rd
  *
  * COMMENTS: 	
  *
@@ -546,8 +546,9 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr)
 
 char *os_get_env(char * variable_name)
 {
-	char *variable = NULL;
+#if 0 /* Remove this use of getenv(). jhrg */
 
+	char *variable = NULL;
 #if FF_OS == FF_OS_MAC
 
 /* Li Ping used XVT types and functions here, so we need to remove it all
@@ -600,8 +601,9 @@ char *os_get_env(char * variable_name)
 	if (variable)
 		return(memStrdup(variable, "variable"));
 	else
-		return(NULL);
+#endif /* Removed because of calls to getenv(). jhrg */ 
 
+		return(NULL);
 } /* END OS_GET_ENV */
 
 /*****************************************************************************

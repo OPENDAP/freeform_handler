@@ -1228,7 +1228,7 @@ int btype_to_btype(void *src_value, FF_TYPES_t src_type, void *dest_value, FF_TY
 	}
 
 	/* treat src_value alignment and convert to double */
-	
+	assert(sizeof(align_var) >= src_type_size); /* Added jhrg */
 	memcpy((void *)&align_var, src_value, src_type_size);
 	
 	switch (FFV_DATA_TYPE_TYPE(src_type))
@@ -1607,11 +1607,13 @@ static int make_middle_format
 				/* Might be a calculated input variable */
 
 				char try_name[MAX_PV_LENGTH];
-
+				
+				/* Added first assert to prevent int overflow. jhrg */
+				assert(strlen(out_var->name) < UINT_MAX - strlen("_eqn"));
 				assert(strlen(out_var->name) + strlen("_eqn") < sizeof(try_name) - 1);
 
 				strncpy(try_name, out_var->name, sizeof(try_name) - 1);
-				strncat(try_name, "_eqn", sizeof(try_name) - strlen(try_name));
+				strncat(try_name, "_eqn", sizeof(try_name) - strlen(try_name) - 1);
 
 				in_var = ff_find_variable(try_name, input->format);
 			}

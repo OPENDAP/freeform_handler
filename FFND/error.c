@@ -349,7 +349,7 @@ int verr_push
 	assert(ercode);
 	assert(format);
 
-	vsprintf(message, format, va_args);
+	vsnprintf(message, MAX_ERRSTR_SIZE, format, va_args);
 
 	add_error(ercode, message);
 
@@ -640,14 +640,14 @@ int err_disp(FF_STD_ARGS_PTR std_args)
 		error_screen = TRUE;
 
 	if (num_warnings)
-		sprintf(num_warnings_str, "%d", num_warnings);
+		snprintf(num_warnings_str, 10, "%d", num_warnings);
 	else
-		sprintf(num_warnings_str, "no");
+		snprintf(num_warnings_str, 10, "no");
 
 	if (num_errors)
-		sprintf(num_errors_str, "%d", num_errors);
+		snprintf(num_errors_str, 10, "%d", num_errors);
 	else
-		sprintf(num_errors_str, "no");
+		snprintf(num_errors_str, 10, "no");
 
 	if (num_warnings && num_errors)
 	{

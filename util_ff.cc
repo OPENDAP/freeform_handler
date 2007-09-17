@@ -322,12 +322,6 @@ find_ancillary_file(const string & dataset, const string & delimiter,
     size_t delim = dataset.find(delimiter);
     string basename = dataset.substr(0, delim);
 
-#if 0
-    if (extension != ".fmt")
-        return string(basename + extension);
-
-    else {
-#endif
         // 
         // Use the FreeForm setdbin:find_format_files() to locate
         // the input format description file.
@@ -383,11 +377,6 @@ find_ancillary_file(const string & dataset, const string & delimiter,
             db_destroy(dbin);
             throw InternalErr(msg);
         }
-
-        db_destroy(dbin);
-#if 0
-    }
-#endif
 }
 
 // These functions are used by the Date/Time Factory classes but they might

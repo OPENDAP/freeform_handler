@@ -51,3 +51,17 @@ FF_SRCS = afm2bfm.c avlins.c avlfree.c cv_units.c dbevents.c dl_lists.c \
 FF_HDRS = avl.h err.h ff_types.h memtrack.h ndarray.h		\
 	avltree.h eval_eqn.h freeform.h menuindx.h os_utils.h	\
 	dl_lists.h ff2psdts.h maxmin.h name_tab.h
+
+###########################################################################
+
+# Fortify targets.
+
+.PHONY: fortify
+fortify:
+	sourceanalyzer -b @PACKAGE@ $(MAKE) libfreeform.la
+	sourceanalyzer -b @PACKAGE@ -scan -f ../@PACKAGE@-@PACKAGE_VERSION@.fpr
+
+# Use this to clean the fortify project.
+.PHONY: fortifyclean
+fortifyclean:
+	sourceanalyzer -b @PACKAGE@ -clean

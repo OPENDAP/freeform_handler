@@ -912,10 +912,11 @@ static void change_param_name
 	}
 
 	if (distance)
-		sprintf(outuser_name, "%-*.*s", distance, distance, outuvalue_ptr);
+		snprintf(outuser_name, MAX_PV_LENGTH, "%-*.*s", distance, distance, outuvalue_ptr);
 	else
 	{
-		strcpy(outuser_name, outuvalue_ptr);
+		strncpy(outuser_name, outuvalue_ptr, MAX_PV_LENGTH-1);
+		outuser_name[MAX_PV_LENGTH-1] = '\0';
 
 		if (outuser_name[strlen(outuser_name) - 1] != ' ')
 			strcat(outuser_name, " ");
@@ -3303,8 +3304,10 @@ static int fill_histo
 			cat_ptr->count = 1;
 			if (var->precision)
 			{
-				strncpy(cat_ptr->str, str, var->precision);
-				cat_ptr->str[var->precision] = STR_END;
+				/* Added '-1' because I'm not sure if var->precision is the size or
+				 * the size-1. jhrg */
+				strncpy(cat_ptr->str, str, var->precision-1);
+				cat_ptr->str[var->precision-1] = STR_END;
 			}
 			else
 				strcpy(cat_ptr->str, str);

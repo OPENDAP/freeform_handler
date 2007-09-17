@@ -1488,7 +1488,7 @@ int make_tabular_format_array_mapping
 		destroy_mapping(PINFO_ARRAY_MAP(pinfo));
 	}
 
-	sprintf(super_desc_str,
+	snprintf(super_desc_str, 35,
 		     "[\"t\" 1 to %ld] %u",
 			  num_records,
 		     (unsigned)PINFO_RECL(pinfo)
@@ -1497,7 +1497,7 @@ int make_tabular_format_array_mapping
 	if (!super_desc)
 		return(ERR_GEN_ARRAY);
 
-	sprintf(sub_desc_str,
+	snprintf(sub_desc_str, 35,
 		     "[\"t\" %ld to %ld] %u",
 			  start_record,
 		     end_record,

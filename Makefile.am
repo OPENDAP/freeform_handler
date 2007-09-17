@@ -112,12 +112,19 @@ endif
 
 ###########################################################################
 
-# Fortify targets. These 
+# Fortify targets.
 
 .PHONY: fortify
 fortify:
-	sourceanalyzer -b freeform_handler $(MAKE)
-	sourceanalyzer -b freeform_handler -scan -f freeform_handler.fpr
+	(cd FFND && $(MAKE) fortify)
+	sourceanalyzer -b @PACKAGE@ $(MAKE) libff_handler.la
+	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
+
+# Use this to clean the fortify project.
+.PHONY: fortifyclean
+fortifyclean:
+	(cd FFND && $(MAKE) fortifyclean)
+	sourceanalyzer -b @PACKAGE@ -clean
 
 ###########################################################################
 

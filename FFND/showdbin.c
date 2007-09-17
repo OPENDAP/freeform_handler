@@ -1855,14 +1855,14 @@ static int dbask_var_units
 	{
 		(*units_vector)[i] = NULL;
 
-		sprintf(name_buffer, "%s_unit", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i]);
+		snprintf(name_buffer, sizeof(name_buffer), "%s_unit", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i]);
 		error = nt_ask(dbin, NT_INPUT, name_buffer, FFV_TEXT, data_dest);
 		if (error && error != ERR_NT_KEYNOTDEF)
 			error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 
 		if (error)
 		{
-			sprintf(name_buffer, "band_%d_unit", i + 1);
+			snprintf(name_buffer, sizeof(name_buffer), "band_%d_unit", i + 1);
 			error = nt_ask(dbin, NT_INPUT, name_buffer, FFV_TEXT, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
@@ -1870,7 +1870,7 @@ static int dbask_var_units
 
 		if (error)
 		{
-			sprintf(name_buffer, "value_unit");
+			snprintf(name_buffer, sizeof(name_buffer), "value_unit");
 			error = nt_ask(dbin, NT_INPUT, name_buffer, FFV_TEXT, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
@@ -2003,14 +2003,14 @@ static int dbask_var_flags
 
 		((double **)*flags_vector)[i] = NULL;
 
-		sprintf(name_buffer, "%s_missing_flag", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i]);
+		snprintf(name_buffer, sizeof(name_buffer), "%s_missing_flag", strstr(names_vector[i], "::") ? strstr(names_vector[i], "::") + 2 : names_vector[i]);
 		error = nt_ask(dbin, NT_INPUT, name_buffer, flags_type, data_dest);
 		if (error && error != ERR_NT_KEYNOTDEF)
 			error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
 
 		if (error)
 		{
-			sprintf(name_buffer, "band_%d_missing_flag", i + 1);
+			snprintf(name_buffer, sizeof(name_buffer), "band_%d_missing_flag", i + 1);
 			error = nt_ask(dbin, NT_INPUT, name_buffer, flags_type, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
@@ -2018,7 +2018,7 @@ static int dbask_var_flags
 
 		if (error)
 		{
-			sprintf(name_buffer, "missing_flag");
+			snprintf(name_buffer, sizeof(name_buffer), "missing_flag");
 			error = nt_ask(dbin, NT_INPUT, name_buffer, flags_type, data_dest);
 			if (error && error != ERR_NT_KEYNOTDEF)
 				error_state = err_push(error, "Problem retrieving value for %s", name_buffer);
