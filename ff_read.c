@@ -41,6 +41,11 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
     DBG(std_args->log_file = "/tmp/ffdods.log"); 
 
     bufsz = (FF_BUFSIZE_PTR)memMalloc(sizeof(FF_BUFSIZE), "bufsz");
+    if (!bufsz) {
+	error = ERR_MEM_LACK;
+	goto main_exit;
+    }
+    
     bufsz->usage = 1;
     bufsz->buffer = o_buffer;
     bufsz->total_bytes = (FF_BSS_t)bsize;

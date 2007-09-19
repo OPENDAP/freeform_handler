@@ -93,7 +93,7 @@ Records(const string &filename)
     static char Msgt[255];
 
     char * FileName = new char [filename.length()+1];
-    (void) strcpy(FileName, filename.c_str());
+    strncpy(FileName, filename.c_str(), filename.length());
 
     SetUps = ff_create_std_args();
     if (!SetUps)
@@ -104,7 +104,7 @@ Records(const string &filename)
     SetUps->input_file = FileName; 
     string iff = find_ancillary_file(filename);
     char *if_f = new char[iff.length() + 1];
-    strcpy(if_f, iff.c_str());
+    strncpy(if_f, iff.c_str(), iff.length());
     SetUps->input_format_file = if_f;
     SetUps->output_file = NULL;
 
@@ -177,22 +177,25 @@ FFSequence::read(const string &dataset)
 	DBG(cerr << str.str());
       
 	char *o_fmt = new char[str.str().length() + 1];
-	strcpy(o_fmt, str.str().c_str());
+	strncpy(o_fmt, str.str().c_str(), str.str().length());
 
 	string input_format_file = find_ancillary_file(dataset);
 	char *if_fmt = new char[input_format_file.length() + 1];
-	strcpy(if_fmt, input_format_file.c_str());
+	strncpy(if_fmt, input_format_file.c_str(), input_format_file.length());
      
 	// num_rec could come from DDS if sequence length was known...
 	long num_rec = Records(dataset); 
 
-	if (num_rec == -1)
+	if (num_rec == -1) {
+		delete [] o_fmt;
+		delete [] if_fmt;
 	    return false;
+	}
 
 	BufSiz = num_rec * (stbyte - 1);
 	BufVal = new char[BufSiz];
 	char *ds = new char[dataset.length() + 1];
-	strcpy(ds, dataset.c_str());
+	strncpy(ds, dataset.c_str(), dataset.length());
    
 	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
 	    

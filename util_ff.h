@@ -40,6 +40,7 @@
 #include "dods-datatypes.h"
 
 #define MaxStr 100
+const int Msgt_size = 255;
 
 const string ff_types(Type dods_type);
 int ff_prec(Type dods_type);
@@ -63,7 +64,8 @@ int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
 
 bool file_exist(const char * filename);
 
-extern "C" long read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer, unsigned long size);
+extern "C" long read_ff(char *dataset, char *if_file, char *o_format, 
+                        char *o_buffer, unsigned long size);
 
 bool is_integer_type(BaseType *btp);
 bool is_float_type(BaseType *btp);

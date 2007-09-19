@@ -46,9 +46,8 @@ long BufSiz = 0;                // Cache size
 char *BufVal = NULL;            // cache buffer
 const string cgi_version = PACKAGE_VERSION;
 
-extern void ff_read_descriptors(DDS & dds,
-                                const string & filename) throw(Error);
-extern void ff_get_attributes(DAS & das, string filename) throw(Error);
+extern void ff_read_descriptors(DDS & dds, const string & filename);
+extern void ff_get_attributes(DAS & das, string filename);
 
 int main(int argc, char *argv[])
 {

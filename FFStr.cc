@@ -100,8 +100,11 @@ FFStr::read(const string &)
 	TmpBuf[i-j+1]='\0';
 
 	string *Nstr = new string((const char *)TmpBuf);
+	delete [] TmpBuf;
 
 	val2buf(Nstr);
+	delete Nstr;
+	
 	set_read_p(true);
 
 	BufPtr += StrLength;

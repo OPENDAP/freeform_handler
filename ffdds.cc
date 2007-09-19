@@ -48,17 +48,15 @@ static char rcsid[] not_used ={"$Id$"};
 
 #include <iostream>
 
-#include "Error.h"
-#include "InternalErr.h"
-#include "cgi_util.h" 
-#include "util.h"
+#include <Error.h>
+#include <InternalErr.h>
+#include <cgi_util.h>
+#include <util.h>
 
-#if 0
-#define _BOOLEAN_DEFINED	// Hack. See ffdas.cc 3/25/99 jhrg
-#endif
 #include "FreeForm.h"
 
-#include "DDS.h"
+#include <DDS.h>
+
 #include "FFInt16.h"
 #include "FFUInt16.h"
 #include "FFInt32.h"
@@ -74,7 +72,7 @@ static char rcsid[] not_used ={"$Id$"};
 extern int StrLens[MaxStr]; // List of string lengths
 
 void
-ff_read_descriptors(DDS &dds_table, const string &filename) throw (Error)
+ff_read_descriptors(DDS &dds_table, const string &filename)
 {
   int error = 0;
   int i = 0;
@@ -111,7 +109,7 @@ ff_read_descriptors(DDS &dds_table, const string &filename) throw (Error)
   SetUps->user.is_stdin_redirected = 0;
 
   SetUps->input_file = new char[filename.length() + 1];
-  strcpy(SetUps->input_file, filename.c_str());
+  strncpy(SetUps->input_file, filename.c_str(), filename.length());
 
 #ifdef TEST
   string iff = find_ancillary_file(filename);
@@ -121,7 +119,7 @@ ff_read_descriptors(DDS &dds_table, const string &filename) throw (Error)
 
   SetUps->output_file = NULL;
   
-  char Msgt[255];
+  char Msgt[Msgt_size];
   error = SetDodsDB(SetUps, &dbin, Msgt);
   if (error && error < ERR_WARNING_ONLY) {
     db_destroy(dbin);
@@ -168,10 +166,12 @@ ff_read_descriptors(DDS &dds_table, const string &filename) throw (Error)
 	
     if (num_dim_names == 0)	// sequence names
       cp = var_names_vector[i];
-    else 	  
-      // Note: FreeForm array names are returned appened to their format
-      // name with '::' ?
-      cp = strstr(var_names_vector[i], "::")+2;
+    else  {  
+	    cp = strstr(var_names_vector[i], "::");
+	    // If cp is not null, advance past the "::"
+	    if (cp)
+	    	cp += 2;
+	}
 
     pinfo_list = dll_first(pinfo_list);
     // pinfo = FF_PI(pinfo_list);
@@ -216,6 +216,8 @@ ff_read_descriptors(DDS &dds_table, const string &filename) throw (Error)
     BaseType *bt = NULL;
     switch (FFV_DATA_TYPE(var)) {
     case FFV_TEXT:
+        if (StrNum > MaxStr-1)
+            throw InternalErr(__FILE__, __LINE__, "String variable length.");
       StrLens[StrNum]=var->end_pos - var->start_pos + 1;
       StrNum++;	    
       bt = dds_table.get_factory()->NewStr(cp);

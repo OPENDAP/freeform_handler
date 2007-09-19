@@ -3306,7 +3306,7 @@ static int fill_histo
 			{
 				/* Added '-1' because I'm not sure if var->precision is the size or
 				 * the size-1. jhrg */
-				strncpy(cat_ptr->str, str, var->precision-1);
+				strncpy(cat_ptr->str, str, var->precision);
 				cat_ptr->str[var->precision-1] = STR_END;
 			}
 			else

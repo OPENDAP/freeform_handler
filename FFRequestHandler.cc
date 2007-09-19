@@ -57,9 +57,8 @@ long BufPtr = 0;                // cache pointer
 long BufSiz = 0;                // Cache size
 char *BufVal = NULL;            // cache buffer
 
-extern void ff_read_descriptors(DDS & dds,
-                                const string & filename) throw(Error);
-extern void ff_get_attributes(DAS & das, string filename) throw(Error);
+extern void ff_read_descriptors(DDS & dds, const string & filename);
+extern void ff_get_attributes(DAS & das, string filename);
 
 FFRequestHandler::FFRequestHandler(const string &name)
 :  BESRequestHandler(name)

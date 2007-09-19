@@ -61,28 +61,29 @@ bool
 FFInt16::read(const string &)
 {
     if (read_p()) // nothing to do
-	return false;
+		return false;
 
     if (BufVal) { // data in cache
-	char * ptr = BufVal+BufPtr;
-
-	dods_int16 align;
-	memcpy((void*)&align, (void *)ptr, width());
-
-	val2buf((void *) &align);
-	set_read_p(true);
-
-#ifdef TEST
-	dods_int16 *tmo;
-	tmo = (dods_int16 *)ptr;
-	printf("\n%ld offset=%ld\n",*tmo,BufPtr);
-#endif 
-	BufPtr += width();
-	return false;
+		char * ptr = BufVal+BufPtr;
+	
+		dods_int16 align;
+		if (width() > sizeof(align))
+			throw InternalErr(__FILE__, __LINE__, "Int16 size.");		
+		
+		memcpy((void*)&align, (void *)ptr, width());
+	
+		val2buf((void *) &align);
+		set_read_p(true);
+	
+	#ifdef TEST
+		dods_int16 *tmo;
+		tmo = (dods_int16 *)ptr;
+		printf("\n%ld offset=%ld\n",*tmo,BufPtr);
+	#endif 
+	
+		BufPtr += width();
     }
-    else {
 	return false;
-    }
 }
 
 // $Log: FFInt16.cc,v $

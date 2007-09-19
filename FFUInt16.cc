@@ -66,14 +66,16 @@ bool FFUInt16::read(const string &)
         char *ptr = BufVal + BufPtr;
 
         dods_uint16 align;
+		if (width() > sizeof(align))
+			throw InternalErr(__FILE__, __LINE__, "UInt16 size.");		
+
         memcpy((void *) &align, (void *) ptr, width());
 
         val2buf((void *) &align);
         set_read_p(true);
 
         BufPtr += width();
-        return false;
-    } else {
-        return false;
     }
+
+    return false;
 }
