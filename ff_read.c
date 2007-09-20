@@ -56,7 +56,8 @@ read_ff(const char *dataset, const char *if_file, const char *o_format,
     if (!bufsz) {
 #if 0
 	error = ERR_MEM_LACK;
-#endif	goto main_exit;
+#endif	
+        goto main_exit;
     }
     
     bufsz->usage = 1;
