@@ -93,8 +93,11 @@ Records(const string &filename)
     static char Msgt[255];
 
     char * FileName = new char [filename.length()+1];
+    filename.copy(FileName, filename.length());
+    FileName[filename.length()]='\0';
+#if 0    
     strncpy(FileName, filename.c_str(), filename.length());
-
+#endif
     SetUps = ff_create_std_args();
     if (!SetUps)
 	return -1;
@@ -104,7 +107,11 @@ Records(const string &filename)
     SetUps->input_file = FileName; 
     string iff = find_ancillary_file(filename);
     char *if_f = new char[iff.length() + 1];
+    iff.copy(if_f, iff.length());
+    if_f[iff.length()]='\0';
+#if 0
     strncpy(if_f, iff.c_str(), iff.length());
+#endif    
     SetUps->input_format_file = if_f;
     SetUps->output_file = NULL;
 
@@ -177,12 +184,19 @@ FFSequence::read(const string &dataset)
 	DBG(cerr << str.str());
       
 	char *o_fmt = new char[str.str().length() + 1];
+        str.str().copy(o_fmt, str.str().length());
+        o_fmt[str.str().length()]='\0';
+#if 0
 	strncpy(o_fmt, str.str().c_str(), str.str().length());
+#endif
 
 	string input_format_file = find_ancillary_file(dataset);
 	char *if_fmt = new char[input_format_file.length() + 1];
+        input_format_file.copy(if_fmt, input_format_file.length());
+        if_fmt[input_format_file.length()]='\0';
+#if 0
 	strncpy(if_fmt, input_format_file.c_str(), input_format_file.length());
-     
+#endif     
 	// num_rec could come from DDS if sequence length was known...
 	long num_rec = Records(dataset); 
 
@@ -195,8 +209,11 @@ FFSequence::read(const string &dataset)
 	BufSiz = num_rec * (stbyte - 1);
 	BufVal = new char[BufSiz];
 	char *ds = new char[dataset.length() + 1];
+        dataset.copy(ds, dataset.length());
+        ds[dataset.length()]='\0';
+#if 0
 	strncpy(ds, dataset.c_str(), dataset.length());
-   
+#endif   
 	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
 	    
 	// clean up; we should use auto_ptr, but it doesn't work for

@@ -90,12 +90,10 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
   Array *ar = NULL;
   Sequence *seq = NULL;
 
-  if (!file_exist(filename.c_str())) {
-    string msg = (string)"Could not open file " + path_to_filename(filename) 
-      + ".";
-    throw Error(msg);
-  }
-
+  if (!file_exist(filename.c_str()))
+    throw Error((string)"Could not open file " + path_to_filename(filename) 
+                 + string("."));
+  
   // Set dataset name
   dds_table.set_dataset_name(name_path(filename));
    
@@ -109,7 +107,11 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
   SetUps->user.is_stdin_redirected = 0;
 
   SetUps->input_file = new char[filename.length() + 1];
+  filename.copy(SetUps->input_file, filename.length());
+  SetUps->input_file[filename.length()]='\0';
+#if 0
   strncpy(SetUps->input_file, filename.c_str(), filename.length());
+#endif
 
 #ifdef TEST
   string iff = find_ancillary_file(filename);

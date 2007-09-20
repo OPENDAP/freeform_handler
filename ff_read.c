@@ -24,14 +24,18 @@ long
 read_ff(const char *dataset, const char *if_file, const char *o_format, 
         char *o_buffer, unsigned long bsize)
 {
+#if 0
     int error = 0;
+#endif
     FF_BUFSIZE_PTR newform_log = NULL;
     FF_BUFSIZE_PTR bufsz = NULL;
     FF_STD_ARGS_PTR std_args = NULL;
   
     std_args = ff_create_std_args();
     if (!std_args) {
+#if 0
 	error = ERR_MEM_LACK;
+#endif
 	goto main_exit;
     }
 
@@ -50,8 +54,9 @@ read_ff(const char *dataset, const char *if_file, const char *o_format,
 
     bufsz = (FF_BUFSIZE_PTR)memMalloc(sizeof(FF_BUFSIZE), "bufsz");
     if (!bufsz) {
+#if 0
 	error = ERR_MEM_LACK;
-	goto main_exit;
+#endif	goto main_exit;
     }
     
     bufsz->usage = 1;
@@ -62,11 +67,15 @@ read_ff(const char *dataset, const char *if_file, const char *o_format,
   
     newform_log = ff_create_bufsize(SCRATCH_QUANTA);
     if (!newform_log) {
+#if 0
 	error = ERR_MEM_LACK;
+#endif
 	goto main_exit;
     }
-  
-    error = newform(std_args, newform_log, stderr);
+#if 0  
+    error = 
+#endif
+    newform(std_args, newform_log, stderr);
 
 #ifdef TEST_LOGGING
     char log_file_write_mode[4];
@@ -111,7 +120,7 @@ read_ff(const char *dataset, const char *if_file, const char *o_format,
     if (std_args)
 	ff_destroy_std_args(std_args);
   
-    return bufsz->bytes_used;
+    return bufsz ? bufsz->bytes_used : 0;
 }
 
 #ifdef TEST 

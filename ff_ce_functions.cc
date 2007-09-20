@@ -118,10 +118,14 @@ template < class T, class T_Factory >
     bool te;
 
     if (argc == 2) {
+#if 0
         te = ((t1 <= current) && (t2 >= current));
+#endif
         return ((t1 <= current) && (t2 >= current));
     } else {
+#if 0
         te = (t1 == current);
+#endif
         return (t1 == current);
     }
 }
