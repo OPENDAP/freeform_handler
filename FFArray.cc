@@ -265,82 +265,77 @@ FFArray::read(const string &dataset)
     if (read_p())  // Nothing to do
         return false;
 
-    // make char * variables to hold string data for read_ff
-    char *ds = new char[dataset.size() + 1];
-    strcpy(ds, dataset.c_str());
-
-    // This was used for original Sequence to Array translation 
-    // string output_format = make_output_format(name(), var()->type_name(), 
-    //					      var()->width());
-   
     bool has_stride;
     int ndims = dimensions();
     string *dname = new string[ndims];	       
     long *start = new long[ndims];
     long *stride = new long[ndims];
     long *edge = new long[ndims];    
-    long count = Arr_constraint(start, stride, edge, dname, 
-     				&has_stride);    
+    long count = Arr_constraint(start, stride, edge, dname, &has_stride);    
 
     if (!count) {
-      throw Error(unknown_error, "Constraint returned an empty dataset.");
+        delete[] dname;
+
+        delete[] start;
+        delete[] stride;
+        delete[] edge;
+
+        throw Error(unknown_error, "Constraint returned an empty dataset.");
     }
 
     string output_format =
       makeND_output_format(name(), var()->type(), var()->width(), 
 			   ndims, start, edge, stride, dname);
 
-    char *o_fmt = new char[output_format.length() + 1];
-    strcpy(o_fmt, output_format.c_str());
-
     string input_format_file = find_ancillary_file(dataset);
-    char *if_fmt = new char[input_format_file.length() + 1];
-    strcpy(if_fmt, input_format_file.c_str());
 
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data
     //     NB: extract_array throws an Error object to signal problems.
+    
     switch(var()->type()) {
       case dods_byte_c:
-	extract_array<dods_byte>(ds, if_fmt, o_fmt);
+	extract_array<dods_byte>(dataset, input_format_file, output_format);
 	break;
 
       case dods_int16_c:
-	extract_array<dods_int16>(ds, if_fmt, o_fmt);
+	extract_array<dods_int16>(dataset, input_format_file, output_format);
 	break;
 
       case dods_uint16_c:
-	extract_array<dods_uint16>(ds, if_fmt, o_fmt);
+	extract_array<dods_uint16>(dataset, input_format_file, output_format);
 	break;
 
       case dods_int32_c:
-	extract_array<dods_int32>(ds, if_fmt, o_fmt);
+	extract_array<dods_int32>(dataset, input_format_file, output_format);
 	break;
 
       case dods_uint32_c:
-	extract_array<dods_uint32>(ds, if_fmt, o_fmt);
+	extract_array<dods_uint32>(dataset, input_format_file, output_format);
 	break;
 
       case dods_float32_c:
-	extract_array<dods_float32>(ds, if_fmt, o_fmt);
+	extract_array<dods_float32>(dataset, input_format_file, output_format);
 	break;
 
       case dods_float64_c:
-	extract_array<dods_float64>(ds, if_fmt, o_fmt);
+	extract_array<dods_float64>(dataset, input_format_file, output_format);
 	break;
 
       default:
+        delete[] dname;
+        delete[] start;
+        delete[] stride;
+        delete[] edge;
+    
 	throw InternalErr(__FILE__, __LINE__,
 			  (string)"FFArray::read: Unsupported array type "
 			  + var()->type_name() + ".");
     }
 
     // clean up
-    delete[] ds;		// delete temporary char * arrays
-    delete[] o_fmt;
-    delete[] if_fmt;
-
+    delete[] dname;
     delete[] start;
     delete[] stride;
     delete[] edge;
@@ -353,10 +348,12 @@ FFArray::read(const string &dataset)
 
 template <class T>
 bool
-FFArray::extract_array(char *ds, char *if_fmt, char *o_fmt)
+FFArray::extract_array(const string &ds, const string &if_fmt, 
+                       const string &o_fmt)
 {
     T *d = (T *)new char[width()];
-    long bytes = read_ff(ds, if_fmt, o_fmt, (char *)d, width());
+    long bytes = read_ff(ds.c_str(), if_fmt.c_str(), o_fmt.c_str(), 
+                         (char *)d, width());
 
     if (bytes == -1) {
       throw Error(unknown_error, "Could not read values from the dataset.");

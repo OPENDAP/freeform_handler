@@ -12,10 +12,17 @@ static char rcsid[] not_used ={"$Id$"};
 
 #include "debug.h"
 
-
+/** Read from a file/database using the FreeForm API. Data values are read
+    using an input file descriptor and written using an output format 
+    description.
+    @param dataset The name of the file/database to read from
+    @param if_file The input format descriptor
+    @param o_format The output format description
+    @param o_buffer Value-result parameter for the data
+    @param bsize Size of the buffer in bytes */
 long
-read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer, 
-	unsigned long bsize)
+read_ff(const char *dataset, const char *if_file, const char *o_format, 
+        char *o_buffer, unsigned long bsize)
 {
     int error = 0;
     FF_BUFSIZE_PTR newform_log = NULL;
@@ -28,13 +35,14 @@ read_ff(char *dataset, char *if_file, char *o_format, char *o_buffer,
 	goto main_exit;
     }
 
-    /* set the std_arg structure values **/
+    /* set the std_arg structure values - cast away const for dataset, if_file,
+     * and o_format.*/
     std_args->error_prompt = FALSE;
     std_args->user.is_stdin_redirected = 0;
-    std_args->input_file = dataset;
-    std_args->input_format_file = if_file;
+    std_args->input_file = (char*)(dataset);
+    std_args->input_format_file = (char*)(if_file);
     std_args->output_file = NULL;
-    std_args->output_format_buffer = o_format;
+    std_args->output_format_buffer = (char*)(o_format);
     std_args->log_file = "/dev/null"; 
     /* Define DBG (as per dap/debug.h) to get a log file from FreeForm. 9/8/98
        jhrg */

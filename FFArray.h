@@ -49,8 +49,9 @@ private:
 			bool *has_stride);
 
     /** Read an array of simple types into this objects #_buf# memeber. */
-    template <class T> bool extract_array(char *ds, char *if_fmt, 
-					  char *o_fmt);
+    template <class T> bool extract_array(const string &ds,
+                                          const string &if_fmt, 
+					  const string &o_fmt);
 
 public:
     FFArray(const string &n = "", BaseType *v = 0);
