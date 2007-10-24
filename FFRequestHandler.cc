@@ -164,7 +164,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         dds->set_factory(factory);
         
         ff_register_functions(ce);
-	string accessed = dhi.container->access();
+        string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
 
