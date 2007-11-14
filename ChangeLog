@@ -1,3 +1,88 @@
+2007-10-24  James Gallagher <jgallagher@opendap.org>
+
+	Formatting
+
+2007-09-20  James Gallagher <jgallagher@opendap.org>
+
+	Removed old log
+
+	M ff_read.c
+
+2007-09-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed edit snafu.
+
+2007-09-20  James Gallagher <jgallagher@opendap.org>
+
+	Fixed various issues.
+
+2007-09-19  James Gallagher <jgallagher@opendap.org>
+
+	Fixed various issues.
+
+2007-09-19  James Gallagher <jgallagher@opendap.org>
+
+	Fixed various issues.
+
+2007-09-17  James Gallagher <jgallagher@opendap.org>
+
+	configure.ac: Corrected the tech mailing list address.
+
+2007-09-17  James Gallagher <jgallagher@opendap.org>
+
+	Fixed various issues.
+
+2007-09-17  James Gallagher <jgallagher@opendap.org>
+
+	README: Added text describing how to run the bes-*-data.sh
+	script because it is no longer run automatically.
+	INSTALL: Added a note about the bes-conf target and about
+	LD_LIBRARY_PATH.
+
+2007-09-10  James Gallagher <jgallagher@opendap.org>
+
+	Changed 'configure-' to 'bes-' in the message recording changes to the
+	bes.conf file.
+
+	M    bes-ff-data.sh.in
+
+2007-08-23  James Gallagher <jgallagher@opendap.org>
+
+	Makefile.am: Added fortify target.
+
+2007-07-31  Patrick West <pwest@ucar.edu>
+
+	BESDebug modifications, passing context to BESDEBUG and registering debug context in Module classes.
+
+	M    FFModule.cc
+
+2007-07-17  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2007-07-16  Dan Holloway <dholloway@opendap.org>
+
+	Added conf/pkg.m4 to freeform_handler to support PKG_CONFIG_MODULE
+	macro. File copied from netcdf_handler/conf directory directly, no
+	changes were made to that file.
+
+2007-07-11  Patrick West <pwest@ucar.edu>
+
+	Using BESDebug rather than BESLog. Removing all things added
+	in the termination method.
+	M    FFModule.cc
+
+2007-07-03  James Gallagher <jgallagher@opendap.org>
+
+	Applied Patrice Dumas' patch to remove auto configuration of bes.conf.
+
+	M    freeform_handler.spec
+	M    NEWS
+	M    ChangeLog
+	M    conf/libdap.m4
+	M    README
+	M    Makefile.am
+
 2007-06-30  James Gallagher <jgallagher@opendap.org>
 
 	Don't edit bes.conf automatically. The handler may be installed and

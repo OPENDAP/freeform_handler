@@ -1,9 +1,9 @@
 
  $Id$
 
-Version 3.7.6 (?)
+Version 3.7.6 (14 Nov 2007)
 
-Don't edit bes.conf during make install, but document the bes-ff-dap.sh
+Don't edit bes.conf during make install, but document the bes-ff-data.sh
 script and the bes-conf make target in README.
 
 Version 3.7.5 (13 March 2007)
