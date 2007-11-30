@@ -75,7 +75,8 @@ DEJATOOL = dap_ff_handler
 
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir ff-test
 
-EXTRA_DIST = ff-test data COPYRIGHT COPYING freeform_handler.spec
+EXTRA_DIST = ff-test data COPYRIGHT COPYING freeform_handler.spec \
+	OSX_Resources
 
 CLEANFILES = *~ *.sum *.log
 
@@ -145,10 +146,7 @@ PACKAGEMAKER=/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/P
 pkg:
 	rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
 	./configure --prefix=/usr $(PKG_CONFIGURE_FLAGS)
-	make bes-ff-data.sh
-	cp bes-ff-data.sh bes-ff-data.sh.macosx
-	./configure --prefix=`pwd`/mac_osx $(PKG_CONFIGURE_FLAGS)
-	make clean install
-	mv bes-ff-data.sh.macosx mac_osx/bin/bes-ff-data.sh
-	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
+	make clean all
+	DESTDIR=${PWD}/mac_osx make install
+	${PACKAGEMAKER} -build -p @PACKAGE@-@PACKAGE_VERSION@.pkg -f mac_osx/usr -ds -r OSX_Resources -i OSX_Resources/Info.plist -d OSX_Resources/Description.plist
 
