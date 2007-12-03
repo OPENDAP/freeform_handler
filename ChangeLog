@@ -1,3 +1,24 @@
+2007-11-30  Patrick West <pwest@ucar.edu>
+
+	Updated MacOSX pkg build resources and process.
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/Welcome.html
+	M    Makefile.am
+
+2007-11-14  James Gallagher <jgallagher@opendap.org>
+
+	Updated for version 3.7.6
+
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    conf/libdap.m4
+	M    INSTALL
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2007-10-24  James Gallagher <jgallagher@opendap.org>
 
 	Formatting

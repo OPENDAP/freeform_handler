@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([freeform_handler], [3.7.6], [opendap-tech@opendap.org])
+AC_INIT([freeform_handler], [3.7.7], [opendap-tech@opendap.org])
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
 
@@ -42,7 +42,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([floor isascii memmove memset pow sqrt strcasecmp strchr strcspn strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
 
 dnl Checks for specific libraries
-AC_CHECK_LIBDAP([3.7.9],
+AC_CHECK_LIBDAP([3.7.10],
  [
   LIBS="$LIBS $DAP_SERVER_LIBS"
   CPPFLAGS="$CPPFLAGS $DAP_CFLAGS"
@@ -50,7 +50,7 @@ AC_CHECK_LIBDAP([3.7.9],
  [ AC_MSG_ERROR([Cannot find libdap])
 ])
 
-AC_CHECK_BES([3.5.2],
+AC_CHECK_BES([3.5.3],
 [
     # I think the AC_SUBST([BES_MODULE_DIR]) in bes.m4 will put that 
     # symbol in the output. Same for BES_CPPFLAGS. jhrg 5/1/06
