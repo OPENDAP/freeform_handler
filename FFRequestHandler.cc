@@ -46,7 +46,9 @@
 #include "BESVersionInfo.h"
 #include "BESDataNames.h"
 
-#include "BESDapHandlerException.h"
+#include "BESDapError.h"
+#include "BESInternalFatalError.h"
+#include "InternalErr.h"
 
 #include <DDS.h>
 #include <Error.h>
@@ -88,14 +90,19 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
         if (!name.empty())
             das->parse(name);
     }
+    catch(InternalErr & e) {
+        BESDapError ex( e.get_error_message(), true, e.get_error_code(),
+	                __FILE__, __LINE__ ) ;
+        throw ex;
+    }
     catch(Error & e) {
-        BESDapHandlerException ex( e.get_error_message(), __FILE__, __LINE__,
-				   e.get_error_code() ) ;
+        BESDapError ex( e.get_error_message(), false, e.get_error_code(),
+	                __FILE__, __LINE__ ) ;
         throw ex;
     }
     catch(...) {
         string s = "unknown exception caught building Freeform DAS";
-        BESHandlerException ex(s, __FILE__, __LINE__);
+        BESInternalFatalError ex(s, __FILE__, __LINE__);
         throw ex;
     }
 
@@ -134,14 +141,19 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         delete factory;
 #endif
     }
+    catch(InternalErr & e) {
+        BESDapError ex( e.get_error_message(), true, e.get_error_code(),
+			__FILE__, __LINE__ ) ;
+        throw ex;
+    }
     catch(Error & e) {
-        BESDapHandlerException ex( e.get_error_message(), __FILE__, __LINE__,
-				   e.get_error_code() ) ;
+        BESDapError ex( e.get_error_message(), false, e.get_error_code(),
+			__FILE__, __LINE__ ) ;
         throw ex;
     }
     catch(...) {
         string s = "unknown exception caught building Freeform DDS";
-        BESHandlerException ex(s, __FILE__, __LINE__);
+        BESInternalFatalError ex(s, __FILE__, __LINE__);
         throw ex;
     }
 
@@ -186,14 +198,19 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         delete factory;
 #endif
     }
+    catch(InternalErr & e) {
+        BESDapError ex( e.get_error_message(), true, e.get_error_code(),
+			__FILE__, __LINE__ ) ;
+        throw ex;
+    }
     catch(Error & e) {
-        BESDapHandlerException ex( e.get_error_message(), __FILE__, __LINE__,
-				   e.get_error_code() ) ;
+        BESDapError ex( e.get_error_message(), false, e.get_error_code(),
+			__FILE__, __LINE__ ) ;
         throw ex;
     }
     catch(...) {
         string s = "unknown exception caught building Freeform DataDDS";
-        BESHandlerException ex(s, __FILE__, __LINE__);
+        BESInternalFatalError ex(s, __FILE__, __LINE__);
         throw ex;
     }
 
