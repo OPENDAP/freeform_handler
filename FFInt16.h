@@ -34,6 +34,8 @@
 
 #include "Int16.h"
 
+using namespace libdap ;
+
 class FFInt16: public Int16 {
 public:
     FFInt16(const string &n = "");

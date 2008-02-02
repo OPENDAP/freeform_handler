@@ -39,6 +39,8 @@
 #include "DDS.h"
 #include "BaseType.h"
 
+using namespace libdap ;
+
 /** Read dates from datasets based on text configuration values. Dates are
     returned using DODS\_Date objects.
 

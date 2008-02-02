@@ -39,6 +39,8 @@
 #include "DDS.h"
 #include "BaseType.h"
 
+using namespace libdap ;
+
 /** Read times from datasets based on text configuration values. Times are
     returned using DODS\_Time objects.
 

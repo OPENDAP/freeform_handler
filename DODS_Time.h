@@ -39,6 +39,8 @@
 #include "dods-datatypes.h"
 #include "BaseType.h"
 
+using namespace libdap ;
+
 /** The DODS Time object. This provides a way to translate between various
     representations of time. This class is designed to be compatible with the
     DODS\_Date class so that dates and times may be used together in relational

@@ -39,6 +39,9 @@
 
 
 #include "Sequence.h"
+
+using namespace libdap ;
+
 extern Sequence * NewSequence(const string &n = "");
 
 class FFSequence: public Sequence {

@@ -46,6 +46,8 @@
 
 #include "Grid.h"
 
+using namespace libdap ;
+
 class FFGrid: public Grid {
 public:
     FFGrid(const string &n = "");

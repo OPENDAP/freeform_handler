@@ -34,6 +34,8 @@
 
 #include "UInt16.h"
 
+using namespace libdap ;
+
 class FFUInt16: public UInt16 {
 public:
     FFUInt16(const string &n = "");

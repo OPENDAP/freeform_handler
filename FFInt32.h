@@ -40,6 +40,8 @@
 
 #include "Int32.h"
 
+using namespace libdap ;
+
 class FFInt32: public Int32 {
 public:
     FFInt32(const string &n = "");

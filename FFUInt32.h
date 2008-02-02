@@ -40,6 +40,8 @@
 
 #include "UInt32.h"
 
+using namespace libdap ;
+
 class FFUInt32: public UInt32 {
 public:
     FFUInt32(const string &n = "");

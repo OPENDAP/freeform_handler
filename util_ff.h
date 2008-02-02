@@ -39,6 +39,8 @@
 #include "InternalErr.h"
 #include "dods-datatypes.h"
 
+using namespace libdap ;
+
 #define MaxStr 100
 const int Msgt_size = 255;
 

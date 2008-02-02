@@ -46,6 +46,8 @@
 
 #include "Byte.h"
 
+using namespace libdap ;
+
 class FFByte: public Byte {
 public:
     FFByte(const string &n = "");

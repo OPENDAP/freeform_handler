@@ -30,22 +30,10 @@
 
 #include "BaseTypeFactory.h"
 
+using namespace libdap ;
+
 // Class declarations; Make sure to include the corresponding headers in the
 // implementation file.
-
-class FFByte;
-class FFInt16;
-class FFUInt16;
-class FFInt32;
-class FFUInt32;
-class FFFloat32;
-class FFFloat64;
-class FFStr;
-class FFUrl;
-class FFArray;
-class FFStructure;
-class FFSequence;
-class FFGrid;
 
 /** A factory for the FF Data Handler types.
 

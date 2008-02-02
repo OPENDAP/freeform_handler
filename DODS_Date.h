@@ -77,6 +77,8 @@
 #include "BaseType.h"
 #include "date_proc.h"
 
+using namespace libdap ;
+
 /** Useful constant values. */
 
 const double seconds_per_day = 86400.0;

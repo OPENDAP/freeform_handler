@@ -38,6 +38,8 @@ static char rcsid[] not_used ={"$Id$"};
 
 #include "Error.h"
 
+using namespace libdap ;
+
 // You have to add one to days[1] if the year is a leap year. Since the month
 // number in a Gregorian date is ones-based, fill element zero below to
 // avoid gratuitous subtractions of the index value. Note that the fill

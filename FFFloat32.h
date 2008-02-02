@@ -34,6 +34,8 @@
 
 #include "Float32.h"
 
+using namespace libdap ;
+
 class FFFloat32: public Float32 {
 public:
     FFFloat32(const string &n = "");

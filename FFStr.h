@@ -42,6 +42,8 @@
 
 #include "Str.h"
 
+using namespace libdap ;
+
 class FFStr: public Str {
 public:
     FFStr(const string &n = "");

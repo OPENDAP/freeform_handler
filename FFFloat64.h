@@ -40,6 +40,8 @@
 
 #include "Float64.h"
 
+using namespace libdap ;
+
 class FFFloat64: public Float64 {
 public:
     FFFloat64(const string &n = "");

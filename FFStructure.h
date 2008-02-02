@@ -39,6 +39,9 @@
 
 
 #include "Structure.h"
+
+using namespace libdap ;
+
 extern Structure * NewStructure(const string &n = "");
 
 class FFStructure: public Structure {

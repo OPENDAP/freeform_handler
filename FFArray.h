@@ -42,6 +42,8 @@
 
 #include "Array.h"
 
+using namespace libdap ;
+
 class FFArray: public Array {
 private:
     long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);

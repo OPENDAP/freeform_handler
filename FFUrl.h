@@ -39,6 +39,9 @@
 
 
 #include "Url.h"
+
+using namespace libdap ;
+
 extern Url * NewUrl(const string &n = "");
 
 class FFUrl: public Url {

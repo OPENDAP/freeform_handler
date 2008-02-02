@@ -33,8 +33,9 @@
 #ifndef _ff_ce_functions_h
 #define _ff_ce_functions_h 1
 
-class DDS ;
-class ConstraintEvaluator ;
+#include "ConstraintEvaluator.h"
+
+using namespace libdap ;
 
 void ff_register_functions(ConstraintEvaluator &ce) ;
 
