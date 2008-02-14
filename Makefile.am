@@ -33,7 +33,7 @@ libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR) $(SERVER_SRC) $(SERVER_HDR)
 libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libff_module_la_LDFLAGS = -avoid-version -module 
-libff_module_la_LIBADD = $(BES_LIBS) FFND/libfreeform.la
+libff_module_la_LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
 
 dap_ff_handler_SOURCES = ff_handler.cc
 dap_ff_handler_LDADD = libff_handler.la FFND/libfreeform.la 
