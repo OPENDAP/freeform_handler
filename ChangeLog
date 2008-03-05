@@ -1,3 +1,83 @@
+2008-02-27  James Gallagher <jgallagher@opendap.org>
+
+	Auto reset of Subversion properties
+
+2008-02-26  Patrick West <pwest@ucar.edu>
+
+	Removed the version of Hyrax so we don't keep having to edit the
+	Welcome.html file
+	M    OSX_Resources/Welcome.html
+
+2008-02-26  Patrick West <pwest@ucar.edu>
+
+	Grabbing version information correctly for Mac OSX pkg build. Updated
+	ReadMe.txt file for formatting (generated with .pl script).
+	M    configure.ac
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/ReadMe.txt
+
+2008-02-26  Patrick West <pwest@ucar.edu>
+
+	Updated the pkg build for Mac OSX, fully automated. Uses package
+	maker and dropdmg to build the .pkg and .dmg files respectively.
+	Updated the README to format properly.
+	AM   OSX_Resources/update_mac_package_contents.pl
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/ReadMe.txt
+	M    README
+	M    Makefile.am
+
+2008-02-14  Patrick West <pwest@ucar.edu>
+
+	Updated configure to use latest and greatest libdap and bes config
+	macros and m4 files.
+	M    conf/bes.m4
+	M    conf/libdap.m4
+	M    Makefile.am
+
+2008-02-02  Patrick West <pwest@ucar.edu>
+
+	Added using namespace libdap where needed.
+	M    DODS_Time_Factory.h
+	M    FFUInt32.h
+	M    FFInt16.h
+	M    DODS_Date_Factory.h
+	M    FFUrl.h
+	M    FFFloat64.h
+	M    FFByte.h
+	M    FFTypeFactory.h
+	M    util_ff.h
+	M    FFArray.h
+	M    date_proc.cc
+	M    FFUInt16.h
+	M    DODS_Time.h
+	M    FFInt32.h
+	M    FFStructure.h
+	M    FFStr.h
+	M    FFSequence.h
+	M    DODS_Date.h
+	M    ff_ce_functions.h
+	M    FFGrid.h
+	M    FFFloat32.h
+
+2008-01-25  Patrick West <pwest@ucar.edu>
+
+	Exception error handling changes in the BES
+	M    FFRequestHandler.cc
+
+2007-12-03  Patrick West <pwest@ucar.edu>
+
+	3.7.7 release
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    OSX_Resources/Info.plist
+	M    INSTALL
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2007-11-30  Patrick West <pwest@ucar.edu>
 
 	Updated MacOSX pkg build resources and process.

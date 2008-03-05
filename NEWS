@@ -1,6 +1,13 @@
 
  $Id$
 
+Version 3.7.8 (29 Feb 2008)
+
+Updates for bes 3.6.0.
+
+Configuration updates for pkg and rpm builds, libdap and bes checking, and
+pkg configuration.
+
 Version 3.7.7 (14 Nov 2007)
 
 pkg and rpm build fixes
