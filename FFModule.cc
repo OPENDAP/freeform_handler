@@ -54,11 +54,27 @@ FFModule::initialize( const string &modname )
     BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
 
     BESDEBUG( "ff", "    adding " << FF_CATALOG << " catalog" << endl )
-    BESCatalogList::TheCatalogList()->add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
+    if( !BESCatalogList::TheCatalogList()->find_catalog( FF_CATALOG ) )
+    {
+	BESCatalogList::TheCatalogList()->
+	    add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
+    }
+    else
+    {
+	BESDEBUG( "ff", "    catalog already exists, skipping" << endl )
+    }
 
     BESDEBUG( "ff", "    adding catalog container storage" << FF_CATALOG << endl )
-    BESContainerStorageCatalog *csc = new BESContainerStorageCatalog( FF_CATALOG ) ;
-    BESContainerStorageList::TheList()->add_persistence( csc ) ;
+    if( !BESContainerStorageList::TheList()->find_persistence( FF_CATALOG ) )
+    {
+	BESContainerStorageCatalog *csc =
+	    new BESContainerStorageCatalog( FF_CATALOG ) ;
+	BESContainerStorageList::TheList()->add_persistence( csc ) ;
+    }
+    else
+    {
+	BESDEBUG( "ff", "    storage already exists, skipping" << endl )
+    }
 
     BESDEBUG( "ff", "    adding ff debug context" << endl )
     BESDebug::Register( "ff" ) ;

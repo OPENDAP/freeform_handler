@@ -51,6 +51,7 @@
 #include "InternalErr.h"
 
 #include <DDS.h>
+#include <Ancillary.h>
 #include <Error.h>
 #include <escaping.h>
 #include <cgi_util.h>
@@ -86,9 +87,7 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
     try {
 	string accessed = dhi.container->access() ;
         ff_get_attributes(*das, accessed);
-        string name = find_ancillary_file(accessed, "das", "", "");
-        if (!name.empty())
-            das->parse(name);
+	Ancillary::read_ancillary_das( *das, accessed ) ;
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),
@@ -125,12 +124,11 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 	string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
+	Ancillary::read_ancillary_dds( *dds, accessed ) ;
 
         DAS das;
         ff_get_attributes(das, accessed);
-        string name = find_ancillary_file(accessed, "das", "", "");
-        if (!name.empty())
-            das.parse(name);
+	Ancillary::read_ancillary_das( das, accessed ) ;
         
         dds->transfer_attributes(&das);
 
@@ -179,13 +177,11 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
+	Ancillary::read_ancillary_dds( *dds, accessed ) ;
 
         DAS das;
         ff_get_attributes(das, accessed);
-        string name = find_ancillary_file(accessed, "das", "", "");
-        if (!name.empty())
-            das.parse(name);
-
+	Ancillary::read_ancillary_das( das, accessed ) ;
         
         dds->transfer_attributes(&das);
 #if 0        
