@@ -1,3 +1,41 @@
+2008-05-30  Patrick West <pwest@ucar.edu>
+
+	Module checking to see if catalog already added. RequestHandler now
+	adding ancillary information to the das and dds.
+	M    FFModule.cc
+	M    FFRequestHandler.cc
+
+2008-04-04  Patrick West <pwest@ucar.edu>
+
+	No longer need individual bes.conf files for testing. Using main one
+	in <prefix>/etc/bes/bes.conf.
+	D    bes.conf
+
+2008-03-07  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	$i: Fixing bug in OSX build.
+
+2008-03-05  Patrick West <pwest@ucar.edu>
+
+	Release 3.7.8.
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    OSX_Resources/InstallationCheck
+	M    OSX_Resources/update_mac_package_contents.pl
+	M    OSX_Resources/Info.plist
+	M    OSX_Resources/InstallationCheck.strings
+
+2008-03-05  James Gallagher <jgallagher@opendap.org>
+
+	Now points to the correct place for the source
+
+	M    freeform_handler.spec
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2008-02-27  James Gallagher <jgallagher@opendap.org>
 
 	Auto reset of Subversion properties
