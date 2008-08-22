@@ -24,7 +24,7 @@ Attributes {
     DODS_URL {
     }
     DODS_Date {
-        String year_variable JPL_Pathfinder.year;
-        String year_day_variable JPL_Pathfinder.day;
+        String year_variable "JPL_Pathfinder.year";
+        String year_day_variable "JPL_Pathfinder.day";
     }
 }

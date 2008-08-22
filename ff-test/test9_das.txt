@@ -12,7 +12,7 @@ Attributes {
         String Server "DODS FreeFrom based on FFND release 4.*";
         Int16 iyr 79;
         Int16 iday 1;
-        String isc 3;
+        String isc "3";
         Float64 traj1 1356310000.000000;
         Float64 traj2 637963000.000000;
         Float64 traj3 1716290.000000;
