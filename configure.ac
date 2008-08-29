@@ -76,6 +76,7 @@ case "$host" in
 esac
 
 AC_CONFIG_FILES([FFND/Makefile
+                 bes-testsuite/Makefile
                  Makefile])
 
 # Build this using the Makefile.am as per the automake 1.10 manual, p.79

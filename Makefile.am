@@ -20,9 +20,13 @@ bin_PROGRAMS = dap_ff_handler
 lib_LTLIBRARIES = libff_handler.la
 
 if OPENDAPSERVER
+
+SUBDIRS += bes-testsuite
+
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
 dist_bin_SCRIPTS = bes-ff-data.sh
+
 endif
 
 libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
