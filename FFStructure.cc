@@ -58,7 +58,7 @@ FFStructure::ptr_duplicate()
     return new FFStructure(*this);
 }
 
-FFStructure::FFStructure(const string &n) : Structure(n)
+FFStructure::FFStructure(const string &n, const string &d) : Structure(n, d)
 {
 }
 
@@ -67,7 +67,7 @@ FFStructure::~FFStructure()
 }
 
 bool
-FFStructure::read(const string &)
+FFStructure::read()
 {
   throw InternalErr(__FILE__, __LINE__, "Unimplemented read methods called.");
 }

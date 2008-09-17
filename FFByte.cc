@@ -64,15 +64,7 @@ extern char * BufVal;
 // The declarations for these fuctions (in util.h) should *not* need
 // changing. 
 
-#if 0
-Byte *
-NewByte(const string &n)
-{
-    return new FFByte(n);
-}
-#endif
-
-FFByte::FFByte(const string &n) : Byte(n)
+FFByte::FFByte(const string &n, const string &d) : Byte(n, d)
 {
 }
 
@@ -83,7 +75,7 @@ FFByte::ptr_duplicate()
 }
 
 bool
-FFByte::read(const string &)
+FFByte::read()
 {
     if (read_p()) // nothing to do
 	return false;

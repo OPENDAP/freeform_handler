@@ -42,15 +42,7 @@ static char rcsid[] not_used = {"$Id$"};
 #include "InternalErr.h"
 #include "FFUrl.h"
 
-#if 0
-Url *
-NewUrl(const string &n)
-{
-    return new FFUrl(n);
-}
-#endif
-
-FFUrl::FFUrl(const string &n) : Url(n)
+FFUrl::FFUrl(const string &n, const string &d) : Url(n, d)
 {
 }
 
@@ -61,7 +53,7 @@ FFUrl::ptr_duplicate()
 }
 
 bool
-FFUrl::read(const string &)
+FFUrl::read()
 {
   throw InternalErr(__FILE__, __LINE__, "Unimplemented read methods called.");
 }

@@ -65,6 +65,7 @@ static char rcsid[] not_used ={"$Id$"};
 #include "FFFloat64.h"
 #include "FFByte.h"
 #include "FFArray.h"
+#include "FFSequence.h"
 #include "FFGrid.h"
 #include "FFStr.h"
 #include "util_ff.h"
@@ -201,20 +202,6 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
       var = ff_find_variable(cp, iformat);	
     }
        
-    if(num_dim_names == 0) {
-      if(newseq) {
-	newseq = false;
-	// The format name cannot contain spaces! 8/12/98 jhrg
-	seq = dds_table.get_factory()->NewSequence(iformat->name);
-      }
-      is_array=false;
-    }
-    else {
-      ar = dds_table.get_factory()->NewArray(cp);
-      newseq = true; // An array terminates the old sequence
-      is_array = true;
-    }
-    
     BaseType *bt = NULL;
     switch (FFV_DATA_TYPE(var)) {
     case FFV_TEXT:
@@ -222,62 +209,72 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
             throw InternalErr(__FILE__, __LINE__, "String variable length.");
       StrLens[StrNum]=var->end_pos - var->start_pos + 1;
       StrNum++;	    
-      bt = dds_table.get_factory()->NewStr(cp);
+      bt = new FFStr(cp, filename);
       break;
 	  
     case FFV_INT8:
-      bt = dds_table.get_factory()->NewByte(cp);
+      bt = new FFByte(cp, filename);
       break;
 	  
     case FFV_UINT8:
-      bt = dds_table.get_factory()->NewByte(cp);	// Byte is unsigned.
+      bt = new FFByte(cp, filename);	// Byte is unsigned.
       break;
 	  
     case FFV_INT16:
-      bt = dds_table.get_factory()->NewInt16(cp);
+      bt = new FFInt16(cp, filename);
       break;
 	  
     case FFV_UINT16:
-      bt = dds_table.get_factory()->NewUInt16(cp);
+      bt = new FFUInt16(cp, filename);
       break;
 
     case FFV_INT32:
-      bt = dds_table.get_factory()->NewInt32(cp);
+      bt = new FFInt32(cp, filename);
       break;
 	  
     case FFV_UINT32:
-      bt = dds_table.get_factory()->NewUInt32(cp);
+      bt = new FFUInt32(cp, filename);
       break;
 	  
     case FFV_INT64:
-      bt = dds_table.get_factory()->NewInt32(cp);	// Ouch!
+      bt = new FFInt32(cp, filename);	// Ouch!
       break;
 	  
     case FFV_UINT64:
-      bt = dds_table.get_factory()->NewUInt32(cp);
+      bt = new FFUInt32(cp, filename);
       break;
 	  
     case FFV_FLOAT32:
-      bt = dds_table.get_factory()->NewFloat32(cp);
+      bt = new FFFloat32(cp, filename);
       break;
 	  
     case FFV_FLOAT64:
-      bt = dds_table.get_factory()->NewFloat64(cp);
+      bt = new FFFloat64(cp, filename);
       break;
 	  
     case FFV_ENOTE:
-      bt = dds_table.get_factory()->NewFloat64(cp);
+      bt = new FFFloat64(cp, filename);
       break;
 
     default:
       throw InternalErr(__FILE__, __LINE__, "Unknown FreeForm type!");
     }	
     
-    if (is_array)
-      ar->add_var(bt);
-    else
+    if(num_dim_names == 0) {
+      if(newseq) {
+	newseq = false;
+	// The format name cannot contain spaces! 8/12/98 jhrg
+	seq = new FFSequence(iformat->name, filename);
+      }
       seq->add_var(bt);
-      
+      is_array=false;
+    }
+    else {
+      ar = new FFArray(cp, filename, bt);
+      newseq = true; // An array terminates the old sequence
+      is_array = true;
+    }
+    
     for (j = 0; j < num_dim_names; j++) {
       error = db_ask(dbin, DBASK_ARRAY_DIM_INFO, 
 		     var_names_vector[i], dim_names_vector[j], 

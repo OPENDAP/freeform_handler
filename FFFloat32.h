@@ -38,12 +38,12 @@ using namespace libdap ;
 
 class FFFloat32: public Float32 {
 public:
-    FFFloat32(const string &n = "");
+    FFFloat32(const string &n, const string &d);
     virtual ~FFFloat32() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFFloat32.h,v $

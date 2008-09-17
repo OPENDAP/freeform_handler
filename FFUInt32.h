@@ -44,12 +44,12 @@ using namespace libdap ;
 
 class FFUInt32: public UInt32 {
 public:
-    FFUInt32(const string &n = "");
+    FFUInt32(const string &n, const string &d);
     virtual ~FFUInt32() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFUInt32.h,v $

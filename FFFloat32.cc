@@ -39,7 +39,7 @@ static char rcsid[] not_used ={"$Id$"};
 extern long BufPtr;
 extern char *BufVal;
 
-FFFloat32::FFFloat32(const string &n) : Float32(n)
+FFFloat32::FFFloat32(const string &n, const string &d) : Float32(n, d)
 {
 }
 
@@ -50,7 +50,7 @@ FFFloat32::ptr_duplicate()
 }
  
 bool
-FFFloat32::read(const string &)
+FFFloat32::read()
 {
     if (read_p()) // nothing to do
 		return false;

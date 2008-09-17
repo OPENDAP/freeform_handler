@@ -33,7 +33,6 @@
 #include "FFRequestHandler.h"
 
 #include "config_ff.h"
-#include "FFTypeFactory.h"
 #include "ff_ce_functions.h"
 
 #include "BESDASResponse.h"
@@ -84,12 +83,15 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
     if( !bdas )
 	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
 
-    DAS *das = bdas->get_das();
-
     try {
+	bdas->set_container( dhi.container->get_symbolic_name() ) ;
+	DAS *das = bdas->get_das();
+
 	string accessed = dhi.container->access() ;
         ff_get_attributes(*das, accessed);
 	Ancillary::read_ancillary_das( *das, accessed ) ;
+
+	bdas->clear_container() ;
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),
@@ -117,12 +119,10 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
     if( !bdds )
 	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
   
-    DDS *dds = bdds->get_dds();
-    ConstraintEvaluator & ce = bdds->get_ce();
-
     try {
-        FFTypeFactory *factory = new FFTypeFactory;
-        dds->set_factory(factory);
+	bdds->set_container( dhi.container->get_symbolic_name() ) ;
+	DDS *dds = bdds->get_dds();
+	ConstraintEvaluator & ce = bdds->get_ce();
 
         ff_register_functions(ce);
 	string accessed = dhi.container->access();
@@ -130,18 +130,17 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         ff_read_descriptors(*dds, accessed);
 	Ancillary::read_ancillary_dds( *dds, accessed ) ;
 
-        DAS das;
-        ff_get_attributes(das, accessed);
-	Ancillary::read_ancillary_das( das, accessed ) ;
+        DAS *das = new DAS ;
+	BESDASResponse bdas( das ) ;
+	bdas.set_container( dhi.container->get_symbolic_name() ) ;
+        ff_get_attributes( *das, accessed ) ;
+	Ancillary::read_ancillary_das( *das, accessed ) ;
         
-        dds->transfer_attributes(&das);
+        dds->transfer_attributes( das ) ;
 
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
-#if 0
-        // see ticket 720
-        dds->set_factory(NULL);
-        delete factory;
-#endif
+
+	bdds->clear_container() ;
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),
@@ -173,33 +172,28 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
     if( !bdds )
 	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
   
-    DataDDS *dds = bdds->get_dds();
-    ConstraintEvaluator & ce = bdds->get_ce();
-
     try {
-        FFTypeFactory *factory = new FFTypeFactory;
-        dds->set_factory(factory);
-        
+	bdds->set_container( dhi.container->get_symbolic_name() ) ;
+	DataDDS *dds = bdds->get_dds();
+	ConstraintEvaluator & ce = bdds->get_ce();
+
         ff_register_functions(ce);
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
 	Ancillary::read_ancillary_dds( *dds, accessed ) ;
 
-        DAS das;
-        ff_get_attributes(das, accessed);
-	Ancillary::read_ancillary_das( das, accessed ) ;
+        DAS *das = new DAS ;
+	BESDASResponse bdas( das ) ;
+	bdas.set_container( dhi.container->get_symbolic_name() ) ;
+        ff_get_attributes( *das, accessed ) ;
+	Ancillary::read_ancillary_das( *das, accessed ) ;
         
-        dds->transfer_attributes(&das);
-#if 0        
-        dhi.data[POST_CONSTRAINT] = www2id(dhi.container->get_constraint(), "%", "%20");
-#endif
+        dds->transfer_attributes( das ) ;
+
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
-#if 0
-        // see ticket 720
-        dds->set_factory(NULL);
-        delete factory;
-#endif
+
+	bdds->clear_container() ;
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),

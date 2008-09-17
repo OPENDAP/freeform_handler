@@ -59,7 +59,7 @@ HANDLER_HDR = ff_ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h   \
 	DODS_StartDate_Factory.h DODS_StartDate_Time_Factory.h		      \
 	DODS_StartDecimal_Year_Factory.h DODS_StartTime_Factory.h	      \
 	DODS_Time_Factory.h DODS_Time.h FreeForm.h read_ff.h util_ff.h	      \
-	FFTypeFactory.h config_ff.h
+	config_ff.h
 
 
 HANDLER_SRC = util_ff.cc ff_read.c ffdds.cc ffdas.cc		\
@@ -69,7 +69,7 @@ HANDLER_SRC = util_ff.cc ff_read.c ffdds.cc ffdas.cc		\
 	DODS_StartDate_Factory.cc DODS_StartTime_Factory.cc	\
 	DODS_StartDate_Time_Factory.cc				\
 	DODS_EndDate_Factory.cc DODS_EndTime_Factory.cc		\
-	DODS_EndDate_Time_Factory.cc FFTypeFactory.cc
+	DODS_EndDate_Time_Factory.cc
 
 SERVER_SRC = FFRequestHandler.cc FFModule.cc
 

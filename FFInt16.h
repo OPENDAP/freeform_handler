@@ -38,12 +38,12 @@ using namespace libdap ;
 
 class FFInt16: public Int16 {
 public:
-    FFInt16(const string &n = "");
+    FFInt16(const string &n, const string &d);
     virtual ~FFInt16() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFInt16.h,v $

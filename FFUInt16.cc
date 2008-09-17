@@ -40,14 +40,7 @@ static char rcsid[] not_used =
 extern long BufPtr;
 extern char *BufVal;
 
-#if 0
-UInt16 *NewUInt16(const string & n)
-{
-    return new FFUInt16(n);
-}
-#endif
-
-FFUInt16::FFUInt16(const string & n):UInt16(n)
+FFUInt16::FFUInt16(const string &n, const string &d) : UInt16(n, d)
 {
 }
 
@@ -57,7 +50,7 @@ BaseType *FFUInt16::ptr_duplicate()
     return new FFUInt16(*this);
 }
 
-bool FFUInt16::read(const string &)
+bool FFUInt16::read()
 {
     if (read_p())               // nothing to do
         return false;

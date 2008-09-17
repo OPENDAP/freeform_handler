@@ -55,21 +55,13 @@ static char rcsid[] not_used ={"$Id$"};
 #include "util_ff.h"
 #include "util.h"
 
-#if 0
-Array *
-NewArray(const string &n, BaseType *v)
-{
-    return new FFArray(n, v);
-}
-#endif
-
 BaseType *
 FFArray::ptr_duplicate()
 {
     return new FFArray(*this);
 }
 
-FFArray::FFArray(const string &n, BaseType *v) : Array(n, v)
+FFArray::FFArray(const string &n, const string &d, BaseType *v) : Array(n, d, v)
 {
 }
 
@@ -96,13 +88,7 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
         stride = (long) dimension_stride(i, true);
         stop = (long) dimension_stop(i, true);
         string dimname = dimension_name(i);
-#if 0
-    for (Pix p = first_dim(); p ; next_dim(p), id++) {
-	start = (long) dimension_start(p, true); 
-	stride = (long) dimension_stride(p, true);
-	stop = (long) dimension_stop(p, true);
-	string dimname = dimension_name(p);
-#endif
+
 	// Check for empty constraint
 	if(start+stop+stride == 0)
 	    return -1;
@@ -141,12 +127,7 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
         start = (long) dimension_start(i, true); 
         stride = (long) dimension_stride(i, true);
         stop = (long) dimension_stop(i, true);
-#if 0
-    for (Pix p = first_dim(); p ; next_dim(p), id++) {
-      start = dimension_start(p, true); 
-      stride = dimension_stride(p, true);
-      stop = dimension_stop(p, true);
-#endif
+
       // Check for empty constraint
       if(start+stop+stride == 0)
 	return -1;
@@ -260,7 +241,7 @@ seq2vects(T * t, FFArray & array)
 // Returns true if more data still needs to be read, otherwise returns false.
 
 bool
-FFArray::read(const string &dataset)
+FFArray::read()
 {    
     if (read_p())  // Nothing to do
         return false;
@@ -287,7 +268,7 @@ FFArray::read(const string &dataset)
       makeND_output_format(name(), var()->type(), var()->width(), 
 			   ndims, start, edge, stride, dname);
 
-    string input_format_file = find_ancillary_file(dataset);
+    string input_format_file = find_ancillary_file(dataset());
 
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
@@ -296,31 +277,31 @@ FFArray::read(const string &dataset)
     
     switch(var()->type()) {
       case dods_byte_c:
-	extract_array<dods_byte>(dataset, input_format_file, output_format);
+	extract_array<dods_byte>(dataset(), input_format_file, output_format);
 	break;
 
       case dods_int16_c:
-	extract_array<dods_int16>(dataset, input_format_file, output_format);
+	extract_array<dods_int16>(dataset(), input_format_file, output_format);
 	break;
 
       case dods_uint16_c:
-	extract_array<dods_uint16>(dataset, input_format_file, output_format);
+	extract_array<dods_uint16>(dataset(), input_format_file, output_format);
 	break;
 
       case dods_int32_c:
-	extract_array<dods_int32>(dataset, input_format_file, output_format);
+	extract_array<dods_int32>(dataset(), input_format_file, output_format);
 	break;
 
       case dods_uint32_c:
-	extract_array<dods_uint32>(dataset, input_format_file, output_format);
+	extract_array<dods_uint32>(dataset(), input_format_file, output_format);
 	break;
 
       case dods_float32_c:
-	extract_array<dods_float32>(dataset, input_format_file, output_format);
+	extract_array<dods_float32>(dataset(), input_format_file, output_format);
 	break;
 
       case dods_float64_c:
-	extract_array<dods_float64>(dataset, input_format_file, output_format);
+	extract_array<dods_float64>(dataset(), input_format_file, output_format);
 	break;
 
       default:

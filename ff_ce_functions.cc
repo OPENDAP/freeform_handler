@@ -62,6 +62,7 @@
 #include "DODS_EndDate_Time_Factory.h"
 
 #include "ff_ce_functions.h"
+#include "FFStr.h"
 
 /** Read an instance of T using a Factory for objects of type T. The Factory
     class for T must read configuration information from the DAS.
@@ -170,12 +171,11 @@ template < class T1, class T1_Factory, class T2, class T2_Factory >
     @param position Add the new variable to this Structure or Sequence. */
 
 static void
-new_string_variable(const string & name, DDS & dds, BaseType * position =
-                    0)
+new_string_variable(const string & name, DDS & dds, BaseType * position = 0)
 {
     // Create the new variable
 
-    Str *new_variable = dds.get_factory()->NewStr(name.c_str());
+    Str *new_variable = new FFStr(name, "");
     new_variable->set_read_p(true);     // You must call this before ...
     new_variable->set_synthesized_p(true);      // this! Look at BaseType.cc.
 

@@ -39,15 +39,7 @@ static char rcsid[] not_used ={"$Id$"};
 extern long BufPtr;
 extern char *BufVal;
 
-#if 0
-Int16 *
-NewInt16(const string &n)
-{
-    return new FFInt16(n);
-}
-#endif
-
-FFInt16::FFInt16(const string &n) : Int16(n)
+FFInt16::FFInt16(const string &n, const string &d) : Int16(n, d)
 {
 }
 
@@ -58,7 +50,7 @@ FFInt16::ptr_duplicate(){
 }
 
 bool
-FFInt16::read(const string &)
+FFInt16::read()
 {
     if (read_p()) // nothing to do
 		return false;

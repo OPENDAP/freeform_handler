@@ -56,12 +56,12 @@ private:
 					  const string &o_fmt);
 
 public:
-    FFArray(const string &n = "", BaseType *v = 0);
+    FFArray(const string &n, const string &d, BaseType *v);
     virtual ~FFArray();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFArray.h,v $

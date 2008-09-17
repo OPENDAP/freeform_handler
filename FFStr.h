@@ -46,12 +46,12 @@ using namespace libdap ;
 
 class FFStr: public Str {
 public:
-    FFStr(const string &n = "");
+    FFStr(const string &n, const string &d);
     virtual ~FFStr() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFStr.h,v $

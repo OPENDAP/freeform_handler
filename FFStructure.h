@@ -42,16 +42,16 @@
 
 using namespace libdap ;
 
-extern Structure * NewStructure(const string &n = "");
+//extern Structure * NewStructure(const string &n);
 
 class FFStructure: public Structure {
 public:
-    FFStructure(const string &n = (char *)0);
+    FFStructure(const string &n, const string &d);
     virtual ~FFStructure();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFStructure.h,v $

@@ -42,14 +42,6 @@ static char rcsid[] not_used ={"$Id$"};
 #include "FFGrid.h"
 #include "util.h"
 
-#if 0
-Grid *
-NewGrid(const string &n)
-{
-    return new FFGrid(n);
-}
-#endif
-
 // protected
 
 BaseType *
@@ -60,7 +52,7 @@ FFGrid::ptr_duplicate()
 
 // public
 
-FFGrid::FFGrid(const string &n) : Grid(n)
+FFGrid::FFGrid(const string &n, const string &d) : Grid(n, d)
 {
 }
 
@@ -69,23 +61,18 @@ FFGrid::~FFGrid()
 }
 
 bool
-FFGrid::read(const string &dataset)
+FFGrid::read()
 {
     if (read_p()) // nothing to do
         return false;
 
     // read array elements
-    array_var()->read(dataset);
+    array_var()->read();
 
     // read maps elements
     Grid::Map_iter i = map_begin();
     while (i != map_end())
-        (*i++)->read(dataset);
-#if 0        
-    for (Pix p = first_map_var(); p; next_map_var(p)) {
-	map_var(p)->read(dataset);
-    }
-#endif
+        (*i++)->read();
 
     set_read_p(true);
 

@@ -42,16 +42,16 @@
 
 using namespace libdap ;
 
-extern Url * NewUrl(const string &n = "");
+//extern Url * NewUrl(const string &n);
 
 class FFUrl: public Url {
 public:
-    FFUrl(const string &n = "");
+    FFUrl(const string &n, const string &d);
     virtual ~FFUrl() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFUrl.h,v $

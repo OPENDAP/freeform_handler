@@ -56,14 +56,6 @@ extern long BufSiz;
 int StrLength = 0; // Sets string length befor reading it
 int StrLens[MaxStr]; // List of string length in this sequence 
 
-#if 0
-Sequence *
-NewSequence(const string &n)
-{
-    return new FFSequence(n);
-}
-#endif
-
 // protected
 
 BaseType *
@@ -74,7 +66,7 @@ FFSequence::ptr_duplicate()
 
 // public
 
-FFSequence::FFSequence(const string &n) : Sequence(n)
+FFSequence::FFSequence(const string &n, const string &d) : Sequence(n, d)
 {
 }
 
@@ -143,11 +135,9 @@ Records(const string &filename)
     are read.
     
     @exception Error if the size of the returned data is zero.
-    @param dataset The name of the data file. Must have a matching FreeForm
-    format file.
     @return Always returns false. */
 bool 
-FFSequence::read(const string &dataset)
+FFSequence::read()
 {
     int StrCnt = 0;
 
@@ -162,6 +152,7 @@ FFSequence::read(const string &dataset)
 	ostringstream str;
 	int endbyte = 0;
 	int stbyte = 1;
+	string ds_str = dataset() ;
 
 	str << "binary_output_data \"DODS binary output data\"" << endl;
 	StrCnt = 0;
@@ -190,7 +181,7 @@ FFSequence::read(const string &dataset)
 	strncpy(o_fmt, str.str().c_str(), str.str().length());
 #endif
 
-	string input_format_file = find_ancillary_file(dataset);
+	string input_format_file = find_ancillary_file(ds_str);
 	char *if_fmt = new char[input_format_file.length() + 1];
         input_format_file.copy(if_fmt, input_format_file.length());
         if_fmt[input_format_file.length()]='\0';
@@ -198,7 +189,7 @@ FFSequence::read(const string &dataset)
 	strncpy(if_fmt, input_format_file.c_str(), input_format_file.length());
 #endif     
 	// num_rec could come from DDS if sequence length was known...
-	long num_rec = Records(dataset); 
+	long num_rec = Records(ds_str);
 
 	if (num_rec == -1) {
 		delete [] o_fmt;
@@ -208,11 +199,11 @@ FFSequence::read(const string &dataset)
 
 	BufSiz = num_rec * (stbyte - 1);
 	BufVal = new char[BufSiz];
-	char *ds = new char[dataset.length() + 1];
-        dataset.copy(ds, dataset.length());
-        ds[dataset.length()]='\0';
+	char *ds = new char[ds_str.length() + 1];
+        ds_str.copy(ds, ds_str.length());
+        ds[ds_str.length()]='\0';
 #if 0
-	strncpy(ds, dataset.c_str(), dataset.length());
+	strncpy(ds, ds_str.c_str(), ds_str.length());
 #endif   
 	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
 	    
@@ -232,7 +223,7 @@ FFSequence::read(const string &dataset)
 	    StrLength = StrLens[StrCnt];
 	    StrCnt++;
 	}
-	(*p)->read(dataset);
+	(*p)->read();
     }
 
     return true;

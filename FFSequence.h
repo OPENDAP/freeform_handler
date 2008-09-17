@@ -42,16 +42,16 @@
 
 using namespace libdap ;
 
-extern Sequence * NewSequence(const string &n = "");
+//extern Sequence * NewSequence(const string &n);
 
 class FFSequence: public Sequence {
 public:
-    FFSequence(const string &n = "");
+    FFSequence(const string &n, const string &d);
     virtual ~FFSequence();
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFSequence.h,v $

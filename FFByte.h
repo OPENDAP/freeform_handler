@@ -50,12 +50,12 @@ using namespace libdap ;
 
 class FFByte: public Byte {
 public:
-    FFByte(const string &n = "");
+    FFByte(const string &n, const string &d);
     virtual ~FFByte() {}
 
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFByte.h,v $

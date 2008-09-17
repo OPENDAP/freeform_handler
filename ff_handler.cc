@@ -36,7 +36,6 @@ static char not_used rcsid[] =
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
 
-#include "FFTypeFactory.h"
 #include "ObjectType.h"
 #include "cgi_util.h"
 #include "ff_ce_functions.h"
@@ -65,8 +64,7 @@ int main(int argc, char *argv[])
             }
 
         case DODSFilter::DDS_Response:{
-                FFTypeFactory ff_factory;
-                DDS dds(&ff_factory);
+		DDS dds(0);
                 DAS das;
                 ConstraintEvaluator ce;
 
@@ -84,8 +82,7 @@ int main(int argc, char *argv[])
             }
 
         case DODSFilter::DataDDS_Response:{
-                FFTypeFactory ff_factory;
-                DDS dds(&ff_factory);
+		DDS dds(0);
                 DAS das;
                 ConstraintEvaluator ce;
 
@@ -103,8 +100,7 @@ int main(int argc, char *argv[])
             }
 
         case DODSFilter::DDX_Response:{
-                FFTypeFactory ff_factory;
-                DDS dds(&ff_factory);
+		DDS dds(0);
                 DAS das;
                 ConstraintEvaluator ce;
 

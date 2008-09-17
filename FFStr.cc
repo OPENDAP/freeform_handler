@@ -53,7 +53,7 @@ extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
 extern int StrLength; // Set by sequence before String read 
 
-FFStr::FFStr(const string &n) : Str(n)
+FFStr::FFStr(const string &n, const string &d) : Str(n, d)
 {
 }
 
@@ -64,7 +64,7 @@ FFStr::ptr_duplicate()
 }
 
 bool
-FFStr::read(const string &)
+FFStr::read()
 {
     if (read_p())			// nothing to do
 	return false;

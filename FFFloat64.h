@@ -44,12 +44,12 @@ using namespace libdap ;
 
 class FFFloat64: public Float64 {
 public:
-    FFFloat64(const string &n = "");
+    FFFloat64(const string &n, const string &d);
     virtual ~FFFloat64() {}
 
     virtual BaseType *ptr_duplicate();
     
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFFloat64.h,v $

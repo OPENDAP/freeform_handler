@@ -41,15 +41,7 @@ static char rcsid[] not_used = {"$Id$"};
 extern long BufPtr;
 extern char *BufVal;
 
-#if 0
-UInt32 *
-NewUInt32(const string &n)
-{
-    return new FFUInt32(n);
-}
-#endif
-
-FFUInt32::FFUInt32(const string &n) : UInt32(n)
+FFUInt32::FFUInt32(const string &n, const string &d) : UInt32(n, d)
 {
 }
 
@@ -60,7 +52,7 @@ FFUInt32::ptr_duplicate(){
 }
 
 bool
-FFUInt32::read(const string &)
+FFUInt32::read()
 {
     if (read_p()) // nothing to do
 		return false;

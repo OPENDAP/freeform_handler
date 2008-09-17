@@ -50,12 +50,12 @@ using namespace libdap ;
 
 class FFGrid: public Grid {
 public:
-    FFGrid(const string &n = "");
+    FFGrid(const string &n, const string &d);
     virtual ~FFGrid();
     
     virtual BaseType *ptr_duplicate();
 
-    virtual bool read(const string &dataset);
+    virtual bool read();
 };
 
 // $Log: FFGrid.h,v $
