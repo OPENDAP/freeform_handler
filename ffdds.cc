@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,7 +33,7 @@
 // FreeForm data file.
 //
 // It also contains test code which will print the in-memeory DDS to
-// stdout. 
+// stdout.
 //
 // ReZa 6/20/97
 
@@ -81,7 +81,7 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
   int StrNum = 0;
   char **var_names_vector = NULL;
   DATA_BIN_PTR dbin = NULL;
-  FF_STD_ARGS_PTR SetUps = NULL;  
+  FF_STD_ARGS_PTR SetUps = NULL;
   VARIABLE_PTR var = NULL;
   FORMAT_PTR iformat=NULL;
   PROCESS_INFO_LIST pinfo_list = NULL;
@@ -92,18 +92,18 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
   Sequence *seq = NULL;
 
   if (!file_exist(filename.c_str()))
-    throw Error((string)"Could not open file " + path_to_filename(filename) 
+    throw Error((string)"Could not open file " + path_to_filename(filename)
                  + string("."));
-  
+
   // Set dataset name
   dds_table.set_dataset_name(name_path(filename));
-   
+
   SetUps = ff_create_std_args();
   if (!SetUps) {
     string msg = (string)"Insufficient memory";
     throw Error(msg);
   }
-    
+
   // Set the structure values to create the FreeForm DB
   SetUps->user.is_stdin_redirected = 0;
 
@@ -121,7 +121,7 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
 #endif
 
   SetUps->output_file = NULL;
-  
+
   char Msgt[Msgt_size];
   error = SetDodsDB(SetUps, &dbin, Msgt);
   if (error && error < ERR_WARNING_ONLY) {
@@ -130,8 +130,8 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
     append_long_to_string((long)error, 10, msg);
     throw Error(msg);
   }
-  
-  error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names, 
+
+  error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names,
 		 &var_names_vector);
   if (error) {
     string msg = (string)"Could not get varible list from the input file."
@@ -139,8 +139,8 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
     append_long_to_string((long)error, 10, msg);
     throw Error(msg);
   }
-  
-  error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, 
+
+  error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA,
 		 &pinfo_list);
   if(error){
     string msg = (string)"Could not get process info for the input file."
@@ -148,15 +148,15 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
     append_long_to_string((long)error, 10, msg);
     throw Error(msg);
   }
- 
-  for (i=0; i<num_names; i++) { 
+
+  for (i=0; i<num_names; i++) {
     int num_dim_names = 0;
     char **dim_names_vector = NULL;
     char *cp = NULL;
     FF_ARRAY_DIM_INFO_PTR array_dim_info = NULL;
-    int j = 0;	
-	
-    error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i], 
+    int j = 0;
+
+    error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i],
 		   &num_dim_names, &dim_names_vector);
     if (error) {
       string msg = "Could not get array dimension names for variable: ";
@@ -166,10 +166,10 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
     }
 
     var = NULL;
-	
+
     if (num_dim_names == 0)	// sequence names
       cp = var_names_vector[i];
-    else  {  
+    else  {
 	    cp = strstr(var_names_vector[i], "::");
 	    // If cp is not null, advance past the "::"
 	    if (cp)
@@ -181,17 +181,17 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
     pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
     iformat = PINFO_FORMAT(pinfo);
 
-    var = ff_find_variable(cp, iformat);	
+    var = ff_find_variable(cp, iformat);
 
     // For some formats: Freefrom sends an extra EOL variable at the end of
     // the list.
-    if(IS_EOL(var)) 
+    if(IS_EOL(var))
       break;
-	
+
     while (!var) { // search formats in the format list for the variable
       pinfo_list = (pinfo_list)->next;
       pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
-	
+
       if(!pinfo) {
 	string msg = "Variable ";
 	msg += (string)cp + " was not found in the format file.";
@@ -199,31 +199,33 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
       }
 
       iformat = PINFO_FORMAT(pinfo);
-      var = ff_find_variable(cp, iformat);	
+      var = ff_find_variable(cp, iformat);
     }
-       
+
+    string input_format_file = PINFO_ORIGIN(pinfo);
+
     BaseType *bt = NULL;
     switch (FFV_DATA_TYPE(var)) {
     case FFV_TEXT:
         if (StrNum > MaxStr-1)
             throw InternalErr(__FILE__, __LINE__, "String variable length.");
       StrLens[StrNum]=var->end_pos - var->start_pos + 1;
-      StrNum++;	    
+      StrNum++;
       bt = new FFStr(cp, filename);
       break;
-	  
+
     case FFV_INT8:
       bt = new FFByte(cp, filename);
       break;
-	  
+
     case FFV_UINT8:
       bt = new FFByte(cp, filename);	// Byte is unsigned.
       break;
-	  
+
     case FFV_INT16:
       bt = new FFInt16(cp, filename);
       break;
-	  
+
     case FFV_UINT16:
       bt = new FFUInt16(cp, filename);
       break;
@@ -231,53 +233,53 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
     case FFV_INT32:
       bt = new FFInt32(cp, filename);
       break;
-	  
+
     case FFV_UINT32:
       bt = new FFUInt32(cp, filename);
       break;
-	  
+
     case FFV_INT64:
       bt = new FFInt32(cp, filename);	// Ouch!
       break;
-	  
+
     case FFV_UINT64:
       bt = new FFUInt32(cp, filename);
       break;
-	  
+
     case FFV_FLOAT32:
       bt = new FFFloat32(cp, filename);
       break;
-	  
+
     case FFV_FLOAT64:
       bt = new FFFloat64(cp, filename);
       break;
-	  
+
     case FFV_ENOTE:
       bt = new FFFloat64(cp, filename);
       break;
 
     default:
       throw InternalErr(__FILE__, __LINE__, "Unknown FreeForm type!");
-    }	
-    
+    }
+
     if(num_dim_names == 0) {
       if(newseq) {
 	newseq = false;
 	// The format name cannot contain spaces! 8/12/98 jhrg
-	seq = new FFSequence(iformat->name, filename);
+	seq = new FFSequence(iformat->name, filename, input_format_file);
       }
       seq->add_var(bt);
       is_array=false;
     }
     else {
-      ar = new FFArray(cp, filename, bt);
+      ar = new FFArray(cp, filename, bt, input_format_file);
       newseq = true; // An array terminates the old sequence
       is_array = true;
     }
-    
+
     for (j = 0; j < num_dim_names; j++) {
-      error = db_ask(dbin, DBASK_ARRAY_DIM_INFO, 
-		     var_names_vector[i], dim_names_vector[j], 
+      error = db_ask(dbin, DBASK_ARRAY_DIM_INFO,
+		     var_names_vector[i], dim_names_vector[j],
 		     &array_dim_info);
       if (error) {
 	string msg = "Could not get array dimension info for variable ";
@@ -285,14 +287,14 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
 	append_long_to_string((long)error, 10, msg);
 	throw Error(msg);
       }
-      
+
       int DimSiz = (array_dim_info->end_index -
 		    array_dim_info->start_index + 1)
 	/ array_dim_info->granularity;
       ar->append_dim(DimSiz, (string)dim_names_vector[j]);
 
 #ifdef TEST
-      printf("Array %s, dimension %s:\n", var_names_vector[i], 
+      printf("Array %s, dimension %s:\n", var_names_vector[i],
 	     dim_names_vector[j]);
       printf("Start index is %ld\n", array_dim_info->start_index);
       printf("End index is %ld\n", array_dim_info->end_index);
@@ -302,9 +304,9 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
 #endif
       memFree(array_dim_info, "");
       array_dim_info = NULL;
-      
+
     }
-    
+
     memFree(dim_names_vector, "");
     dim_names_vector = NULL;
 
@@ -317,7 +319,7 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
 
   if(!is_array)
     dds_table.add_var(seq);
-  
+
   memFree(var_names_vector, "");
   var_names_vector = NULL;
 }

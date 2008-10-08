@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -30,7 +30,7 @@
 
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples 
+// The files are patterned after the subcalssing examples
 // Test<type>.c,h files.
 //
 // ReZa 6/18/97
@@ -53,7 +53,7 @@ extern char * BufVal;
 // that pointer. It takes the same arguments as the class's ctor. If any of
 // the variable classes are subclassed (e.g., to make a new Byte like
 // HDFByte) then the corresponding function here, and in the other class
-// definition files, needs to be changed so that it creates an instnace of
+// definition files, needs to be changed so that it creates an instance of
 // the new (sub)class. Continuing the earlier example, that would mean that
 // NewByte() would return a HDFByte, not a Byte.
 //
@@ -61,8 +61,8 @@ extern char * BufVal;
 // - they are called by the parser code (for the dds, at least) so if their
 // names changes, that will break.
 //
-// The declarations for these fuctions (in util.h) should *not* need
-// changing. 
+// The declarations for these functions (in util.h) should *not* need
+// changing.
 
 FFByte::FFByte(const string &n, const string &d) : Byte(n, d)
 {

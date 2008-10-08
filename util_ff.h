@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -47,26 +47,27 @@ const int Msgt_size = 255;
 const string ff_types(Type dods_type);
 int ff_prec(Type dods_type);
 
-const string make_output_format(const string &name, Type type, 
+const string make_output_format(const string &name, Type type,
 				const int width);
 
-const string makeND_output_format(const string &name, Type type, 
-				  const int width, int ndim, 
+const string makeND_output_format(const string &name, Type type,
+				  const int width, int ndim,
 				  const long *start, const long *edge, const
 				  long * stride, string *dname);
 
 const string &format_extension(const string &new_extension = "");
 const string &format_delimiter(const string &new_delimiter = "");
-
-const string find_ancillary_file(const string &dataset, 
+#if 0
+const string format_file_name(const string &dataset,
 				 const string &delimiter = format_delimiter(),
 				 const string &extension = format_extension());
+#endif
 
 int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
 
 bool file_exist(const char * filename);
 
-extern "C" long read_ff(const char *dataset, const char *if_file, const char *o_format, 
+extern "C" long read_ff(const char *dataset, const char *if_file, const char *o_format,
                         char *o_buffer, unsigned long size);
 
 bool is_integer_type(BaseType *btp);

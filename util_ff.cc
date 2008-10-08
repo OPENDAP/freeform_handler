@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -145,7 +145,7 @@ make_output_format(const string & name, Type type, const int width)
     return str.str();
 }
 
-// format for multi-dimension array 
+// format for multi-dimension array
 const string
 makeND_output_format(const string & name, Type type, const int width,
                      int ndim, const long *start, const long *edge, const
@@ -306,23 +306,29 @@ bool file_exist(const char *filename)
 {
     return access(filename, F_OK) == 0;
 }
-
+#if 0
 /** Find the format file using a delimiter character.
     Given a special sequence of one or more characters, use that to determine
     the format file name. Assume that the format file ends with EXTENSION.
 
-    NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
-    utility functions format_delimiter() and format_extension().
+    @note This function is an interface to two functions in the FreeForm
+    library that actually perform the search - functions we have modified to
+    make the handler do all the things we need.
 
+    @param dataset Find the format file for this dataset
+    @param delimiter This is character that separates the dataset name from
+    any extension to that name. Defaults to '.'
+    @param extension This is the extension that identifies a format file. This
+    defaults to 'fmt'
     @return A const string object which contains the format file name. */
 const string
-find_ancillary_file(const string & dataset, const string & delimiter,
-                    const string & extension)
+format_file_name(const string & dataset, const string & delimiter,
+                 const string & extension)
 {
     size_t delim = dataset.find(delimiter);
     string basename = dataset.substr(0, delim);
 
-        // 
+        //
         // Use the FreeForm setdbin:find_format_files() to locate
         // the input format description file.
         //
@@ -350,7 +356,7 @@ find_ancillary_file(const string & dataset, const string & delimiter,
             throw InternalErr(__FILE__, __LINE__,
             		"Could not create interface record for FreeForm");
         }
-        
+
         /** set the structure values to create the FreeForm DB**/
         SetUps->input_file = FileName;
         SetUps->output_file = NULL;
@@ -382,6 +388,7 @@ find_ancillary_file(const string & dataset, const string & delimiter,
             				  + string(FileName));
         }
 }
+#endif
 
 // These functions are used by the Date/Time Factory classes but they might
 // be generally useful in writing server-side functions. 1/21/2002 jhrg

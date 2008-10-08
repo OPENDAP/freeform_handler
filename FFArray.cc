@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -29,7 +29,7 @@
 // Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples 
+// The files are patterned after the subcalssing examples
 // Test<type>.c,h files.
 //
 // ReZa 6/18/97
@@ -61,7 +61,8 @@ FFArray::ptr_duplicate()
     return new FFArray(*this);
 }
 
-FFArray::FFArray(const string &n, const string &d, BaseType *v) : Array(n, d, v)
+FFArray::FFArray(const string &n, const string &d, BaseType *v, const string &iff)
+    : d_input_format_file(iff), Array(n, d, v)
 {
 }
 
@@ -70,10 +71,10 @@ FFArray::~FFArray()
 }
 
 // parse constraint expr. and make coordinate point location for an array.
-// return number of elements to read. 
+// return number of elements to read.
 
 long
-FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms, 
+FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 			bool *has_stride)
 {
     long start, stride, stop;
@@ -84,7 +85,7 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 
     Array::Dim_iter i = dim_begin();
     while (i != dim_end()) {
-        start = (long) dimension_start(i, true); 
+        start = (long) dimension_start(i, true);
         stride = (long) dimension_stride(i, true);
         stop = (long) dimension_stop(i, true);
         string dimname = dimension_name(i);
@@ -92,16 +93,16 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 	// Check for empty constraint
 	if(start+stop+stride == 0)
 	    return -1;
-	
+
 	dim_nms[id]= dimname;
 	//	(void) strcpy(dim_nms[id], dimname.c_str());
-	
+
 	cor[id]= start;
 	step[id]= stride;
 	edg[id]= ((stop - start)/stride) + 1; // count of elements
-	
+
 	nels *= edg[id];      // total number of values for variable
-	
+
 	if (stride != 1)
 	    *has_stride = true;
 
@@ -112,7 +113,7 @@ FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 }
 
 // parse constraint expr. and make coordinate point location.
-// return number of elements to read. 
+// return number of elements to read.
 
 long
 FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
@@ -124,7 +125,7 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
 
     Array::Dim_iter i = dim_begin();
     while (i != dim_end()) {
-        start = (long) dimension_start(i, true); 
+        start = (long) dimension_start(i, true);
         stride = (long) dimension_stride(i, true);
         stop = (long) dimension_stop(i, true);
 
@@ -147,27 +148,27 @@ FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
 
 
 static int
-hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index, 
+hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index,
           const int dimsz[], const long start[], const long edge[])
 {
     long jump = 1;
-    
+
     // The THEN part of this IF handles the cases where we are hyperslabbing
     // any dimension *other* than the rightmost dimension. E.G. Suppose
     // a[10][10][10] is in SRC, for INDEX == 0 and 1 we do the code in the
-    // THEN clause and for INDEX == 2 the ELSE clause is executed.  
+    // THEN clause and for INDEX == 2 the ELSE clause is executed.
 
     // NOTE: I have added casts for src and dest from void * to char * since
     // ANSI C++ won't allows pointer arithmetic on void * variables. 4/17/98
-    // jhrg 
+    // jhrg
 
     if(dim_num != (index+1)) {
-        // number of lines, pages, etc to skip 
+        // number of lines, pages, etc to skip
         for (int i = dim_num-1; i > index; i--)
             jump *= dimsz[i];
 
         for (int edge_tmp = 0; edge_tmp < edge[index] ; edge_tmp++){
-            void *srctmp = ((char *)src + (start[index] + edge_tmp) 
+            void *srctmp = ((char *)src + (start[index] + edge_tmp)
 			    * jump * szof);
             dest = (char *)dest + hyper_get(dest, srctmp, szof, dim_num,
 					    index+1, dimsz, start, edge);
@@ -184,12 +185,12 @@ hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index,
 
 
 // Store the contents of the buffer returned from read_ff() in the FFArray
-// object ARRAY. 
+// object ARRAY.
 //
 // Returns: void
 
-template < class T > 
-static void 
+template < class T >
+static void
 seq2vects(T * t, FFArray & array)
 {
     bool has_stride;
@@ -235,24 +236,24 @@ seq2vects(T * t, FFArray & array)
 //
 // NB: Currently this code only reads arrays of Byte, Int32 and
 // Float64. Str and Url as well as all the ctor  types are not
-// supported. 
+// supported.
 //
-// Throws an Error object if an error was detected. 
+// Throws an Error object if an error was detected.
 // Returns true if more data still needs to be read, otherwise returns false.
 
 bool
 FFArray::read()
-{    
+{
     if (read_p())  // Nothing to do
         return false;
 
     bool has_stride;
     int ndims = dimensions();
-    string *dname = new string[ndims];	       
+    string *dname = new string[ndims];
     long *start = new long[ndims];
     long *stride = new long[ndims];
-    long *edge = new long[ndims];    
-    long count = Arr_constraint(start, stride, edge, dname, &has_stride);    
+    long *edge = new long[ndims];
+    long count = Arr_constraint(start, stride, edge, dname, &has_stride);
 
     if (!count) {
         delete[] dname;
@@ -265,43 +266,48 @@ FFArray::read()
     }
 
     string output_format =
-      makeND_output_format(name(), var()->type(), var()->width(), 
+      makeND_output_format(name(), var()->type(), var()->width(),
 			   ndims, start, edge, stride, dname);
-
-    string input_format_file = find_ancillary_file(dataset());
-
+    // Why get the format file name here? Well, we could store the name of
+    // the format file with the FFByte, ..., variables (so that we would
+    // run the format_file_name() function olny once) but we did ...
+#if 0
+    string input_format_file = format_file_name(dataset());
+#else
+    string input_format_file = d_input_format_file;
+#endif
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data
     //     NB: extract_array throws an Error object to signal problems.
-    
+
     switch(var()->type()) {
       case dods_byte_c:
-	extract_array<dods_byte>(dataset(), input_format_file, output_format);
+	extract_array<dods_byte>(dataset(), d_input_format_file, output_format);
 	break;
 
       case dods_int16_c:
-	extract_array<dods_int16>(dataset(), input_format_file, output_format);
+	extract_array<dods_int16>(dataset(), d_input_format_file, output_format);
 	break;
 
       case dods_uint16_c:
-	extract_array<dods_uint16>(dataset(), input_format_file, output_format);
+	extract_array<dods_uint16>(dataset(), d_input_format_file, output_format);
 	break;
 
       case dods_int32_c:
-	extract_array<dods_int32>(dataset(), input_format_file, output_format);
+	extract_array<dods_int32>(dataset(), d_input_format_file, output_format);
 	break;
 
       case dods_uint32_c:
-	extract_array<dods_uint32>(dataset(), input_format_file, output_format);
+	extract_array<dods_uint32>(dataset(), d_input_format_file, output_format);
 	break;
 
       case dods_float32_c:
-	extract_array<dods_float32>(dataset(), input_format_file, output_format);
+	extract_array<dods_float32>(dataset(), d_input_format_file, output_format);
 	break;
 
       case dods_float64_c:
-	extract_array<dods_float64>(dataset(), input_format_file, output_format);
+	extract_array<dods_float64>(dataset(), d_input_format_file, output_format);
 	break;
 
       default:
@@ -309,7 +315,7 @@ FFArray::read()
         delete[] start;
         delete[] stride;
         delete[] edge;
-    
+
 	throw InternalErr(__FILE__, __LINE__,
 			  (string)"FFArray::read: Unsupported array type "
 			  + var()->type_name() + ".");
@@ -329,11 +335,11 @@ FFArray::read()
 
 template <class T>
 bool
-FFArray::extract_array(const string &ds, const string &if_fmt, 
+FFArray::extract_array(const string &ds, const string &if_fmt,
                        const string &o_fmt)
 {
     T *d = (T *)new char[width()];
-    long bytes = read_ff(ds.c_str(), if_fmt.c_str(), o_fmt.c_str(), 
+    long bytes = read_ff(ds.c_str(), if_fmt.c_str(), o_fmt.c_str(),
                          (char *)d, width());
 
     if (bytes == -1) {

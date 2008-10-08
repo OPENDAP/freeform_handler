@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -29,7 +29,7 @@
 // Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples 
+// The files are patterned after the subcalssing examples
 // Test<type>.c,h files.
 //
 // ReZa 6/16/97
@@ -45,16 +45,17 @@ using std::endl;
 using std::ostringstream;
 
 #include "Error.h"
+#include "debug.h"
+
 #include "FFSequence.h"
 #include "util_ff.h"
-#include "debug.h"
 
 extern long BufPtr;
 extern char *BufVal;
 extern long BufSiz;
 
 int StrLength = 0; // Sets string length befor reading it
-int StrLens[MaxStr]; // List of string length in this sequence 
+int StrLens[MaxStr]; // List of string length in this sequence
 
 // protected
 
@@ -66,7 +67,8 @@ FFSequence::ptr_duplicate()
 
 // public
 
-FFSequence::FFSequence(const string &n, const string &d) : Sequence(n, d)
+FFSequence::FFSequence(const string &n, const string &d, const string &iff)
+    : d_input_format_file(iff), Sequence(n, d)
 {
 }
 
@@ -79,7 +81,7 @@ Records(const string &filename)
 {
     int error = 0;
     DATA_BIN_PTR dbin = NULL;
-    FF_STD_ARGS_PTR SetUps = NULL;  
+    FF_STD_ARGS_PTR SetUps = NULL;
     PROCESS_INFO_LIST pinfo_list = NULL;
     PROCESS_INFO_PTR  pinfo = NULL;
     static char Msgt[255];
@@ -87,24 +89,26 @@ Records(const string &filename)
     char * FileName = new char [filename.length()+1];
     filename.copy(FileName, filename.length());
     FileName[filename.length()]='\0';
-#if 0    
+#if 0
     strncpy(FileName, filename.c_str(), filename.length());
 #endif
     SetUps = ff_create_std_args();
     if (!SetUps)
 	return -1;
-    
+
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
-    SetUps->input_file = FileName; 
-    string iff = find_ancillary_file(filename);
+    SetUps->input_file = FileName;
+#if 0
+    string iff = format_file_name(filename);
     char *if_f = new char[iff.length() + 1];
     iff.copy(if_f, iff.length());
     if_f[iff.length()]='\0';
 #if 0
     strncpy(if_f, iff.c_str(), iff.length());
-#endif    
+#endif
     SetUps->input_format_file = if_f;
+#endif
     SetUps->output_file = NULL;
 
     error = SetDodsDB(SetUps, &dbin, Msgt);
@@ -118,7 +122,7 @@ Records(const string &filename)
 	return(-1);
 
     pinfo_list = dll_first(pinfo_list);
- 
+
     //    pinfo = FF_PI(pinfo_list);
     pinfo = ((PROCESS_INFO_PTR)(pinfo_list)->data.u.pi);
 
@@ -133,10 +137,10 @@ Records(const string &filename)
     @note Does not use either the \e in_selection or \e send_p properties. If
     this method is called and the \e read_p property is not true, the values
     are read.
-    
+
     @exception Error if the size of the returned data is zero.
     @return Always returns false. */
-bool 
+bool
 FFSequence::read()
 {
     int StrCnt = 0;
@@ -165,36 +169,39 @@ FFSequence::read()
 	    }
 	    else
 		endbyte += (*p)->width();
-	  
-	    str << (*p)->name() << " " << stbyte << " " << endbyte 
-		<< " " << ff_types((*p)->type()) 
+
+	    str << (*p)->name() << " " << stbyte << " " << endbyte
+		<< " " << ff_types((*p)->type())
 		<< " " << ff_prec((*p)->type()) << endl;
 	    stbyte = endbyte + 1;
 	}
 
 	DBG(cerr << str.str());
-      
+
 	char *o_fmt = new char[str.str().length() + 1];
         str.str().copy(o_fmt, str.str().length());
         o_fmt[str.str().length()]='\0';
 #if 0
 	strncpy(o_fmt, str.str().c_str(), str.str().length());
 #endif
-
-	string input_format_file = find_ancillary_file(ds_str);
+#if 0
+	string input_format_file = format_file_name(ds_str);
 	char *if_fmt = new char[input_format_file.length() + 1];
         input_format_file.copy(if_fmt, input_format_file.length());
         if_fmt[input_format_file.length()]='\0';
-#if 0
+#endif
+        #if 0
 	strncpy(if_fmt, input_format_file.c_str(), input_format_file.length());
-#endif     
+#endif
 	// num_rec could come from DDS if sequence length was known...
 	long num_rec = Records(ds_str);
 
 	if (num_rec == -1) {
 		delete [] o_fmt;
+#if 0
 		delete [] if_fmt;
-	    return false;
+#endif
+		return false;
 	}
 
 	BufSiz = num_rec * (stbyte - 1);
@@ -204,15 +211,17 @@ FFSequence::read()
         ds[ds_str.length()]='\0';
 #if 0
 	strncpy(ds, ds_str.c_str(), ds_str.length());
-#endif   
-	long bytes = read_ff(ds, if_fmt, o_fmt, BufVal, BufSiz);
-	    
+#endif
+
+	long bytes = read_ff(ds, d_input_format_file.c_str(), o_fmt, BufVal, BufSiz);
+
 	// clean up; we should use auto_ptr, but it doesn't work for
 	// arrays... 08/29/03 jhrg
-	delete[] ds;	       
+	delete[] ds;
 	delete[] o_fmt;
+#if 0
 	delete[] if_fmt;
-
+#endif
 	if (bytes == -1)
 	    throw Error("Could not read requested data from the dataset.");
     }
