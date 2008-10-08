@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of ff_handler a FreeForm API handler for the OPeNDAP
@@ -11,12 +10,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -26,8 +25,8 @@
 /*
  * HISTORY:
  *
- * DODS C++ header file for FreeFrom library. 
- * 
+ * DODS C++ header file for FreeFrom library.
+ *
  * ReZa (Reza Nekovei URI/GSO) 7/10/98
 
  * $Log: FreeForm.h,v $
@@ -66,7 +65,7 @@
  *		on the Mac, (and maybe Unix), a 4-byte value is pushed, even when you request only
  *		2 bytes.
  *		Also, a fix to the TRUE/FALSE definitions to properly define them if not defined.
-*/
+ */
 
 #ifndef FREEFORM_H__
 #define FREEFORM_H__
@@ -81,44 +80,44 @@
 
 /*
 
-FreeForm ND has been compiled on the following platforms:
+ FreeForm ND has been compiled on the following platforms:
 
-	PC running DOS
-	PC running LINUX
-	Macintosh running MacOS
-	Sun Sparcstations running SUNOS
-	SGI workstations running IRIX
-	and various other Unix workstations, like:
-		IBM6000, HP9000, DEC-Alpha, and SGI PowerChallenge
+ PC running DOS
+ PC running LINUX
+ Macintosh running MacOS
+ Sun Sparcstations running SUNOS
+ SGI workstations running IRIX
+ and various other Unix workstations, like:
+ IBM6000, HP9000, DEC-Alpha, and SGI PowerChallenge
 
-FreeForm ND compiles with these C compilers:
+ FreeForm ND compiles with these C compilers:
 
-	Microsoft Visual C++ Versions 1.0 and 1.52
-	Microsoft Visual C++ Version 4.0 (define MSVC4)
-	Metroworks CodeWarrior Version 6 -- for Macintosh
-	generic ANSI Unix C compilers
+ Microsoft Visual C++ Versions 1.0 and 1.52
+ Microsoft Visual C++ Version 4.0 (define MSVC4)
+ Metroworks CodeWarrior Version 6 -- for Macintosh
+ generic ANSI Unix C compilers
 
-If you are using Microsoft Visual C++ 4.0 then define MSVC4 in addition to
-defining PC.
+ If you are using Microsoft Visual C++ 4.0 then define MSVC4 in addition to
+ defining PC.
 
-To compile FreeForm on your machine you must define one of the
-following preprocessor names:
+ To compile FreeForm on your machine you must define one of the
+ following preprocessor names:
 
-   
-	PC
-	LINUX
-	SUN
-	IRIS4
-	MAC
-	IBM6000
-	HP9000
-	DEC_ALPHA
-	IRIX
 
-One of the above should be defined as a compiler preprocessor definition, such as on the
-cc command line, or within your project settings.
-   
-*/
+ PC
+ LINUX
+ SUN
+ IRIS4
+ MAC
+ IBM6000
+ HP9000
+ DEC_ALPHA
+ IRIX
+
+ One of the above should be defined as a compiler preprocessor definition, such as on the
+ cc command line, or within your project settings.
+
+ */
 
 #define FF_OS_UNIX 1
 #define FF_OS_MAC  2
@@ -348,15 +347,15 @@ cc command line, or within your project settings.
 #error "A C compiler has not been defined"
 You should define one of the following:
 
-	PC
-	LINUX
-	SUN
-	IRIS4
-	MAC
-	IBM6000
-	HP9000
-	DEC_ALPHA
-	IRIX
+PC
+LINUX
+SUN
+IRIS4
+MAC
+IBM6000
+HP9000
+DEC_ALPHA
+IRIX
 
 #endif
 
@@ -364,23 +363,23 @@ You should define one of the following:
 #error "An operating system has not been defined"
 You should define one of the following:
 
-	PC
-	LINUX
-	SUN
-	IRIS4
-	MAC
-	IBM6000
-	HP9000
-	DEC_ALPHA
-	IRIX
+PC
+LINUX
+SUN
+IRIS4
+MAC
+IBM6000
+HP9000
+DEC_ALPHA
+IRIX
 
 #endif
 
 /* Directory Separators: specifically for the three currently supported
-   general operating systems, for path names in menu files (same as DOS) -- 
-   NATIVE_DIR_SEPARATOR is set to one of the three os-specific separators
-   at compile-time.
-*/
+ general operating systems, for path names in menu files (same as DOS) --
+ NATIVE_DIR_SEPARATOR is set to one of the three os-specific separators
+ at compile-time.
+ */
 
 #define UNIX_DIR_SEPARATOR '/'
 #define UNIX_DIR_SEPARATOR_STRING "/"
@@ -394,7 +393,7 @@ You should define one of the following:
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-		  
+
 #if FF_OS == FF_OS_MACOS
 
 #define NATIVE_DIR_SEPARATOR MAC_DIR_SEPARATOR
@@ -430,12 +429,12 @@ You should define one of the following:
 
 #ifdef WANT_NCSA_TYPES
 
-typedef signed char         int8;
-typedef unsigned char       uint8;
-typedef signed short int    int16;
-typedef unsigned short int  uint16;
-typedef float               float32;
-typedef double              float64;
+typedef signed char int8;
+typedef unsigned char uint8;
+typedef signed short int int16;
+typedef unsigned short int uint16;
+typedef float float32;
+typedef double float64;
 
 #endif
 
@@ -491,10 +490,10 @@ extern const char *fft_cnv_flags_width_prec[FFNT_ENOTE + 1];
 
 #ifdef WANT_NCSA_TYPES
 
-typedef signed long int     int32;
-typedef unsigned long int   uint32;
-typedef char                int64;  /* not a real type for the PC */
-typedef char                uint64; /* not a real type for the PC */
+typedef signed long int int32;
+typedef unsigned long int uint32;
+typedef char int64; /* not a real type for the PC */
+typedef char uint64; /* not a real type for the PC */
 
 #endif
 
@@ -518,10 +517,10 @@ typedef char                uint64; /* not a real type for the PC */
 
 #ifdef WANT_NCSA_TYPES
 
-typedef signed int          int32;
-typedef unsigned int        uint32;
-typedef signed long int     int64;
-typedef unsigned long int   uint64;
+typedef signed int int32;
+typedef unsigned int uint32;
+typedef signed long int int64;
+typedef unsigned long int uint64;
 
 #endif
 
@@ -536,7 +535,7 @@ typedef unsigned long int   uint64;
 
 #endif /* LONGS_ARE_64 */
 
-typedef double             ff_enote;
+typedef double ff_enote;
 
 /* Variable Types */
 /* FFV_NULL MUST BE zero -- NOTHING else can be zero */
@@ -549,7 +548,7 @@ typedef double             ff_enote;
 #define FFV_REAL            (FF_TYPES_t)0x00000010
 #define FFV_TEXT            (FF_TYPES_t)0x00000020
 /* FFV_CHAR is used for strings, but I think FFV_TEXT is a better name.
-*/
+ */
 #define FFV_CHAR     FFV_TEXT
 
 #define FFV_CONSTANT        (FF_TYPES_t)0x00000040 /* if you change this bit pattern, change FFV_EOL too! */
@@ -560,7 +559,7 @@ typedef double             ff_enote;
 #define FFV_DATA_TYPES      (FF_TYPES_t)0x000001FF
 
 #define FFV_CONVERT         (FF_TYPES_t)0x00000200
-#define FFV_EQUATION        (FF_TYPES_t)0x00000400  
+#define FFV_EQUATION        (FF_TYPES_t)0x00000400
 #define FFNT_CONSTANT		 (FF_TYPES_t)0x00000800
 #define FFNT_EQUIV          (FF_TYPES_t)0x00001000
 #define FFV_TRANSLATOR      (FF_TYPES_t)0x00002000
@@ -645,7 +644,7 @@ typedef double             ff_enote;
 #define IS_ENOTE(v)   IS_ENOTE_TYPE(FFV_DATA_TYPE(v))
 #define IS_EQN(v)     IS_EQN_TYPE(FFV_TYPE(v))
 
-#define IS_RECORD_VAR(v)  IS_RECORD_TYPE(FFV_TYPE(v)) 
+#define IS_RECORD_VAR(v)  IS_RECORD_TYPE(FFV_TYPE(v))
 
 #define IS_INTERNAL_VAR(v) IS_INTERNAL_TYPE(FFV_TYPE(v))
 
@@ -677,10 +676,9 @@ typedef unsigned long FF_TYPES_t;
 
 #define IS_KEYWORDED_PARAMETER(p) ((p)[0] == '$')
 
-typedef struct
-{
-	char       *fff_info;
-	FF_TYPES_t  number;
+typedef struct {
+        char *fff_info;
+        FF_TYPES_t number;
 } FFF_LOOKUP, *FFF_LOOKUP_PTR;
 
 #define NUM_VARIABLE_TYPES 25
@@ -688,7 +686,7 @@ extern FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES];
 
 /* FreeForm Format bit field masks */
 #define FFF_FILE_TYPES (FFF_BINARY | FFF_ASCII | FFF_FLAT)
-#define FFF_DATA_TYPES (FFF_DATA | FFF_HEADER | FFF_FILE | FFF_REC)         
+#define FFF_DATA_TYPES (FFF_DATA | FFF_HEADER | FFF_FILE | FFF_REC)
 #define FFF_GROUP      (FFF_FILE_TYPES | FFF_DATA_TYPES)
 /* FD_TYPES == FFF_TABLE | FFF_DATA | FFF_HEADER | FFF_INPUT | FFF_OUTPUT */
 
@@ -700,7 +698,7 @@ extern FFF_LOOKUP variable_types[NUM_VARIABLE_TYPES];
 #define FFF_FLAT                (FF_TYPES_t)0x00000004
 
 /* The order of the following must be preserved!!!  See sort_format_data_list */
-#define FFF_TABLE               (FF_TYPES_t)0x00000008		
+#define FFF_TABLE               (FF_TYPES_t)0x00000008
 #define FFF_HEADER              (FF_TYPES_t)0x00000010
 #define FFF_FILE                (FF_TYPES_t)0x00000020
 #define FFF_REC                 (FF_TYPES_t)0x00000040
@@ -794,7 +792,7 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #include <errno.h>
 
 /* Following are to be used when converting a floating point type to an
-   integer type -- this should avoid the occasional truncation error */
+ integer type -- this should avoid the occasional truncation error */
 
 #include <float.h>
 #include <math.h>
@@ -837,7 +835,7 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #if FF_CC == FF_CC_MSVC1
 #define HUGE huge
 #else
-#define HUGE 
+#define HUGE
 #endif /* (ELSE) FF_CC == FF_CC_MSVC1 */
 
 typedef char HUGE *FF_DATA_BUFFER;
@@ -874,7 +872,7 @@ typedef char **FF_STRING_HANDLE;
 #define FMT_BUFSIZE_BUFFER_SIZE 4096 /* pick a reasonable size... */
 
 /* even though ff_bss_t is an unsigned (long, in Unix) there will be problems
-   if bytes_used or total_bytes ever takes on a value greater than LONG_MAX */
+ if bytes_used or total_bytes ever takes on a value greater than LONG_MAX */
 
 #define FFBS_GRAFT 0
 
@@ -884,16 +882,16 @@ typedef unsigned FF_BSS_t; /* FreeForm bufsize size type */
  * FF_BUFSIZE
  */
 
-typedef struct struct_ff_bufsize FF_BUFSIZE, *FF_BUFSIZE_PTR, **FF_BUFSIZE_HANDLE;
-struct struct_ff_bufsize
-{
+typedef struct struct_ff_bufsize FF_BUFSIZE, *FF_BUFSIZE_PTR,
+        **FF_BUFSIZE_HANDLE;
+struct struct_ff_bufsize {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	char HUGE *buffer;
-	unsigned short usage;
-	FF_BSS_t  bytes_used;
-	FF_BSS_t  total_bytes;
+        char HUGE *buffer;
+        unsigned short usage;
+        FF_BSS_t bytes_used;
+        FF_BSS_t total_bytes;
 };
 
 #ifndef INT_MAX
@@ -906,119 +904,106 @@ struct struct_ff_bufsize
  * FF_STD_ARGS
  */
 
-typedef struct struct_ff_std_args FF_STD_ARGS, *FF_STD_ARGS_PTR, **FF_STD_ARGS_HANDLE;
-struct struct_ff_std_args
-{
+typedef struct struct_ff_std_args FF_STD_ARGS, *FF_STD_ARGS_PTR,
+        **FF_STD_ARGS_HANDLE;
+struct struct_ff_std_args {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	char           *input_file;           /* string: name of input file */
-	FF_BUFSIZE_PTR  input_bufsize;         /* bufsize containing input data */
-	char           *input_format_file;    /* string: name of input format file */
-	char           *input_format_title;   /* string: input format title */
-	char           *input_format_buffer;  /* string: input format description */
-	char           *output_file;          /* string: name of output file */
-	char           *log_file;             /* string: name of log file */
-	FF_BUFSIZE_PTR  output_bufsize;        /* bufsize to contain output data */
-	char           *output_format_file;   /* string: name of output format file */ 
-	char           *output_format_title;  /* string: output forma title */
-	char           *output_format_buffer; /* string: output format description */
-	char           *var_file;             /* string: name of variable file */
-	char           *query_file;           /* string: name of query file */
-	unsigned long   cache_size;           /* integer: default data cacheing size */
-	long            records_to_read;      /* integer: if negative, file tail */
+        char *input_file; /* string: name of input file */
+        FF_BUFSIZE_PTR input_bufsize; /* bufsize containing input data */
+        char *input_format_file; /* string: name of input format file */
+        char *input_format_title; /* string: input format title */
+        char *input_format_buffer; /* string: input format description */
+        char *output_file; /* string: name of output file */
+        char *log_file; /* string: name of log file */
+        FF_BUFSIZE_PTR output_bufsize; /* bufsize to contain output data */
+        char *output_format_file; /* string: name of output format file */
+        char *output_format_title; /* string: output forma title */
+        char *output_format_buffer; /* string: output format description */
+        char *var_file; /* string: name of variable file */
+        char *query_file; /* string: name of query file */
+        unsigned long cache_size; /* integer: default data cacheing size */
+        long records_to_read; /* integer: if negative, file tail */
 
-	char           *error_log;            /* string: file name to send error messages */
-	BOOLEAN         error_prompt;
-	
-	/* Checkvar specific option flags */
-	char   *cv_list_file_dir;
-	int     cv_precision;
-	int     cv_maxbins;
-	BOOLEAN cv_maxmin_only;
-	BOOLEAN cv_subset;
+        char *error_log; /* string: file name to send error messages */
+        BOOLEAN error_prompt;
 
-	char *sdts_terms_file;
-	
-	struct struct_std_args_user
-	{
-		unsigned int set_cv_precision : 1;
-		unsigned int is_stdin_redirected : 1;
-		unsigned int is_stdout_redirected : 1;
-		unsigned int format_title : 1;
-		unsigned int format_file : 1;
-	} user;
+        /* Checkvar specific option flags */
+        char *cv_list_file_dir;
+        int cv_precision;
+        int cv_maxbins;
+        BOOLEAN cv_maxmin_only;
+        BOOLEAN cv_subset;
+
+        char *sdts_terms_file;
+
+        struct struct_std_args_user {
+                unsigned int set_cv_precision :1;
+                unsigned int is_stdin_redirected :1;
+                unsigned int is_stdout_redirected :1;
+                unsigned int format_title :1;
+                unsigned int format_file :1;
+        } user;
 };
 
 #include <err.h>
 
 /* ff_copy_variable depends on the contents of the VARIABLE structure, below.
-   If you change this structure, you must also change ff_copy_variable
-*/
-
+ If you change this structure, you must also change ff_copy_variable
+ */
 
 typedef struct struct_ff_dll_node DLL_NODE, *DLL_NODE_PTR, **DLL_NODE_HANDLE;
 
-typedef DLL_NODE_PTR  FORMAT_LIST,
-                      VARIABLE_LIST,
-                      FORMAT_DATA_LIST,
-                      PROCESS_INFO_LIST,
-                      FORMAT_DATA_MAP_LIST,
-                      FF_ARRAY_CONDUIT_LIST,
-                      FF_ERROR_LIST,
-                      FF_DATA_FLAG_LIST;
+typedef DLL_NODE_PTR FORMAT_LIST, VARIABLE_LIST, FORMAT_DATA_LIST,
+        PROCESS_INFO_LIST, FORMAT_DATA_MAP_LIST, FF_ARRAY_CONDUIT_LIST,
+        FF_ERROR_LIST, FF_DATA_FLAG_LIST;
 
-typedef DLL_NODE_HANDLE  FORMAT_LIST_HANDLE,
-                         VARIABLE_LIST_HANDLE,
-                         FORMAT_DATA_LIST_HANDLE,
-                         PROCESS_INFO_LIST_HANDLE,
-                         FORMAT_DATA_MAP_LIST_HANDLE,
-                         FF_ARRAY_CONDUIT_LIST_HANDLE,
-                         FF_ERROR_LIST_HANDLE,
-                         FF_DATA_FLAG_LIST_HANDLE;
+typedef DLL_NODE_HANDLE FORMAT_LIST_HANDLE, VARIABLE_LIST_HANDLE,
+        FORMAT_DATA_LIST_HANDLE, PROCESS_INFO_LIST_HANDLE,
+        FORMAT_DATA_MAP_LIST_HANDLE, FF_ARRAY_CONDUIT_LIST_HANDLE,
+        FF_ERROR_LIST_HANDLE, FF_DATA_FLAG_LIST_HANDLE;
 
 typedef struct struct_ff_error FF_ERROR, *FF_ERROR_PTR, **FF_ERROR_HANDLE;
-struct struct_ff_error
-{
+struct struct_ff_error {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
 
-	int code;
+        int code;
 
-	char *message;
-	char *problem;
+        char *message;
+        char *problem;
 
-	int warning_ord;
-	int error_ord;
+        int warning_ord;
+        int error_ord;
 };
 
 #define FF_MAX_NAME MAX_PATH
 
 #define FFV_MISC_INIT NULL
 
-typedef unsigned long  FF_NDX_t;
+typedef unsigned long FF_NDX_t;
 
 /* ff_copy_format depends on the contents of the FORMAT structure, below.
-   If you change this structure, you must also change ff_copy_format
-*/
+ If you change this structure, you must also change ff_copy_format
+ */
 
 /*
  * FORMAT
  */
 
 typedef struct struct_ff_format FORMAT, *FORMAT_PTR, **FORMAT_HANDLE;
-struct struct_ff_format
-{
+struct struct_ff_format {
 #ifdef FF_CHK_ADDR
-	void          *check_address;     /* assert(format->check_address == format); */
+        void *check_address; /* assert(format->check_address == format); */
 #endif
-	VARIABLE_LIST  variables;         /* the DLL of variable structures */
-	char           *name; /* title if given in a format file or menu section */
-	char           *locus;  /* path-name or menu section title of format */
-	FF_TYPES_t     type;              /* format type, see FFF_LOOKUP format_types */
-	unsigned int   num_vars;       /* number of variables in format */
-	FF_NDX_t       length;        /* record length in bytes */
+        VARIABLE_LIST variables; /* the DLL of variable structures */
+        char *name; /* title if given in a format file or menu section */
+        char *locus; /* path-name or menu section title of format */
+        FF_TYPES_t type; /* format type, see FFF_LOOKUP format_types */
+        unsigned int num_vars; /* number of variables in format */
+        FF_NDX_t length; /* record length in bytes */
 };
 
 #define FORMAT_NAME_INIT "Format Was Untitled"
@@ -1026,8 +1011,8 @@ struct struct_ff_format
 #define FORMAT_LOCUS_GV_EDIT "GeoVu Format Editor"
 
 /* ff_copy_variable depends on the contents of the VARIABLE structure, below.
-   If you change this structure, you must also change ff_copy_variable
-*/
+ If you change this structure, you must also change ff_copy_variable
+ */
 
 /* I don't know if I should copy the EQUATION_INFO or not... */
 
@@ -1042,92 +1027,77 @@ struct struct_ff_format
 typedef struct struct_ff_translator /* define value translation table */
 {
 #ifdef FF_CHK_ADDR
-	void           *check_address;
+        void *check_address;
 #endif
-	FF_TYPES_t                   gtype;  /* corresponding geovu data type */
-	void                        *gvalue; /* corresponding geovu data value */
-	FF_TYPES_t                   utype;  /* define the user's data type */
-	void                        *uvalue; /* define the user's data value */
-	struct struct_ff_translator *next;
+        FF_TYPES_t gtype; /* corresponding geovu data type */
+        void *gvalue; /* corresponding geovu data value */
+        FF_TYPES_t utype; /* define the user's data type */
+        void *uvalue; /* define the user's data value */
+        struct struct_ff_translator *next;
 } TRANSLATOR, *TRANSLATOR_PTR;
 
 typedef struct struct_ff_variable VARIABLE, *VARIABLE_PTR, **VARIABLE_HANDLE;
 
 /* Define MAX_MIN structure */
 
-typedef struct struct_ff_max_min
-{
+typedef struct struct_ff_max_min {
 #ifdef FF_CHK_ADDR
-	void* check_address;		/* MAX_MIN address in memory */
+        void* check_address; /* MAX_MIN address in memory */
 #endif
-	unsigned long cur_record;     /* Current record being processed */
-	unsigned long min_record;		/* Record where min occurs */
-	unsigned long max_record;		/* Record where max occurs */
-	void *minimum;			/* Minimum variable value */
-	void *maximum;			/* Maximum variable value */
-	void *max_flag;			/* Upper missing data limit */
-	void *min_flag;			/* Lower missing data limit */
+        unsigned long cur_record; /* Current record being processed */
+        unsigned long min_record; /* Record where min occurs */
+        unsigned long max_record; /* Record where max occurs */
+        void *minimum; /* Minimum variable value */
+        void *maximum; /* Maximum variable value */
+        void *max_flag; /* Upper missing data limit */
+        void *min_flag; /* Lower missing data limit */
 } MAX_MIN, *MAX_MIN_PTR;
 
-struct struct_ff_variable
-{
+struct struct_ff_variable {
 #ifdef FF_CHK_ADDR
-	void       *check_address;      /* assert(variable->check_address == variable); */
+        void *check_address; /* assert(variable->check_address == variable); */
 #endif
-	EQUATION_INFO_PTR eqn_info; /* For derived output variables */
-	union
-	{
-		TRANSLATOR_PTR nt_trans;   /* TRANSLATOR_PTR */
-		int   cv_var_num; /* conversion function number */
-		MAX_MIN_PTR mm;
-	} misc;
-	char        *name;      /* the variable name */
-	FF_TYPES_t  type;       /* variable type, see FFF_LOOKUP variable_types */
-	FF_NDX_t    start_pos;  /* starting byte of variable in a record, counting from 1 (one) */
-	FF_NDX_t    end_pos;    /* ending byte of variable in a record */
-	short       precision;  /* implied (if integer) or real (if floating point) precision, i.e., number of decimal places */
-	char *array_desc_str;
-	char *record_title;     /* if type == FF_VAR_TYPE_FLAG */
+        EQUATION_INFO_PTR eqn_info; /* For derived output variables */
+        union {
+                TRANSLATOR_PTR nt_trans; /* TRANSLATOR_PTR */
+                int cv_var_num; /* conversion function number */
+                MAX_MIN_PTR mm;
+        } misc;
+        char *name; /* the variable name */
+        FF_TYPES_t type; /* variable type, see FFF_LOOKUP variable_types */
+        FF_NDX_t start_pos; /* starting byte of variable in a record, counting from 1 (one) */
+        FF_NDX_t end_pos; /* ending byte of variable in a record */
+        short precision; /* implied (if integer) or real (if floating point) precision, i.e., number of decimal places */
+        char *array_desc_str;
+        char *record_title; /* if type == FF_VAR_TYPE_FLAG */
 };
 
 /*
  * FORMAT_DATA
  */
 
-typedef struct struct_ff_format_data FORMAT_DATA, *FORMAT_DATA_PTR, **FORMAT_DATA_HANDLE;
-struct struct_ff_format_data
-{
-/* generic io_element suitable for name tables, headers, and caches --
-   anything that contains data in a dynamic buffer described by a format
-*/
+typedef struct struct_ff_format_data FORMAT_DATA, *FORMAT_DATA_PTR,
+        **FORMAT_DATA_HANDLE;
+struct struct_ff_format_data {
+        /* generic io_element suitable for name tables, headers, and caches --
+         anything that contains data in a dynamic buffer described by a format
+         */
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	FORMAT_PTR format;
-	FF_BUFSIZE_PTR data;
-	struct struct_fd_state
-	{
-#if 0
-                /* Replaced with code below 2/23/06 jhrg do to compiler */
-                /* warning on 64-bit machine. */
-		unsigned int byte_order : 1; /*	1=big endian (Unix), 0=little endian */
-		unsigned int new_record : 1; /* 1=new data that hasn't been accessed yet */
-		unsigned int locked     : 1;
-		unsigned int unused     : 13;
-#endif
+        FORMAT_PTR format;
+        FF_BUFSIZE_PTR data;
+        struct struct_fd_state {
                 unsigned int byte_order; /* 1=big endian (Unix), 0=little endian */
                 unsigned int new_record; /* 1=new data that hasn't been accessed yet */
                 unsigned int locked;
-                unsigned int unused;    /* Not sure we need this. jhrg */
-	} state;
+                unsigned int unused; /* Not sure we need this. jhrg */
+        } state;
 };
 
-typedef FORMAT_DATA          NAME_TABLE,
-                            *NAME_TABLE_PTR,
-                           **NAME_TABLE_HANDLE;
+typedef FORMAT_DATA NAME_TABLE, *NAME_TABLE_PTR, **NAME_TABLE_HANDLE;
 
-typedef FORMAT_DATA_LIST     NAME_TABLE_LIST,
-                            *NAME_TABLE_LIST_HANDLE;
+typedef FORMAT_DATA_LIST NAME_TABLE_LIST, *NAME_TABLE_LIST_HANDLE;
 
 #include <name_tab.h>
 
@@ -1135,42 +1105,37 @@ typedef FORMAT_DATA_LIST     NAME_TABLE_LIST,
  * FORMAT_DATA_MAPPING
  */
 
-typedef struct struct_ff_format_data_mapping FORMAT_DATA_MAPPING, *FORMAT_DATA_MAPPING_PTR, **FORMAT_DATA_MAPPING_HANDLE;
-struct struct_ff_format_data_mapping
-{
+typedef struct struct_ff_format_data_mapping FORMAT_DATA_MAPPING,
+        *FORMAT_DATA_MAPPING_PTR, **FORMAT_DATA_MAPPING_HANDLE;
+struct struct_ff_format_data_mapping {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	FORMAT_DATA_PTR input;
-	FORMAT_DATA_PTR middle;
-	FORMAT_DATA_PTR output;
+        FORMAT_DATA_PTR input;
+        FORMAT_DATA_PTR middle;
+        FORMAT_DATA_PTR output;
 };
 
-typedef enum enum_pp_object
-{
-	PPO_FORMAT_LIST = 0,
-	PPO_NT_LIST     = 1,
-	ADD_YOUR_TYPE_HERE = 2
+typedef enum enum_pp_object {
+    PPO_FORMAT_LIST = 0, PPO_NT_LIST = 1, ADD_YOUR_TYPE_HERE = 2
 } PP_OBJECT_TYPES;
 
 /*
  * PP_OBJECT
  */
 
-typedef struct struct_ff_pp_object PP_OBJECT, *PP_OBJECT_PTR, **PP_OBJECT_HANDLE;
-struct struct_ff_pp_object
-{
-	union union_u
-	{
-		FORMAT_LIST_HANDLE hf_list;
-		struct struct_nt_list
-		{		 
-			FF_TYPES_t nt_io_type;
-			NAME_TABLE_LIST_HANDLE hnt_list;
-		} nt_list;
-		void *add_your_object_here;
-	} u;
-	PP_OBJECT_TYPES ppo_type;
+typedef struct struct_ff_pp_object PP_OBJECT, *PP_OBJECT_PTR,
+        **PP_OBJECT_HANDLE;
+struct struct_ff_pp_object {
+        union union_u {
+                FORMAT_LIST_HANDLE hf_list;
+                struct struct_nt_list {
+                        FF_TYPES_t nt_io_type;
+                        NAME_TABLE_LIST_HANDLE hnt_list;
+                } nt_list;
+                void *add_your_object_here;
+        } u;
+        PP_OBJECT_TYPES ppo_type;
 };
 
 /*
@@ -1178,106 +1143,102 @@ struct struct_ff_pp_object
  */
 typedef unsigned long FF_ARRAY_OFFSET_t;
 
-typedef struct struct_ff_array_dipole FF_ARRAY_DIPOLE, *FF_ARRAY_DIPOLE_PTR, **FF_ARRAY_DIPOLE_HANDLE;
-struct struct_ff_array_dipole
-{
+typedef struct struct_ff_array_dipole FF_ARRAY_DIPOLE, *FF_ARRAY_DIPOLE_PTR,
+        **FF_ARRAY_DIPOLE_HANDLE;
+struct struct_ff_array_dipole {
 #ifdef FF_CHK_ADDR
-	void                    *check_address;
+        void *check_address;
 #endif
-	char                    *name;  /* the array variable name */
-	FF_ARRAY_DIPOLE_PTR      mate;
-	FORMAT_DATA_MAPPING_PTR  format_data_mapping;
-	ARRAY_MAPPING_PTR        array_mapping;
-	FORMAT_DATA_PTR          fd;
-	struct struct_connect
-	{
-		NDARR_SOURCE id; /* NDARRS_FILE or NDARRS_BUFFER */
+        char *name; /* the array variable name */
+        FF_ARRAY_DIPOLE_PTR mate;
+        FORMAT_DATA_MAPPING_PTR format_data_mapping;
+        ARRAY_MAPPING_PTR array_mapping;
+        FORMAT_DATA_PTR fd;
+        struct struct_connect {
+                NDARR_SOURCE id; /* NDARRS_FILE or NDARRS_BUFFER */
 #if defined(_DEBUG) || defined(DEBUG)
-		struct struct_locus
-		{
-			char *filename; /* file name if NDARRS_FILE */
-			FF_BUFSIZE_PTR bufsize; /* FF_BUFSIZE_PTR if NDARRS_BUFFER */
-		} locus;
+                struct struct_locus
+                {
+                    char *filename; /* file name if NDARRS_FILE */
+                    FF_BUFSIZE_PTR bufsize; /* FF_BUFSIZE_PTR if NDARRS_BUFFER */
+                }locus;
 #else
-		union union_locus
-		{
-			char *filename; /* file name if NDARRS_FILE */
-			FF_BUFSIZE_PTR bufsize; /* FF_BUFSIZE_PTR if NDARRS_BUFFER */
-		} locus;
+                union union_locus {
+                        char *filename; /* file name if NDARRS_FILE */
+                        FF_BUFSIZE_PTR bufsize; /* FF_BUFSIZE_PTR if NDARRS_BUFFER */
+                } locus;
 #endif
-		struct struct_file_info
-		{
-			FF_ARRAY_OFFSET_t first_array_offset; /* file header size if NDARRS_FILE */
-			FF_ARRAY_OFFSET_t current_array_offset; /* file header size if NDARRS_FILE */
-		} file_info;
-		unsigned long bytes_left;
-		unsigned long bytes_done; /* read for input, converted for output */
-		int array_done;
-	} connect;
+                struct struct_file_info {
+                        FF_ARRAY_OFFSET_t first_array_offset; /* file header size if NDARRS_FILE */
+                        FF_ARRAY_OFFSET_t current_array_offset; /* file header size if NDARRS_FILE */
+                } file_info;
+                unsigned long bytes_left;
+                unsigned long bytes_done; /* read for input, converted for output */
+                int array_done;
+        } connect;
 };
 
 /*
  * FF_ARRAY_CONDUIT
  */
 
-typedef struct struct_ff_array_conduit FF_ARRAY_CONDUIT, *FF_ARRAY_CONDUIT_PTR, **FF_ARRAY_CONDUIT_HANDLE;
-struct struct_ff_array_conduit
-{
+typedef struct struct_ff_array_conduit FF_ARRAY_CONDUIT,
+        *FF_ARRAY_CONDUIT_PTR, **FF_ARRAY_CONDUIT_HANDLE;
+struct struct_ff_array_conduit {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	char name[FF_MAX_NAME]; /* the array variable name */
-	FF_ARRAY_DIPOLE_PTR input;
-	FF_ARRAY_DIPOLE_PTR output;
+        char name[FF_MAX_NAME]; /* the array variable name */
+        FF_ARRAY_DIPOLE_PTR input;
+        FF_ARRAY_DIPOLE_PTR output;
 };
 
 /*
  * PROCESS_INFO
  */
 
-typedef struct struct_ff_process_info PROCESS_INFO, *PROCESS_INFO_PTR, **PROCESS_INFO_HANDLE;
-struct struct_ff_process_info
-{
+typedef struct struct_ff_process_info PROCESS_INFO, *PROCESS_INFO_PTR,
+        **PROCESS_INFO_HANDLE;
+struct struct_ff_process_info {
 #ifdef FF_CHK_ADDR
-	void *check_address;
-	void *locked_buffer;
+        void *check_address;
+        void *locked_buffer;
 #endif
-	char *name;
-	FF_ARRAY_DIPOLE_PTR pole;
+        char *name;
+        FF_ARRAY_DIPOLE_PTR pole;
 
-	PROCESS_INFO_PTR mate;
+        PROCESS_INFO_PTR mate;
 };
 
 /*
  * DATA_FLAG
  */
 
-typedef struct struct_ff_data_flag
-{
+typedef struct struct_ff_data_flag {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	double        value;
-	double        temp_dvar;
-	VARIABLE_PTR  var;
-	char          value_exists;
+        double value;
+        double temp_dvar;
+        VARIABLE_PTR var;
+        char value_exists;
 } FF_DATA_FLAG, *FF_DATA_FLAG_PTR;
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 #ifdef FF_DBG
-VARIABLE_PTR           FF_VARIABLE(VARIABLE_LIST);
-FORMAT_PTR             FF_FORMAT(FORMAT_LIST);
-FORMAT_DATA_PTR		  FD_FORMAT_DATA(FORMAT_DATA_LIST);
-FF_ARRAY_CONDUIT_PTR	  FF_AC(FF_ARRAY_CONDUIT_LIST);
-PROCESS_INFO_PTR       FF_PI(PROCESS_INFO_LIST);
-FF_ERROR_PTR           FF_EP(FF_ERROR_LIST);
-FF_DATA_FLAG_PTR       FF_DF(FF_DATA_FLAG_LIST);
+VARIABLE_PTR FF_VARIABLE(VARIABLE_LIST);
+FORMAT_PTR FF_FORMAT(FORMAT_LIST);
+FORMAT_DATA_PTR FD_FORMAT_DATA(FORMAT_DATA_LIST);
+FF_ARRAY_CONDUIT_PTR FF_AC(FF_ARRAY_CONDUIT_LIST);
+PROCESS_INFO_PTR FF_PI(PROCESS_INFO_LIST);
+FF_ERROR_PTR FF_EP(FF_ERROR_LIST);
+FF_DATA_FLAG_PTR FF_DF(FF_DATA_FLAG_LIST);
 
 DLL_NODE_PTR dll_next(DLL_NODE_PTR node);
 DLL_NODE_PTR dll_previous(DLL_NODE_PTR node);
-	   
+
 #else
 #define FF_VARIABLE(vl)              ((VARIABLE_PTR)(vl)->data.u.var)
 #define FF_FORMAT(fl)                  ((FORMAT_PTR)(fl)->data.u.fmt)
@@ -1298,75 +1259,69 @@ DLL_NODE_PTR dll_last(DLL_NODE_PTR node);
 }
 #endif
 
-typedef enum enum_ff_dll_data_types
-{
-	DLL_VAR = 1,
-	DLL_FMT = 2,
-	DLL_FD  = 3,
-	DLL_AC  = 4,
-	DLL_PI  = 5,
-	DLL_ERR = 6,
-	DLL_DF  = 7,
-	DLL_HEAD_NODE = SHRT_MAX
+typedef enum enum_ff_dll_data_types {
+    DLL_VAR = 1,
+    DLL_FMT = 2,
+    DLL_FD = 3,
+    DLL_AC = 4,
+    DLL_PI = 5,
+    DLL_ERR = 6,
+    DLL_DF = 7,
+    DLL_HEAD_NODE = SHRT_MAX
 } FF_DLL_DATA_TYPES;
 
-typedef struct struct_ff_dll_data DLL_DATA, *DLL_DATA_PTR, **DLL_DATA_HANDLE; 
-struct struct_ff_dll_data
-{
-	union union_struct_ff_dll_data_u
-	{
-		VARIABLE_PTR var;
-		FORMAT_PTR fmt;
-		FORMAT_DATA_PTR fd;
-		FF_ARRAY_CONDUIT_PTR ac;
-		PROCESS_INFO_PTR pi;
-		FF_ERROR_PTR err;
-		FF_DATA_FLAG_PTR df;
-	} u;
-  FF_DLL_DATA_TYPES type;
+typedef struct struct_ff_dll_data DLL_DATA, *DLL_DATA_PTR, **DLL_DATA_HANDLE;
+struct struct_ff_dll_data {
+        union union_struct_ff_dll_data_u {
+                VARIABLE_PTR var;
+                FORMAT_PTR fmt;
+                FORMAT_DATA_PTR fd;
+                FF_ARRAY_CONDUIT_PTR ac;
+                PROCESS_INFO_PTR pi;
+                FF_ERROR_PTR err;
+                FF_DATA_FLAG_PTR df;
+        } u;
+        FF_DLL_DATA_TYPES type;
 };
 
-struct struct_ff_dll_node
-{
+struct struct_ff_dll_node {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	DLL_DATA data;
-	DLL_NODE_PTR previous;
-	DLL_NODE_PTR next;
+        DLL_DATA data;
+        DLL_NODE_PTR previous;
+        DLL_NODE_PTR next;
 #ifdef DLL_CHK
-	unsigned int status;
-	size_t count; /* head node: count of non-head nodes */
+        unsigned int status;
+        size_t count; /* head node: count of non-head nodes */
 #endif
 };
 
 /* Define BIN structures */
 
-typedef struct struct_databin
-{
+typedef struct struct_databin {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	char *title;
+        char *title;
 
-	EQUATION_INFO_PTR eqn_info;
+        EQUATION_INFO_PTR eqn_info;
 
-	FF_ARRAY_CONDUIT_LIST array_conduit_list;
-	
-	NAME_TABLE_LIST table_list;
+        FF_ARRAY_CONDUIT_LIST array_conduit_list;
+
+        NAME_TABLE_LIST table_list;
 } DATA_BIN, *DATA_BIN_PTR, **DATA_BIN_HANDLE;
 
-typedef struct struct_ff_array_dim_info
-{
+typedef struct struct_ff_array_dim_info {
 #ifdef FF_CHK_ADDR
-	void *check_address;
+        void *check_address;
 #endif
-	long start_index;
-	long end_index;
-	long granularity;
-	long separation;
-	long grouping;
-	long num_array_elements;
+        long start_index;
+        long end_index;
+        long granularity;
+        long separation;
+        long grouping;
+        long num_array_elements;
 } FF_ARRAY_DIM_INFO, *FF_ARRAY_DIM_INFO_PTR, **FF_ARRAY_DIM_INFO_HANDLE;
 
 #define DEFAULT_CACHE_SIZE	16384L
@@ -1570,27 +1525,29 @@ DATA_BIN_PTR db_make(char *title);
 FORMAT_DATA_PTR fd_get_header(DATA_BIN_PTR dbin, FF_TYPES_t header_type);
 FORMAT_DATA_PTR fd_get_data(DATA_BIN_PTR dbin, FF_TYPES_t data_type);
 
-void db_format_list_mark_io(FORMAT_LIST f_list, FF_TYPES_t format_type, char *input_file_name, char *output_file_name);
+void db_format_list_mark_io(FORMAT_LIST f_list, FF_TYPES_t format_type,
+        char *input_file_name, char *output_file_name);
 FORMAT_DATA_PTR fd_find_format_data(FORMAT_DATA_LIST, ...);
 FORMAT_PTR db_find_format(FORMAT_LIST, ...);
 
-int nt_ask(DATA_BIN_PTR, FF_TYPES_t origin, char *name, FF_TYPES_t value_type, void *value);
-int nt_put(DATA_BIN_PTR, FF_TYPES_t origin, char *name, FF_TYPES_t value_type, void *value);
+int nt_ask(DATA_BIN_PTR, FF_TYPES_t origin, char *name,
+        FF_TYPES_t value_type, void *value);
+int nt_put(DATA_BIN_PTR, FF_TYPES_t origin, char *name,
+        FF_TYPES_t value_type, void *value);
 BOOLEAN nt_askexist(DATA_BIN_PTR, FF_TYPES_t, char *);
-char *nt_find_user_name(DATA_BIN_PTR dbin, FF_TYPES_t origin_type, char *value_name, NAME_TABLE_HANDLE);
-char *nt_find_geovu_name(DATA_BIN_PTR dbin, FF_TYPES_t origin_type, char *geovu_name, NAME_TABLE_HANDLE);
+char *nt_find_user_name(DATA_BIN_PTR dbin, FF_TYPES_t origin_type,
+        char *value_name, NAME_TABLE_HANDLE);
+char *nt_find_geovu_name(DATA_BIN_PTR dbin, FF_TYPES_t origin_type,
+        char *geovu_name, NAME_TABLE_HANDLE);
 
-int db_init(FF_STD_ARGS_PTR, DATA_BIN_HANDLE, int (*error_cb)(int));
+int db_init(FF_STD_ARGS_PTR, DATA_BIN_HANDLE, int(*error_cb)(int));
 
 void db_destroy(DATA_BIN_PTR);
 BOOLEAN endian(void);
 
-int create_array_conduit_list
-	(
-	 FORMAT_DATA_LIST format_data_list,
-	 FF_STD_ARGS_PTR std_args,
-	 FF_ARRAY_CONDUIT_LIST_HANDLE array_conduit_list_handle
-	);
+int create_array_conduit_list(FORMAT_DATA_LIST format_data_list,
+        FF_STD_ARGS_PTR std_args,
+        FF_ARRAY_CONDUIT_LIST_HANDLE array_conduit_list_handle);
 
 char *ff_lookup_string(FFF_LOOKUP_PTR, FF_TYPES_t);
 FF_TYPES_t ff_lookup_number(FFF_LOOKUP_PTR, char *);
@@ -1600,10 +1557,14 @@ int ff_bufsize_to_textfile_append(char *, FF_BUFSIZE_PTR);
 
 int parse_command_line(int, char **, FF_STD_ARGS_PTR);
 
-int ff_put_binary_data(VARIABLE_PTR var, void *in_data_ptr, size_t in_var_length, FF_TYPES_t in_data_type, void *out_data_ptr, FF_TYPES_t out_format_type);
-int calculate_variable(VARIABLE_PTR var, FORMAT_PTR format, char *input_ptr, double *d);
+int ff_put_binary_data(VARIABLE_PTR var, void *in_data_ptr,
+        size_t in_var_length, FF_TYPES_t in_data_type, void *out_data_ptr,
+        FF_TYPES_t out_format_type);
+int calculate_variable(VARIABLE_PTR var, FORMAT_PTR format, char *input_ptr,
+        double *d);
 int ff_get_double(VARIABLE_PTR, void *, double *, FF_TYPES_t);
-int ff_binary_to_string(void *source, FF_TYPES_t data_type, int precision, char *target);
+int ff_binary_to_string(void *source, FF_TYPES_t data_type, int precision,
+        char *target);
 
 int ff_copy_variable(VARIABLE_PTR source, VARIABLE_PTR target);
 FORMAT_PTR ff_copy_format(FORMAT_PTR format);
@@ -1628,11 +1589,13 @@ FORMAT_PTR ff_find_format(FORMAT_LIST, ...);
 FORMAT_PTR ff_afm2bfm(FORMAT_PTR);
 size_t ffv_ascii_type_size(VARIABLE_PTR var);
 FORMAT_PTR ff_bfm2dfm(FORMAT_PTR format);
-int format_to_ISO8211DDR(FORMAT_PTR format, const char *first_fields, FF_BUFSIZE_HANDLE ddf);
+int format_to_ISO8211DDR(FORMAT_PTR format, const char *first_fields,
+        FF_BUFSIZE_HANDLE ddf);
 VARIABLE_PTR ff_find_variable(char *, FORMAT_PTR);
 VARIABLE_PTR ff_new_name(FORMAT_PTR, char *, char *);
 unsigned char ff_var_length(VARIABLE_PTR);
-int btype_to_btype(void *src_value, FF_TYPES_t src_type, void *dest_value, FF_TYPES_t dest_type);
+int btype_to_btype(void *src_value, FF_TYPES_t src_type, void *dest_value,
+        FF_TYPES_t dest_type);
 BOOLEAN type_cmp(FF_TYPES_t type, void *value0, void *value1);
 
 /* Other */
@@ -1643,17 +1606,14 @@ void ff_destroy_array_conduit(FF_ARRAY_CONDUIT_PTR conduit);
 void ff_destroy_array_pole(FF_ARRAY_DIPOLE_PTR pole);
 void ff_destroy_error(FF_ERROR_PTR error);
 void fd_destroy_format_data(FORMAT_DATA_PTR fd);
-FORMAT_DATA_PTR fd_create_format_data(FORMAT_PTR format, long data_size, char *name);
+FORMAT_DATA_PTR fd_create_format_data(FORMAT_PTR format, long data_size,
+        char *name);
 
 void ff_destroy_process_info_list(PROCESS_INFO_LIST);
 void ff_destroy_process_info(PROCESS_INFO_PTR);
 
-int ff_create_format_data_mapping
-	(
-	 FORMAT_DATA_PTR input,
-	 FORMAT_DATA_PTR output,
-	 FORMAT_DATA_MAPPING_HANDLE pd_h
-	);
+int ff_create_format_data_mapping(FORMAT_DATA_PTR input,
+        FORMAT_DATA_PTR output, FORMAT_DATA_MAPPING_HANDLE pd_h);
 
 void ff_destroy_format_data_mapping(FORMAT_DATA_MAPPING_PTR pd);
 
@@ -1661,37 +1621,19 @@ void ff_destroy_array_conduit_list(FF_ARRAY_CONDUIT_LIST conduit_list);
 
 int new_name_string__(const char *new_name, FF_STRING_HANDLE name_h);
 
-int make_tabular_format_array_mapping
-	(
-	 PROCESS_INFO_PTR pinfo,
-	 long num_records,
-	 long start_record,
-	 long end_record
-	);
+int make_tabular_format_array_mapping(PROCESS_INFO_PTR pinfo,
+        long num_records, long start_record, long end_record);
 
-int initialize_middle_data
-	(
-	 FORMAT_DATA_PTR input,
-	 FORMAT_DATA_PTR output,
-	 FORMAT_DATA_PTR middle
-	);
+int initialize_middle_data(FORMAT_DATA_PTR input, FORMAT_DATA_PTR output,
+        FORMAT_DATA_PTR middle);
 
 int ff_process_format_data_mapping(FORMAT_DATA_MAPPING_PTR pd);
 
-void update_format_var
-	(
-	 FF_TYPES_t data_type,
-	 FF_NDX_t bytes_per_pixel,
-	 VARIABLE_PTR var,
-	 FORMAT_PTR format
-	);
+void update_format_var(FF_TYPES_t data_type, FF_NDX_t bytes_per_pixel,
+        VARIABLE_PTR var, FORMAT_PTR format);
 
-int update_following_offsets_or_size
-	(
-	 PROCESS_INFO_PTR updater,
-	 PROCESS_INFO_LIST updater_list,
-	 long adjustment
-	);
+int update_following_offsets_or_size(PROCESS_INFO_PTR updater,
+        PROCESS_INFO_LIST updater_list, long adjustment);
 #if defined(__cplusplus)
 }
 #endif
@@ -1701,12 +1643,12 @@ int update_following_offsets_or_size
 #define MM_MISSING_DATA_FLAGS	102
 
 /* MAX_MIN prototypes */
-int		mm_free(MAX_MIN_PTR);
-double 		mm_getmx(VARIABLE_PTR);
-double 		mm_getmn(VARIABLE_PTR);
+int mm_free(MAX_MIN_PTR);
+double mm_getmx(VARIABLE_PTR);
+double mm_getmn(VARIABLE_PTR);
 int mm_make(VARIABLE_PTR);
-int 		mm_print(VARIABLE_PTR);
-int 		mm_set(VARIABLE_PTR, ...);
+int mm_print(VARIABLE_PTR);
+int mm_set(VARIABLE_PTR, ...);
 
 /* Conversion Function Prototypes */
 
@@ -1715,7 +1657,6 @@ typedef int FF_CVF(VARIABLE_PTR, double*, FORMAT_PTR, FF_DATA_BUFFER);
 /* ndarray-dbin prototype */
 
 ARRAY_DESCRIPTOR_PTR ndarr_create_from_str(DATA_BIN_PTR dbin, char *arraystr);
-
 
 FF_CVF cv_abs;
 FF_CVF cv_abs_sign_to_value;
@@ -1759,15 +1700,11 @@ int checkvar(FF_STD_ARGS_PTR std_args, FF_BUFSIZE_PTR log, FILE *to_user);
 int ff_lock(PROCESS_INFO_PTR pinfo, void **hbuffer, unsigned long *psize);
 int ff_unlock(PROCESS_INFO_PTR pinfo, void **hbuffer);
 
-FF_DATA_BUFFER ff_strnstr(char *pcPattern, FF_DATA_BUFFER pcText, size_t uTextLen);
+FF_DATA_BUFFER ff_strnstr(char *pcPattern, FF_DATA_BUFFER pcText,
+        size_t uTextLen);
 
-int get_output_delims
-	(
-	 DATA_BIN_PTR dbin,
-	 char *delim_item,
-	 short *distance,
-	 char *delim_value
-	);
+int get_output_delims(DATA_BIN_PTR dbin, char *delim_item, short *distance,
+        char *delim_value);
 
 #endif  /* (NOT) FREEFORM_H__ */
 

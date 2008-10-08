@@ -268,14 +268,7 @@ FFArray::read()
     string output_format =
       makeND_output_format(name(), var()->type(), var()->width(),
 			   ndims, start, edge, stride, dname);
-    // Why get the format file name here? Well, we could store the name of
-    // the format file with the FFByte, ..., variables (so that we would
-    // run the format_file_name() function olny once) but we did ...
-#if 0
-    string input_format_file = format_file_name(dataset());
-#else
-    string input_format_file = d_input_format_file;
-#endif
+
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data

@@ -1,130 +1,115 @@
-/* 
-   (c) COPYRIGHT URI/MIT 1997-98
-   Please read the full copyright statement in the file COPYRIGHT.
-   Authors: reza (Reza Nekovei)
-*/
+/*
+ (c) COPYRIGHT URI/MIT 1997-98
+ Please read the full copyright statement in the file COPYRIGHT.
+ Authors: reza (Reza Nekovei)
+ */
 
 #include "config_ff.h"
 
-static char rcsid[] not_used ={"$Id$"};
+static char rcsid[]not_used = {
+        "$Id$" };
 
 #include <freeform.h>
 
 #include "debug.h"
 
 /** Read from a file/database using the FreeForm API. Data values are read
-    using an input file descriptor and written using an output format 
-    description.
-    @param dataset The name of the file/database to read from
-    @param if_file The input format descriptor
-    @param o_format The output format description
-    @param o_buffer Value-result parameter for the data
-    @param bsize Size of the buffer in bytes */
-long
-read_ff(const char *dataset, const char *if_file, const char *o_format, 
+ using an input file descriptor and written using an output format
+ description.
+ @param dataset The name of the file/database to read from
+ @param if_file The input format descriptor
+ @param o_format The output format description
+ @param o_buffer Value-result parameter for the data
+ @param bsize Size of the buffer in bytes */
+long read_ff(const char *dataset, const char *if_file, const char *o_format,
         char *o_buffer, unsigned long bsize)
 {
-#if 0
-    int error = 0;
-#endif
     FF_BUFSIZE_PTR newform_log = NULL;
     FF_BUFSIZE_PTR bufsz = NULL;
     FF_STD_ARGS_PTR std_args = NULL;
-  
+
     std_args = ff_create_std_args();
     if (!std_args) {
-#if 0
-	error = ERR_MEM_LACK;
-#endif
-	goto main_exit;
+        goto main_exit;
     }
 
     /* set the std_arg structure values - cast away const for dataset, if_file,
      * and o_format.*/
     std_args->error_prompt = FALSE;
     std_args->user.is_stdin_redirected = 0;
-    std_args->input_file = (char*)(dataset);
-    std_args->input_format_file = (char*)(if_file);
+    std_args->input_file = (char*) (dataset);
+    std_args->input_format_file = (char*) (if_file);
     std_args->output_file = NULL;
-    std_args->output_format_buffer = (char*)(o_format);
-    std_args->log_file = "/dev/null"; 
+    std_args->output_format_buffer = (char*) (o_format);
+    std_args->log_file = "/dev/null";
     /* Define DBG (as per dap/debug.h) to get a log file from FreeForm. 9/8/98
-       jhrg */
-    DBG(std_args->log_file = "/tmp/ffdods.log"); 
+     jhrg */
+    DBG(std_args->log_file = "/tmp/ffdods.log");
 
-    bufsz = (FF_BUFSIZE_PTR)memMalloc(sizeof(FF_BUFSIZE), "bufsz");
+    bufsz = (FF_BUFSIZE_PTR) memMalloc(sizeof(FF_BUFSIZE), "bufsz");
     if (!bufsz) {
-#if 0
-	error = ERR_MEM_LACK;
-#endif	
         goto main_exit;
     }
-    
+
     bufsz->usage = 1;
     bufsz->buffer = o_buffer;
-    bufsz->total_bytes = (FF_BSS_t)bsize;
-    bufsz->bytes_used = (FF_BSS_t)0;
-    std_args->output_bufsize = bufsz; 
-  
+    bufsz->total_bytes = (FF_BSS_t) bsize;
+    bufsz->bytes_used = (FF_BSS_t) 0;
+    std_args->output_bufsize = bufsz;
+
     newform_log = ff_create_bufsize(SCRATCH_QUANTA);
     if (!newform_log) {
-#if 0
-	error = ERR_MEM_LACK;
-#endif
-	goto main_exit;
+        goto main_exit;
     }
-#if 0  
-    error = 
-#endif
     newform(std_args, newform_log, stderr);
 
 #ifdef TEST_LOGGING
     char log_file_write_mode[4];
     /* Is user asking for both error logging and a log file? */
-    if (std_args->error_log && newform_log)  {
-	if (strcmp(std_args->error_log, std_args->log_file))
-	    strcpy(log_file_write_mode, "w");
-	else
-	    strcpy(log_file_write_mode, "a");
-      
+    if (std_args->error_log && newform_log) {
+        if (strcmp(std_args->error_log, std_args->log_file))
+        strcpy(log_file_write_mode, "w");
+        else
+        strcpy(log_file_write_mode, "a");
+
     }
     else if (newform_log)
-	strcpy(log_file_write_mode, "w");
-    
+    strcpy(log_file_write_mode, "w");
+
     FILE *fp = NULL;
-      
+
     fp = fopen(std_args->log_file, log_file_write_mode);
     if (fp) {
-	size_t bytes_written = fwrite(newform_log->buffer, 1, 
-				      (size_t)newform_log->bytes_used, fp);
-      
-	if (bytes_written != (size_t)newform_log->bytes_used)
-	    error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s", 
-			     (int)bytes_written, 
-			     (int)newform_log->bytes_used, std_args->log_file);
-      
-	fclose(fp);
+        size_t bytes_written = fwrite(newform_log->buffer, 1,
+                (size_t)newform_log->bytes_used, fp);
+
+        if (bytes_written != (size_t)newform_log->bytes_used)
+        error = err_push(ERR_WRITE_FILE, "Wrote %d bytes of %d to %s",
+                (int)bytes_written,
+                (int)newform_log->bytes_used, std_args->log_file);
+
+        fclose(fp);
     }
     else
-	error = err_push(ERR_CREATE_FILE, std_args->log_file);
-  
+    error = err_push(ERR_CREATE_FILE, std_args->log_file);
+
     if (std_args->user.is_stdin_redirected)
-	ff_destroy_bufsize(std_args->input_bufsize);
+    ff_destroy_bufsize(std_args->input_bufsize);
 #endif /* TEST_LOGGING */
 
     ff_destroy_bufsize(newform_log);
 
- main_exit:
+    main_exit:
 
     err_disp(std_args);
 
     if (std_args)
-	ff_destroy_std_args(std_args);
-  
+        ff_destroy_std_args(std_args);
+
     return bufsz ? bufsz->bytes_used : 0;
 }
 
-#ifdef TEST 
+#ifdef TEST
 
 #define OUTPUT_FMT_STR "binary_output_data \"output\"\n\
 year 1 4 int32 0\n\
@@ -146,7 +131,7 @@ int main(int argc, char *argv[])
     strcpy(datafile, argv[1]);
 
     /* name and directory for the input format file */
-    in_format = malloc(strlen(argv[2]) + 1); 
+    in_format = malloc(strlen(argv[2]) + 1);
     strcpy(in_format, argv[2]);
 
     /* output format written in the buffer */
@@ -161,10 +146,10 @@ int main(int argc, char *argv[])
     bytes_in = read_ff(datafile, in_format, out_format, data, data_size);
 
     printf("Bytes read: %ld\n", bytes_in);
-    if (bytes_in > 0)
-        fwrite(data, 1, bytes_in, stdout);
+    if (bytes_in> 0)
+    fwrite(data, 1, bytes_in, stdout);
 
     exit(0);
 }
 
-#endif 
+#endif

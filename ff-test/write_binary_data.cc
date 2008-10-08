@@ -11,10 +11,7 @@ main(int argc, char *argv[])
     int data;
     double fdata;
     ofstream ofs2("dbl_data3.bin");
-    
-#if 0
-    for (int n = 0; n<5; ++n) {
-#endif
+
 	for (int i = 0; i<10; ++i) {
 	    for (int j = 0; j<10; ++j) {
 		data = (i+1) * (j+1);
@@ -27,7 +24,4 @@ main(int argc, char *argv[])
 		ofs2.write(&fdata, sizeof(double));
 	    }
 	}
-#if 0
-    }
-#endif
 }

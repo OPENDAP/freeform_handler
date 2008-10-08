@@ -57,11 +57,6 @@ const string makeND_output_format(const string &name, Type type,
 
 const string &format_extension(const string &new_extension = "");
 const string &format_delimiter(const string &new_delimiter = "");
-#if 0
-const string format_file_name(const string &dataset,
-				 const string &delimiter = format_delimiter(),
-				 const string &extension = format_extension());
-#endif
 
 int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
 

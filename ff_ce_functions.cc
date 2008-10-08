@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -30,7 +30,7 @@
 //      jhrg,jimg       James Gallagher (jgallagher@gso.uri.edu)
 
 // This file contains various functions for use with/in constraint
-// expressions. 
+// expressions.
 
 #include <iostream>
 #include <string>
@@ -69,24 +69,9 @@
 
     @return An instance of the class T. */
 
-template < class T, class T_Factory > 
+template < class T, class T_Factory >
 inline static T get_instance(DDS & dds)
 {
-#if 0
-    // This code break when used with the BES.
-    static T_Factory *tf = 0;
-    if (!tf) {
-        // Hack
-        string name = find_ancillary_file(dds.filename(), "das", "", "");
-        DAS das;
-        das.parse(name);
-        // end hack
-        tf = new T_Factory(dds, das);
-    }
-
-    return tf->get();
-#endif
-
     return T_Factory(dds).get();
 }
 
@@ -116,19 +101,10 @@ template < class T, class T_Factory >
         t2.set(argv[1]);
 
     T current = get_instance < T, T_Factory > (dds);
-    bool te;
-
-    if (argc == 2) {
-#if 0
-        te = ((t1 <= current) && (t2 >= current));
-#endif
+    if (argc == 2)
         return ((t1 <= current) && (t2 >= current));
-    } else {
-#if 0
-        te = (t1 == current);
-#endif
+    else
         return (t1 == current);
-    }
 }
 
 /** Compare an instance of T read from the dataset with the strings in one or
@@ -274,7 +250,7 @@ static bool func_enddate_time(int argc, BaseType * argv[], DDS & dds)
 }
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 // The date and date_time functions should now recognize decimal format years
 // and date-times. 5/30/99 jhrg
@@ -398,7 +374,7 @@ Expected zero or one arguments.");
 /*************************** Date/Time functions *************************/
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 static bool sel_dods_date_time(int argc, BaseType *[], DDS & dds)
 {
@@ -441,7 +417,7 @@ Expected zero or one arguments.");
 /*************************** Decimal/Year functions *************************/
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 static bool sel_dods_decimal_year(int argc, BaseType *[], DDS & dds)
 {
@@ -486,7 +462,7 @@ Expected zero or one arguments.");
 /*************************** Decimal/Year functions *************************/
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 static bool sel_dods_startdecimal_year(int argc, BaseType *[], DDS & dds)
 {
@@ -532,7 +508,7 @@ Expected zero or one arguments.");
 /*************************** Decimal/Year functions *************************/
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 static bool sel_dods_enddecimal_year(int argc, BaseType *[], DDS & dds)
 {
@@ -653,7 +629,7 @@ Expected zero or one arguments.");
 /*************************** StartDate/Time functions *************************/
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 static bool sel_dods_startdate_time(int argc, BaseType *[], DDS & dds)
 {
@@ -774,7 +750,7 @@ Expected zero or one arguments.");
 /*************************** EndDate/Time functions *************************/
 
 // This function is added to the selection part of the CE when the matching
-// `projection function' is run. 
+// `projection function' is run.
 
 static bool sel_dods_enddate_time(int argc, BaseType *[], DDS & dds)
 {
