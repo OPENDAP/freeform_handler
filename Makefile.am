@@ -56,7 +56,9 @@ HANDLER_HDR = ff_ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h   \
 	DODS_Decimal_Year.h DODS_EndDate_Time_Factory.h			      \
 	DODS_EndDecimal_Year_Factory.h 	DODS_StartDate_Time_Factory.h	      \
 	DODS_StartDecimal_Year_Factory.h DODS_Time_Factory.h DODS_Time.h      \
-	FreeForm.h read_ff.h util_ff.h config_ff.h
+	FreeForm.h read_ff.h util_ff.h config_ff.h DODS_EndDate_Factory.h     \
+	DODS_EndTime_Factory.h DODS_StartDate_Factory.h                       \
+	DODS_StartTime_Factory.h
 
 HANDLER_SRC = util_ff.cc ff_read.c ffdds.cc ffdas.cc		\
 	ff_ce_functions.cc date_proc.cc DODS_Date.cc		\
