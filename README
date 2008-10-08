@@ -129,7 +129,22 @@ OPeNDAP-FreeFrom's user guide.
 	} test0;
 </code>
 
-For more examples see the test files in the ff-test subdirectory.         
+4) The FreeForm library contains a useful data processing/transformation 
+library. Here's an example of how to tweak data written on a big-endian
+machine so it can be served from a little-endian one - include the following
+at the start of the format file:
+
+<code>
+input_eqv begin constant
+    data_byte_order text big_endian
+end constant 
+</code>
+
+Thanks to Denis Nadeau for this information.
+
+For more examples see the test files in the ff-test subdirectory. There is
+a manual that describes FreeForm and handler on our web page - opendap.org -
+in the User Documentation section.      
 
 --------------------------------------------------------------------------
 
