@@ -1,15 +1,15 @@
 /*
- * NAME:	readfile.c	
- *		
- * PURPOSE:	to read a binary file	
+ * NAME:	readfile.c
+ *
+ * PURPOSE:	to read a binary file
  *
  * USAGE:	C main program
  *
- * RETURNS:	
+ * RETURNS:
  *
- * DESCRIPTION:	
+ * DESCRIPTION:
  *
- * SYSTEM DEPENDENT FUNCTIONS:	
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * AUTHOR:	T. Habermann, NGDC, (303) 497 - 6472, haber@mail.ngdc.noaa.gov
  * Modified by TAM
@@ -18,7 +18,7 @@
  * COMMENTS:	This code will not work on the Mac, until reading input is
  * better dealt with.
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  * CAVEAT:
  * No claims are made as to the suitability of the accompanying
@@ -200,7 +200,7 @@ void flip_4_bytes(void *l)
 void flip_8_bytes(void *d)
 {
 	int32 t;
-	
+
 	*(int32 *)d = FLIP_4_BYTES((int32 *)d);
 	*((int32 *)d + 1) = FLIP_4_BYTES((int32 *)d + 1);
 
@@ -211,17 +211,17 @@ void flip_8_bytes(void *d)
 
 /* little endian byte order: least significant byte = low address byte
    big endian byte order:  most significant byte = low address byte
-   
+
    two byte int with a value of one (1)...
    big endian:     0x 00 01  (0x 00 00 00 01)
    little endian:  0x 01 00  (0x 01 00 00 00)
                       ^^         ^^
-                    low address byte  
+                    low address byte
 */
 BOOLEAN endian(void)
 {
 	int i = LITTLE_ENDIAN;
-	
+
 	return(*(char *)&i);
 }
 
@@ -324,23 +324,23 @@ int main(int argc, char **argv)
 		switch(option)
 		{
 			case TEXT_CODE:
-			
+
 				if (check_error(read(data_file, (char *)&double_var, sizeof(char)), sizeof(char)))
 					break;
-				
+
 				fprintf(stdout, "text: \'%c\', dec: %3d, hex: %2x, oct: %3o\n",
 				        *(char *)&double_var,
 				        *(unsigned char *)&double_var,
 				        *(unsigned char *)&double_var,
 				        *(unsigned char *)&double_var);
-			
+
 			break;
-			
+
 			case INT8_CODE:
-	
+
 				if (check_error(read(data_file, (char *)&double_var, SIZE_INT8), SIZE_INT8))
 					break;
-	
+
 				fprintf(stdout, "int8: ");
 				fprintf(stdout, fft_cnv_flags_width[FFNT_INT8], INT8_WIDTH,
 				        *((int8 *)&double_var));
@@ -351,7 +351,7 @@ int main(int argc, char **argv)
 
 				if (check_error(read(data_file, (char *)&double_var, SIZE_INT16), SIZE_INT16))
 					break;
-	
+
 				if (flip_bytes)
 				{
 					flip_2_bytes(&double_var);
@@ -379,7 +379,7 @@ int main(int argc, char **argv)
 
 				if (check_error(read(data_file, (char *)&double_var, SIZE_INT32), SIZE_INT32))
 					break;
-	
+
 				if (flip_bytes)
 				{
 					flip_4_bytes(&double_var);
@@ -409,7 +409,7 @@ int main(int argc, char **argv)
 
 				if (check_error(read(data_file, (char *)&double_var, SIZE_INT64), SIZE_INT64))
 					break;
-	
+
 				if (flip_bytes)
 				{
 					flip_8_bytes(&double_var);
@@ -439,7 +439,7 @@ int main(int argc, char **argv)
 
 				if (check_error(read(data_file,(char *)&double_var, SIZE_FLOAT32), SIZE_FLOAT32))
 					break;
-	
+
 				if (flip_bytes)
 				{
 					flip_4_bytes(&double_var);
@@ -467,7 +467,7 @@ int main(int argc, char **argv)
 
 				if (check_error(read(data_file,(char *)&double_var, SIZE_FLOAT64), SIZE_FLOAT64))
 					break;
-	
+
 				if (flip_bytes)
 				{
 					flip_8_bytes(&double_var);
@@ -492,32 +492,32 @@ int main(int argc, char **argv)
 			break;
 
 			case UINT_PREFIX: /* unsigned ... */
-	
-				/* If last option is not yet defined, prompt the user */ 
+
+				/* If last option is not yet defined, prompt the user */
 				if (last_u_option == ' ')
 				{
 					last_u_option = get_option();
 				}
-	
+
 				switch (last_u_option)
 				{
 					case INT8_CODE: /* unsigned char */
 
 						if (check_error(read(data_file, (char *)&double_var, SIZE_UINT8), SIZE_UINT8))
 							break;
-		
+
 						fprintf(stdout, "uint8: ");
 						fprintf(stdout, fft_cnv_flags_width[FFNT_UINT8], UINT8_WIDTH,
 						        *((uint8 *)&double_var));
 						fprintf(stdout, "\n");
-		
+
 					break;
-		
+
 					case INT16_CODE:
 
 						if (check_error(read(data_file, (char *)&double_var, SIZE_UINT16), SIZE_UINT16))
 							break;
-		
+
 						if (flip_bytes)
 						{
 							flip_2_bytes(&double_var);
@@ -538,14 +538,14 @@ int main(int argc, char **argv)
 							        *((uint16 *)&double_var));
 							fprintf(stdout, "\n");
 						}
-		
+
 					break;
-		
+
 					case INT32_CODE:
 
 						if (check_error(read(data_file, (char *)&double_var, SIZE_UINT32), SIZE_UINT32))
 							break;
-		
+
 						if (flip_bytes)
 						{
 							flip_4_bytes(&double_var);
@@ -566,16 +566,16 @@ int main(int argc, char **argv)
 							        *((uint32 *)&double_var));
 							fprintf(stdout, "\n");
 						}
-		
+
 					break;
-		
+
 #ifdef LONGS_ARE_64
 
 					case INT64_CODE:
 
 						if (check_error(read(data_file, (char *)&double_var, SIZE_UINT64), SIZE_UINT64))
 							break;
-		
+
 						if (flip_bytes)
 						{
 							flip_8_bytes(&double_var);
@@ -596,7 +596,7 @@ int main(int argc, char **argv)
 							        *((uint64 *)&double_var));
 							fprintf(stdout, "\n");
 						}
-		
+
 					break;
 
 #endif
@@ -606,11 +606,11 @@ int main(int argc, char **argv)
 						last_u_option = ' ';
 					break;
 				}/* end switch on unsigned types */
-	
+
 			break;
-	
+
 			case 'b': /* toggle between little-endian and big-endian */
-	
+
 				flip_bytes = (flip_bytes) ? 0 : 1;
 				if (flip_bytes)
 				{
@@ -621,15 +621,15 @@ int main(int argc, char **argv)
 					/* Say what the native byte order IS */
 					fprintf(stderr, "Displaying numbers using your machine's native byte order\n");
 				}
-	
+
 			break;
-	
+
 			case 'p': /* position file, don't show file size */
-	
+
 				if (input)
 				{
 					input = strtok(input, " ");
-	
+
 					/* Check for errors */
 					if (!input)
 					{
@@ -641,7 +641,7 @@ int main(int argc, char **argv)
 						fprintf(stderr, "Reading past end of input file.");
 						exit(1);
 					}
-	
+
 					sscanf(input, "%ld", &new_position);
 					input += strlen(input) + 1;
 				}
@@ -655,32 +655,32 @@ int main(int argc, char **argv)
 #endif
 
 				}
-	
+
 				if (new_position > data_file_length)
 				{
 					fprintf(stderr,"ERROR: Position not changed.\n");
-					fprintf(stderr,"       New position can not be beyond %ld, the size of %s.\n", data_file_length, argv[1]);
+					fprintf(stderr,"       New position cannot be beyond %ld, the size of %s.\n", data_file_length, argv[1]);
 					break;
-				}											
-	
+				}
+
 				file_position = lseek(data_file, new_position, SEEK_SET);
 				fprintf(stdout,"New File Position = %ld\n", file_position);
 				new_position = 0;
-	
+
 			break;
-	
+
 			case 'P':  /* show file position and size */
-	
+
 				file_position = lseek(data_file, 0L, SEEK_CUR);
 				fprintf(stdout,"File Position: %ld\tFile Length: %ld\n", file_position, data_file_length);
-	
+
 			break;
-	
+
 			case 'h':
 			case '?':
 				show_opt();
 			break;
-	
+
 			default:
 				fprintf(stdout,"Type 'h' or '?' to see options menu.\n");
 		} /* end switch on all types */
@@ -689,7 +689,7 @@ int main(int argc, char **argv)
 			last_u_option = ' ';
 
 	}/* end while loop */
-	
+
 	return 0;
 }/* end readfile */
 
@@ -739,7 +739,7 @@ void show_opt(void)
 	return;
 }
 
-/* This function allows input to be read from a file or the keyboard. On 
+/* This function allows input to be read from a file or the keyboard. On
 the SUN, an extra getch() must be done to capture the return - otherwise
 all options are executed twice.
 */
@@ -748,7 +748,7 @@ char get_option(void)
 	int c;
 	static int save_c;
 
-	if (input) 
+	if (input)
 		return(*(input++));
 
 	c = os_getch();
@@ -802,7 +802,7 @@ int check_error(int error, int byte_size)
 				fprintf(stderr,"END of FILE: Enter 'q' to quit or 'p' to set a new position.\n");
 			else
 				fprintf(stderr,"END of FILE REACHED.\n");
-		}    
+		}
 		return(1);
 	}
 	else

@@ -1,6 +1,6 @@
 /*
  * FILENAME:  db_set.c
- * CONTAINS:  
+ * CONTAINS:
  * Public functions:
  *
  * db_set()
@@ -62,7 +62,7 @@
 
 /*
  * NAME: db_set
- *              
+ *
  * PURPOSE: Initialize a data bin.
  *
  * USAGE: db_set(data_bin, message, ...)
@@ -87,7 +87,7 @@
  * AUTHOR:  Mark Ohrenschall, NGDC (303) 497-6124, mao@mail.ngdc.noaa.gov
  *
  * COMMENTS:
- *                                 
+ *
  * KEYWORDS:
  *
 */
@@ -99,7 +99,7 @@
 /*
  * NAME:  trim_format
  *
- * PURPOSE:  Remove all but given variables from a format  
+ * PURPOSE:  Remove all but given variables from a format
  *
  * USAGE:  error = trim_format(format, buffer);
  *
@@ -111,7 +111,7 @@
  *
  * SYSTEM DEPENDENT FUNCTIONS:
  *
- * COMMENTS:  
+ * COMMENTS:
  *
  * KEYWORDS:
  */
@@ -131,7 +131,7 @@ static int trim_format
 	VARIABLE_PTR var = NULL;
 
 	FF_VALIDATE(format);
-	
+
 	v_list = FFV_FIRST_VARIABLE(format);
 	var = FF_VARIABLE(v_list);
 	while (var)
@@ -225,30 +225,30 @@ static void make_contiguous_format(FORMAT_PTR format)
 	unsigned short i = 0;
 
 	FF_VALIDATE(format);
-  
+
    /*  if(IS_ASCII(format))buffer_char = 1;*/
-  
+
   	/* check first variable */
 	if (FF_VARIABLE(vlist)->start_pos != 1)
 	{
 		/* realign first variable */
 		new_start_pos = 1;
-		new_end_pos = new_start_pos + (FF_VARIABLE(vlist)->end_pos - 
+		new_end_pos = new_start_pos + (FF_VARIABLE(vlist)->end_pos -
 		                               FF_VARIABLE(vlist)->start_pos);
 		FF_VARIABLE(vlist)->start_pos = new_start_pos;
 		FF_VARIABLE(vlist)->end_pos = new_end_pos;
 	}
 	old_end_pos = FF_VARIABLE(vlist)->end_pos ;
-	
+
 	for (i = 1; i < format->num_vars; i++)
-	{ 
+	{
 		vlist = dll_next(vlist);
 		new_start_pos = old_end_pos + 1;
-		new_end_pos = new_start_pos + (FF_VARIABLE(vlist)->end_pos - 
+		new_end_pos = new_start_pos + (FF_VARIABLE(vlist)->end_pos -
 		                               FF_VARIABLE(vlist)->start_pos);
 		FF_VARIABLE(vlist)->start_pos = new_start_pos;
-		FF_VARIABLE(vlist)->end_pos = new_end_pos;		                              
-		old_end_pos = new_end_pos;		                               
+		FF_VARIABLE(vlist)->end_pos = new_end_pos;
+		old_end_pos = new_end_pos;
 	}
 
 	format->length = FF_VARIABLE(vlist)->end_pos;
@@ -301,7 +301,7 @@ static int ask_header_parts
 	{
 		if (!file_name)
 			return(err_push(ERR_FILE_DEFINED, IS_INPUT_TYPE(io_type) ? "Input data file" : "Output data file"));
-	
+
 		hfn_defined = FALSE;
 		os_path_put_parts(header_file_name, NULL, file_name, NULL);
 	}
@@ -310,7 +310,7 @@ static int ask_header_parts
 		hfn_defined = TRUE;
 		os_path_make_native(header_file_name, header_file_name);
 	}
-	
+
 	if (hfn_defined && os_path_return_path(header_file_name))
 	{
 		os_path_get_parts(header_file_name, header_file_path, NULL, NULL);
@@ -324,7 +324,7 @@ static int ask_header_parts
 		else
 			os_path_make_native(header_file_path, header_file_path);
 	}
-  
+
 	if (hfn_defined && os_path_return_ext(header_file_name))
 		os_path_get_parts(header_file_name, NULL, NULL, header_file_ext);
 	else
@@ -334,7 +334,7 @@ static int ask_header_parts
 		else
 			os_path_make_native(header_file_ext, header_file_ext);
 	}
-	
+
 	return(error);
 }
 
@@ -385,20 +385,20 @@ static int setup_input_header
 			/* The default bytes to read is the entire file, or maximum cache size */
 			PROCESS_INFO_LIST id_pinfo_list = NULL;
 			PROCESS_INFO_PTR id_pinfo = NULL;
-			
+
 			error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &id_pinfo_list);
 			if (error)
 				return(error);
-			
+
 			id_pinfo = FF_PI(dll_first(id_pinfo_list));
-			
+
 			bytes_to_read = (unsigned)min(FF_MAX_CACHE_SIZE, os_filelength(PINFO_FNAME(id_pinfo)));
 
 			ff_destroy_process_info_list(id_pinfo_list);
 		}
 		else
 			bytes_to_read = *(unsigned short *)temp_buf;
-					
+
 		/* This is a kludge so that READ_FORMATS can read the header,
 			so that we can parse it, so that we can know its max_length!
 		*/
@@ -407,7 +407,7 @@ static int setup_input_header
 	else if (IS_SEPARATE_TYPE(PINFO_TYPE(pinfo)))
 	{
 		assert(os_file_exist(PINFO_FNAME(pinfo)));
-					
+
 		/* This is a kludge so that READ_FORMATS can read the header,
 			so that we can parse it, so that we can know its max_length!
 		*/
@@ -433,26 +433,26 @@ static int setup_input_header
 }
 
 /*
- * NAME:        strascii        
- *              
+ * NAME:        strascii
+ *
  * PURPOSE:     To convert non-printable character to it's ASCII value. Only used in setdbin
  *
  * USAGE:       int strascii(char *ch);
- *                      *ch: pointer to the non-printable character 
+ *                      *ch: pointer to the non-printable character
  *
  * RETURNS:     ASCII code of the character
  *
- * DESCRIPTION: 
+ * DESCRIPTION:
  *
- * SYSTEM DEPENDENT FUNCTIONS:  
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:     
+ * GLOBALS:
  *
  * AUTHOR:      Liping Di 303-497-6284  lpd@mail.ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
 
@@ -470,20 +470,20 @@ static char *strascii(char *ch)
 	{
 		case 'n':
 			return("\n");
-	
+
 		case 't':
 			return("\t");
-	
+
 		case '0':
 			return("");
-			
+
 		case 'r':
 			return("\r");
-	
+
 		default:
 			return(ch);
 	}
-}       
+}
 
 /*****************************************************************************
  * NAME:
@@ -522,7 +522,7 @@ static BOOLEAN text_delim_offset
 	)
 {
 	size_t delim_offset;
-	
+
 	delim_offset = strcspn(text, delim);
 	*offset = 0;
 	while ((isprint((int)text[*offset]) || isspace((int)text[*offset])) &&
@@ -537,7 +537,7 @@ static BOOLEAN text_delim_offset
 
 /*
  * NAME:                alphanum_type
- *              
+ *
  * PURPOSE:     To parse a string to determine whether or not it is a
  *              numerical string.
  *
@@ -554,7 +554,7 @@ static BOOLEAN text_delim_offset
  *
  * AUTHOR:      Liping Di, NGDC, (303) 497 - 6284, lpd@mail.ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
  * KEYWORDS:    utility
  *
@@ -606,7 +606,7 @@ static FF_TYPES_t alphanum_type
 		{
 			case '+':
 			case '-':
-	
+
 				if (status == INITIAL)
 					status = SIGN;
 				else if (status == ENOTATION)
@@ -614,25 +614,25 @@ static FF_TYPES_t alphanum_type
 				else
 					return(FFV_TEXT);
 			break;
-				
+
 			case 'E':
 			case 'e':
-			
+
 				if (status == INTEGER || status == FLOAT)
 					status = ENOTATION;
 				else
 					return(FFV_TEXT);
 			break;
-	
+
 			case '.':
 				if (status == INITIAL || status == SIGN)
 					status = DECIMAL;
 				else if (status == INTEGER)
 					status = FLOAT;
-				else 
+				else
 					return(FFV_TEXT);
 			break;
-	
+
 			default:
 				if (isdigit((int)header[start - 1]))
 				{
@@ -655,7 +655,7 @@ static FF_TYPES_t alphanum_type
 						status = END_FLOAT;
 					else if (status == DECIMAL_E || status == END_E)
 						status = END_E;
-					else 
+					else
 						return(FFV_TEXT);
 				}
 				else
@@ -711,27 +711,27 @@ static void set_var_typeprec
 {
 	FF_TYPES_t type = 0;
 	short precision = 0;
-	
+
 	type = alphanum_type(header, var->start_pos, var->end_pos);
 	switch (type)
 	{
 		size_t v_shift;
-		
+
 		case FFV_TEXT:
 			precision = 0;
 		break;
-        	
+
 		case FFV_INT32:
 			precision = 0;
 		break;
-        	
+
 		case FFV_FLOAT64:
-			
+
 			text_delim_offset(header + var->start_pos - 1, ".", &v_shift);
 			if (v_shift + (size_t)var->start_pos < (size_t)var->end_pos)
 			{ /* count trailing characters after decimal point */
 				precision = (short)(var->end_pos - var->start_pos - v_shift);
-														
+
 				assert(precision >= 0);
 				assert((unsigned)precision < var->end_pos - var->start_pos + 1);
 			}
@@ -739,9 +739,9 @@ static void set_var_typeprec
 				precision = 0;
 
 		break;
-        	
+
 		case FFV_ENOTE:
-						
+
 			text_delim_offset(header + var->start_pos - 1, ".", &v_shift);
 			if (v_shift + (size_t)var->start_pos < (size_t)var->end_pos)
 			{ /* count trailing characters after decimal point */
@@ -753,7 +753,7 @@ static void set_var_typeprec
 					them off, including the 'E' or 'e' */
 					precision = (short)(precision - ((size_t)var->end_pos - (size_t)var->start_pos - v_shift + (size_t)1));
 				}
-														
+
 				assert(precision >= 0);
 				assert((unsigned)precision < var->end_pos - var->start_pos + 1);
 			}
@@ -761,7 +761,7 @@ static void set_var_typeprec
 				precision = 0;
 
 		break;
-        	
+
 		default:
 			err_push(ERR_SWITCH_DEFAULT, "%ld, %s:%d", (long int)type, os_path_return_name(__FILE__), __LINE__);
 		break;
@@ -884,7 +884,7 @@ static int create_fully_dynamic_header_format
 		var->start_pos = start + 1;
 		var->end_pos = end + 1;
 		var->type = FFV_CONSTANT | FFV_INTERNAL | FFV_PARAM_NAME;
-		
+
 		if (!header_text[var->end_pos - 1])
 			--var->end_pos;
 
@@ -919,7 +919,7 @@ static int create_fully_dynamic_header_format
 			var->start_pos = start + 1;
 			var->end_pos = end + 1;
 			var->type = FFV_CONSTANT | FFV_INTERNAL | FFV_DELIM_VALUE;
-			
+
 			if (!header_text[var->end_pos - 1])
 				--var->end_pos;
 
@@ -1017,7 +1017,7 @@ static int create_fully_dynamic_header_format
 
 /*
  * NAME:  set_var_info
- *              
+ *
  * PURPOSE:  Set variable attributes for a dynamically generated format
  *
  * USAGE:  error = set_var_info(header, item_name, value_terminator, name_terminator,
@@ -1049,15 +1049,15 @@ static int create_fully_dynamic_header_format
  * and the variable start and end positions are set according to item_value's
  * position.
  *
- * SYSTEM DEPENDENT FUNCTIONS:  
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * GLOBALS:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
 
@@ -1080,13 +1080,13 @@ static int set_var_info
 
 	BOOLEAN offset_found = FALSE;
 	size_t offset = 0;
-	
+
 	unsigned long item_name_pos = 0;
 	size_t start_pos = 0;
 	size_t end_pos = 0;
-	
+
 	char *pname = NULL;
-	
+
 	assert(header);
 
 	if (*hvar == NULL)
@@ -1095,7 +1095,7 @@ static int set_var_info
 		if (*hvar == NULL)
 			return(err_push(ERR_MEM_LACK, NULL));
 	}
-  
+
 	if (item_name)
 	{
 		pname = strstr(header, item_name);
@@ -1120,7 +1120,7 @@ static int set_var_info
 	}
 	else
 		pname = header;
-						
+
 	if (name_dist || item_name_pos)
 	{
 		if (!item_name_pos)
@@ -1178,7 +1178,7 @@ static int set_var_info
 		else if (!offset_found || name_terminator_str[0] == STR_END)
 		{ /* string does not contain name_terminator, or name_terminator is NULL */
 			start_pos = 0;
-			
+
 			if (!item_name)
 			{
 				error = new_name_string__("no name", &(*hvar)->name);
@@ -1189,7 +1189,7 @@ static int set_var_info
 		else
 		{
 			assert(pname[start_pos] == name_terminator_str[0]);
-				
+
 			/* Next clause to allow a "cumulative" effect */
 			if (item_name_pos)
 			{
@@ -1210,17 +1210,17 @@ static int set_var_info
 
 				strncpy((*hvar)->name, pname, start_pos - 1);
 				(*hvar)->name[start_pos - 1] = STR_END;
-			
+
 				os_str_trim_whitespace((*hvar)->name, (*hvar)->name);
 			}
-				
+
 			start_pos += strspn(pname + start_pos, name_terminator_str);
 		}
 	} /* (else) if (name_dist || item_name_pos) */
-	
+
 	/* skip leading whitespace */
 	start_pos += strspn(header + start_pos, WHITESPACE);
-			
+
 	/* "normalize" start_pos so as to start counting from one */
 	start_pos += 1;
 
@@ -1259,10 +1259,10 @@ static int set_var_info
 
 	return(0);
 }
-	
+
 /*
  * NAME:                header_to_format
- *              
+ *
  * PURPOSE:     To make a FREEFORMAT list(actually the position) from
  *                      header contents
  *
@@ -1273,21 +1273,21 @@ static int set_var_info
  * DESCRIPTION: This function is used to prepare header format for
  * variable-length variable-position header which usually
  * has formats: variable-name delim_value variable-value delim_item, or
- * variable-name variable-value delim_item where the distance between 
+ * variable-name variable-value delim_item where the distance between
  * variable-name and variable-value is name_dist, or variable-value delim_item.
- * The function selects format according to the passed arguments. The 
+ * The function selects format according to the passed arguments. The
  * delim_item must be none-NULL character. If delim_value is NULL (STR_END)
- * and name_dist is not equal to zero, it is second format. if both delim_value== STR_END, 
- * and name_dist==0, the third format. 
- *                              
- * For the first two cases, if the fisrt variable name in the 
+ * and name_dist is not equal to zero, it is second format. if both delim_value== STR_END,
+ * and name_dist==0, the third format.
+ *
+ * For the first two cases, if the fisrt variable name in the
  * format is "create_format_from_data_file", this function will
  * create the format according to the data in the header.
  *
  * ERRORS:
  * Out of memory,"format->variables"
  * Out of memory,"var->next"
- * Out of memory,"can not create dll node"
+ * Out of memory,"cannot create dll node"
  *
  * SYSTEM DEPENDENT FUNCTIONS:  none
  *
@@ -1295,7 +1295,7 @@ static int set_var_info
  *
  * AUTHOR:      Liping Di, NGDC, (303) 497 - 6284, lpd@mail.ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
  * KEYWORDS:    variable-length header, format
  *
@@ -1323,7 +1323,7 @@ static int header_to_format
 	FF_VALIDATE(format);
 	assert(header);
 	assert(value_terminator);
-		
+
 	l_offset = 0;
 	format->length = 0;
 	format->num_vars = 0;
@@ -1353,7 +1353,7 @@ static int header_to_format
 		while (var != NULL)
 		{
 			size_t offset = 0;
-			
+
 			error = set_var_info(header + l_offset, var->name, value_terminator, name_terminator, name_dist, &var);
 			if (!error)
 			{
@@ -1364,7 +1364,7 @@ static int header_to_format
 				format->length = max(format->length, var->end_pos);
 				++format->num_vars;
 			}
-			
+
 			if (!strcmp(name_terminator, "") && name_dist == 0)
 			{ /* item_names are not in header */
 				if (text_delim_offset(header + l_offset, value_terminator, &offset))
@@ -1483,7 +1483,7 @@ static int check_dynamic_output_header_format
 
 /*
  * NAME:        get_buffer_eol_str
- *              
+ *
  * PURPOSE:     to determine the EOL sequence for a given buffer
  *
  * USAGE:       int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
@@ -1492,7 +1492,7 @@ static int check_dynamic_output_header_format
  *
  * DESCRIPTION: Determines the EOL sequence for a given file.  If no EOL
  *				sequence is observed, buffer_eol_str is simply set to '\0';
- *				otherwise the first characters of buffer_eol_str are set to 
+ *				otherwise the first characters of buffer_eol_str are set to
  *				the EOL sequence (buffer_eol_str must be at least 3 bytes)
  *
  * SYSTEM DEPENDENT FUNCTIONS:  none- completely portable
@@ -1500,7 +1500,7 @@ static int check_dynamic_output_header_format
  * AUTHOR:      Kevin Frender kbf@ngdc.noaa.gov
  *
  * COMMENTS:
- *          
+ *
  * KEYWORDS: EOL
  *
  */
@@ -1511,11 +1511,11 @@ static int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
 {
 	enum {GBEOLS_EOL_LF = 10, GBEOLS_EOL_CR = 13};
 	char *c;
-	
+
 	assert(buffer && buffer_eol_str);
-	
+
 	c = buffer;
-	
+
 	while(c[0])
 	{
 		if(c[0] == GBEOLS_EOL_LF)
@@ -1523,7 +1523,7 @@ static int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
 			/* Must be a unix file */
 			buffer_eol_str[0] = (char)GBEOLS_EOL_LF;
 			buffer_eol_str[1] = '\0';
-			
+
 			return(0);
 		}
 		else if(c[0] == GBEOLS_EOL_CR)
@@ -1536,20 +1536,20 @@ static int get_buffer_eol_str(char *buffer, char *buffer_eol_str)
 				buffer_eol_str[0] = (char)GBEOLS_EOL_CR;
 				buffer_eol_str[1] = (char)GBEOLS_EOL_LF;
 				buffer_eol_str[2] = '\0';
-			
+
 				return(0);
 			}
 
 			/* Must be a MAC file */
 			buffer_eol_str[0] = (char)GBEOLS_EOL_CR;
 			buffer_eol_str[1] = '\0';
-		
+
 			return(0);
 		}
 
 		c++;
 	}
-	
+
 	/* Couldn't find any EOL chars */
 	buffer_eol_str[0] = '\0';
 	return(0);
@@ -1638,7 +1638,7 @@ static int finishup_input_header
 	char delim_value[MAX_PV_LENGTH];
 	int error = 0;
 	short distance;
-	
+
 	/* make variable length, variable position header format, need to be modified */
 	/* get the delimiter 1, delimiter 2 and/or distance */
 	error = nt_ask(dbin, FFF_INPUT | NT_TABLE, "delimiter_item", FFV_CHAR, delim_item);
@@ -1712,14 +1712,14 @@ static int finishup_input_header
 				return error;
 		}
 	}
-				
+
 	if (IS_EMBEDDED_TYPE(PINFO_TYPE(pinfo)))
 	{
 		error = ff_resize_bufsize(PINFO_RECL(pinfo) + 1, &PINFO_DATA(pinfo));
 		if (error)
 			return(error);
 	}
-	
+
 	return(0);
 }
 
@@ -1765,7 +1765,7 @@ static int check_file_exists
 {
 
 	char trial_fname[MAX_PATH];
-	
+
 	(void)os_path_put_parts(trial_fname, search_dir, filebase, ext);
 	if (os_file_exist(trial_fname))
 	{
@@ -1795,12 +1795,12 @@ static int check_hidden_file_exists
 	)
 {
 	char trial_fname[MAX_PATH];
-	
+
 	if ((search_dir) && (*search_dir != '\0')) {
 	  strcpy(trial_fname, search_dir);
 	  strcat(trial_fname, "/.");
 	}
-	else 
+	else
 	  strcpy(trial_fname, ".");
 
 	strcat(trial_fname, filebase);
@@ -1821,7 +1821,7 @@ static int check_hidden_file_exists
 }
 
 /* NAME:        find_files
- *              
+ *
  * PURPOSE:     Search multiple directories for files matching the supplied
  *              file name and extension.
  *
@@ -1839,7 +1839,7 @@ static int check_hidden_file_exists
  * component of file_base (i.e., not including the path component of file_base)
  * and the given extension ext and then for files with the file extension
  * component of file_base and the given extenstion ext.
- * 
+ *
  * In other words,
  * perform the following searches, where filename(file_base) is the file name
  * component of file_base, fileext(file_base) is the file extension component
@@ -1865,15 +1865,15 @@ static int check_hidden_file_exists
  *
  * ERRORS:
  *
- * SYSTEM DEPENDENT FUNCTIONS:  
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * GLOBALS:
  *
  * AUTHOR:	Mark A. Ohrenschall, (303) 497-6124, mao@ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
 
@@ -1902,7 +1902,7 @@ static int find_files
 
 	assert(file_base);
 	assert(FF_STRLEN(file_base));
-	
+
 	if (file_base == NULL || FF_STRLEN(file_base) == 0)
 		return(0);
 
@@ -1915,7 +1915,7 @@ static int find_files
 	os_path_get_parts(file_base, home_dir, filename, NULL);
 	if (FF_STRLEN(filename) == 0)
 		return(0);
-	
+
 	/* If first_dir is relative, check for filename.ext in directory given by
 	   first_dir relative to home_dir, else if first_dir is absolute,
 		just look for filename.ext in first_dir
@@ -1939,7 +1939,7 @@ static int find_files
 				++num_found;
 		}
 	}
-	
+
 	/* Check for filename's extension.ext in first_dir */
 	if (fileext && first_dir &&
 	    check_file_exists(&filenames[num_found], first_dir, fileext, ext))
@@ -1953,7 +1953,7 @@ static int find_files
 	if (fileext &&
 	    check_file_exists(&filenames[num_found], NULL, fileext, ext))
 		++num_found;
-	
+
 	/* Check for file_base.ext in data home directory */
 	if (home_dir &&
 	    check_file_exists(&filenames[num_found], home_dir, filename, ext))
@@ -1963,7 +1963,7 @@ static int find_files
 	if (fileext && home_dir &&
 	    check_file_exists(&filenames[num_found], home_dir, fileext, ext))
 		++num_found;
-	
+
 	if (num_found)
 	{
 		*targets = (char **)memMalloc(num_found * sizeof(char *), "*targets");
@@ -1974,7 +1974,7 @@ static int find_files
 		}
 		memMemcpy((char *)*targets, (char *)filenames, num_found * sizeof(char *), "*targets, filenames");
 	}
-	
+
 	return(num_found);
 }
 
@@ -1989,11 +1989,11 @@ static int find_files
  * RETURNS:  0, 1 -- 0: no files found, 1: filename.fmt,
  * or ext.fmt found
  *
- * DESCRIPTION:  First looks in the supplied directory for 
+ * DESCRIPTION:  First looks in the supplied directory for
  * filename.<extension>, then for ext.<extension>. Each successive search
  * proceeds only if the previous search failed.  See the DESCRIPTION for
  * find_format_files() for more information.
- * 
+ *
  * Added `extension' so that this function can be used to search for other
  * format-like files (i.e., DODS anicallry attribute files). 8/27/99 jhrg
  *
@@ -2037,10 +2037,10 @@ static int find_dir_format_files
 				      extension);
 	if (num_found == 1)
 		return(1);
-	
+
 	/* Search search_dir for <.>datafile.fmt */
 	if (num_found == 0) {
-	  num_found = check_hidden_file_exists(&(targets[0]), search_dir, 
+	  num_found = check_hidden_file_exists(&(targets[0]), search_dir,
 					       filename, extension);
 	}
 	if (num_found == 1)
@@ -2048,7 +2048,7 @@ static int find_dir_format_files
 
 	/* Search search_dir for ext.fmt */
 	if (num_found == 0 && fileext)
-		num_found = check_file_exists(&(targets[0]), search_dir, 
+		num_found = check_file_exists(&(targets[0]), search_dir,
 					      fileext, extension);
 	else num_found = check_file_exists(&(targets[0]), filepath,
 					   filename, extension);
@@ -2058,14 +2058,14 @@ static int find_dir_format_files
 
 	/* Search search_dir for <.>ext.fmt */
 	if (num_found == 0) {
-	  num_found = check_hidden_file_exists(&(targets[0]), search_dir, 
+	  num_found = check_hidden_file_exists(&(targets[0]), search_dir,
 					       fileext, extension);
 	}
 	return(num_found);
 }
 
 /* NAME:        find_format_files
- *              
+ *
  * PURPOSE:     To search for format files given a (data) file name.
  *
  * USAGE: number = find_format_files(dbin, dbin->file_name, &targets);
@@ -2116,14 +2116,14 @@ static int find_dir_format_files
  * Modifies to use the new version of find_dir_format_files. The function of
  * this software is exactly the same. For a DODS version, see the following
  * function. 8/27/99 jhrg
- * 
- * SYSTEM DEPENDENT FUNCTIONS:  
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * AUTHOR:  Mark A. Ohrenschall, NGDC, (303) 497 - 6124, mao@ngdc.noaa.gov
  *
  * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
 
@@ -2146,13 +2146,13 @@ int find_format_files
 	char *parent_dir_ptr = &parent_dir[0];
 	char *format_files[NUM_FMT_FILES] = {NULL, NULL};
 	int num_found;
-	
+
 	assert(input_file);
 	assert(targets);
-	
+
 	if (!input_file || !targets)
 		return(0);
-	
+
 	*targets = (char **)memCalloc(NUM_FMT_FILES, sizeof(char *), "*targets");
 	if (!*targets)
 	{
@@ -2162,18 +2162,18 @@ int find_format_files
 
 	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
 		format_dir[0] = STR_END;
-	
+
 	os_path_get_parts(input_file, home_dir, NULL, NULL);
 
 	/* Search format_dir first */
-	num_found = find_dir_format_files(input_file, format_dir, ".fmt", 
+	num_found = find_dir_format_files(input_file, format_dir, ".fmt",
 					  format_files);
 
 	/* Search default directory second */
 	if (num_found == 0)
-		num_found = find_dir_format_files(input_file, NULL, ".fmt", 
+		num_found = find_dir_format_files(input_file, NULL, ".fmt",
 						  format_files);
-		
+
 	/* Search data file's directory last */
 	if (FF_STRLEN(home_dir) && num_found == 0)
 		num_found = find_dir_format_files(input_file, home_dir,
@@ -2185,7 +2185,7 @@ int find_format_files
 	   searching first for the ext.<extension>, and then
 	   for hidden format files .ext.<extension> */
 
-	while ((FF_STRLEN(parent_dir) && num_found == 0)) 
+	while ((FF_STRLEN(parent_dir) && num_found == 0))
 	  {
 	    /* Search parent_dir first */
 	    num_found = find_dir_format_files(input_file, parent_dir, ".fmt",
@@ -2207,7 +2207,7 @@ int find_format_files
 }
 
 /* NAME:        dods_find_format_compressed_files
- *              
+ *
  * PURPOSE:     To search for format files given a
  *              compressed (data) file name.
  *
@@ -2262,14 +2262,14 @@ int find_format_files
  * Modifies to use the new version of find_dir_format_files. The function of
  * this software is exactly the same. For a DODS version, see the following
  * function. 8/27/99 jhrg
- * 
- * SYSTEM DEPENDENT FUNCTIONS:  
+ *
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * AUTHOR: Dan Holloway
  *
  * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
 
@@ -2296,10 +2296,10 @@ int dods_find_format_compressed_files
 
 	assert(input_file);
 	assert(targets);
-	
+
 	if (!input_file || !targets)
 		return(0);
-	
+
 	strcpy(uncompressed_filename, input_file);
 	temp_cp = uncompressed_filename;
 
@@ -2333,19 +2333,19 @@ int dods_find_format_compressed_files
 
 	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
 		format_dir[0] = STR_END;
-	
+
 	/*os_path_get_parts(input_file, home_dir, NULL, NULL);*/
 	os_path_get_parts(temp_cp, home_dir, NULL, NULL);
 
 	/* Search format_dir first */
-	num_found = find_dir_format_files(temp_cp, format_dir, ".fmt", 
+	num_found = find_dir_format_files(temp_cp, format_dir, ".fmt",
 					  format_files);
 
 	/* Search default directory second */
 	if (num_found == 0)
-		num_found = find_dir_format_files(temp_cp, NULL, ".fmt", 
+		num_found = find_dir_format_files(temp_cp, NULL, ".fmt",
 						  format_files);
-		
+
 	/* Search data file's directory last */
 	if (FF_STRLEN(home_dir) && num_found == 0)
 		num_found = find_dir_format_files(temp_cp, home_dir,
@@ -2357,7 +2357,7 @@ int dods_find_format_compressed_files
 	   searching first for the ext.<extension>, and then
 	   for hidden format files .ext.<extension> */
 
-	while ((FF_STRLEN(parent_dir) && num_found == 0)) 
+	while ((FF_STRLEN(parent_dir) && num_found == 0))
 	  {
 	    /* Search parent_dir first */
 	    num_found = find_dir_format_files(temp_cp, parent_dir, ".fmt",
@@ -2404,13 +2404,13 @@ int dods_find_format_files
 	char *parent_dir_ptr = &parent_dir[0];
 	char *format_files[NUM_FMT_FILES] = {NULL, NULL};
 	int num_found;
-	
+
 	assert(input_file);
 	assert(targets);
-	
+
 	if (!input_file || !targets)
 		return(0);
-	
+
 	*targets = (char **)memCalloc(NUM_FMT_FILES, sizeof(char *), "*targets");
 	if (!*targets)
 	{
@@ -2420,7 +2420,7 @@ int dods_find_format_files
 
 	if (nt_ask(dbin, FFF_INPUT | NT_TABLE, "format_dir", FFV_CHAR, format_dir))
 		format_dir[0] = STR_END;
-	
+
 	os_path_get_parts(input_file, home_dir, NULL, NULL);
 
 	/* Search format_dir first */
@@ -2431,10 +2431,10 @@ int dods_find_format_files
 	if (num_found == 0)
 		num_found = find_dir_format_files(input_file, NULL,
 						  extension, format_files);
-		
+
 	/* Search data file's directory last */
 	if (FF_STRLEN(home_dir) && num_found == 0)
-		num_found = find_dir_format_files(input_file, home_dir, 
+		num_found = find_dir_format_files(input_file, home_dir,
 						  extension, format_files);
 
 	if (num_found == 0)
@@ -2444,7 +2444,7 @@ int dods_find_format_files
 	   searching first for the ext.<extension>, and then
 	   for hidden format files .ext.<extension> */
 
-	while ((FF_STRLEN(parent_dir) && num_found == 0)) 
+	while ((FF_STRLEN(parent_dir) && num_found == 0))
 	  {
 	    /* Search parent_dir first */
 	    num_found = find_dir_format_files(input_file, parent_dir, extension,
@@ -2513,7 +2513,7 @@ static int find_initialization_files
 
 	v_list = FFV_FIRST_VARIABLE(format);
 	var = FF_VARIABLE(v_list);
-	
+
 	while (var)
 	{
 		if (IS_INITIAL(var))
@@ -2529,9 +2529,9 @@ static int find_initialization_files
 				char *ext          = NULL;
 				char **found_files = NULL;
 				char dfname[MAX_PATH];
-				
+
 				int number;
-				
+
 				if (input_data_file_name)
 				{
 					os_path_get_parts(input_data_file_name, dfname, NULL, NULL);
@@ -2546,33 +2546,33 @@ static int find_initialization_files
 					strcpy(dfname, ".");
 					ext = NULL;
 				}
-				
+
 				number = find_files(dfname, ext, format_dir, &found_files);
 				if (number)
 				{
 					int i;
-					
+
 
 					var->name = found_files[0];
 					for (i = 1; i < number; i++)
 						memFree(found_files[i], "found_files[i]");
-					
+
 					memFree(found_files, "found_files");
 				}
 			} /* (else) if initialization file name (variable name) has a path */
 		} /* if initialization variable */
-		
+
 		v_list = FFV_NEXT_VARIABLE(v_list);
 		var = FF_VARIABLE(v_list);
   } /* while var */
-  
+
 	return(0);
 }
 
 static void destroy_format_list(FORMAT_LIST f_list)
 {
 	dll_free_holdings(f_list);
-} 
+}
 
 /*****************************************************************************
  * NAME:
@@ -2617,7 +2617,7 @@ static int make_format_eqv_list
 	int number;
 	char **found_files;
 	int error = 0;
-	
+
 	*hf_list = NULL;
 	number = 0; /* to hold return value of db_find_format_file() */
 
@@ -2637,12 +2637,12 @@ static int make_format_eqv_list
 			}
 		}
 	} /* if no file name and no buffer */
-			
+
 	if (fmt_fname || format_buffer)
 	{
 		PP_OBJECT pp_object;
 		FF_BUFSIZE_PTR bufsize = NULL;
-		
+
 		if (fmt_fname)
 		{
 			error = ff_file_to_bufsize(fmt_fname, &bufsize);
@@ -2661,7 +2661,7 @@ static int make_format_eqv_list
 
 		pp_object.ppo_type = PPO_FORMAT_LIST;
 		pp_object.u.hf_list = hf_list;
-		
+
 		error = ff_text_pre_parser(fmt_fname, bufsize, &pp_object);
 		if (error)
 		{
@@ -2676,7 +2676,7 @@ static int make_format_eqv_list
 			pp_object.ppo_type = PPO_NT_LIST;
 			pp_object.u.nt_list.nt_io_type = fff_iotype;
 			pp_object.u.nt_list.hnt_list = hnt_list;
-				
+
 			error = ff_text_pre_parser(fmt_fname, bufsize, &pp_object);
 			if (error == ERR_NO_NAME_TABLE)
 				error = 0;
@@ -2689,11 +2689,11 @@ static int make_format_eqv_list
 				}
 			}
 		}
-		
+
 		if (number)
 		{
 			int i;
-			
+
 			for (i = 0; i < number; i++)
 				memFree(found_files[i], "found_files[i]");
 			memFree(found_files, "found_files");
@@ -2701,7 +2701,7 @@ static int make_format_eqv_list
 
 		ff_destroy_bufsize(bufsize);
 	} /* if (fmt_fname || format_buffer) */
-			
+
 	if (error)
 		return(error);
 	else if (!*hf_list)
@@ -2753,7 +2753,7 @@ static void extract_format
 
 		f_list = dll_next(f_list);
 	}
-	
+
 	if (FF_FORMAT(f_list))
 		dll_delete_node(f_list);
 }
@@ -2825,7 +2825,7 @@ static int make_format_data
 		else
 			return(ERR_GENERAL);
 	} /* else if title_specified */
-				
+
 	*hformat_data = fd_create_format_data(format, format->length + 1 + (IS_ASCII(format) ? NATIVE_EOL_LENGTH : 0), format->name);
 	if (*hformat_data)
 		return(0);
@@ -2942,7 +2942,7 @@ static int collect_record_formats
  *
  * CHANGES IN STATE:	ALLOCATES MEMORY FOR CACHE
  *
- * DESCRIPTION: 
+ * DESCRIPTION:
  *
  * ERRORS:	Lack of Memory:
  *
@@ -2950,14 +2950,14 @@ static int collect_record_formats
  *
  * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
-#define ROUTINE_NAME "dbset_cache_size"  
+#define ROUTINE_NAME "dbset_cache_size"
 
 static int dbset_cache_size
 	(
@@ -2967,7 +2967,7 @@ static int dbset_cache_size
 {
 	PROCESS_INFO_LIST pinfo_list = NULL;
 	long count  = 1L;
-	
+
 	int error = 0;
 
 	FF_VALIDATE(dbin);
@@ -3007,7 +3007,7 @@ static int dbset_cache_size
 						cache_size = max(PINFO_BYTES_LEFT(pinfo), out_fsize);
 				}
 			}
-			
+
 			count = cache_size / record_length;
 			cache_size = (count * FORMAT_LENGTH(PINFO_FORMAT(pinfo)));
 
@@ -3039,7 +3039,7 @@ static int dbset_cache_size
 
 		ff_destroy_process_info_list(pinfo_list);
 	} /* if !error */
-	
+
 	return(error);
 }
 
@@ -3085,17 +3085,17 @@ static int dbset_cache_size
  *
  * AUTHOR:      TH, NGDC,(303)497-6472, haber@ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
-		 
+
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
 #define ROUTINE_NAME "dbset_header_file_names"
-		 
+
 static int dbset_header_file_names
 	(
 	 DATA_BIN_PTR dbin,
@@ -3110,7 +3110,7 @@ static int dbset_header_file_names
 	char header_file_path[MAX_PATH];
 	char header_file_ext[MAX_PATH];
 	int error = 0;
-		
+
 	FF_VALIDATE(dbin);
 
 	error = db_ask(dbin, DBASK_PROCESS_INFO, io_type | FFF_HEADER, &pinfo_list);
@@ -3118,7 +3118,7 @@ static int dbset_header_file_names
 		return(0);
 	else if (error)
 		return(error);
-	
+
 	pinfo_list = dll_first(pinfo_list);
 	pinfo      = FF_PI(pinfo_list);
 	while (pinfo)
@@ -3146,9 +3146,9 @@ static int dbset_header_file_names
 		{
 			int number = 0;
 			char **found_files = NULL;
-				
+
 			number = 0; /* number of default files found */
-			
+
 			number = find_files(header_file_name, header_file_ext, header_file_path, &found_files);
 			if (number)
 			{
@@ -3176,7 +3176,7 @@ static int dbset_header_file_names
 							  header_file_name,
 							  header_file_ext
 							 );
-				
+
 			if (PINFO_IS_FILE(pinfo) && PINFO_FNAME(pinfo))
 				memFree(PINFO_FNAME(pinfo), "PINFO_FNAME(pinfo)");
 
@@ -3230,7 +3230,7 @@ static int dbset_header_file_names
  * PRECONDITIONS:       None
  *
  * CHANGES IN STATE:    Checks for delimited fields in header.
- *		                Sets dbin->cache_bytes_left = 0 if a record header        
+ *		                Sets dbin->cache_bytes_left = 0 if a record header
  *		                Sets dbin->state.header_defined = 1
  *		                Sets dbin->state.header_delimited = 1
  *
@@ -3276,9 +3276,9 @@ static int dbset_header_file_names
  * COMMENTS:    This call will become vestigial when the memory
  *				management moves into the bin library.
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
- */                 		 
+ */
 /*
  * HISTORY:
  *	Rich Fozzard	9/26/95		-rf01
@@ -3324,7 +3324,7 @@ static int dbset_headers(DATA_BIN_PTR dbin)
 
 	if (!error)
 		error = db_set(dbin, DBSET_INIT_CONDUITS, FFF_FILE | FFF_HEADER, 0);
-	
+
 	if (error)
 	{
 		if (pinfo_list)
@@ -3506,15 +3506,15 @@ static int dbset_headers(DATA_BIN_PTR dbin)
 * description block, but as the desired format title (assuming that more
 * than one format description in the located format file is eligible).
 *
-* If file_name is set to FORMAT_BUFFER_IS_A_TITLE 
+* If file_name is set to FORMAT_BUFFER_IS_A_TITLE
 * then a search for a defaulting format file ensues, with the contents
 * of format_buffer taken as the desired format title.
 *
  * PRECONDITIONS: dbin->file_name must be defined for default searches
  *
- * CHANGES IN STATE: 
- *                
- * DESCRIPTION: 
+ * CHANGES IN STATE:
+ *
+ * DESCRIPTION:
  *
  * If file_name is NULL and format_buffer is not, then format_buffer is
  * assumed to contain a format description block (i.e., the contents of
@@ -3551,7 +3551,7 @@ static int dbset_headers(DATA_BIN_PTR dbin)
  * is assumed to be the name of a format file (.fmt).  The format is added into
  * dbin->format_list and assigned to dbin->input_format.  If a .fmt file,
  * then the contents are used to create a temporary format list.
- * 
+ *
  * If both file_name and format_buffer are NULL then the GeoVu menu file
  * is searched.  See the DESCRIPTION for dbs_search_menu_formats() for
  * more information.
@@ -3574,7 +3574,7 @@ static int dbset_headers(DATA_BIN_PTR dbin)
  * first input format is selected to be added into dbin->format_list and
  * assigned to dbin->input_format.  All other data formats are deleted from
  * the temporary format list.
- * 
+ *
  * If an input format cannot be created above, this event returns an error
  * code.  Pending events are NOT processed.
  *
@@ -3598,10 +3598,10 @@ static int dbset_headers(DATA_BIN_PTR dbin)
  * COMMENTS:    Things are written to ch_ptr without checking to see if
  *				it is initialized. This seems unsafe.
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
-	 
+
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
@@ -3630,7 +3630,7 @@ static int dbset_input_formats
 	assert(!(format_file_name && format_buffer));
 
 	FF_VALIDATE(dbin);
-		
+
 	error = make_format_eqv_list(input_data_file_name,
 		                          FFF_INPUT,
 		                          format_file_name,
@@ -3641,7 +3641,7 @@ static int dbset_input_formats
 		                         );
 	if (error)
 		return(error);
-			
+
 	error = make_format_data(input_data_file_name,
 		                      output_data_file_name,
 		                      NULL,
@@ -3662,14 +3662,14 @@ static int dbset_input_formats
 			if (!*format_data_list)
 				return(ERR_MEM_LACK);
 		}
-			
+
 		fdl = dll_add(*format_data_list);
 		if (!fdl)
 			return(ERR_MEM_LACK);
 		else
 			dll_assign(fh_fd, DLL_FD, fdl);
 	}
-		
+
 	error = make_format_data(input_data_file_name,
 		                      output_data_file_name,
 		                      NULL,
@@ -3690,14 +3690,14 @@ static int dbset_input_formats
 			if (!*format_data_list)
 				return(ERR_MEM_LACK);
 		}
-			
+
 		fdl = dll_add(*format_data_list);
 		if (!fdl)
 			return(ERR_MEM_LACK);
 		else
 			dll_assign(rh_fd, DLL_FD, fdl);
 	}
-		
+
 	error = make_format_data(input_data_file_name,
 		                      output_data_file_name,
 		                      title_specified,
@@ -3705,7 +3705,7 @@ static int dbset_input_formats
 		                      f_list,
 		                      &id_fd
 		                     );
-		
+
 	if (error == ERR_GENERAL)
 		error = 0;
 	else if (error)
@@ -3725,7 +3725,7 @@ static int dbset_input_formats
 				return(ERR_MEM_LACK);
 			}
 		}
-			
+
 		fdl = dll_add(*format_data_list);
 		if (!fdl)
 		{
@@ -3778,7 +3778,7 @@ static int dbset_input_formats
  *
  * OBJECT TYPE: DATA_BIN
  *
- * ARGUMENTS:   
+ * ARGUMENTS:
  *
  * PRECONDITIONS:       dbin->buffer must be defined
  *
@@ -3802,12 +3802,12 @@ static int dbset_input_formats
  *
  * AUTHOR: Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
- * COMMENTS:    
+ * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
-	 
+
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
@@ -3821,7 +3821,7 @@ static int dbset_read_eqv
 {
 	int number = 0;
 	char **found_files = NULL;
-				
+
 	NAME_TABLE_PTR table = NULL;
 	int error = 0;
 
@@ -3860,7 +3860,7 @@ static int dbset_read_eqv
 
 	return(error);
 }
-					
+
 /*****************************************************************************
  * NAME:
  *
@@ -3894,8 +3894,8 @@ static int dbset_read_eqv
  *
  * PRECONDITIONS:	Should only be called after ff_init_array_conduit_list.
  *
- * CHANGES IN STATE: 
- *                                              
+ * CHANGES IN STATE:
+ *
  * DESCRIPTION:  Sets the format-data's byte_order state vector according
  * to the user-defined value of "data_byte_order".
  *
@@ -3904,16 +3904,16 @@ static int dbset_read_eqv
  * 0 for a value of "little_endian", 1 for a value of "big_endian", or
  * return with error if the value of data_byte_order is neither.
  *
- * ERRORS:                   
+ * ERRORS:
  *
  * AUTHOR: Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
  * COMMENTS:
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
-	 
+
 /*****************************************************************************
  * NAME: dbset_byte_order
  *
@@ -3955,20 +3955,20 @@ static int dbset_byte_order
 	assert(format_type);
 
 	FF_VALIDATE(dbin);
-			
+
 	if (!nt_ask(dbin, (FFF_IO & format_type) | NT_ANYWHERE, "data_byte_order", FFV_CHAR, data_byte_order))
 	{
 		PROCESS_INFO_LIST pinfo_list = NULL;
 		PROCESS_INFO_PTR pinfo = NULL;
-		
+
 		error = db_ask(dbin, DBASK_PROCESS_INFO, format_type, &pinfo_list);
 		if (error == ERR_GENERAL)
 			return 0;
 		else if (error)
 			return(error);
-			
+
 		pinfo_list = dll_first(pinfo_list);
-		pinfo = FF_PI(pinfo_list); 
+		pinfo = FF_PI(pinfo_list);
 		while (pinfo) /* not necessarily only input */
 		{
 			FF_VALIDATE(pinfo);
@@ -3994,7 +3994,7 @@ static int dbset_byte_order
 			pinfo_list = dll_next(pinfo_list);
 			pinfo = FF_PI(pinfo_list);
 		}
-		
+
 		ff_destroy_process_info_list(pinfo_list);
 	}
 
@@ -4035,10 +4035,10 @@ static int dbset_byte_order
  *				format from file_name.fmt.
  *              Revision by KBF, 3/29/95: if file_name AND format_buffer are
  *              both defined, format_buffer is assumed to be the title of the output format
- *              to be used.  If file_name is a ".fmt" file, and is different from the 
+ *              to be used.  If file_name is a ".fmt" file, and is different from the
  *              input format file, the contents of file_name are appended to the
  *              dbin->format_list, with all formats specifically designated to be input
- *              removed.  The argument FORMAT_BUFFER_IS_A_TITLE can be sent in 
+ *              removed.  The argument FORMAT_BUFFER_IS_A_TITLE can be sent in
  *				as the file name if a format title, but not a format file,
  *				was specified by the user.  The FORMAT_BUFFER_IS_A_TITLE argument
  *				is essentially treated as if no filename were sent in.
@@ -4046,7 +4046,7 @@ static int dbset_byte_order
  * PRECONDITIONS:       dbin->file_name must be defined for default to work.
  *
  * CHANGES IN STATE:    ALLOCATES MEMORY FOR TEMPORARY FILE NAME
- *                
+ *
  * DESCRIPTION: Defines an output format for a data bin.  The output
  * format search parallels the search for an input format.
  * See the DESCRIPTION for SET_INPUT_FORMAT for more information.
@@ -4059,10 +4059,10 @@ static int dbset_byte_order
  * COMMENTS:
  * MAO: I am uncertain that appropriate extensions are being looked for.
  *
- * KEYWORDS:    
+ * KEYWORDS:
  *
  */
-	 
+
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
 #endif
@@ -4091,7 +4091,7 @@ static int dbset_output_formats
 	FF_VALIDATE(dbin);
 
 	assert(!(file_name && format_buffer));
-		
+
 	error = make_format_eqv_list(input_data_file_name,
 		                          FFF_OUTPUT,
 		                          file_name,
@@ -4102,7 +4102,7 @@ static int dbset_output_formats
 		                         );
 	if (error)
 		return(error);
-			
+
 	error = make_format_data(input_data_file_name,
 		                      output_data_file_name,
 		                      NULL,
@@ -4123,18 +4123,18 @@ static int dbset_output_formats
 			if (!*format_data_list)
 				return(ERR_MEM_LACK);
 		}
-			
+
 		fdl = dll_add(*format_data_list);
 		if (!fdl)
 			return(ERR_MEM_LACK);
 		else
 			dll_assign(fh_fd, DLL_FD, fdl);
-			
+
 		error = find_initialization_files(dbin, input_data_file_name, fh_fd->format);
 		if (error)
 			return(error);
 	}
-		
+
 	error = make_format_data(input_data_file_name,
 		                      output_data_file_name,
 		                      NULL,
@@ -4155,18 +4155,18 @@ static int dbset_output_formats
 			if (!*format_data_list)
 				return(ERR_MEM_LACK);
 		}
-			
+
 		fdl = dll_add(*format_data_list);
 		if (!fdl)
 			return(ERR_MEM_LACK);
 		else
 			dll_assign(rh_fd, DLL_FD, fdl);
-			
+
 		error = find_initialization_files(dbin, input_data_file_name, rh_fd->format);
 		if (error)
 			return(error);
 	}
-		
+
 	error = make_format_data(input_data_file_name,
 		                      output_data_file_name,
 		                      title_specified,
@@ -4174,9 +4174,9 @@ static int dbset_output_formats
 		                      f_list,
 		                      &od_fd
 		                     );
-		
+
 	destroy_format_list(f_list);
-		
+
 	if (error == ERR_GENERAL)
 		error = 0;
 	else if (error)
@@ -4190,13 +4190,13 @@ static int dbset_output_formats
 			if (!*format_data_list)
 				return(ERR_MEM_LACK);
 		}
-			
+
 		fdl = dll_add(*format_data_list);
 		if (!fdl)
 			return(ERR_MEM_LACK);
 		else
 			dll_assign(od_fd, DLL_FD, fdl);
-			
+
 		error = find_initialization_files(dbin, input_data_file_name, od_fd->format);
 		if (error)
 			return(error);
@@ -4250,13 +4250,13 @@ static int dbset_query_restriction
 	int error = 0;
 
 	FF_VALIDATE(dbin);
-		
+
 	assert(query_file_name);
 
 	error = ff_file_to_bufsize(query_file_name, &bufsize);
 	if (error)
 		return(error);
-		
+
 	ch = bufsize->buffer;
 	while (ch)
 	{
@@ -4264,7 +4264,7 @@ static int dbset_query_restriction
 		{
 			if (ch[0] == '\0')
 				break;
-	
+
 			/* End-of-line character */
 			ch[0] = '\0';
 			break;
@@ -4284,7 +4284,7 @@ static int dbset_query_restriction
 
 	return(error);
 }
-		
+
 /*****************************************************************************
  * NAME:
  *
@@ -4332,7 +4332,7 @@ static int dbset_variable_restriction
 	error = trim_format(output_format, bufsize->buffer);
 	if (!error)
 		make_contiguous_format(output_format);
-	
+
 	ff_destroy_bufsize(bufsize);
 
 	return(error);
@@ -4340,10 +4340,10 @@ static int dbset_variable_restriction
 
 /*
  * NAME:	update_format_var
- *		
+ *
  * PURPOSE:	 Change the variable info according to the new data_type and bytes_per_pixel
  *
- * USAGE:	
+ * USAGE:
  *
  * RETURNS:	 Zero on success, an error code on failure.
  *
@@ -4359,7 +4359,7 @@ static int dbset_variable_restriction
  *
  * ERRORS:
  *
- * COMMENTS:	
+ * COMMENTS:
  *
  * KEYWORDS:
  *
@@ -4401,7 +4401,7 @@ void update_format_var
 		while (vstepper)
 		{
 			FF_VALIDATE(vstepper);
-				
+
 			if (vstepper->start_pos > var->start_pos)
 			{
 				vstepper->start_pos += diff;
@@ -4418,7 +4418,7 @@ void update_format_var
 
 /*
  * NAME:		get_default_var
- *		
+ *
  * PURPOSE:	To get the default variable for image display
  *
  * USAGE:	VARIABLE_LIST *get_default_var(FORMAT_PTR form)
@@ -4427,7 +4427,7 @@ void update_format_var
  *
  * DESCRIPTION:	The function first checks whether or not the variables
  *				bsq, bil, bip2, or data exist. If no, the function will
- *				try to find the variable with numerical data type. 
+ *				try to find the variable with numerical data type.
  *
  * SYSTEM DEPENDENT FUNCTIONS:	none
  *
@@ -4435,9 +4435,9 @@ void update_format_var
  *
  * AUTHOR:	Liping Di, NGDC, (303) 497 - 6284, lpd@mail.ngdc.noaa.gov
  *
- * COMMENTS:	
+ * COMMENTS:
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
 
@@ -4450,9 +4450,9 @@ static VARIABLE *get_default_var(FORMAT_PTR form)
 {
  	VARIABLE_PTR var;
 	VARIABLE_LIST v_list;
-	
+
 	FF_VALIDATE(form);
-	
+
 	var = ff_find_variable("bsq",form);
 	if (!var)
 		var = ff_find_variable("bil",form);
@@ -4476,7 +4476,7 @@ static VARIABLE *get_default_var(FORMAT_PTR form)
 			var = FF_VARIABLE(v_list);
 		}
 	}
-	
+
 	return(var);
 }
 
@@ -4547,7 +4547,7 @@ static int change_input_img_format
 				bytes_per_pixel = (short)ffv_type_size(new_data_type);
 			else
 				error = nt_ask(dbin, NT_INPUT, "bytes_per_pixel", FFV_SHORT, &bytes_per_pixel);
-			
+
 			if (!error)
 			{
 				var = get_default_var(input);
@@ -4557,7 +4557,7 @@ static int change_input_img_format
 						from an integer to a float or a double?  If so, change the precision to
 						a magic number like five or nine.
 					*/
-							
+
 					if (var->precision == 0 && IS_INTEGER(var) && IS_REAL_TYPE(new_data_type))
 					{
 						if (IS_FLOAT32_TYPE(new_data_type))
@@ -4565,13 +4565,13 @@ static int change_input_img_format
 						else
 							var->precision = 9;
 					}
-					
+
 					update_format_var(new_data_type, (FF_NDX_t)bytes_per_pixel, var, input);
 				}
 			} /* if bytes_per_pixel */
 		} /* if data_type != FF_VAR_TYPE_FLAG */
 	} /* if nt_ask() for data_representation */
-	
+
 	return(error);
 }
 
@@ -4622,7 +4622,7 @@ static BOOLEAN old_change_input_img_format
 	char data_type[MAX_PV_LENGTH] = {""};
 
 	FF_VALIDATE(dbin);
-	
+
 	if (!nt_ask(dbin, NT_INPUT, "data_type", FFV_CHAR, data_type))
 	{
 		if (strstr(data_type, "image") || strstr(data_type, "raster") || strstr(data_type, "grid"))
@@ -4734,7 +4734,7 @@ static int dbset_user_update_formats
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
-#endif 
+#endif
 #define ROUTINE_NAME "copy_variable_list"
 
 /*****************************************************************************
@@ -4771,12 +4771,12 @@ static int copy_variable_list
 	VARIABLE_PTR new_var = NULL;
 	VARIABLE_LIST source_list = NULL;
 	VARIABLE_LIST new_list = NULL;
-	
+
 	int error;
 
 	assert(vsource);
 	assert(hvtarget);
-	
+
 	*hvtarget = new_list = dll_init();
 	if (!new_list)
 		return(ERR_MEM_LACK);
@@ -4818,7 +4818,7 @@ static int copy_variable_list
 
 #ifdef ROUTINE_NAME
 #undef ROUTINE_NAME
-#endif 
+#endif
 #define ROUTINE_NAME "ff_copy_format"
 
 /*
@@ -4834,22 +4834,22 @@ static int copy_variable_list
  *
  * AUTHOR:	T. Habermann, NGDC, (303) 497 - 6472, haber@mail.ngdc.noaa.gov
  *
- * COMMENTS:	
+ * COMMENTS:
  *
  * ERRORS:
  *
- * SYSTEM DEPENDENT FUNCTIONS: 
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * KEYWORDS:
  *
  */
- 
+
 FORMAT_PTR ff_copy_format(FORMAT_PTR format)
 {
 	FORMAT_PTR new_format = NULL;
-	
+
 	FF_VALIDATE(format);
-	
+
 	if (!format)
 		return(NULL);
 
@@ -5101,7 +5101,7 @@ static void set_record_array_offsets
 	if (in_var)
 	{
 		FF_VALIDATE(in_var);
-		
+
 		if (array_conduit->input->connect.id & NDARRS_FILE)
 		{
 			array_conduit->input->connect.file_info.first_array_offset = in_var->start_pos - 1;
@@ -5143,7 +5143,7 @@ static void set_record_array_offsets
  *
  * RETURNS:  NULL on error, otherwise a pointer to an array pole
  *
- * DESCRIPTION:  
+ * DESCRIPTION:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
@@ -5173,10 +5173,10 @@ static int create_array_pole
 	FF_VALIDATE(format_data->data);
 
 	assert(id & (NDARRS_BUFFER | NDARRS_FILE));
-	
+
 	if (bufsize)
 		FF_VALIDATE(bufsize);
-	
+
 	assert(pole_h);
 
 	*pole_h = (FF_ARRAY_DIPOLE_PTR)memMalloc(sizeof(FF_ARRAY_DIPOLE), "*pole_h");
@@ -5201,7 +5201,7 @@ static int create_array_pole
 		(*pole_h)->array_mapping = NULL;
 
 		(*pole_h)->connect.id = id;
-		
+
 		(*pole_h)->connect.file_info.first_array_offset = 0;
 		(*pole_h)->connect.file_info.current_array_offset = 0;
 
@@ -5232,7 +5232,7 @@ static int create_array_pole
 	} /* if *pole_h */
 	else
 		return(err_push(ERR_MEM_LACK, NULL));
-	
+
 	return(0);
 }
 
@@ -5248,7 +5248,7 @@ static int create_array_pole
  *
  * RETURNS:  void
  *
- * DESCRIPTION:  
+ * DESCRIPTION:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
@@ -5281,10 +5281,10 @@ static int create_array_conduit
 #ifdef FF_CHK_ADDR
 		(*conduit_h)->check_address = (void *)*conduit_h;
 #endif
-		
+
 		strncpy((*conduit_h)->name, name, sizeof((*conduit_h)->name) - 1);
 		(*conduit_h)->name[sizeof((*conduit_h)->name) - 1] = STR_END;
-		
+
 		if (input)
 		{
 			FF_VALIDATE(input);
@@ -5295,7 +5295,7 @@ static int create_array_conduit
 		}
 		else
 			(*conduit_h)->input = NULL;
-		
+
 		if (output)
 		{
 			FF_VALIDATE(output);
@@ -5307,7 +5307,7 @@ static int create_array_conduit
 		else
 			(*conduit_h)->output = NULL;
 	}
-	
+
 	return(error);
 }
 
@@ -5350,17 +5350,17 @@ static int make_tabular_array_conduit
 	)
 {
 	int error = 0;
-	
+
 	FF_ARRAY_CONDUIT_PTR array_conduit = NULL;
 	FF_ARRAY_DIPOLE_PTR input_pole = NULL;
 	FF_ARRAY_DIPOLE_PTR output_pole = NULL;
-	
+
 	FF_VALIDATE(std_args);
 
 	if (input)
 	{
 		FF_VALIDATE(input);
-		
+
 		error = create_array_pole(input->format->name,
 		                          input,
 		                          (NDARR_SOURCE)(std_args->input_file ?
@@ -5375,11 +5375,11 @@ static int make_tabular_array_conduit
 	}
 	else
 		input_pole = NULL;
-	
+
 	if (output)
 	{
 		FF_VALIDATE(output);
-	
+
 		error = create_array_pole(output->format->name,
 		                          output,
 		                          (NDARR_SOURCE)(std_args->output_file ?
@@ -5394,21 +5394,21 @@ static int make_tabular_array_conduit
 	}
 	else
 		output_pole = NULL;
-	
+
 	error = create_array_conduit("tabular", input_pole, output_pole, &array_conduit);
 	if (error)
 	{
 		goto make_tabular_array_conduit_exit;
 	}
-	
+
 	assert(!FF_AC(array_conduit_list));
-	
+
 	array_conduit_list = dll_add(array_conduit_list);
 	if (!array_conduit_list)
 		error = err_push(ERR_MEM_LACK, "");
 	else
 		dll_assign(array_conduit, DLL_AC, array_conduit_list);
-	
+
 make_tabular_array_conduit_exit:
 	if (error)
 	{
@@ -5427,7 +5427,7 @@ make_tabular_array_conduit_exit:
 				fd_destroy_format_data(output);
 		}
 	}
-	
+
 	return(error);
 }
 
@@ -5474,7 +5474,7 @@ static int spawn_array_conduits
 	VARIABLE_PTR var = NULL; /* nominally an output variable, but might be input */
 
 	int error = 0;
-	
+
 	FF_VALIDATE(std_args);
 
 	if (input)
@@ -5585,21 +5585,21 @@ static FORMAT_DATA_PTR graft_format_data
 	FORMAT_DATA_PTR format_data = NULL;
 
 	FF_VALIDATE(bufsize);
-	
+
 	format_data = (FORMAT_DATA_PTR)memMalloc(sizeof(FORMAT_DATA), "format_data");
 	if (format_data)
 	{
 #ifdef FF_CHK_ADDR
 		format_data->check_address = (void *)format_data;
 #endif
-		
+
 		/* default data byte_order=native order = endian()
 			1=big endian, 0=little endian */
 		format_data->state.byte_order = (unsigned char)endian();
 		format_data->state.new_record = 0;
 		format_data->state.locked     = 0;
 		format_data->state.unused = 0;
-		
+
 		assert(bufsize->usage < USHRT_MAX);
 
 		format_data->data = bufsize;
@@ -5619,7 +5619,7 @@ static FORMAT_DATA_PTR graft_format_data
 	}
 	else
 		err_push(ERR_MEM_LACK, "new format-data");
-	
+
 	return(format_data);
 }
 
@@ -5659,29 +5659,29 @@ static int dbset_create_conduits_core
 	FORMAT_DATA_PTR input;
 #endif
 	FORMAT_DATA_PTR output;
-	
+
 	FORMAT_DATA_LIST fdlist; /* walk-through list */
 	FORMAT_DATA_PTR fd;     /* walk-through format */
-	
+
 	FF_TYPES_t format_type;
-	
+
 	int error = 0;
-	
+
 	assert(format_data_list);
-	
+
 	FF_VALIDATE(std_args);
-	
+
 	fdlist = dll_first(format_data_list);
 	fd = FD_FORMAT_DATA(fdlist);
 	while (fd)
 	{
 		FF_VALIDATE(fd);
-		
+
 		if (IS_RECORD_FORMAT(fd->format))
 		{
 			fdlist = dll_next(fdlist);
 			fd = FD_FORMAT_DATA(fdlist);
-			
+
 			continue;
 		}
 
@@ -5721,13 +5721,13 @@ static int dbset_create_conduits_core
 			{
 				fdlist = dll_next(fdlist);
 				fd = FD_FORMAT_DATA(fdlist);
-				
+
 				continue;
 			}
 
 			/* This is an orphan output format -- proceed */
 		}
-		
+
 		format_type = (FFF_TYPE(fd->format) & ~FFF_IO) & FFF_DATA_TYPES;
 
 #ifdef FF_DBG
@@ -5792,7 +5792,7 @@ static int dbset_create_conduits_core
 		fdlist = dll_next(fdlist);
 		fd = FD_FORMAT_DATA(fdlist);
 	}
-	
+
 	return(error);
 }
 
@@ -5813,7 +5813,7 @@ static void sort_format_data_list(FORMAT_DATA_LIST format_data_list)
 				 (FD_TYPE(FD_FORMAT_DATA(dll_next(walker))) & (FFF_FILE | FFF_REC | FFF_DATA)))
 			{
 				swapper = FD_FORMAT_DATA(walker);
-				
+
 				walker->data.u.fd = NULL;
 				dll_assign(FD_FORMAT_DATA(dll_next(walker)), DLL_FD, walker);
 
@@ -5881,12 +5881,12 @@ static int dbset_create_conduits
 	)
 {
 	int error;
-	
+
 	assert(array_conduit_list_handle);
 
 	if (!array_conduit_list_handle)
 		return(err_push(ERR_API, "NULL FF_ARRAY_CONDUIT_LIST_HANDLE in %s", ROUTINE_NAME));
-	
+
 	if (!*array_conduit_list_handle)
 	{
 		*array_conduit_list_handle = dll_init();
@@ -5902,7 +5902,7 @@ static int dbset_create_conduits
 		ff_destroy_array_conduit_list(*array_conduit_list_handle);
 		*array_conduit_list_handle = NULL;
 	}
-	
+
 	return(error);
 }
 
@@ -5945,13 +5945,13 @@ static int ask_EOL_string
 	)
 {
 	char EOL_type[MAX_PV_LENGTH];
-	
+
 	int error = 0;
-	
+
 	FF_VALIDATE(dbin);
 
 	assert(EOL_string);
-	
+
 	*EOL_string = STR_END;
 
 	error = nt_ask(dbin, io_type | NT_ANYWHERE, "EOL_type", FFV_CHAR, EOL_type);
@@ -5968,7 +5968,7 @@ static int ask_EOL_string
 		else
 			error = err_push(ERR_PARAM_VALUE, "Invalid operating system given for EOL_type");
 	}
-	
+
 	if (error == ERR_NT_KEYNOTDEF)
 		return(0);
 	else
@@ -6008,9 +6008,9 @@ static void get_relative_file_offset
 	)
 {
 	VARIABLE_PTR variable = NULL;
-	
+
 	FF_VALIDATE(format);
-	
+
 	variable = find_EOL_var(format);
 	if (variable)
 		*file_offset = variable->start_pos - 1;
@@ -6042,7 +6042,7 @@ static int read_EOL_from_file
 	file = fopen(PINFO_FNAME(pinfo), "rb");
 	if (file == NULL)
 		return(err_push(ERR_OPEN_FILE, PINFO_FNAME(pinfo)));
-	
+
 	if (IS_VARIED(PINFO_FORMAT(pinfo)))
 		file_offset = 0;
 	else
@@ -6052,7 +6052,7 @@ static int read_EOL_from_file
 		file_offset += PINFO_CURRENT_ARRAY_OFFSET(pinfo);
 	else
 		assert(PINFO_IS_FILE(pinfo));
-	
+
 	if (fseek(file, file_offset, SEEK_SET))
 		error = err_push(ERR_READ_FILE, PINFO_FNAME(pinfo));
 
@@ -6067,7 +6067,7 @@ static int read_EOL_from_file
 		if (num_read != (int)num_to_read)
 			error = err_push(ERR_READ_FILE, PINFO_FNAME(pinfo));
 	}
-		
+
 	if (!error)
 	{
 		if (IS_VARIED(PINFO_FORMAT(pinfo)))
@@ -6085,9 +6085,9 @@ static int read_EOL_from_file
 			}
 		}
 	}
-	
+
 	fclose(file);
-	
+
 	return(error);
 }
 
@@ -6136,20 +6136,20 @@ static int resize_for_EOL
 
 	VARIABLE_LIST v_list = FFV_FIRST_VARIABLE(format);
 	VARIABLE_PTR     var = FF_VARIABLE(v_list);
-	
+
 	int adjust = 0;
 	size_t EOL_length = strlen(EOL_string);
-	
+
 	if (IS_BINARY(format))
 		return(0);
-	
+
 /*	if (!IS_VARIED(format)) */
 		format->length = 0;
 
 	while (var)
 	{
 		int EOL_delta;
-		
+
 		EOL_delta = 0;
 
 		if (IS_EOL(var))
@@ -6160,11 +6160,11 @@ static int resize_for_EOL
 
 			EOL_delta = EOL_length - FF_VAR_LENGTH(var);
 		}
-			
+
 		var->start_pos += adjust;
 		adjust += EOL_delta;
 		var->end_pos += adjust;
-				
+
 		format->length = max(format->length, var->end_pos);
 
 		v_list = FFV_NEXT_VARIABLE(v_list);
@@ -6299,7 +6299,7 @@ static int determine_EOLs
  *
  * RETURNS:  A copy of the array descriptor string, or NULL on failure
  *
- * DESCRIPTION:  
+ * DESCRIPTION:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
@@ -6439,7 +6439,7 @@ static int make_input_array_mapping
 	ARRAY_DESCRIPTOR_PTR sub_desc = NULL;
 
 	ARRAY_DESCRIPTOR_PTR output_desc = NULL;
-	
+
 	char *super_desc_str = NULL;
 	char *sub_desc_str = NULL;
 	char *output_desc_str = NULL;
@@ -6480,7 +6480,7 @@ static int make_input_array_mapping
 		ndarr_free_descriptor(super_desc);
 		return(ERR_GEN_ARRAY);
 	}
-			
+
 	sub_desc_str = output_desc_str;
 	error = make_inputs_sub_desc_str(dbin, super_desc, output_desc, records_to_do, sub_desc_str); /* versus make_outputs_super_desc_str */
 	ndarr_free_descriptor(output_desc);
@@ -6499,7 +6499,7 @@ static int make_input_array_mapping
 		ndarr_free_descriptor(output_desc);
 		return(ERR_GEN_ARRAY);
 	}
-			
+
 	memFree(sub_desc_str, "sub_desc_str");
 
 	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
@@ -6510,7 +6510,7 @@ static int make_input_array_mapping
 
 		return(ERR_GEN_ARRAY);
 	}
-	
+
 	return(0);
 }
 
@@ -6608,7 +6608,7 @@ static int make_output_array_mapping
 	ARRAY_DESCRIPTOR_PTR sub_desc = NULL;
 
 	ARRAY_DESCRIPTOR_PTR sub_desc_copy = NULL;
-	
+
 	char *super_desc_str = NULL;
 	char *sub_desc_str_copy = NULL;
 	char *sub_desc_str = NULL;
@@ -6646,7 +6646,7 @@ static int make_output_array_mapping
 		ndarr_free_descriptor(sub_desc);
 		return(ERR_GEN_ARRAY);
 	}
-			
+
 	super_desc_str = sub_desc_str_copy;
 	error = make_outputs_super_desc_str(dbin, sub_desc_copy, super_desc_str, records_to_do); /* versus make_inputs_sub_desc_str */
 	ndarr_free_descriptor(sub_desc_copy);
@@ -6663,7 +6663,7 @@ static int make_output_array_mapping
 		ndarr_free_descriptor(sub_desc);
 		return(ERR_GEN_ARRAY);
 	}
-			
+
 	memFree(super_desc_str, "super_desc_str");
 
 	PINFO_ARRAY_MAP(pinfo) = ndarr_create_mapping(sub_desc, super_desc);
@@ -6673,7 +6673,7 @@ static int make_output_array_mapping
 
 		return(ERR_GEN_ARRAY);
 	}
-	
+
 	return(0);
 }
 
@@ -6683,7 +6683,7 @@ static int make_output_array_mapping
 static int make_array_mappings
 	(
 	 DATA_BIN_PTR dbin,
-	 long records_to_do, 
+	 long records_to_do,
 	 PROCESS_INFO_PTR pinfo
 	)
 {
@@ -6738,7 +6738,7 @@ static int set_array_mappings
 
 	FF_VALIDATE(dbin);
 	FF_VALIDATE(pinfo);
-	
+
 	if (IS_ARRAY(PINFO_FORMAT(pinfo)))
 	{
 		error = make_array_mappings(dbin, records_to_do, pinfo);
@@ -6966,7 +6966,7 @@ static int dbset_init_conduits
 static int dbset_format_mappings(DATA_BIN_PTR dbin)
 {
 	int error = 0;
-	
+
 	PROCESS_INFO_LIST pinfo_list  = NULL;
 	PROCESS_INFO_PTR  output_pinfo = NULL;
 
@@ -7175,7 +7175,7 @@ static int dbset_setup_stdin(DATA_BIN_PTR dbin, FF_STD_ARGS_PTR std_args)
 #if FF_OS == FF_OS_DOS || FF_OS == FF_OS_MACOS
 			setmode(fileno(stdin), O_BINARY);
 #endif
-			bytes_read = fread(std_args->input_bufsize->buffer, 1, bytes_to_read, stdin); 
+			bytes_read = fread(std_args->input_bufsize->buffer, 1, bytes_to_read, stdin);
 			if (bytes_read != bytes_to_read)
 				error = err_push(ERR_READ_FILE, "Only read %lu of %lu bytes from standard input", (unsigned long)bytes_read, (unsigned long)bytes_to_read);
 			else
@@ -7325,22 +7325,22 @@ static int dbset_var_minmax(DATA_BIN_PTR dbin)
 								btype_to_btype(&temp, FFV_DOUBLE, &lower_bound, FFV_DATA_TYPE(var));
 								btype_to_btype(&temp, FFV_DOUBLE, &upper_bound, FFV_DATA_TYPE(var));
 							break;
-							
+
 							case FFV_FLOAT32:
 								btype_to_btype(var_flags[name_number], FFV_DOUBLE, &temp, FFV_FLOAT);
 
 								if (*var_flags[name_number] < 0)
 								{
 									*(float *)&lower_bound = *(float *)&temp * (1 + FLT_EPSILON);
-									*(float *)&upper_bound = *(float *)&temp * (1 - FLT_EPSILON);							
+									*(float *)&upper_bound = *(float *)&temp * (1 - FLT_EPSILON);
 								}
 								else
 								{
 									*(float *)&lower_bound = *(float *)&temp * (1 - FLT_EPSILON);
-									*(float *)&upper_bound = *(float *)&temp * (1 + FLT_EPSILON);							
+									*(float *)&upper_bound = *(float *)&temp * (1 + FLT_EPSILON);
 								}
 							break;
-							
+
 							case FFV_FLOAT64:
 							case FFV_ENOTE:
 								if (*var_flags[name_number] < 0)
@@ -7396,12 +7396,12 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 		return(err_push(ERR_GENERAL, "message code not specified"));
 
 	FF_VALIDATE(dbin);
-	
+
 	va_start(args, message);
 
 	switch (message)
 	{
-		case DBSET_CACHE_SIZE: 
+		case DBSET_CACHE_SIZE:
 		{
 			unsigned long cache_size = va_arg(args, unsigned long);
 
@@ -7434,29 +7434,29 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 			char *format_buffer = va_arg(args, char *);
 			char *title_specified = va_arg(args, char *);
 			FORMAT_DATA_LIST_HANDLE format_data_list = va_arg(args, FORMAT_DATA_LIST_HANDLE);
-		
+
 			error = dbset_input_formats(dbin, input_data_file_name, output_data_file_name, file_name, format_buffer, title_specified, format_data_list);
 		}
-		
+
 		break;
 
 		case DBSET_READ_EQV:
 		{
 			char *input_data_file_name = va_arg(args, char *);
-		
+
 			error = dbset_read_eqv(dbin, input_data_file_name);
 		}
-						
+
 		break;
-            
+
 		case DBSET_BYTE_ORDER:
 		{
 			FF_TYPES_t format_type = va_arg(args, FF_TYPES_t);
-				
+
 			error = dbset_byte_order(dbin, format_type);
 		}
 		break;
-					
+
 		case DBSET_OUTPUT_FORMATS:
 		{
 			char *input_data_file_name = va_arg(args, char *);
@@ -7468,7 +7468,7 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 
 			error = dbset_output_formats(dbin, input_data_file_name, output_data_file_name, file_name, format_buffer, title_specified, format_data_list);
 		}
-		
+
 		break;
 
 		case DBSET_QUERY_RESTRICTION:
@@ -7477,9 +7477,9 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 
 			error = dbset_query_restriction(dbin, file_name);
 		}
-		
+
 		break;
-		
+
 		case DBSET_VARIABLE_RESTRICTION:
 		{
 			char *variable_file = va_arg(args, char *);

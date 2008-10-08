@@ -1,7 +1,7 @@
-/* 
+/*
  * FILENAME: os_utils.c
  *
- * CONTAINS:	
+ * CONTAINS:
  * Public functions:
  *
  * os_strdup
@@ -31,7 +31,7 @@
  * os_strupr
 
  *	This file contains OS utilities for portability across Unix,
- *	MacOS and DOS 
+ *	MacOS and DOS
  *
  * CAVEAT:
  * No claims are made as to the suitability of the accompanying
@@ -59,9 +59,9 @@ char prefsbuffer[4096];	/* assuming we have a small file to read */
 #endif
 
 /*
- * NAME:	os_file_exist	
- *		
- * PURPOSE: to determine if a given file exists	
+ * NAME:	os_file_exist
+ *
+ * PURPOSE: to determine if a given file exists
  *
  * USAGE:	os_file_exist( char * filenname)
  *
@@ -73,13 +73,13 @@ char prefsbuffer[4096];	/* assuming we have a small file to read */
  *
  * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
- * COMMENTS: 
+ * COMMENTS:
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
 
@@ -105,24 +105,24 @@ BOOLEAN os_file_exist(char *filename)
 
 /*
  * NAME:		os_strlwr
- *		
+ *
  * PURPOSE:	convert the string to low case
  *
  * USAGE:	char *os_strlwr( char *)
  *
  * RETURNS:	the converted string
  *
- * DESCRIPTION:	
+ * DESCRIPTION:
  *
- * SYSTEM DEPENDENT FUNCTIONS:	
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:	LPD
  *
  * COMMENTS:	To replace the function strlwr which is not portable to MAC
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
 
@@ -130,14 +130,14 @@ BOOLEAN os_file_exist(char *filename)
 #define ROUTINE_NAME "os_strlwr"
 
 char *os_strlwr( char *string)
-{ 
+{
 #if FF_CC == FF_CC_MACCW /* for the mac */
 
 	char *temp = string;
-	
+
 	while(*temp != '\0'){
 		if(*temp >= 'A' && *temp <= 'Z')
-			*temp=*temp + 'a' - 'A'; 
+			*temp=*temp + 'a' - 'A';
 		temp++;
 	}
 
@@ -166,24 +166,24 @@ char *os_strlwr( char *string)
 
 /*
  * NAME:		os_strupr
- *		
+ *
  * PURPOSE:	convert the string to upper case
  *
  * USAGE:	char *os_strupr( char *)
  *
  * RETURNS:	the converted string
  *
- * DESCRIPTION:	
+ * DESCRIPTION:
  *
- * SYSTEM DEPENDENT FUNCTIONS:	
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:	LPD
  *
  * COMMENTS:	To replace the function strlwr which is not portable to MAC
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
 
@@ -191,19 +191,19 @@ char *os_strlwr( char *string)
 #define ROUTINE_NAME "os_strupr"
 
 char *os_strupr( char *string)
-{ 
+{
 #if FF_CC == FF_CC_MACCW
 
 	char *temp = string;
-	
+
 	while(*temp != '\0'){
 		if(*temp >= 'a' && *temp <= 'z')
-			*temp=*temp - 'a' + 'A'; 
+			*temp=*temp - 'a' + 'A';
 		temp++;
 	}
 
 #endif
-	
+
 #if FF_CC == FF_CC_UNIX
 
 	char *temp = string;
@@ -227,7 +227,7 @@ char *os_strupr( char *string)
 
 /*
  * NAME:		os_filelength
- *		
+ *
  * PURPOSE:		to get the file length
  *
  * USAGE:		long os_filelength(filename)
@@ -238,18 +238,18 @@ char *os_strupr( char *string)
  *
  * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
- * COMMENTS: 
+ * COMMENTS:
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
 
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "os_filelength" 
+#define ROUTINE_NAME "os_filelength"
 
 unsigned long os_filelength(char *filename)
 {
@@ -269,26 +269,26 @@ unsigned long os_filelength(char *filename)
 
 /*
  * NAME:		os_strcmpi
- *		
- * PURPOSE:	case-insensitive versions of strcmp	
  *
- * USAGE:	int os_strcmpi(const char *s1, const char *s2)	
+ * PURPOSE:	case-insensitive versions of strcmp
+ *
+ * USAGE:	int os_strcmpi(const char *s1, const char *s2)
  *
  * RETURNS:	< 0 	if s1 < s2
- *		= 0	if s1 identical to s2(except case) 
+ *		= 0	if s1 identical to s2(except case)
  *		> 0	fi s1 > s2
  *
  * DESCRIPTION:
  *
- * SYSTEM DEPENDENT FUNCTIONS: strcmpi()	
+ * SYSTEM DEPENDENT FUNCTIONS: strcmpi()
  *				using tolower and toupper is more portable then
- *				referencing the ascii characters	
+ *				referencing the ascii characters
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:	tam
  *
- * COMMENTS: 
+ * COMMENTS:
  *
  */
 
@@ -324,24 +324,24 @@ int os_strcmpi(const char* s1, const char* s2)
 
 /*
  * NAME:		os_strncmpi
- *		
- * PURPOSE:	case-insensitive versions of strncmp	
  *
- * USAGE:	int os_strncmpi(const char *s1, const char *s2, size_t n)	
+ * PURPOSE:	case-insensitive versions of strncmp
+ *
+ * USAGE:	int os_strncmpi(const char *s1, const char *s2, size_t n)
  *
  * RETURNS:	< 0 	if s1 < s2
- *		= 0	if s1 identical to s2(except case) 
+ *		= 0	if s1 identical to s2(except case)
  *		> 0	fi s1 > s2
  *
  * DESCRIPTION:
  *
  * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:  Mark Ohrenschall, NGDC, (303) 497-6124, mao@ngdc.noaa.gov
  *
- * COMMENTS: 
+ * COMMENTS:
  *
  */
 
@@ -363,7 +363,7 @@ int os_strncmpi(const char* s1, const char* s2, size_t n)
 
 #endif
 
-#if FF_CC == FF_CC_MACCW     
+#if FF_CC == FF_CC_MACCW
 
 	int i;
 	for(i = 0; i < n && tolower((int)(*s1)) == tolower((int)(*s2)); i++, s1++, s2++)
@@ -382,30 +382,30 @@ int os_strncmpi(const char* s1, const char* s2, size_t n)
 #if FF_OS == FF_OS_MAC
 /*
  * NAME:		os_mac_load_env
- *		
+ *
  * PURPOSE:	To fill global Mac environment variable linked list
  *
  * USAGE:	void * os_mac_load_env(char * buffer)
  *
  * RETURNS:	nothing.
  *
- * DESCRIPTION:This function fills an environment variable linked list for 
- *			  the MAC case. It opens a preferences file which has 
+ * DESCRIPTION:This function fills an environment variable linked list for
+ *			  the MAC case. It opens a preferences file which has
  *			 variables defined using a NAME=value syntax.  *
- * SYSTEM DEPENDENT FUNCTIONS:	
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:	Rich Fozzard, NGDC, (303) 497 - 6764, fozzard@ngdc.noaa.gov
  *
- * COMMENTS: called only by main()	
+ * COMMENTS: called only by main()
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
  /*
  * HISTORY:
- *	r fozzard	7/28/95		written 
+ *	r fozzard	7/28/95		written
 */
 
 #undef ROUTINE_NAME
@@ -421,7 +421,7 @@ void *os_mac_load_env(char *buffer)
 
 /*
  * NAME:	PathNameFromFSSpec
- *		
+ *
  * PURPOSE:	To obtain full path from FSSpecPtr on a Mac.
  *
  * USAGE:	Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr)
@@ -429,17 +429,17 @@ void *os_mac_load_env(char *buffer)
  * RETURNS:	A handle to a string that contains the full path to the specified file.
  *
  * DESCRIPTION:	Return a handle to the full pathname of the file specified
- *                  by FSSpecPtr. 
+ *                  by FSSpecPtr.
  *
- * SYSTEM DEPENDENT FUNCTIONS:	
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
- * GLOBALS:	
+ * GLOBALS:
  *
  * AUTHOR:	Tom Carey, adapted from code by Theodore W. Liz�rd
  *
- * COMMENTS: 	
+ * COMMENTS:
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
 
@@ -453,37 +453,37 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr)
 	long			theSize;
 	Str63			theString;
 	OSErr			error;
-	
+
 	/* Create a temporary alias */
 	error = NewAlias(nil, myFSSPtr, &alias);
 	if (alias == nil) return pathName;
-	
+
 	pathName = NewHandleClear(1000); /* max path size of 1000 */
 
 	if (pathName == nil) return pathName;
-	
+
 	/* Get the parent name */
 	if (GetAliasInfo(alias, aliasType, theString) == noErr) {
 		while (*theString) {
 			theSize = (long)theString[0] + 1;
-			
+
 			/* Use the size byte to store the ':' */
 			theString[0] = ':';
 			theSize = Munger(pathName, 0, nil, 0, &theString, theSize);
-			
+
 			/* Set the index to the next parent */
 			aliasType += asiParentName;
 			error = GetAliasInfo(alias, aliasType, theString);
 		}
-		
+
 		error = GetAliasInfo(alias, asiVolumeName, theString);
 		theSize = (long)theString[0];
 		theSize = Munger(pathName, 0, nil, 0, &theString[1], theSize);
 	}
-	
+
 	/* Dispose temporary alias */
 	DisposeHandle((Handle)alias);
-	
+
 	return pathName;
 }
 
@@ -491,22 +491,22 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr)
 
 /*
  * NAME:		os_get_env
- *		
+ *
  * PURPOSE:	To get the value of a variable defined in the PREFERENCES File
  *
  * USAGE:	char * os_get_env(VARIABLE_NAME)
  *
  * RETURNS:	A pointer to the value of the string.
  *
- * DESCRIPTION:This function gets an environment from DOS or Unix environments. 
- *			 In the MAC case, this function opens a preferences file which has 
- *			 variables defined using a NAME=value syntax. If no matching 
+ * DESCRIPTION:This function gets an environment from DOS or Unix environments.
+ *			 In the MAC case, this function opens a preferences file which has
+ *			 variables defined using a NAME=value syntax. If no matching
  *			 variable name is found, NULL is returned. In the MS windows case,
  *			 this function also checks the freefrom.ini file in the windows
- *			 directory to find the environment if the environment can not bee
- *			 find in DOS environment. Two applications are defined in 
+ *			 directory to find the environment if the environment cannot bee
+ *			 find in DOS environment. Two applications are defined in
  *			 freeform.ini including GeoVu and FREEFORM. This function first
- *		   	 searchs the GeoVu application, if does not find, then searchs
+ *		   	 searches the GeoVu application, if does not find, then searches
  *			 the freeform application.
  *			 The format to define an environment value in the freeform.ini
  *			 is the same as the microsoft private initial file.
@@ -518,21 +518,21 @@ Handle PathNameFromFSSpec(FSSpecPtr myFSSPtr)
  *			 The X-windows version of initial file should be written in near
  *             future.
  *
- * SYSTEM DEPENDENT FUNCTIONS:	
+ * SYSTEM DEPENDENT FUNCTIONS:
  *
  * GLOBALS:	prefsbuffer
  *
  * AUTHOR:	Liping Di, T. Habermann, NGDC, (303) 497 - 6472, haber@ngdc.noaa.gov
  *
- * COMMENTS: All functions to get enviornmental variable should call this 
- *		    function.	
+ * COMMENTS: All functions to get enviornmental variable should call this
+ *		    function.
  *
- * KEYWORDS:	
+ * KEYWORDS:
  *
  */
  /*
  * HISTORY:
- *	r fozzard	4/21/95		-rf01 
+ *	r fozzard	4/21/95		-rf01
  *		Li Ping used XVT types and functions here, so we need to remove it all
  * 		to get things to compile. Also, this will need complete reworking for the Mac
  *	r fozzard	6/23/95		-rf02
@@ -553,12 +553,12 @@ char *os_get_env(char * variable_name)
 
 /* Li Ping used XVT types and functions here, so we need to remove it all
 	to get things to compile. Also, this will need complete reworking for the Mac	-rf01 */
-	
+
 	/* New code to simulate environment variables with a "GeoVu Prefs" file
-		in the default directory where GeoVu lives. The file uses the same 
+		in the default directory where GeoVu lives. The file uses the same
 		NAME=VALUE format as with WINDOWS .ini files. This is a simple
 		text file that any word processor can edit. -rf02 */
-		
+
 	char *varname;			/* pointer to the env var name in prefsbuffer */
 	char *varvalue;			/* pointer to the env var value in prefsbuffer */
 	size_t varlength;		/* calculated length of the var value in bytes */
@@ -573,10 +573,10 @@ char *os_get_env(char * variable_name)
 	varvalue = strchr(varname, '=') + 1;
 	while (*varvalue == ' ')
 		++varvalue; /* skip spaces */
-	
+
 	/* Figure the length of the var's value string by looking for the EOL */
 	varlength = strcspn(varvalue, "\n");
-	
+
 	/* Allocate space for the var, fill it, and mark the end of string */
 	variable = (char *)memMalloc(varlength + 1);
 	if (variable == NULL)
@@ -585,14 +585,14 @@ char *os_get_env(char * variable_name)
 	error = MemError();
 	if (error != 0)
 		return(NULL);
-	
+
 	memcpy(variable, varvalue, varlength);
 	variable[varlength] = STR_END;
-	
+
 	return(variable);
 
 	/* end of New code -rf02 */
-	
+
 #else
 	if (!variable)
 		variable = getenv(variable_name);
@@ -601,7 +601,7 @@ char *os_get_env(char * variable_name)
 	if (variable)
 		return(memStrdup(variable, "variable"));
 	else
-#endif /* Removed because of calls to getenv(). jhrg */ 
+#endif /* Removed because of calls to getenv(). jhrg */
 
 		return(NULL);
 } /* END OS_GET_ENV */
@@ -631,7 +631,7 @@ char *os_get_env(char * variable_name)
  *
  * GLOBALS:  NONE
  *
- * COMMENTS:  
+ * COMMENTS:
  *
  * KEYWORDS:  UNION_DIR_SEPARATORS, directory separator lenient string comparisons
  *
@@ -646,35 +646,35 @@ int os_path_cmp_paths(char *s, char *t)
 {
 	size_t shortest_length,
 	               i = 0;
-	
+
 	assert(s && t);
-	
+
 	if (s == NULL && t == NULL)
 		return(0);
 	else if (s == NULL)
 		return(-1);
 	else if (t == NULL)
 		return(1);
-	
+
 	shortest_length = min(strlen(s), strlen(t));
-	
+
 	for (i = 0; i <= shortest_length; i++)
 	{
 		if ((unsigned char)s[i] - (unsigned char)t[i])
 		{
 			if (s[i] == STR_END || t[i] == STR_END)
 				return((unsigned char)s[i] - (unsigned char)t[i]);
-			
+
 			if (strcspn(s + i, UNION_DIR_SEPARATORS) == 0 &&
 			    strcspn(t + i, UNION_DIR_SEPARATORS) == 0)
 				continue;
-			
+
 			return((unsigned char)s[i] - (unsigned char)t[i]);
 		}
 	}
 	return(0);
 }
-			
+
 /*****************************************************************************
  * NAME:  os_path_is_native()
  *
@@ -711,7 +711,7 @@ BOOLEAN os_path_is_native(char *path)
 {
 	char foreign_dir_sep[NUM_DIR_SEPARATORS + 1];
 	char *temp;
-	
+
 	if (path == NULL)
 		return(FALSE);
 
@@ -721,14 +721,14 @@ BOOLEAN os_path_is_native(char *path)
 	/* NATIVE_DIR_SEPARATOR must be an element of UNION_DIR_SEPARATORS */
 	if (temp == NULL)
 		assert(0);
-	
+
 	/* remove NATIVE_DIR_SEPARATOR from foreign_dir_sep, and shift left */
 	while (*temp != STR_END)
 	{
 		*temp = *(temp + 1);
 		++temp;
 	}
-	
+
 #if FF_OS == FF_OS_DOS
 	if (isalpha(path[0]) && path[1] == ':')
 		path += 2;
@@ -788,7 +788,7 @@ char *os_path_make_native(char *native_path, char *path)
 		native_path[0] = STR_END;
 		return(NULL);
 	}
-	
+
 	if (os_path_is_native(path))
 	{ /* simply perform "safe" copy of path onto native_path */
 		for (i = strlen(path); i >= 0; i--)
@@ -816,13 +816,13 @@ char *os_path_make_native(char *native_path, char *path)
 				native_path[i] = path[i];
 		}
 		/* path has been copied into native_path up to a dir sep or NULL-terminator */
-		
+
 		if (path[i] != STR_END)
 			native_path[i++] = NATIVE_DIR_SEPARATOR;
 	}
 	native_path[i] = STR_END;
 
-	return(native_path);	
+	return(native_path);
 }
 
 /*****************************************************************************
@@ -843,7 +843,7 @@ char *os_path_make_native(char *native_path, char *path)
  * *fileext is made to point one character beyond the last dot ('.') in path
  * unless such a dot is contained in a file path (no file extension, but a
  * directory is named with a dot).  If a qualifying file path, extension, or
- * file name can not be found, then *filepath, *filename or *fileext is made
+ * file name cannot be found, then *filepath, *filename or *fileext is made
  * NULL, respectively.
  *
  * AUTHOR:  Mark Ohrenschall, NGDC (303) 497-6124, mao@ngdc.noaa.gov
@@ -852,8 +852,8 @@ char *os_path_make_native(char *native_path, char *path)
  *
  * GLOBALS:  NONE
  *
- * COMMENTS:  
- * 
+ * COMMENTS:
+ *
  * Since *filename is made to point to the file name component of path, any
  * extension will be a part of *filename.  To get (a copy of) the file name
  * component of path w/o extension, instead call os_path_get_parts().
@@ -863,7 +863,7 @@ char *os_path_make_native(char *native_path, char *path)
  *
  * KEYWORDS:  UNION_DIR_SEPARATORS, DOS DRIVE LETTER
  *
- * ERRORS:  
+ * ERRORS:
  ****************************************************************************/
 
 #undef ROUTINE_NAME
@@ -873,7 +873,7 @@ void os_path_find_parts(char *path, char **filepath, char **filename, char **fil
 {
 	char *temp_cp = path;
 	size_t temp_i = 0;
-	
+
 	if (path == NULL)
 	{
 		if (filepath)
@@ -884,7 +884,7 @@ void os_path_find_parts(char *path, char **filepath, char **filename, char **fil
 			*fileext = NULL;
 		return;
 	}
-	
+
 	if (filepath)
 	{
 		temp_cp = *filepath = path;
@@ -914,7 +914,7 @@ void os_path_find_parts(char *path, char **filepath, char **filename, char **fil
 		}
 		while (temp_i < strlen(temp_cp));
 	}
-  
+
 	if (filename)
 		*filename = temp_cp;
 
@@ -941,7 +941,7 @@ void os_path_find_parent(char *path, char **parentdir)
 	{
 		return;
 	}
-	
+
 	else
 	{
 	  /* Find last (if any) directory separator in path */
@@ -958,11 +958,11 @@ void os_path_find_parent(char *path, char **parentdir)
 	      while (temp_i < strlen(temp_cp));
 	    }
 	  dirpath[dir_i-temp_i-1] = '\0';
-	  
+
 	}
 	if (*parentdir)
 	  strcpy(*parentdir,dirpath);
-	
+
 	return;
 }
 
@@ -993,9 +993,9 @@ char *os_path_return_ext(char *pfname)
  ****************************************************************************/
 {
 	char *temp = NULL;
-	
+
 	assert(pfname);
-	
+
 	(void)os_path_find_parts(pfname, NULL, NULL, &temp);
 	return(temp);
 }
@@ -1027,9 +1027,9 @@ char *os_path_return_name(char *pfname)
  ****************************************************************************/
 {
 	char *temp = NULL;
-	
+
 	assert(pfname);
-	
+
 	(void)os_path_find_parts(pfname, NULL, &temp, NULL);
 	return(temp);
 }
@@ -1061,9 +1061,9 @@ char *os_path_return_path(char *pfname)
  ****************************************************************************/
 {
 	char *temp = NULL;
-	
+
 	assert(pfname);
-	
+
 	(void)os_path_find_parts(pfname, &temp, NULL, NULL);
 	return(temp);
 }
@@ -1081,7 +1081,7 @@ char *os_path_return_path(char *pfname)
  * and extension components of path.  These components are then copied into
  * filepath, filename, and fileext.  The file name and extension is not copied
  * into filepath, and the file extension is not copied into filename.  If
- * components can not be found then zero-length strings are returned.
+ * components cannot be found then zero-length strings are returned.
  *
  * AUTHOR:  Mark Ohrenschall, NGDC (303) 497-6124, mao@ngdc.noaa.gov
  *
@@ -1095,7 +1095,7 @@ char *os_path_return_path(char *pfname)
  *
  * "Safer" in-line character copying is used instead of strcpy()'s in the
  * event that incoming strings overlap.
- * 
+ *
  * KEYWORDS:
  *
  * ERRORS:  path must be a properly allocated string.  Sufficient storage
@@ -1111,7 +1111,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 	char *pfname = NULL, /* file name component in path */
 	     *pfext = NULL;  /* file extension component in path */
 	int i = 0;
-	
+
 	if (path == NULL)
 	{
 		if (filepath)
@@ -1122,9 +1122,9 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 			*fileext = STR_END;
 		return;
 	}
-	
+
 	os_path_find_parts(path, NULL, &pfname, &pfext);
-	
+
 	if (fileext)
 	{
 		if (pfext == NULL)
@@ -1145,7 +1145,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 					filename[i] = pfname[i];
 			else
 			{ /* filename might not have enough storage space to include ext */
-			  char *tmp1 = &pfname[0]; 
+			  char *tmp1 = &pfname[0];
 			  char *tmp2 = 0;
 
 			  int i = 0;
@@ -1163,7 +1163,7 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 			}
 		}
 	}
-	
+
 	if (filepath)
 	{
 		if (pfname == NULL && pfext == NULL)
@@ -1223,15 +1223,15 @@ void os_path_get_parts(char *path, char *filepath, char *filename, char *fileext
 char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fileext)
 {
 	char temppath[MAX_PATH];
-	
+
 	assert(fullpath);
 	assert(filename);
-	
+
 	if (!fullpath || !filename)
 		return(fullpath);
-	
+
 	*temppath = STR_END;
-	
+
 	/* copy directory component */
 	if (ok_strlen(dirpath))
 	{
@@ -1244,7 +1244,7 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
 		   dirpath is say, "C:" and file name is say, "\gvdata\topo\etopo.bin",
 		   then retain the colon and back slash.)
 		*/
-		
+
 		if (strcspn(dirpath + strlen(dirpath) - 1, UNION_DIR_SEPARATORS) &&
 		    strcspn(filename, UNION_DIR_SEPARATORS)
 		   )
@@ -1263,21 +1263,21 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
 #endif /* else PC */
 		}
   }
-  
+
   if (filename)
 		strcat(temppath, filename);
 
 	if (ok_strlen(fileext))
 	{
 	  /*	char *dot = strrchr(filename, '.');
-			
+
 		if (dot && IS_A_VALID_DOT(dot))
 		{
 			dot = strrchr(temppath, '.');
 			*dot = STR_END;
 		}
 	  */
-		
+
 		while (*fileext == '.')
 			fileext++;
 
@@ -1292,7 +1292,7 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
 
 /*
  * NAME:  os_str_replace_char()
- *              
+ *
  * PURPOSE:  To replace all occurences of a character in a string with another
  * character.
  *
@@ -1300,7 +1300,7 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
  *
  * RETURNS: void
  *
- * DESCRIPTION: To replace all ocurrences of old in string with new    
+ * DESCRIPTION: To replace all ocurrences of old in string with new
  *
  * SYSTEM DEPENDENT FUNCTIONS:  none
  *
@@ -1313,7 +1313,7 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
  *
  * KEYWORDS:    string, variable_length header
  *
- */                                          
+ */
 
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "os_str_replace_char"
@@ -1330,7 +1330,7 @@ void os_str_replace_char(char *string, char oldc, char newc)
 
 /*
  * NAME:  os_path_prepend_special()
- *              
+ *
  * PURPOSE:  Prepend a directory, GEOVUDIR, or nothing to a file name
  *
  * USAGE:  BOOLEAN os_path_prepend_special(char *in_name, char *home_dir, char *out_name)
@@ -1362,7 +1362,7 @@ void os_str_replace_char(char *string, char oldc, char newc)
  * formerly nt_file_name()
  *
  * KEYWORDS:  ^ CARET, & AMPERSAND, GEOVUDIR
- * 
+ *
  * ERRORS:  Sufficient space must be pre-allocated for out_name
  */
 
@@ -1373,7 +1373,7 @@ void os_str_replace_char(char *string, char oldc, char newc)
 BOOLEAN os_path_prepend_special(char *in_name, char *home_path, char *out_name)
 {
 	char *ch = NULL;
-	
+
 	assert(in_name);
 	assert(out_name);
 
@@ -1384,7 +1384,7 @@ BOOLEAN os_path_prepend_special(char *in_name, char *home_path, char *out_name)
 	if (*in_name == '&')
 	{
 		assert(home_path);
-		
+
 		if (!home_path)
 		{
 			out_name[0] = STR_END;
@@ -1415,7 +1415,7 @@ BOOLEAN os_path_prepend_special(char *in_name, char *home_path, char *out_name)
 
 /*
  * NAME:  os_str_trim_whitespace()
- *              
+ *
  * PURPOSE:  Remove leading and trailing whitespace
  *
  * USAGE:  os_str_trim_whitespace(dest, source)
@@ -1426,7 +1426,7 @@ BOOLEAN os_path_prepend_special(char *in_name, char *home_path, char *out_name)
  *
  * DESCRIPTION:  First and last whitespace characters of source are located --
  * these and all intervening characters in source are moved into dest in a
- * front to back copy order. 
+ * front to back copy order.
  *
  * SYSTEM DEPENDENT FUNCTIONS:  NONE
  *
@@ -1439,7 +1439,7 @@ BOOLEAN os_path_prepend_special(char *in_name, char *home_path, char *out_name)
  * important for future free()'s on source.
  *
  * KEYWORDS:  whitespace
- * 
+ *
  * ERRORS:  If inadequate memory is allocated for dest then memory corruption
  * may occur.
  */
@@ -1465,13 +1465,13 @@ char *os_str_trim_whitespace(char *dest, char *source)
 		memmove(dest, source + start, stop - start + 1);
 
 	dest[stop - start + 1] = STR_END;
-	
+
 	return(dest);
 }
 
 /*
  * NAME:  os_str_trim_linespace()
- *              
+ *
  * PURPOSE:  Remove leading and trailing on the current line
  *
  * USAGE:  os_str_trim_linespace(dest, source)
@@ -1482,7 +1482,7 @@ char *os_str_trim_whitespace(char *dest, char *source)
  *
  * DESCRIPTION:  Incoming string may be composed of multiple newline
  * characters, this function trims whitespace (but preserving newlines) only
- * on the string of characters preceding the first newline character. 
+ * on the string of characters preceding the first newline character.
  *
  * SYSTEM DEPENDENT FUNCTIONS:  NONE
  *
@@ -1495,7 +1495,7 @@ char *os_str_trim_whitespace(char *dest, char *source)
  * important for future free()'s on source.
  *
  * KEYWORDS:  whitespace
- * 
+ *
  * ERRORS:  If inadequate memory is allocated for dest then memory corruption
  * may occur.
  */
@@ -1528,7 +1528,7 @@ char *os_str_trim_linespace(char *line)
 	        line + str_balance,
 	        strlen(line + str_balance) + 1
 	       );
-	
+
 	return(line);
 }
 
@@ -1550,7 +1550,7 @@ char *os_str_trim_linespace(char *line)
  * cp1. The immediately preceding OS_ESCAPER character is itself
  * being escaped if it is preceded by a OS_ESCAPER character, unless that OS_ESCAPER
  * character is itself being escaped, etc. ad naaseaum.  It boils down to
- * whether there are an even or an odd number of OS_ESCAPER characters in a 
+ * whether there are an even or an odd number of OS_ESCAPER characters in a
  * homogeneous string of OS_ESCAPER's preceding char1 at cp1.
  *
  * The number of OS_ESCAPER characters is n = (cp1 - cp2).  If odd then char1
@@ -1590,21 +1590,21 @@ static void os_str_replace_xxxcaped_char1_with_char2
 {
 	char *cp1, *cp2;
 	int num_ESCAPERs = 0;
-	
+
 	assert(str);
-	
+
 	if (!str)
 		return;
-	
+
 	cp1 = strchr(str, char1);
-	
+
 	while (cp1)
 	{
 		cp2 = cp1 - 1;
 		while (*cp2 == escape && cp2 >= str)
 			--cp2;
 		++cp2; /* cp2 points to first OS_ESCAPER in a string preceding char1 */
-	
+
 		num_ESCAPERs = cp1 - cp2;
 		if ((mode == OS_INVERSE_ESCAPE && num_ESCAPERs % 2 == 0) ||
 		    (mode == OS_NORMAL_ESCAPE && num_ESCAPERs % 2 == 1))

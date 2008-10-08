@@ -1,4 +1,4 @@
-/* 
+/*
  * FILENAME:  cv_units.c
  * CONTAINS:  Conversion functions:
  * Unit Conversions:
@@ -17,21 +17,21 @@
  *
  * Latitude and Longitude Conversions:
  *	FUNCTION	CONVERT FROM			TO
- *							 
+ *
  *	cv_abs		v_name or				v_name_abs or
  *										v_name_sign
- *							
+ *
  *	cv_deg		v_name_deg				v_name
- *				v_name_min	
+ *				v_name_min
  *				v_name_sec
  *							-- OR --
  *				v_name_deg_abs			v_name
- *				v_name_min	  
+ *				v_name_min
  *				v_name_sec
  *				v_name_ns
- *				v_name_ew 
- *				v_name_sign	   
- *				geo_quad_code	   
+ *				v_name_ew
+ *				v_name_sign
+ *				geo_quad_code
  *
  *  cv_lon_east	longitude_east			longitude
  *							-- OR --
@@ -40,35 +40,35 @@
  *	cv_deg_nsew	v_name_abs				v_name
  *				v_name_ns
  *				v_name_ew
- *				
+ *
  *	cv_deg_abs	v_name_deg				v_name_abs
  *				v_name_min
  *				v_name_sec
  *							-- OR --
  *				v_name_deg_abs			v_name_abs
- *				v_name_min	  
+ *				v_name_min
  *				v_name_sec
  *
- *	cv_nsew		v_name					v_name_ns	
- *										v_name_ew 
+ *	cv_nsew		v_name					v_name_ns
+ *										v_name_ew
  *					  					geog_quad_code
- *							-- OR --				
+ *							-- OR --
  *				v_name_deg				v_name_ns
  *										v_name_ew
  *					  					geog_quad_code
- *						  				
- *						  				
+ *
+ *
  *	cv_dms		v_name					v_name_deg
  *							-- OR --
  *				v_name_abs				v_name_min
  *				v_name_ns				v_name_sec
- *				v_name_ew		 
+ *				v_name_ew
  *
  *  cv_degabs_nsew
  *				v_name_deg_abs			(v-name)_deg
  *				v_name_ns
  *				v_name_ew
- *  				  
+ *
  *	cv_degabs	v_name 					v_name_deg_abs
  *										v_name_min_abs
  *										v_name_sec_abs
@@ -76,10 +76,10 @@
  *				v_name_abs				v_name_deg_abs, _min_abs, sec_abs
  *
  *
- *	
+ *
  *	cv_geog_quad	latitude				geog_quad_code
  *				and longitude
- *							-- OR --				
+ *							-- OR --
  *				geog_quad_code			latitude_ns
  *										longitude_ew
  *										latitude_sign
@@ -87,7 +87,7 @@
  *
  *  cv_geog_sign	v_name_ns or			v_name_sign
  *				v_name_ew
- *							-- OR --				
+ *							-- OR --
  *				v_name_sign				v_name_ns
  *										v_name_ew
  *					  					geog_quad_code
@@ -95,7 +95,7 @@
  * Seismicity Conversions:
  *
  *	FUNCTION	CONVERT FROM:			TO:
- *							 
+ *
  *	cv_long2mag	longmag					magnitude_mb
  *										magnitude_ms
  *										magnitude_ml
@@ -104,7 +104,7 @@
  *	cv_mag2long	magnitude_mb or			longmag
  *				magnitude_ms or
  *				magnitude_ml
- * 
+ *
  *	cv_noaa_eq	NOAA binary				earthquake variables
  *
  *  cv_sea_flags	Seattle Catalog		Special Variables
@@ -119,10 +119,10 @@
  * Time Conversions:
  *
  *	FUNCTION			Convert From:			to:
- *							 
+ *
  *	cv_ymd2ser		year, month, day		serial_day_1980 (1980 = 0)
  *						hour, minute, second    OR year_decimal
- *							
+ *
  *	cv_ser2ymd		serial_day_1980				year, month, day,
  *	                                                                hour, minute, second
  *
@@ -130,7 +130,7 @@
  *	                                                                hour, minute, second
  *
  *	cv_ipe2ser		ipe_date				serial_day_1980 (1980 = 0)
- *                  	
+ *
  *	cv_ser2ipe		serial_day_1980 (1980 = 0)	ipe_date
  *
  *	cv_date_string	day, month, year OR		date_m/d/y	OR
@@ -172,21 +172,21 @@
 
 
 /*
- * NAME:	cv_multiply_value		
- *			
- * PURPOSE: Multiply the variable by a constant	
- *		   								  		
+ * NAME:	cv_multiply_value
+ *
+ * PURPOSE: Multiply the variable by a constant
+ *
  * AUTHOR:	T. Habermann (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_multiply_value(
  *				VARIABLE_PTR var,			Description of Desired variable
- *				double *converted_value,	Pointer to the Converted value 	 
- *				double conversion_factor,	Factor to multiply to value	   	
- *				char   *var_extension,		Look for input var with extension 
- *				FORMAT_PTR input_format,		Input Format Description		   	  
- *				FF_DATA_BUFFER input_buffer)	Input Buffer 			  
- *													   	   		 
- * COMMENTS:																							
+ *				double *converted_value,	Pointer to the Converted value
+ *				double conversion_factor,	Factor to multiply to value
+ *				char   *var_extension,		Look for input var with extension
+ *				FORMAT_PTR input_format,		Input Format Description
+ *				FF_DATA_BUFFER input_buffer)	Input Buffer
+ *
+ * COMMENTS:
  *
  * RETURNS:	Conversion functions return 0 if unsuccessful, 1 if successful
  *
@@ -200,7 +200,7 @@ static int cv_multiply_value(
 	VARIABLE_PTR 	var,				/* Description of Desired variable */
 	double 				*converted_value,	/* Pointer to the Converted value */
 	double 				conversion_factor,	/* Factor to multiply to value */
-	char 				*var_extension,		/* Look for input var with extension */   
+	char 				*var_extension,		/* Look for input var with extension */
 	FORMAT_PTR 			input_format,		/* Input Format Description */
 	FF_DATA_BUFFER 		input_buffer)		/* Input Buffer */
 
@@ -250,17 +250,17 @@ static int cv_multiply_value(
 /*
  * NAME:	cv_meters_to_feet
  *
- * PURPOSE:	Convert v_name_m to v_name_ft 
- *		   								  
+ * PURPOSE:	Convert v_name_m to v_name_ft
+ *
  * AUTHOR:	T. Habermann (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_meters_to_feet(
  *				VARIABLE_PTR var,		Description of Desired variable
  *				double *converted_value,Pointer to the Converted value
- *				FORMAT_PTR input_format,	Input Format Description 
- *				FF_DATA_BUFFER input_buffer)	Input Buffer 			   			
- *										   			  									
- * COMMENTS:																							
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				FF_DATA_BUFFER input_buffer)	Input Buffer
+ *
+ * COMMENTS:
  *
  * RETURNS:	Conversion functions return 0 if unsuccessful, 1 if successful
  *
@@ -286,18 +286,18 @@ int cv_meters_to_feet(
 
 /*
  * NAME:	cv_feet_to_meters
- *			
- * PURPOSE: Convert v_name_ft to v_name_m 
- *		   								  
+ *
+ * PURPOSE: Convert v_name_ft to v_name_m
+ *
  * AUTHOR:	T. Habermann (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_feet_to_meters(
  *				VARIABLE_PTR var,		Description of Desired variable
- *				double *converted_value,Pointer to the Converted value 	 
- *				FORMAT_PTR input_format,	Input Format Description	   	
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
  *				FF_DATA_BUFFER input_buffer)	Input Buffer
- *													   			 
- * COMMENTS:																							
+ *
+ * COMMENTS:
  *
  * RETURNS:	Conversion functions return 0 if unsuccessful, 1 if successful
  *
@@ -323,26 +323,26 @@ int cv_feet_to_meters(
 
 #ifdef CV_ABS_SIGN_TO_VALUE_NEVER_CALLED
 /*
- * NAME:	cv_abs_sign_to_value	
- *			
+ * NAME:	cv_abs_sign_to_value
+ *
  * PURPOSE: convert v_name_abs and v_name_sign  to  v_name
- *		   								  
+ *
  * AUTHOR:	T. Habermann (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_abs_sign_to_value(
  *				VARIABLE_PTR var,		Description of Desired variable
- *				double *converted_value,Pointer to the Converted value 	 
- *				FORMAT_PTR input_format,	Input Format Description	   	
- *				FF_DATA_BUFFER input_buffer)	Input Buffer 			  
- *													   			 
- * COMMENTS:																							
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				FF_DATA_BUFFER input_buffer)	Input Buffer
+ *
+ * COMMENTS:
  *
  * RETURNS:	Conversion functions return 0 if unsuccessful, 1 if successful
  *
  * SYSTEM DEPENDENT FUNCTIONS:
  *
  */
-#undef ROUTINE_NAME 
+#undef ROUTINE_NAME
 #define ROUTINE_NAME "cv_abs_sign_to_value"
 
 int cv_abs_sign_to_value(VARIABLE_PTR var,	/* Description of Desired variable */
@@ -393,15 +393,15 @@ int cv_abs_sign_to_value(VARIABLE_PTR var,	/* Description of Desired variable */
  *
  * PURPOSE: Reads data to an ASCII string using info from var.
  *			The output string has the precision of the input variable.
- * 			
+ *
  * AUTHOR:	S. D. Davis, National Geophysical Center, September 1990
- *				     	  
+ *
  * USAGE:	ff_get_string(
- *				VARIABLE *var, 		The input variable description 
- *				void *data_ptr,				Address of the variable 
- *				char *variable_str,			Destination (null-termined sring) 
+ *				VARIABLE *var, 		The input variable description
+ *				void *data_ptr,				Address of the variable
+ *				char *variable_str,			Destination (null-termined sring)
  *				FF_TYPES_t format_type)		Input format type
- *									
+ *
  * ERRORS:
  *		Pointer not defined,"var"
  *		Possible memory corruption, "var"
@@ -453,44 +453,44 @@ static int ff_get_string
 		variable_str[var_length] = STR_END;
 		return(0);
 	}
-		
+
 	/* so that switch will include the composite Format types */
 	format_type &= FFF_FILE_TYPES;
 	switch (format_type)
 	{
 		case FFF_ASCII:
 		case FFF_FLAT:
-	
+
 			/* ASCII Input:
 				Numeric variables must be left justified in the variable
-				string for the precision determinations to work: 
-	
+				string for the precision determinations to work:
+
 				Move the pointer to the first non-blank character in the
 				input variable string and decrease the number of characters
 				to copy.
-	
+
 				Example:
 					Before: ___123
 					            |
 							  ch      var_length = 6
-	
+
 					After:  ___123
 					                 |
 							        ch   var_length = 3
 			*/
-	
+
 			while (*ch == ' ' && var_length)
 			{
 				--var_length;
 				++ch;
 			}
-	
+
 			/* The string is blank so fill from left with precision
 			number of 0's */
 			if (var_length == 0)
 			{
 				assert(var->precision >= 0);
-				
+
 				var_length = num_chars = (unsigned short)(var->precision + 1);
 				ch = (char *)data_ptr;
 				for ( ; num_chars > 0; num_chars--, ch++)
@@ -500,21 +500,21 @@ static int ff_get_string
 			else
 			{
 				/* ASCII Input:
-					Numeric variables can not have blanks on the end for the
+					Numeric variables cannot have blanks on the end for the
 					precision determinations to work:
-	
+
 					Pad the right side of the string with blanks.
-	
+
 					Example:	var_length = 6
 						Before: 123___
 						             |
 								     tmp_str
-									                       
+
 						After:  123000
 						          |
 								  tmp_str
 				*/
-	
+
 				tmp_str = ch + var_length - 1;
 				while (*tmp_str == ' ')
 				{
@@ -522,14 +522,14 @@ static int ff_get_string
 					tmp_str--;
 				}
 			}
-	
+
 			/* Copy the variable into variable_str */
 			memcpy(variable_str, ch, var_length);
 			variable_str[var_length] = STR_END;
 		break;
-	
+
 		case FFF_BINARY:
-	
+
 			/* copy data to variable and put it into a string */
 			/* tmp_str is a string created to avoid allignment errors on the SUN */
 			tmp_str = (char *)memMalloc(var_length + 1, "ff_get_string: tmp_str");
@@ -538,58 +538,58 @@ static int ff_get_string
 				err_push(ERR_MEM_LACK,"tmp_str");
 				return(-1);
 			}
-	
+
 			memMemcpy(tmp_str, (char *)data_ptr, var_length,NO_TAG);
 			tmp_str[var_length] = STR_END;
-	
+
 			switch (FFV_DATA_TYPE(var))
 			{
 				case FFV_INT8:
 					sprintf(variable_str, fft_cnv_flags[FFNT_INT8], *(int8 *)tmp_str);
 				break;
-				
+
 				case FFV_UINT8:
 					sprintf(variable_str, fft_cnv_flags[FFNT_UINT8], *(uint8 *)tmp_str);
 				break;
-				
+
 				case FFV_INT16:
 					sprintf(variable_str, fft_cnv_flags[FFNT_INT16], *(int16 *)tmp_str);
 				break;
-				
+
 				case FFV_UINT16:
 					sprintf(variable_str, fft_cnv_flags[FFNT_UINT16], *(uint16 *)tmp_str);
 				break;
-				
+
 				case FFV_INT32:
 					sprintf(variable_str, fft_cnv_flags[FFNT_INT32], *(int32 *)tmp_str);
 				break;
-				
+
 				case FFV_UINT32:
 					sprintf(variable_str, fft_cnv_flags[FFNT_UINT32], *(uint32 *)tmp_str);
 				break;
-				
+
 				case FFV_INT64:
 					sprintf(variable_str, fft_cnv_flags[FFNT_INT64], *(int64 *)tmp_str);
 				break;
-				
+
 				case FFV_UINT64:
 					sprintf(variable_str, fft_cnv_flags[FFNT_UINT64], *(uint64 *)tmp_str);
 				break;
-				
-				
-		
+
+
+
 				case FFV_FLOAT32:	/* Binary to ASCII float */
 					sprintf(variable_str, fft_cnv_flags_prec[FFNT_FLOAT32], var->precision, *((float32 *)tmp_str));
 				break;
-		
+
 				case FFV_FLOAT64:	/* Binary to ASCII double */
 					sprintf(variable_str, fft_cnv_flags_prec[FFNT_FLOAT64], var->precision, *((float64 *)tmp_str));
 				break;
-		
+
 				case FFV_ENOTE:	/* Binary to ASCII double */
 						sprintf(variable_str, fft_cnv_flags_prec[FFNT_ENOTE], var->precision, *((float64 *)tmp_str));
 				break;
-		
+
 				default:			/* Unknown variable type */
 					assert(!ERR_SWITCH_DEFAULT);
 					err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)FFV_DATA_TYPE(var), os_path_return_name(__FILE__), __LINE__);
@@ -599,7 +599,7 @@ static int ff_get_string
 
 			memFree(tmp_str, "ff_get_string: tmp_str");
 		break;
-	
+
 		default:
 			assert(!ERR_SWITCH_DEFAULT);
 			err_push(ERR_SWITCH_DEFAULT, "%d, %s:%d", (int)format_type, os_path_return_name(__FILE__), __LINE__);
@@ -639,7 +639,7 @@ static int ff_get_string
 		memmove(last_char + (int)(decimal_shift - var_length),
 		        last_char - var_length,
 		        var_length);
-										  
+
 		ch = last_char - var_length;
 		while (decimal_shift--)
 		{
@@ -649,7 +649,7 @@ static int ff_get_string
 
 		ch[var_length] = STR_END;
 	}
-	
+
 	return(0);
 }
 
@@ -666,7 +666,7 @@ static int ff_get_string
  *
  * USAGE:	cv_ser2ymd(
  *				VARIABLE_PTR out_var,
- *				double        *conv_var, 
+ *				double        *conv_var,
  *				FORMAT        *input_format,
  *				char          *input_buffer)
  *
@@ -700,31 +700,31 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 	};
 
 	unsigned char number_of_outputs = 8;
-	
+
 	unsigned char ipe = 0;
 	unsigned char leap = 0;
 	unsigned char output_variable = 0;
-	
+
 	int		centuries = 0;
 	int		real_leap_yrs = 0;
 	int		correct = 0;
-		
+
 	double serial_day_1980;
 	double decimal;
 	double fprior_days;
 	double raw_mon;
 	double year, month, day, hour, minute, second;
-    		
+
 	short prior_days, extra_days, mon_const;
 	long int_year, int_month, int_hour, int_minute, century;
-	
-	long adj_serial_day_1980, base_days, whole_serial_day_1980;  
+
+	long adj_serial_day_1980, base_days, whole_serial_day_1980;
 	int error;
 	int variable_length;
 /*	int int_day; */
 
 	/* Define the Variables */
-	
+
 	/* Check input format to see if variables are present */
 
 	in_var = ff_find_variable("serial_day_1980", input_format);	/* Get the serial date */
@@ -734,7 +734,7 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 		in_var = ff_find_variable("serial", input_format);
 		if(!in_var)	return (0);
 	}
-	
+
 	if(!in_var){
 		/* Check for IPE date */
 		in_var = ff_find_variable("ipe_date", input_format);
@@ -769,7 +769,7 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 	/* Now begin the extraction of the output variables and exit
 	when appropriate. There are two major branches: one deals with
 	portions of a day and one with units larger than one day */
-	
+
 	switch(output_variable)
 	{
 	case FF_TIME_VAR_YEAR:
@@ -777,18 +777,18 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 	case FF_TIME_VAR_MONTH:
 	case FF_TIME_VAR_DAY:
 	case FF_TIME_VAR_CENTURY:
-        
+
         /* 28855 days in this century before 1980 */
 		adj_serial_day_1980 = whole_serial_day_1980 + 28855;
 
 		year = 1901+ adj_serial_day_1980 / 365.25;
-		
+
 		/* Now year is known, apply Gregorian correction */
 		centuries = (int)floor((1980 - year) / 100.0); /* The number of centuries counted (including the year 0)*/
 		real_leap_yrs = (int)floor(centuries / 4.0); /* The number of centuries that were leap years (divisible by 400) */
 		correct = centuries - real_leap_yrs;
 		adj_serial_day_1980 -= correct;
-		
+
 		int_year = (short) (year + DOUBLE_UP);
 		base_days = (long)((int_year - 1901) * 365.25 + DOUBLE_UP);
 		extra_days = (short) (adj_serial_day_1980 - base_days);	/* days since beginning of year */
@@ -834,7 +834,7 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 		/* The time variables are special conversions.
 		If they are integer variables with a precision of 0,
 		truncate at this point.  */
-		
+
 		switch(output_variable){
 		case FF_TIME_VAR_CENTURY:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
@@ -842,7 +842,7 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 			else
 				*conv_var = year/100.0;
 			return(1);
-			
+
 		case FF_TIME_VAR_YEAR:
 			century =  (short)(year / 100.0) * (short)100;
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
@@ -850,21 +850,21 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 			else
 				*conv_var = year - century;
 			return(1);
-			
+
 		case FF_TIME_VAR_CENTURY_AND_YEAR:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var = int_year;
 			else
 				*conv_var = year;
 			return(1);
-			
+
 		case FF_TIME_VAR_MONTH:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var = int_month;
 			else
 				*conv_var = month;
 			return(1);
-			
+
 		case FF_TIME_VAR_DAY:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var =  (short)(day + DOUBLE_UP);
@@ -889,7 +889,7 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
         decimal = hour - int_hour;
 		minute = decimal * 60.0;
 		int_minute = (short)(minute + DOUBLE_UP);
-				
+
         decimal = minute - int_minute;
         second = decimal * 60.0;
         if(second < 0.0) second = 0.0;
@@ -901,14 +901,14 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
 			else
 				*conv_var = hour;
 			break;
-			
+
 		case FF_TIME_VAR_MINUTE: /* minute */
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var = int_minute;
 			else
 				*conv_var = minute;
 			break;
-			
+
 		case FF_TIME_VAR_SECOND: /* second */
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var =  (short)(second + DOUBLE_UP);
@@ -931,7 +931,7 @@ int cv_ser2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format, 
  *
  * USAGE:	cv_ydec2ymd(
  *				VARIABLE_PTR out_var,
- *				double        *conv_var, 
+ *				double        *conv_var,
  *				FORMAT        *input_format,
  *				char          *input_buffer)
  *
@@ -981,7 +981,7 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 	static long int_century_and_year, int_century, int_year, int_month, int_day, int_hour, int_minute, int_second;
 	int error;
 	int variable_length;
-	
+
 	/* Define the Variables */
 	/* Check input format to see if variables are present */
 	in_var = ff_find_variable("year_decimal", input_format);	/* Get the serial date */
@@ -1003,20 +1003,20 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 	{	/* Extract output variables. */
 
 		last_input_value = year_decimal;
-		
+
 		int_century_and_year = (long)(year_decimal + DOUBLE_UP);
 		century_and_year = (double)int_century_and_year;
 
 		int_century = (long)century_and_year / 100;
 		century =  (double) int_century;
-		
+
 		int_year = int_century_and_year - int_century * (short)100;
 		if(century < 0) int_year *= -1;
 		year =  (double) int_year;
 
 		decimal = fabs(year_decimal - century_and_year);
 		int_month = 0;
-		
+
 		/* determine if this is a leap year */
 	 	if((int_century_and_year % 4 == 0 && int_century_and_year % 100 != 0) || int_century_and_year % 400 == 0)
 		{
@@ -1038,19 +1038,19 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 		day = decimal + 1;
 		int_day = (short)(day + DOUBLE_UP);
 		decimal = (day - int_day > 0.0) ? (day - int_day) * 24.0 : 0.0;	/* Convert decimal to days */
-			
+
 		hour = decimal;
 		int_hour = (short) (hour + DOUBLE_UP);
 		decimal = (hour - int_hour > 0.0) ? (hour - int_hour) * 60.0 : 0.0; /* Convert decimal to minutes */
-	
+
 		minute = decimal;
 		int_minute = (short) (minute +DOUBLE_UP) ;
 		decimal = (minute - int_minute > 0.0) ? (minute - int_minute) * 60.0 : 0.0; /* Convert decimal to seconds */
-		
+
 		second = decimal;
 		int_second = (short) second;
 	} /* Done calculating times */
-		
+
 	/* Define the output variable */
 	for(output_variable = 0; output_variable < number_of_outputs; ++output_variable){
 		if(!memStrcmp(out_var->name, output_names[output_variable],NO_TAG))
@@ -1070,21 +1070,21 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 			else
 				*conv_var = century;
 			break;
-			
+
 		case FF_TIME_VAR_YEAR:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var = int_year;
 			else
 				*conv_var = year;
 			break;
-			
+
 		case FF_TIME_VAR_MONTH:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var = int_month;
 			else
 				*conv_var = month;
 			break;
-			
+
 		case FF_TIME_VAR_DAY:
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var =  (short)(day + DOUBLE_UP);
@@ -1098,21 +1098,21 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
 			else
 				*conv_var = hour;
 			break;
-			
+
 		case FF_TIME_VAR_MINUTE: /* minute */
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var = int_minute;
 			else
 				*conv_var = minute;
 			break;
-			
+
 		case FF_TIME_VAR_SECOND: /* second */
 			if(IS_INTEGER(out_var) && out_var->precision == 0)
 				*conv_var =  (short)(second + DOUBLE_UP);
 			else
 				*conv_var = second;
 			break;
-			
+
 		default:
 			return(0);
 	}
@@ -1136,12 +1136,12 @@ int cv_ydec2ymd(VARIABLE_PTR out_var, double *conv_var, FORMAT_PTR input_format,
  *				day/month/year	(date_d/m/y)
  *				mmddyy			(date_ddmmyy)
  *
- * 
+ *
  * AUTHOR:	Ted Habermann, NGDC, (303)497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE:	cv_date_string(
- *				VARIABLE_PTR out_var, 
- *				double        *serial_day_1980, 
+ *				VARIABLE_PTR out_var,
+ *				double        *serial_day_1980,
  *				FORMAT        *input_format,
  *				char          *input_buffer)
  *
@@ -1199,7 +1199,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	char *last_underscore = NULL;
 	VARIABLE_PTR in_var = NULL;
 	enum {DATE_NAMES_COUNT = 3};
-	
+
 	/* Must match an input variable name with one of the following
 	*/
 	char *date_names[DATE_NAMES_COUNT + 1] =
@@ -1222,7 +1222,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	int i;
 
 	double yy_mm_dd;
-	
+
 	char sec_str[4]= {STR_END};
 	char min_str[4]= {STR_END};
 	char hour_str[4]= {STR_END};
@@ -1237,7 +1237,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	memset((void *)output, ' ', sizeof(*output));
 
 	in_var = NULL;
-	
+
 	/* Search the Input Format to Find the Date String */
 	/* The first time this function is called it is an experimental call, to
 	see if the conversion can be done. If this call succeeds, the desired
@@ -1245,7 +1245,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	called, to do the actual conversions, this variable is there as a FFV_CONVERT
 	variable. We are not interested in finding the convert variable here, we
 	need the input variable. */
-	
+
 	string_number = DATE_NAMES_COUNT;
 	for (i = DATE_NAMES_COUNT; i; i--)
 	{
@@ -1256,7 +1256,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 			break;
 		}
 	}
-	
+
 	if (string_number == DATE_NAMES_COUNT)
 	{
 		err_push(ERR_CONVERT_VAR, out_var->name);
@@ -1277,7 +1277,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 		ch_ptr = scratch_buffer;
 		while (*ch_ptr == ' ')
 			++ch_ptr;
-	
+
 		switch(string_number)
 		{
 		case 0:		/* Date String is mm/dd/yy */
@@ -1305,7 +1305,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 			*(month_str + 2) = STR_END;
 			*(day_str + 2) = STR_END;
 		break;
-		
+
 		default:
 			assert(!ERR_SWITCH_DEFAULT);
 			err_push(ERR_SWITCH_DEFAULT, "%s, %s:%d", ROUTINE_NAME, os_path_return_name(__FILE__), __LINE__);
@@ -1331,10 +1331,10 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 
 		in_var = ff_find_variable("year", input_format);
 		if(in_var)ff_get_string(in_var, input_buffer + in_var->start_pos - 1, year_str, input_format->type);
-		
+
 		in_var = ff_find_variable("century", input_format);
 		if(in_var)ff_get_string(in_var, input_buffer + in_var->start_pos - 1, century_str, input_format->type);
-		
+
 		in_var = ff_find_variable("serial_day_1980", input_format);
 		if(in_var)
 		{	/* Convert serial_day_1980 to year, month, day */
@@ -1343,41 +1343,41 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 			have correct truncation for times down to 100th of a second.
 			In other words, if a time is within 100th of a second of the
 			next major unit, it may be incorrectly rounded up.
-			
+
 			0.01 second = 0.001666 minute
 						= 0.000003 hour
 						= 0.00000012 day
-			*/			
+			*/
 
 			if (!helper_1("second", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(sec_str, "%02d", (short)(yy_mm_dd + 0.5));	/* Round Seconds */
-			
+
 			if (!helper_1("minute", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(min_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_1("hour", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(hour_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_1("day", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(day_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_1("month", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(month_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_1("year", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(year_str, "%02d", (short)yy_mm_dd);
 
 			if (!helper_1("century", &yy_mm_dd, input_format, input_buffer))
 				return(0);
-			sprintf(century_str, "%02d", (short)yy_mm_dd);			
+			sprintf(century_str, "%02d", (short)yy_mm_dd);
 		}
-		
+
 		/* Unsuccessful so far, try year_decimal for input */
 		in_var = ff_find_variable("year_decimal", input_format);
 		if(in_var)
@@ -1386,40 +1386,40 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 			have correct truncation for times down to 100th of a second.
 			In other words, if a time is within 100th of a second of the
 			next major unit, it may be incorrectly rounded up.
-			
+
 			0.01 second = 0.001666 minute
 						= 0.000003 hour
 						= 0.00000012 day
-			*/			
+			*/
 			if (!helper_2("second", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(sec_str, "%02d", (short)(yy_mm_dd + 0.5));	/* Round Seconds */
-			
+
 			if (!helper_2("minute", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(min_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_2("hour", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(hour_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_2("day", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(day_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_2("month", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(month_str, "%02d", (short)(yy_mm_dd + DOUBLE_UP));
-			
+
 			if (!helper_2("year", &yy_mm_dd, input_format, input_buffer))
 				return(0);
 			sprintf(year_str, "%02d", (short)yy_mm_dd);
 
 			if (!helper_2("century", &yy_mm_dd, input_format, input_buffer))
 				return(0);
-			sprintf(century_str, "%02d", (short)yy_mm_dd);			
+			sprintf(century_str, "%02d", (short)yy_mm_dd);
 		}
-	}		
+	}
 	if (!in_var)
 		return(0);
 
@@ -1434,7 +1434,7 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	++last_underscore;
 	if (strlen(last_underscore) > sizeof(double))
 		return(0); /* Output string too long */
-	
+
 	/* Search for tokens in the output variable name */
 	ch_ptr = memStrstr(last_underscore, "ss", "ss");
 	if(ch_ptr){
@@ -1445,38 +1445,38 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	ch_ptr = memStrstr(last_underscore, "mi", "mi");
 	if(ch_ptr){
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, min_str, 2, "minute"); 
+		memMemcpy(target, min_str, 2, "minute");
 	}
 
 	ch_ptr = memStrstr(last_underscore, "hh", "hh");
 	if(ch_ptr){
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, hour_str, 2, "hour"); 
+		memMemcpy(target, hour_str, 2, "hour");
 	}
 
 	ch_ptr = memStrstr(last_underscore, "dd", "dd");
 	if(ch_ptr){
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, day_str, 2, "day"); 
+		memMemcpy(target, day_str, 2, "day");
 	}
 
 	ch_ptr = memStrstr(last_underscore, "mm", "mm");
 	if(ch_ptr){
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, month_str, 2, "month"); 
+		memMemcpy(target, month_str, 2, "month");
 	}
 
 	ch_ptr = memStrstr(last_underscore, "yy", "yy");
 	if(ch_ptr){
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, year_str, 2, "year"); 
+		memMemcpy(target, year_str, 2, "year");
 	}
 
 	ch_ptr = memStrstr(last_underscore, "cc", "cc");
 	if(ch_ptr){
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, century_str, 2, "century"); 
-		if(*target == ' ')*target = '0'; 
+		memMemcpy(target, century_str, 2, "century");
+		if(*target == ' ')*target = '0';
 	}
 
 	/* Search for /'s in the output variable name */
@@ -1484,14 +1484,14 @@ int cv_date_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	while( (ch_ptr = strchr(++ch_ptr, '/')) != NULL)
 	{
 		target = (char *)((char *)output + (ch_ptr - last_underscore));
-		memMemcpy(target, "/", 1, "Slash"); 
+		memMemcpy(target, "/", 1, "Slash");
 	}
-	
+
 	/* convert leading zero's to spaces */
-	
+
 	for (target = (char *)output; *target == '0' /* zero */; target++)
 		*target = ' ';
-	
+
 	/* Should right justify strings in field */
 
 	return(1);
@@ -1516,19 +1516,19 @@ static void setup_vname
 }
 
 /*
- * NAME:	cv_units	
- *			
+ * NAME:	cv_units
+ *
  * PURPOSE: miscellaneous unit conversions, called as last resort
- *		   								  
+ *
  * AUTHOR:	T. Habermann (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_units(
  *				VARIABLE_PTR var,		Description of Desired variable
- *				double *converted_value,Pointer to the Converted value 	 
- *				FORMAT_PTR input_format,	Input Format Description	   	
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
  *				FF_DATA_BUFFER input_buffer)	Input Buffer
- *													   			 
- * COMMENTS:																							
+ *
+ * COMMENTS:
  *
  * RETURNS:	Conversion functions return 0 if unsuccessful, 1 if successful
  *
@@ -1554,7 +1554,7 @@ int cv_units(
 	double	offset		= 0.0;
 
 	int count = 0;
-	int i = 0; 
+	int i = 0;
 	unsigned variable_length = 0;
 
 	VARIABLE_PTR scale_var = NULL;
@@ -1564,13 +1564,13 @@ int cv_units(
 	FF_DATA_BUFFER ch = NULL;
 	char *last_underscore = NULL;
 
-	setup_vname(var->name, v_name, &last_underscore);	
+	setup_vname(var->name, v_name, &last_underscore);
 
 #ifdef SCALED_CONVERSION_NOT_WORKING
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *	v_name				v_name_scaled
- *		   				 
+ *
 */
 	if (last_underscore && !strcmp(last_underscore, "_scaled"))
 	{
@@ -1596,13 +1596,13 @@ int cv_units(
 		}
 		else
 			setup_vname(var->name, v_name, &last_underscore);
-	}			
+	}
 #endif /* SCALED_CONVERSION_NOT_WORKING */
 
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *	v_name_m				v_name_ft
- *		   				 
+ *
 */
 	if (last_underscore && !strcmp(last_underscore, "_ft"))
 	{
@@ -1618,7 +1618,7 @@ int cv_units(
 
 			/* Initialize the return value to zero */
 			double_ptr = &double_value;
-			*converted_value = 0; 
+			*converted_value = 0;
 
 			error = ff_get_double( var_source, input_buffer + var_source->start_pos - 1, double_ptr, FFF_TYPE(input_format));
 		  if (error)
@@ -1632,9 +1632,9 @@ int cv_units(
 	}
 
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *	v_name_ft				v_name_m
- *		   				 
+ *
 */
 
 	if (last_underscore && !strcmp(last_underscore, "_m"))
@@ -1650,8 +1650,8 @@ int cv_units(
 		{		/*  value in feet found */
 			/* Initialize the return value to zero */
 			double_ptr = &double_value;
-   			*converted_value = 0; 
-			
+   			*converted_value = 0;
+
 			error = ff_get_double( var_source, input_buffer + var_source->start_pos - 1, double_ptr, FFF_TYPE(input_format));
 		  if (error)
 		  	return(0);
@@ -1662,10 +1662,10 @@ int cv_units(
 		else
 			setup_vname(var->name, v_name, &last_underscore);
 	}
- 
+
 
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *	v_name					v_name_abs and
  *							v_name_sign
 */
@@ -1710,7 +1710,7 @@ int cv_units(
 	}
 
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *	v_name					v_name_negate (negate input value)
  */
 
@@ -1731,12 +1731,12 @@ int cv_units(
 		else
 			setup_vname(var->name, v_name, &last_underscore);
 	}
-	
+
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *	v_name_abs and			v_name
  *	v_name_sign
- *		   				 
+ *
 */
 
 	setup_vname(var->name, v_name, &last_underscore);
@@ -1753,7 +1753,7 @@ int cv_units(
 	  	return(0);
 
 		*converted_value = double_value;
-		
+
 		/* Now Get The Sign */
 		setup_vname(var->name, v_name, &last_underscore);
 
@@ -1776,7 +1776,7 @@ int cv_units(
 	}
 
 /*	CONVERT FROM:			TO:
- *		   				 
+ *
  *  v_name_negate   v_name
  */
 
@@ -1805,7 +1805,7 @@ int cv_units(
 	{
 		return(cv_date_string(var, converted_value, input_format,input_buffer));
 	}
-	
+
 	/* else no conversion found */
 	return(0);
 }  /* End cv_units() */
@@ -1814,15 +1814,15 @@ int cv_units(
  * NAME:	cv_abs
  *
  * PURPOSE:	convert from v_name  to  v_name_abs OR v_name_sign
- *	
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE: 	cv_abs(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -1888,29 +1888,29 @@ int cv_abs(VARIABLE_PTR var,			/* Description of Desired variable */
 
 /*
  * NAME:	cv_deg
- *			
+ *
  * PURPOSE:	CONVERT FROM			TO
- *		   				 
+ *
  *			v_name_deg				v_name
  *			v_name_min
  *			v_name_sec
  *						-- OR --
  *			v_name_deg_abs			v_name
- *			v_name_min	  
+ *			v_name_min
  *			v_name_sec
  *			v_name_ns
- *			v_name_ew 
+ *			v_name_ew
  *			geo_quad_code
  *			WMO_quad
- *	
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:  	cv_deg(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -1942,7 +1942,7 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 	int error;
 
 	/* Initialize return value to zero */
-	*converted_value = 0; 
+	*converted_value = 0;
 
 	/* For each extension, see if exists in input_format.
 	   If it does, compute the appropriate value */
@@ -2019,7 +2019,7 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 	assert(sizeof(v_name) - strlen(v_name) > 4);
 	strncat(v_name, "_sec", sizeof(v_name) - strlen(v_name) - 1);
 	v_name[sizeof(v_name) - 1] = STR_END;
-	
+
 	var_sec = ff_find_variable(v_name, input_format);
 	if(!var_sec)
 	{
@@ -2038,7 +2038,7 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 		*converted_value += double_value / (sign * 3600.);
 	}
 
-	
+
 	/* Check the sign of the value if var_nsew is found */
 
 	if (var_deg) {
@@ -2048,7 +2048,7 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 		assert(sizeof(v_name) - strlen(v_name) > 3);
 		strncat(v_name, "_ns", sizeof(v_name) - strlen(v_name) - 1);
 		v_name[sizeof(v_name) - 1] = STR_END;
-		
+
 		var_nsew = ff_find_variable(v_name, input_format);
 
 		if (!var_nsew) {
@@ -2079,7 +2079,7 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 			var_nsew = ff_find_variable("WMO_quad_code", input_format);
 		}
 
-		if (var_nsew) 
+		if (var_nsew)
 		{
 			FF_DATA_BUFFER ch = NULL;
 
@@ -2103,7 +2103,7 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 				*(first_underscore) = STR_END;
 				if(strcmp(v_name, "latitude") == 0 && ((*ch == '3' || *ch == '4') || *ch == '-'))
 					*converted_value = -*converted_value;
-	
+
 				if(strcmp(v_name, "longitude") == 0 && ((*ch == '2' || *ch == '4') || *ch == '-'))
 					*converted_value = -*converted_value;
 
@@ -2120,12 +2120,12 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 				*(first_underscore) = STR_END;
 				if(strcmp(v_name, "latitude") == 0 && (*ch == '3' || *ch == '5'))
 					*converted_value = -*converted_value;
-	
+
 				if(strcmp(v_name, "longitude") == 0 && (*ch == '5' || *ch == '7'))
 					*converted_value = -*converted_value;
 
 			}
-			
+
 		}
 
 	}
@@ -2138,26 +2138,26 @@ int cv_deg(VARIABLE_PTR var,		/* Description of Desired variable */
 }
 /*
  * NAME:	cv_lon_east
- *			
+ *
  * PURPOSE:	CONVERT FROM			TO
- *		   				 
+ *
  *			longitude_east 			longitude
  *						-- OR --
  *			longitude 				longitude_east
- *			v_name_min	  
+ *			v_name_min
  *			v_name_sec
  *			v_name_ns
- *			v_name_ew 
+ *			v_name_ew
  *			geo_quad_code
- *	
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:  	cv_lon_east(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with longitude_east
  *
  * RETURNS:	0 if unsuccessful, 1 if successful
@@ -2180,7 +2180,7 @@ int cv_lon_east(VARIABLE_PTR var,		/* Description of Desired variable */
 	*converted_value = 0;  	/* Initialize the return value to zero */
 
 	/* Check to see which way the conversion is going */
-	
+
 	if(memStrcmp(var->name, "longitude", "var->name,\"longitude\"") == 0){
 
 		/* Conversion of longitude_east to longitude */
@@ -2211,21 +2211,21 @@ int cv_lon_east(VARIABLE_PTR var,		/* Description of Desired variable */
 
 /*
  * NAME:	cv_deg_nsew
- *			
+ *
  * PURPOSE:	CONVERT FROM			TO
- * 		   				 
+ *
  *			v_name_abs				v_name
  *			v_name_ns
  *			v_name_ew
- *			
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_deg_nsew(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -2274,7 +2274,7 @@ int cv_deg_nsew(VARIABLE_PTR var,		/* Description of Desired variable */
 	assert(sizeof(v_name) - strlen(v_name) > 3);
 	strncat(v_name, "_ns", sizeof(v_name) - strlen(v_name) - 1);
 	v_name[sizeof(v_name) - 1] = STR_END;
-	
+
 	var_nsew = ff_find_variable(v_name, input_format);
 	if (!var_nsew) {
 		strncpy(v_name, var->name, name_length);
@@ -2324,26 +2324,26 @@ int cv_deg_nsew(VARIABLE_PTR var,		/* Description of Desired variable */
 
 /*
  * NAME:	cv_deg_abs
- *				   
+ *
  * PURPOSE:	CONVERT FROM			TO
- *		   				 
+ *
  *			v_name_deg				v_name_abs
  *			v_name_min
  *			v_name_sec
  *						-- OR --
  *			v_name_deg_abs			v_name_abs
- *			v_name_min	  
+ *			v_name_min
  *			v_name_sec
  *
  *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_deg_abs(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *										
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -2481,27 +2481,27 @@ int cv_deg_abs(VARIABLE_PTR var,
 
 /*
  * NAME:	cv_nsew
- *				   	   	   
+ *
  * PURPOSE:	CONVERT FROM			TO
- *		   				 
- *				v_name					v_name_ns	
- *										v_name_ew 
- *							-- OR --				
+ *
+ *				v_name					v_name_ns
+ *										v_name_ew
+ *							-- OR --
  *				v_name_deg				v_name_ns
  *										v_name_ew
- *							-- OR --				
+ *							-- OR --
  *				v_name_sign				v_name_ns
  *										v_name_ew
- *					  				
+ *
  *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_nsew(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *		 		double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   		
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *		 		double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -2560,7 +2560,7 @@ int cv_nsew(VARIABLE_PTR var,		/* Description of Desired variable */
 	}
 
 	if (!var_source) return(0);
-	
+
 	memcpy(v_name, var->name, name_length);
 	v_name[name_length] = STR_END;
 
@@ -2578,21 +2578,21 @@ int cv_nsew(VARIABLE_PTR var,		/* Description of Desired variable */
 
 /*
  * NAME:	cv_dms
- *				   	   	   
+ *
  * PURPOSE:	CONVERT FROM			TO
- *		   				 			
+ *
  *			v_name					v_name_deg
  *			v_name_abs				v_name_min
  *			v_name_ns				v_name_sec
- *			ew		 
+ *			ew
  *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
- * USAGE:	cv_dms(VARIABLE_PTR var,	Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *										   
+ * USAGE:	cv_dms(VARIABLE_PTR var,	Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -2601,12 +2601,12 @@ int cv_nsew(VARIABLE_PTR var,		/* Description of Desired variable */
  *
  *
  * RETURNS:	0 if unsuccessful, 1 if successful
- *		   
+ *
  * SYSTEM DEPENDENT FUNCTIONS:
  *
  */
 #undef ROUTINE_NAME
-#define ROUTINE_NAME "cv_dms"		
+#define ROUTINE_NAME "cv_dms"
 
 int cv_dms(VARIABLE_PTR var,	/* Description of Desired variable */
 	double *converted_value,	/* Pointer to the Converted value */
@@ -2654,7 +2654,7 @@ int cv_dms(VARIABLE_PTR var,	/* Description of Desired variable */
 		assert(sizeof(v_name) - strlen(v_name) > 4);
 		strncat(v_name, "_abs", sizeof(v_name) - strlen(v_name) - 1);
 		v_name[sizeof(v_name) - 1] = STR_END;
-	
+
 		var_source = ff_find_variable(v_name, input_format);
 
 		if (var_source){
@@ -2685,7 +2685,7 @@ int cv_dms(VARIABLE_PTR var,	/* Description of Desired variable */
 	if (!memStrcmp(last_underscore,"_deg", NO_TAG)) {
 
 		if (abs_marker) {
-	
+
 			memcpy(v_name, var->name, name_length);
 			*(first_underscore) = STR_END;
 
@@ -2704,18 +2704,18 @@ int cv_dms(VARIABLE_PTR var,	/* Description of Desired variable */
 
 				var_nsew = ff_find_variable(v_name, input_format);
 			}
-	
+
 			if (var_nsew)
 			{
 				int nsew_char = 0;
 				FF_DATA_BUFFER ch = NULL;
-	
+
 				ch = input_buffer + var_nsew->start_pos - 1;
 				nsew_char = toupper( (int)((* (char HUGE *) ch ) % 128));
-	
+
 				if (nsew_char == 'N' || nsew_char == 'E')
 						*converted_value = fabs(*converted_value);
-	
+
 				if (nsew_char == 'S' || nsew_char == 'W')
 						*converted_value = -fabs(*converted_value);
 			}
@@ -2784,7 +2784,7 @@ int cv_dms(VARIABLE_PTR var,	/* Description of Desired variable */
 		*converted_value = 60.0 * (*converted_value -
 			(double) ( (int) *converted_value));
 	}
- 
+
 	if (negate_value) *converted_value *= -1.0;
 	return(1);
 }
@@ -2792,21 +2792,21 @@ int cv_dms(VARIABLE_PTR var,	/* Description of Desired variable */
 
 /*
  * NAME:	cv_degabs_nsew
- *			   
+ *
  * PURPOSE:	CONVERT FROM			TO
- *						 
+ *
  *			v_name_deg_abs			(v-name)_deg
- *			v_name_ns	  
+ *			v_name_ns
  *			v_name_ew
- *			
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_degabs_nsew(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -2828,11 +2828,11 @@ int cv_degabs_nsew(VARIABLE_PTR var,
 	unsigned name_length = 0;
 	char v_name[MAX_NAME_LENGTH + 24];	/* Variable Name */
 
-	VARIABLE_PTR var_abs; 
+	VARIABLE_PTR var_abs;
 	VARIABLE_PTR var_nsew;
 	char *extension;
 	int error;
-	
+
 	*converted_value = 0;	/* Initialize the return value to zero */
 
 	/* See if v_name_deg_abs and v_name_ns (or ew) exist in the input format */
@@ -2914,22 +2914,22 @@ int cv_degabs_nsew(VARIABLE_PTR var,
 
 /*
  * NAME:	cv_degabs
- *			   		 
+ *
  * PURPOSE:	CONVERT FROM			TO
- *									
+ *
  *			v_name 					v_name_deg_abs, _min_abs, _sec_abs
  *						-- OR --
  *			v_name_abs				v_name_deg_abs, _min_abs, _sec_abs
  *
- *				  
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_degabs(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function deals with degree / minute / second and NSEW
  *				conversions.
  *
@@ -2955,7 +2955,7 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
 	char v_name[MAX_NAME_LENGTH + 24];	/* Variable Name */
 
 	int error;
-	
+
 	/* Initialize the return value to zero */
 	*converted_value = 0.0;
 
@@ -2993,7 +2993,7 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
 	if (!memStrcmp(first_underscore, "_deg_abs", NO_TAG)){
 
 		*converted_value = fabs( (double) ( (int) double_value) );
-	
+
 		return(1);
 	}
 
@@ -3022,7 +3022,7 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
 				assert(sizeof(v_name) - strlen(v_name) > 8);
 				strncat(v_name, "_sec_abs", sizeof(v_name) - strlen(v_name) - 1);
 				v_name[sizeof(v_name) - 1] = STR_END;
-					
+
 				var_sec = ff_find_variable(v_name, input_format);
 			}
 
@@ -3054,7 +3054,7 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
 		/* convert to seconds */
 		*converted_value = 60.0 * (*converted_value -
 			(double) ( (int) *converted_value));
-	
+
 	}
 
   	return(1);
@@ -3062,8 +3062,8 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
 
 
 /*
- * NAME:	cv_geog_quad	
- *			   		 
+ * NAME:	cv_geog_quad
+ *
  * PURPOSE:	The geographic quad codes of DMA indicate:
  *		   		1 = Northeast
  *				2 = Northwest
@@ -3075,13 +3075,13 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
  *				7 = Northwest
  *				3 = Southeast
  *				5 = Southwest
- *	
+ *
  *			CONVERT FROM			TO
- *  					 
+ *
  *			latitude and longitude	geog_quad_code
  *						WMO_quad_code
  *
- *						-- OR --				
+ *						-- OR --
  *
  *			latitude_ns and
  *			longitude_ew			geog_quad_code
@@ -3092,15 +3092,15 @@ int cv_degabs(VARIABLE_PTR var,	/* Description of Desired variable */
  *			latitude_sign and
  *			longitude_sign			geog_quad_code
  *							WMO_quad_code
- *				  
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_geog_quad(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS: This function creates a geographic quadrant code used by
  *			 DMA in their gravity data.
  *
@@ -3145,7 +3145,7 @@ int cv_geog_quad(VARIABLE_PTR var,	/* Description of Desired variable */
 	else {
 		/* try for latitude_ns */
 		var_latlon = ff_find_variable("latitude_ns", input_format);
-	
+
 		if(var_latlon){
 			ch = input_buffer + var_latlon->start_pos - 1;
 			if(*ch == 'S' || *ch == 's') ns = 1;
@@ -3161,7 +3161,7 @@ int cv_geog_quad(VARIABLE_PTR var,	/* Description of Desired variable */
 			}
 		}
 	}
-		
+
 	if(!ch) return (0);
 	ch = NULL;
 
@@ -3179,7 +3179,7 @@ int cv_geog_quad(VARIABLE_PTR var,	/* Description of Desired variable */
 
 	else {	/* try for longitude_ew */
 		var_latlon = ff_find_variable("longitude_ew", input_format);
-	
+
 		if(var_latlon){
 			ch = input_buffer + var_latlon->start_pos - 1;
 			if(*ch == 'W' || *ch == 'w') ew = 1;
@@ -3187,7 +3187,7 @@ int cv_geog_quad(VARIABLE_PTR var,	/* Description of Desired variable */
 
 		else {
 			var_latlon = ff_find_variable("longitude_sign", input_format);
-		
+
 			if(var_latlon){
 				ch = input_buffer + var_latlon->start_pos - 1;
 				if(*ch == '-') ew = 1;
@@ -3208,7 +3208,7 @@ int cv_geog_quad(VARIABLE_PTR var,	/* Description of Desired variable */
 			else *nsew = '4';			/* Southwest */
 		}
 	}
-	
+
 	if(memStrcmp(var->name, "WMO_quad_code", "var->name,\"WMO_quad_code\"") == 0){
 		if(ns == 0){
 			if(ew == 0) *nsew = '1';	/* Northeast */
@@ -3224,28 +3224,28 @@ int cv_geog_quad(VARIABLE_PTR var,	/* Description of Desired variable */
 }
 
 /*
- * NAME:	cv_geog_sign	
- *			   		 
+ * NAME:	cv_geog_sign
+ *
  * PURPOSE:	Convert between various lat/lon signs
- *	
+ *
  *			CONVERT FROM			TO
- *  					 
+ *
  *			latitude_ns				latitude_sign
  *			longitude_ew			longitude_sign
- *						-- OR --				
+ *						-- OR --
  *			latitude_sign			latitude_ns
  *			longitude_sign			longitude_ew
- *				  
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@ngdc.noaa.gov
  *
  * USAGE:	cv_geog_sign(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)	Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)	Input Buffer
+ *
  * COMMENTS:
- *			
+ *
  *
  * RETURNS:	0 if unsuccessful, 1 if successful
  *
@@ -3279,7 +3279,7 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
 
 		if(*(var->name + 1) == 'o'){		/* Longitude */
 			var_source = ff_find_variable("longitude_ew", input_format);
-	
+
 			if(var_source){
 				ch = input_buffer + var_source->start_pos - 1;
 				if(*ch == 'W' || *ch == 'w') *nsew = '-';
@@ -3291,7 +3291,7 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
 
 		/* Latitude */
 		var_source = ff_find_variable("latitude_ns", input_format);
-	
+
 		if(var_source){
 			ch = input_buffer + var_source->start_pos - 1;
 			if(*ch == 'S' || *ch == 's') *nsew = '-';
@@ -3303,7 +3303,7 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
 
 	if(memStrcmp(last_underscore + 1, "ew", "last_underscore+1,\"ew\"") == 0){	/* Creating ew from a sign */
 		var_source = ff_find_variable("longitude_sign", input_format);
-	
+
 		if(var_source){
 			ch = input_buffer + var_source->start_pos - 1;
 			if(*ch == '+' || *ch == ' ') *nsew = 'E';
@@ -3311,13 +3311,13 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
 			return(1);
 		}
 		else return(0);
-		
+
 	}
 
 	if(memStrcmp(last_underscore + 1, "ns", "last_underscore+1,\"ns\"") == 0){	/* Creating ns from a sign */
 
 		var_source = ff_find_variable("latitude_sign", input_format);
-	
+
 		if(var_source){
 			ch = input_buffer + var_source->start_pos - 1;
 			if(*ch == '-') *nsew = 'S';
@@ -3337,9 +3337,9 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
  *			used to get one of the three magnitudes out out the variable
  *			longmag, or to creat longmag from one, two, or three of the
  *			single magnitudes.
- *  	
+ *
  *			Longmag is a long which contains three magnitudes:
- *  
+ *
  *			ms2 is a magnitude with a precision of 2 and is multiplied by
  *			10,000,000
  *			ms1 is a magnitude with a precision of 2 which is multiplied by
@@ -3350,8 +3350,8 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
  *
  * USAGE:	cv_long2mag(
  *				VARIABLE_LIST_PTR out_var,
- *				double *mag, 
- *				FORMAT_PTR input, 
+ *				double *mag,
+ *				FORMAT_PTR input,
  *				FF_DATA_BUFFER input_buffer)
  *
  * COMMENTS:
@@ -3414,16 +3414,16 @@ int cv_geog_sign(VARIABLE_PTR var,	/* Description of Desired variable */
 
 /*
  * NAME:	ff_strnstr
- *		
+ *
  * PURPOSE:
  *			-- see above --
  * AUTHOR:
  *
  * USAGE:	ff_strnstr(
- *				char *pcPattern,	we search for this ... 
- *				char *pcText,		... in this text ...   
- *				size_t uTextLen)	... up to this length  
- *							   							   	
+ *				char *pcPattern,	we search for this ...
+ *				char *pcText,		... in this text ...
+ *				size_t uTextLen)	... up to this length
+ *
  * COMMENTS:
  *
  * RETURNS:
@@ -3548,12 +3548,12 @@ static int ff_get_value(VARIABLE_PTR var, /* The variable description */
 
 	assert(data_src && data_dest);
 	FF_VALIDATE(var)
-	
+
 	variable_length = FF_VAR_LENGTH(var);
 
 	if((unsigned)abs(var->precision) > variable_length)
 		return(err_push(ERR_SYNTAX,"variable precision is larger than the variable_length"));
-	
+
 	switch (format_type & FFF_FORMAT_TYPES)
 	{
 		case FFF_ASCII:         /* If the format is ASCII, copy the string */
@@ -3573,30 +3573,30 @@ static int ff_get_value(VARIABLE_PTR var, /* The variable description */
 				return(err_push(ROUTINE_NAME,ERR_MEM_LACK,"tmp_str"));
 			}
 			memMemcpy(tmp_str, data_src, variable_length, NO_TAG);
-		
+
 			/* define a pointer to the end of the string */
 			last_char = tmp_str + variable_length;
 			*last_char = STR_END;
-	
+
 			/* Fill in trailing blanks with zeroes */
 			ch = last_char - 1;
 			while (*ch == ' ' && ch >= tmp_str)
 				*ch-- = '0';
-	
+
 			if (ch < tmp_str)        /* String is blank, fill with 0 */
 				*tmp_str = '0';
-	
+
 			/* If a precision is specified and there is no decimal point then
 			the decimal point must be added. This requires that the variable
 			become a double */
-			
+
 			/* MAO:c This seems very curious to me.  What's happening is that an
 			   integer with an implied decimal point (e.g., an integer scaled by
 			   a factor of ten) is going to be converted as a double into data_dest
-			   -- do calling functions know about this? 
+			   -- do calling functions know about this?
 			   LASTLY, this seems inconsistent because this is not done for the
 			   binary case below. */
-	
+
 			decimal_ptr = memStrchr(tmp_str, '.', "decimal_ptr");
 			if (var->precision && !decimal_ptr)
 			{
@@ -3609,12 +3609,12 @@ static int ff_get_value(VARIABLE_PTR var, /* The variable description */
 				memFree(tmp_str, "tmp_str");
 				return(0);
 			}
-	
+
 			/* We are left with non-character variables
 				with decimal points in the correct place or
 				with precision = 0 and no decimal points.
 				These variables can be directly converted. */
-	
+
 			error = ff_string_to_binary(tmp_str, FFV_TYPE(var), data_dest);
 			memFree(tmp_str, "tmp_str");
 			return(error);
@@ -3625,7 +3625,7 @@ static int ff_get_value(VARIABLE_PTR var, /* The variable description */
 			if(IS_TEXT(var))
 				*((char *)data_dest + variable_length) = STR_END;
 			return(0);
-		
+
 		default:
 			return(err_push(ERR_UNKNOWN_FORM_TYPE, NULL));
 	} /* End of format_type switch() */
@@ -3640,9 +3640,9 @@ static int ff_get_value(VARIABLE_PTR var, /* The variable description */
 #define ROUTINE_NAME "cv_long2mag"
 
 int cv_long2mag(
-	VARIABLE_PTR	 	out_var, 
-	double 				*mag, 
-	FORMAT_PTR 			input, 
+	VARIABLE_PTR	 	out_var,
+	double 				*mag,
+	FORMAT_PTR 			input,
 	FF_DATA_BUFFER 		input_buffer)
 {
 
@@ -3708,9 +3708,9 @@ int cv_long2mag(
  *			or three of the	single magnitudes.
  *
  *			CONVERTS	mb or ms1 or ms2	TO	longmag
- *  	
+ *
  *			Longmag is a long which contains three magnitudes:
- *			 
+ *
  *			ms2 is a magnitude with a precision of 2 and is multiplied by
  *			10,000,000
  *			ms1 is a magnitude with a precision of 2 which is multiplied by
@@ -3720,9 +3720,9 @@ int cv_long2mag(
  * AUTHOR:	T. Habermann (303) 497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE:	cv_mag2long(
- *				VARIABLE_PTR out_var, 
- *				double		*mag, 
- *				FORMAT_PTR	input, 
+ *				VARIABLE_PTR out_var,
+ *				double		*mag,
+ *				FORMAT_PTR	input,
  *				FF_DATA_BUFFER	input_buffer)
  *
  * COMMENTS:
@@ -3808,7 +3808,7 @@ int cv_mag2long
  *
  * PURPOSE:	This is a conversion function for the FREEFORM system which is
  *			used to calculate differences between various magnitudes.
- *  
+ *
  *			CONVERT FROM:				TO:
  *				magnitude_mb and		mb-max_like
  *				magnitude_max_like
@@ -3817,8 +3817,8 @@ int cv_mag2long
  *
  * USAGE:	cv_mag_diff(
  *				VARIABLE_LIST_PTR out_var,
- *				double *mag, 
- *				FORMAT_PTR input, 
+ *				double *mag,
+ *				FORMAT_PTR input,
  *				FF_DATA_BUFFER input_buffer)
  *
  * COMMENTS:
@@ -3837,9 +3837,9 @@ int cv_mag2long
 #define ROUTINE_NAME "cv_mag_diff"
 
 int cv_mag_diff(
-	VARIABLE_PTR	 	out_var, 
-	double 				*mag_diff, 
-	FORMAT_PTR 			input, 
+	VARIABLE_PTR	 	out_var,
+	double 				*mag_diff,
+	FORMAT_PTR 			input,
 	FF_DATA_BUFFER 		input_buffer)
 {
 
@@ -3852,10 +3852,10 @@ int cv_mag_diff(
 	char				magnitude_2[64] = "magnitude_";
 	char				*minus;
 	double				mag_1 = 0.0;
-	double				mag_2 = 0.0;		
+	double				mag_2 = 0.0;
 	char *name_copy = NULL;
 	int error = 0;
-	
+
 	/* Create the magnitude names from the output variable. That variable
 	has the form mag_type_1-mag_type_2. */
 	name_copy = (char *)memStrdup(out_var->name, "name_copy");
@@ -3894,7 +3894,7 @@ int cv_mag_diff(
 			if (!error)
 				error = ff_get_double(var_mag_2, input_buffer + var_mag_2->start_pos - 1, &mag_2, input->type);
 		}
-		
+
 		if (!error)
 			*mag_diff = mag_1 - mag_2;
 	}
@@ -3907,16 +3907,16 @@ int cv_mag_diff(
 		return(1);
 }
 
-/* 
+/*
  *
  * CONTAINS:
- * 
+ *
  *	FUNCTION		CONVERT FROM:			TO:
- *							 
+ *
  *	cv_noaa_eq		NOAA bit mast			variables
- *	
- */ 
-/* 
+ *
+ */
+/*
  * HISTORY:
  *	r fozzard	4/21/95		-rf01
  *		comment out search.h (not needed?)
@@ -3929,12 +3929,12 @@ int cv_mag_diff(
 #undef ROUTINE_NAME
 #define ROUTINE_NAME "b_strcmp"
 
- 
+
 /*
  * NAME:	b_strcmp
  *
  * PURPOSE:	compare function for bsearch routine
- *	
+ *
  * AUTHOR: TAM, modified by MAO
  *
  * RETURNS:	same as strcmp()
@@ -3953,22 +3953,22 @@ static int b_strcmp(const char **s1, const char **s2 )
  * NAME:	cv_noaa_eq
  *
  * PURPOSE:	convert from NOAA bit mask to earthquake parameters
- *	
+ *
  * AUTHOR: T. Habermann, NGDC, (303) 497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE: 	cv_noaa_eq(
- *				VARIABLE_PTR var,		Description of Desired variable 
- *				double *converted_value,	Pointer to the Converted value 
- *				FORMAT_PTR input_format,	Input Format Description 
- *				char   *input_buffer)		Input Buffer 
- *								   
+ *				VARIABLE_PTR var,		Description of Desired variable
+ *				double *converted_value,	Pointer to the Converted value
+ *				FORMAT_PTR input_format,	Input Format Description
+ *				char   *input_buffer)		Input Buffer
+ *
  * DESCRIPTION: The NOAA earthquake database includes two files for each
  *				catalog. These files are called the bit mask and the data
  *				mask. The information in both files is held in packed
  *				binary fields. This conversion function reads the bit mask
  *				format and extracts the various earthquake parameters.
  *
- * COMMENTS: 
+ * COMMENTS:
  *
  * RETURNS:	0 if unsuccessful, 1 if successful
  *
@@ -4059,7 +4059,7 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
 	/*
 	** search for the output variable
 	*/
-	
+
 	result = (char *)bsearch((const void *)&(var->name),
 	                         (const void *)base,
 	                         (size_t)NUM_OUTPUT_NAMES,
@@ -4108,10 +4108,10 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
 			fe_reg  = (short)((*(bit_mask + 1) >> 5) & 0x03FF);
 			*converted_value = (short)(fe_reg);
 		break;
-		
+
 		case 4:								/* HOUR  */
 			hour = (short)((*(data_mask + 0) >> 22) & 0x001F);
-			
+
 			if (hour !=31)
 			{
 				hour = (short)hour;
@@ -4123,7 +4123,7 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
 			intens  = (short)((*(bit_mask + 0) >> 11) & 0x000F);
 			*converted_value = (short)(intens);
 		break;
-	
+
 		case 6:							/* LATITUDE */
 			co_lat = (long)(*(bit_mask + 2) >> 13);
 			if (co_lat > 90000L)
@@ -4151,70 +4151,70 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
 		case 8:				/* MAGNITUDE_MB - BODY WAVE MAGNITUDE*/
 		  b_mag1  = (short)((*(bit_mask + 2) >> 7) & 0x003F);
 		  b_mag2  = (short)((*(data_mask + 1) >> 27) & 0x001F);
-		
+
 		if(b_mag1)
 			b_mag = (float)(25 *b_mag1 + b_mag2 -300)/100.0F;
 		else
 			b_mag = 0.0F;
 		*converted_value = (float)(b_mag);
 		break;
-		
+
 		case 9:				/* MAGNITUDE_ML - LOCAL  MAGNITUDE*/
 			l_mag1  = (short)((*(bit_mask + 3) >> 6) & 0x003F);
 			l_mag2  = (short)((*(data_mask + 2) >> 27) & 0x001F);
-						
+
 			if (l_mag1)
 				l_mag = (float)(25*l_mag1 + l_mag2 -300)/100.0F;
 			else
 				l_mag = 0.0F;
 			*converted_value = (float)(l_mag);
 			break;
-						
+
 		case 10:			/* MAGNITUDE_MO - OTHER  MAGNITUDE*/
 			o_mag1  = (short)(*(bit_mask + 3)  & 0x003F);
 			o_mag2  = (short)((*(data_mask + 1) >> 18) & 0x001F);
-					
+
 			if (o_mag1)
 				o_mag = (float)(25* o_mag1 + o_mag2 -300)/100.0F;
-			else 
+			else
 				o_mag = 0.0F;
-					
+
 			*converted_value = (float)(o_mag);
 			break;
-									
+
 		case 11:				/* MAGNITUDE_MS - S WAVE MAGNITUDE*/
 			s_mag1  = (short)((*(bit_mask + 2) >> 1) & 0x003F);
 			s_mag2  = (short)((*(data_mask + 1) >> 3) & 0x000F);
-					
+
 			if (s_mag1)
 				ms = (float)((25*s_mag1 + s_mag2 *  5 -300) /10) /10.0F;
 			else
 				ms = 0.0F;
 			*converted_value = (float)(ms);
 		break;
-					
+
 		case 12:							/* MINUTE */
 			minute = (short)((*(data_mask + 0) >> 16) & 0x003F);
 			if (minute != 63)
 				*converted_value = (short)(minute);
 		break;
-		
+
 		case 13:							/* MONTH */
 			time = (long)((*(bit_mask + 0) >> 15) & 0xFFFF);
 			year =  (short)(time / 13);
 			*converted_value = (short)(time -  year *13);
 		break;
-						
+
 		case 14:				/* NO_STATION - NUMBER of STATIONS*/
 			no_stat = (*(data_mask + 3) >> 17) & 0x03FFF;
-						    
+
 			*converted_value = (long)(no_stat);
 		break;
-		
+
 		case 15:							/* SECOND */
-		
+
 			second = (float)((*(data_mask + 0) >> 6) & 0x03FF);
-					
+
 			if (second != 1023)
 			{
 				if (second >600)
@@ -4225,18 +4225,18 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
 				second = 0.0F;
 			*converted_value = (float)(second);
 		break;
-						
+
 		case 16:							/* SOURCE CODE       */
 			index   = (short)((*(data_mask + 3) >> 8) & 0x01FF);
 			*converted_value = (int)(index);
 		break;
-				
+
 		case 17:							/* YEAR */
 			time = (*(bit_mask + 0) >> 15) & 0xFFFF;
-					
+
 			*converted_value = (short)((time / 13)-2100);
 		break;
-						
+
 		case 18:							/* Z/H COMPONENT     */
 			switch  ((int)((*(data_mask +3) >>5) & 0x0007))
 			{
@@ -4250,15 +4250,15 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
 
 			default: zh =  '\0';
 			}
-					
+
 			*converted_value = (int)(zh);
 			break;
-		
+
 		default:
 			sprintf(input_buffer,"Problem with switch in NOAAEQ functions\n");
 
 		return(0);
-		
+
 	} /* end switch */
 
 	return(1);
@@ -4270,19 +4270,19 @@ int cv_noaa_eq(VARIABLE_PTR var,		/* Description of Desired variable */
  *
  * PURPOSE:	This is a conversion function for the seismicity data from
  *			the University of Washington.
- *  
+ *
  *			Conversions which are included:
- *			 
+ *
  *			Convert AType into				cultural
  *			            or 					ngdc_flags
  *			Convert depth_control_code into depth_control
- *			
+ *
  * AUTHOR:
  *
  * USAGE:	cv_sea_flags(
- *				VARIABLE_PTR out_var, 
- *				double *dummy, 
- *				FORMAT_PTR input, 
+ *				VARIABLE_PTR out_var,
+ *				double *dummy,
+ *				FORMAT_PTR input,
  *				FF_DATA_BUFFER input_buffer)
  *
  * COMMENTS:
@@ -4326,7 +4326,7 @@ int cv_sea_flags(VARIABLE_PTR out_var, double *dummy, FORMAT_PTR input, FF_DATA_
 		TRYING TO GET MORE THAN 8 BYTES!!! */
 
 		data_source = input_buffer + in_var->start_pos - 1;
-	
+
 		/* Event Felt, ch_ptr points to cultural */
 		if (strcmp(out_var->name, "cultural") == 0)
 		{
@@ -4346,7 +4346,7 @@ int cv_sea_flags(VARIABLE_PTR out_var, double *dummy, FORMAT_PTR input, FF_DATA_
 			return(1);
 		}
 	}
-	
+
 	if (strcmp(out_var->name, "depth_control") == 0)
 	{
 		/* Check the input format to make sure that depth_control is present */
@@ -4377,7 +4377,7 @@ int cv_sea_flags(VARIABLE_PTR out_var, double *dummy, FORMAT_PTR input, FF_DATA_
 	}
 	return(0);
 }
-		
+
 /*
  * NAME:	cv_slu_flags
  *
@@ -4385,20 +4385,20 @@ int cv_sea_flags(VARIABLE_PTR out_var, double *dummy, FORMAT_PTR input, FF_DATA_
  *			the St. Louis University.
  *
  *			Conversions which are included:
- *			 			
+ *
  *			Convert slu_line2 into			non_tectonic
  *			Convert slu_line2 into			cultural
  *			Convert slu_line2 into			intensity
  *			Convert slu_line2 into			magnitude_ml
  *			Convert slu_line2 into			scale
  *			Convert slu_line2 into			ml_authority
- *			
+ *
  * AUTHOR:
  *
  * USAGE:	cv_slu_flags(
- *				VARIABLE_PTR out_var, 
- *				double        *dummy, 
- *				FORMAT_PTR    input, 
+ *				VARIABLE_PTR out_var,
+ *				double        *dummy,
+ *				FORMAT_PTR    input,
  *				FF_DATA_BUFFER   input_buffer)
  *
  * COMMENTS:
@@ -4590,13 +4590,13 @@ int cv_slu_flags(VARIABLE_PTR out_var, double *dummy, FORMAT_PTR input, FF_DATA_
  * PURPOSE:	This function converts a time given as year, month, day, hour,
  *			minute, second into a serial_day_1980 data with January 1, 1980 as 0,
  *			or into year_decimal.
- * 
+ *
  * AUTHOR:	The code was modified from that given by Michael Covington,
  *			PC Tech Journal, December, 1985, PP. 136-142.
  *			Ted Habermann, NGDC, (303)497-6472, haber@mail.ngdc.noaa.gov
  *
- * USAGE:	cv_ymd2ser(VARIABLE_PTR out_var, 
- *			double		*serial_day_1980, 
+ * USAGE:	cv_ymd2ser(VARIABLE_PTR out_var,
+ *			double		*serial_day_1980,
  *			FORMAT_PTR	input_format,
  *			FF_DATA_BUFFER	input_buffer)
  *
@@ -4633,7 +4633,7 @@ int cv_ymd2ser(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
 
 	int variable_length;
 	/* Define the Variables */
-	
+
 	/* Check input format to see if variables are present */
 
 	in_var = ff_find_variable("century", input_format);	/* Get the century */
@@ -4651,7 +4651,7 @@ int cv_ymd2ser(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
 
 		century = (short)decimal;
 	}
-	
+
 	in_var = ff_find_variable("year", input_format);	/* Get the year */
 	if(in_var){
 		++got_data;
@@ -4772,8 +4772,8 @@ int cv_ymd2ser(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
 	  if (error)
 	  	return(0);
 	}
-	
-	/* Several of the time variables can not have values of 0 (i.e. month and day). If these
+
+	/* Several of the time variables cannot have values of 0 (i.e. month and day). If these
 		variables do have these values, it is assumed that they are unspecified. For example,
 		we know that an event occurred during a specific year (month), but do not know
 		any more. This case can also occur if we know the year, month, and day,
@@ -4791,13 +4791,13 @@ int cv_ymd2ser(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
 		minute = 1;
 		second = 1.0;
 	}
-	
+
 	decimal  = second / 60.0;
 	decimal += minute;
 	decimal /= 60.0;
 	decimal += hour;
 	decimal /= 24.0;
-	
+
  	/* Calculate decimal year if that is the output variable name */
  	if (!strcmp(out_var->name, "year_decimal"))
  	{
@@ -4805,7 +4805,7 @@ int cv_ymd2ser(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
 
  		day += days_per_month[month - 1];
  		decimal += day - 1;
- 		
+
  		/* Leap years */
 		if ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
 		{
@@ -4847,12 +4847,12 @@ int cv_ymd2ser(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
  * PURPOSE:	This function converts a time given as year, month, day, hour,
  *			minute, second into a date used by the Institute of the Physics
  *			of the Earth in Moscow. The time is in minutes A.D.
- * 
+ *
  * AUTHOR:	Ted Habermann, NGDC, (303)497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE:	cv_ymd2ipe(
- *				VARIABLE_PTR out_var, 
- *				double        *serial_day_1980, 
+ *				VARIABLE_PTR out_var,
+ *				double        *serial_day_1980,
  *				FORMAT        *input_format,
  *				char          *input_buffer)
  *
@@ -4896,12 +4896,12 @@ int cv_ymd2ipe(VARIABLE_PTR out_var, double *serial_day_1980, FORMAT_PTR input_f
  * PURPOSE:	This function converts a time given as serial_day_1980 date (1980 = 0)
  *			into a date used by the Institute of the Physics
  *			of the Earth in Moscow. The time is in minutes A.D.
- * 
+ *
  * AUTHOR:	Ted Habermann, NGDC, (303)497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE:	cv_ser2ipe(
- *				VARIABLE_PTR out_var, 
- *				double      *serial_day_1980, 
+ *				VARIABLE_PTR out_var,
+ *				double      *serial_day_1980,
  *				FORMAT      *input_format,
  *				FF_DATA_BUFFER	input_buffer)
  *
@@ -4922,7 +4922,7 @@ int cv_ser2ipe(VARIABLE_PTR not_used, double *serial_day_1980, FORMAT_PTR input_
 	VARIABLE_PTR in_var = NULL;
 	int error;
 	int variable_length;
-	
+
 	(void)not_used; /* silence compiler warning */
 
 	/* Find the serial_day_1980 variable */
@@ -4952,7 +4952,7 @@ int cv_ser2ipe(VARIABLE_PTR not_used, double *serial_day_1980, FORMAT_PTR input_
 	/* 1040874840 = number of minutes to end of 1979 */
 
 	*serial_day_1980 += 1040874840;
-	
+
 	/* Truncate to avoid rounding */
 	*serial_day_1980 = (long)*serial_day_1980;
 
@@ -4965,12 +4965,12 @@ int cv_ser2ipe(VARIABLE_PTR not_used, double *serial_day_1980, FORMAT_PTR input_
  * PURPOSE:	This function converts a date used by the Institute of the
  * 			Physics	of the Earth in Moscow into a time given as serial_day_1980
  *			date (1980 = 0).
- * 
+ *
  * AUTHOR:	Ted Habermann, NGDC, (303)497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE:	cv_ipe2ser(
- *				VARIABLE_PTR out_var, 
- *				double		*serial_day_1980, 
+ *				VARIABLE_PTR out_var,
+ *				double		*serial_day_1980,
  *				FORMAT_PTR	input_format,
  *				FF_DATA_BUFFER	input_buffer)
  *
@@ -5028,13 +5028,13 @@ int cv_ipe2ser(VARIABLE_PTR not_used, double *serial_day_1980, FORMAT_PTR input_
  *				hh:mm:ss				(time_hh:mm:ss)
  *			These also work for strings in which seconds are not present.
  *
- * 
+ *
  * AUTHOR:	Ted Habermann, NGDC, (303)497-6472, haber@mail.ngdc.noaa.gov
  *			modified by Terry Miller
  *
  * USAGE:	cv_time_string(
- *				VARIABLE_PTR out_var, 
- *				double        *serial_day_1980, 
+ *				VARIABLE_PTR out_var,
+ *				double        *serial_day_1980,
  *				FORMAT        *input_format,
  *				char          *input_buffer)
  *
@@ -5111,8 +5111,8 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 			++ch_ptr;
 
 		string_length = strlen(ch_ptr);
-			
-	
+
+
 		switch(string_number)
 		{
 		case 0:		/* Time String is hh:mm:ss */
@@ -5123,7 +5123,7 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 			else
 		 		memStrcpy(second,strtok(NULL, "/:|, "),NO_TAG);
 			break;
-	
+
 		case 1:		/* Time String is hhmmss */
 			if(string_length == 5){
 				memMemmove(ch_ptr + 1, ch_ptr, 6,NO_TAG);
@@ -5152,7 +5152,7 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 
 		in_var = ff_find_variable("second", input_format);
 		if(in_var)ff_get_string(in_var, input_buffer + in_var->start_pos - 1, second, input_format->type);
-	}		
+	}
 	if(!in_var) return(0);
 
 	/* Now the input data is known, Determine the output type */
@@ -5191,10 +5191,10 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
 	}
 
 	/* convert leading zero's to spaces */
-	
+
 	for (ch_ptr = (char *)output; *ch_ptr == '0' /* zero */; ch_ptr++)
 		*ch_ptr = ' ';
-	
+
 	return(1);
 }
 
@@ -5204,7 +5204,7 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
  * PURPOSE:	This file contains the function which is used to convert the time in
  *			arbitrary seconds to a time offset for the GEO44 data. The offset is
  *			calculated from the time which is in the header record.
- *								
+ *
  * AUTHOR:	T. Habermann (303) 497-6472, haber@mail.ngdc.noaa.gov
  *
  * USAGE:	Time is converted in arbitrary seconds to a time offset for the
@@ -5214,7 +5214,7 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
  *			Header records are identified by a 1000 in the gravity_uncertainty
  *			variable.
  *
- *			If a header record is being processed, change variables: 
+ *			If a header record is being processed, change variables:
  *
  *				The uncertainty needs to be set to 10 so that the integer
  *				representation becomes 1000.
@@ -5224,8 +5224,8 @@ int cv_time_string(VARIABLE_PTR out_var, double *output, FORMAT_PTR input_format
  *
  *			cv_geo44tim(
  *				VARIABLE_PTR out_var,
- *				double        *offset, 
- *				FORMAT_PTR    input, 
+ *				double        *offset,
+ *				FORMAT_PTR    input,
  * 				FF_DATA_BUFFER   input_buffer)
  *
  * COMMENTS:
@@ -5256,7 +5256,7 @@ int cv_geo44tim
 
 	static double 		start_time 	= 0.0;
 	double 				d_value		= 0.0;
-	
+
 	(void)not_used; /* silence compiler warning */
 
 	/* Get the value of the time */
@@ -5266,7 +5266,7 @@ int cv_geo44tim
 		return(0);
 
 	/* Get the value of the key */
-	
+
 	var = ff_find_variable("gravity_uncertainty", input);
 	if (!var)
 		return(0);
