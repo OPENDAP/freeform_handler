@@ -2,7 +2,7 @@ Summary:         FreeForm data handler for the OPeNDAP Data server
 Name:            freeform_handler
 Version:         3.7.9
 Release:         2
-License:         LGPL
+License:         LGPLv2+
 Group:           System Environment/Daemons 
 Source0:         http://www.opendap.org/pub/source/%{name}-%{version}.tar.gz
 URL:             http://www.opendap.org/

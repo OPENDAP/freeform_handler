@@ -36,6 +36,8 @@ static char rcsid[] not_used ={"$Id$"};
 #include "FFInt16.h"
 #include "util_ff.h"
 
+#include <cstring>
+
 extern long BufPtr;
 extern char *BufVal;
 

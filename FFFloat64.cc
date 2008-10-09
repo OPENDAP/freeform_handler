@@ -39,6 +39,7 @@
 static char rcsid[] not_used = {"$Id$"};
 
 #include <string>
+#include <cstring>
 
 #include "FFFloat64.h"
 #include "util_ff.h"

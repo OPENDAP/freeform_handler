@@ -38,7 +38,7 @@ static char rcsid[] not_used =
     { "$Id$" };
 
 #ifndef WIN32
-#include <unistd.h>
+#include <unistd.h> // for access
 #else
 #define F_OK 0
 #endif
@@ -47,6 +47,7 @@ static char rcsid[] not_used =
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <cstdlib>
 
 #include <BaseType.h>
 #include <InternalErr.h>

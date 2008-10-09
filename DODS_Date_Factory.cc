@@ -36,7 +36,7 @@
 static char rcsid[] not_used = "$Id$";
 
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 
 #include <AttrTable.h>

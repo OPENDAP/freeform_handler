@@ -37,10 +37,6 @@
 static char rcsid[]#include "config_ff.h"
 ="$Id$";
 
-
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "Error.h"
 #include "DODS_EndDecimal_Year_Factory.h"
 

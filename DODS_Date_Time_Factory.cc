@@ -35,10 +35,6 @@
 
 static char rcsid[] not_used ="$Id$";
 
-
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "Error.h"
 #include "DODS_Date_Time_Factory.h"
 

@@ -37,10 +37,10 @@
 static char rcsid[] not_used ="$Id$";
 
 
-#include <stdio.h>
 #include <time.h>
-#include <assert.h>
 
+#include <cassert>
+#include <cstdlib>
 #include <sstream>
 
 #include "Error.h"
@@ -129,9 +129,6 @@ DODS_Decimal_Year::set(DODS_Date d, DODS_Time t)
 
     assert(OK());
 }
-
-#include <stdlib.h>
-
 
 void
 DODS_Decimal_Year::set(string dec_year)

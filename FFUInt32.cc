@@ -38,6 +38,8 @@ static char rcsid[] not_used = {"$Id$"};
 #include "util_ff.h"
 #include "util.h"
 
+#include <cstring>
+
 extern long BufPtr;
 extern char *BufVal;
 

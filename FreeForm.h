@@ -770,13 +770,7 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #define FF_DBG_LOG "ff_debug.log"
 #define FF_DBG_LOG_SIZE 10240
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #if defined(DEBUG) || defined(_DEBUG) && !defined(FF_DBG)
 #define FF_DBG
@@ -795,7 +789,7 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
  integer type -- this should avoid the occasional truncation error */
 
 #include <float.h>
-#include <math.h>
+#include <cmath>
 #include <fcntl.h>
 
 #define DOUBLE_UP DBL_EPSILON
@@ -807,7 +801,6 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #include <sys/uio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #define O_BINARY 0
 
