@@ -41,7 +41,7 @@ BUILDING THE SOFTWARE
 
 Note: To build this handler so that it can read format files when files are
 named with date strings (e.g., those used at Remote Sensing Systems) define
-'RSS' in Makefile.am by adding '-DRSS' to AM_CLFAGS near the top of the file.
+'RSS' in Makefile.am by adding '-DRSS' to AM_CXXLFAGS near the top of the file.
 Here's a brief description of the file naming convensions this switch
 enables:
 
