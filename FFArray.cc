@@ -287,7 +287,11 @@ FFArray::read(const string &dataset)
       makeND_output_format(name(), var()->type(), var()->width(), 
 			   ndims, start, edge, stride, dname);
 
-    string input_format_file = find_ancillary_file(dataset);
+#ifdef RSS
+    string input_format_file = find_ancillary_rss_formats(dataset);
+#else
+    string input_format_file = find_ancillary_formats(dataset);
+#endif
 
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data

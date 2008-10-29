@@ -307,6 +307,112 @@ bool file_exist(const char *filename)
     return access(filename, F_OK) == 0;
 }
 
+/** Find the RSS (Remote Sensing Systems) format file using their naming
+    convention.
+
+    File naming convention: <data source> + '_' + <date_string> + <version> +
+    (optional)< _d3d > When <date_string> includes YYYYMMDDVV ('DD') the file
+    contains 'daily' data. When <date_string> only includes YYYYMMVV ( no
+    'DD'), or includes ('DD') and optional '_d3d' then the file contains
+    averaged data.
+
+    Different format files are required for 'daily' and 'averaged' data.
+
+    @return A const string object which contains the format file name. */
+const string
+find_ancillary_rss_formats(const string & dataset, const string & delimiter,
+			   const string & extension)
+{
+    string FormatFile;
+    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
+    string FormatPath = FREEFORM_HANDLER_FORMATS;
+    string BaseName;
+    string FileName;
+
+    size_t delim = dataset.rfind("#");
+    if ( delim != string::npos ) 
+      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    else {
+      	delim = dataset.rfind("/");
+	if ( delim != string::npos ) 
+	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+	else
+	  FileName = dataset;
+    }
+
+    delim = FileName.find("_");
+    if ( delim != string::npos ) {
+      BaseName = FileName.substr(0,delim+1);
+    }
+    else {
+      string msg = "Could not find input format for: ";
+      msg += dataset;
+      throw InternalErr(msg);
+    }
+
+    string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
+    
+    if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
+        FormatFile = FormatPath + BaseName + "averaged.fmt";
+    else
+        FormatFile = FormatPath + BaseName + "daily.fmt";
+
+    return string(FormatFile);
+}
+
+/** Find the RSS (Remote Sensing Systems) format file using their naming
+    convention.
+
+    File naming convention: <data source> + '_' + <date_string> + <version> +
+    (optional)< _d3d > When <date_string> includes YYYYMMDDVV ('DD') the file
+    contains 'daily' data. When <date_string> only includes YYYYMMVV ( no
+    'DD'), or includes ('DD') and optional '_d3d' then the file contains
+    averaged data.
+
+    Different format files are required for 'daily' and 'averaged' data.
+
+    @return A const string object which contains the format file name. */
+const string
+find_ancillary_rss_das(const string & dataset, const string & delimiter,
+		       const string & extension)
+{
+    string FormatFile;
+    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
+    string FormatPath = FREEFORM_HANDLER_FORMATS;
+    string BaseName;
+    string FileName;
+
+    size_t delim = dataset.rfind("#");
+    if ( delim != string::npos ) 
+      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    else {
+      	delim = dataset.rfind("/");
+	if ( delim != string::npos ) 
+	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+	else
+	  FileName = dataset;
+    }
+
+    delim = FileName.find("_");
+    if ( delim != string::npos ) {
+        BaseName = FileName.substr(0,delim+1);
+    }
+    else {
+        string msg = "Could not find input format for: ";
+        msg += dataset;
+        throw InternalErr(msg);
+    }
+
+    string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
+    
+    if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
+        FormatFile = FormatPath + BaseName + "averaged.das";
+    else
+        FormatFile = FormatPath + BaseName + "daily.das";
+
+    return string(FormatFile);
+}
+
 /** Find the format file using a delimiter character.
     Given a special sequence of one or more characters, use that to determine
     the format file name. Assume that the format file ends with EXTENSION.
@@ -316,8 +422,8 @@ bool file_exist(const char *filename)
 
     @return A const string object which contains the format file name. */
 const string
-find_ancillary_file(const string & dataset, const string & delimiter,
-                    const string & extension)
+find_ancillary_formats(const string & dataset, const string & delimiter,
+		       const string & extension)
 {
     size_t delim = dataset.find(delimiter);
     string basename = dataset.substr(0, delim);

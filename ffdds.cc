@@ -113,8 +113,8 @@ ff_read_descriptors(DDS &dds_table, const string &filename)
   strncpy(SetUps->input_file, filename.c_str(), filename.length());
 #endif
 
-#ifdef TEST
-  string iff = find_ancillary_file(filename);
+#ifdef RSS
+  string iff = find_ancillary_rss_formats(filename);
   SetUps->input_format_file = new char[iff.length() + 1];
   strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
 #endif

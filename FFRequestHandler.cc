@@ -35,6 +35,7 @@
 #include "config_ff.h"
 #include "FFTypeFactory.h"
 #include "ff_ce_functions.h"
+#include "util_ff.h"
 
 #include "BESDASResponse.h"
 #include "BESDDSResponse.h"
@@ -87,7 +88,13 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
     try {
 	string accessed = dhi.container->access() ;
         ff_get_attributes(*das, accessed);
-	Ancillary::read_ancillary_das( *das, accessed ) ;
+#ifdef RSS
+	string name = find_ancillary_rss_das(accessed);
+#else
+        string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
+#endif
+        if (!name.empty())
+            das->parse(name);
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),
@@ -124,20 +131,17 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 	string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
-	Ancillary::read_ancillary_dds( *dds, accessed ) ;
 
         DAS das;
         ff_get_attributes(das, accessed);
+        string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
+        if (!name.empty())
+            das.parse(name);
 	Ancillary::read_ancillary_das( das, accessed ) ;
         
         dds->transfer_attributes(&das);
 
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
-#if 0
-        // see ticket 720
-        dds->set_factory(NULL);
-        delete factory;
-#endif
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),
@@ -181,18 +185,15 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
         DAS das;
         ff_get_attributes(das, accessed);
+        string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
+        if (!name.empty())
+            das.parse(name);
+
 	Ancillary::read_ancillary_das( das, accessed ) ;
         
         dds->transfer_attributes(&das);
-#if 0        
-        dhi.data[POST_CONSTRAINT] = www2id(dhi.container->get_constraint(), "%", "%20");
-#endif
+
         dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
-#if 0
-        // see ticket 720
-        dds->set_factory(NULL);
-        delete factory;
-#endif
     }
     catch(InternalErr & e) {
         BESDapError ex( e.get_error_message(), true, e.get_error_code(),

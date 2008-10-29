@@ -95,9 +95,7 @@ Records(const string &filename)
     char * FileName = new char [filename.length()+1];
     filename.copy(FileName, filename.length());
     FileName[filename.length()]='\0';
-#if 0    
-    strncpy(FileName, filename.c_str(), filename.length());
-#endif
+
     SetUps = ff_create_std_args();
     if (!SetUps)
 	return -1;
@@ -105,13 +103,16 @@ Records(const string &filename)
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
     SetUps->input_file = FileName; 
-    string iff = find_ancillary_file(filename);
+
+#ifdef RSS 
+    string iff = find_ancillary_rss_formats(filename);
+#else
+    string iff = find_ancillary_formats(filename);
+#endif
     char *if_f = new char[iff.length() + 1];
     iff.copy(if_f, iff.length());
     if_f[iff.length()]='\0';
-#if 0
-    strncpy(if_f, iff.c_str(), iff.length());
-#endif    
+
     SetUps->input_format_file = if_f;
     SetUps->output_file = NULL;
 
@@ -190,7 +191,11 @@ FFSequence::read(const string &dataset)
 	strncpy(o_fmt, str.str().c_str(), str.str().length());
 #endif
 
-	string input_format_file = find_ancillary_file(dataset);
+#ifdef RSS
+	string input_format_file = find_ancillary_rss_formats(dataset);
+#else
+	string input_format_file = find_ancillary_formats(dataset);
+#endif
 	char *if_fmt = new char[input_format_file.length() + 1];
         input_format_file.copy(if_fmt, input_format_file.length());
         if_fmt[input_format_file.length()]='\0';

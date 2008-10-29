@@ -39,6 +39,18 @@ BUILDING THE SOFTWARE
    editing /etc/ld.so.conf. Different operating systems handle this in
    different ways.
 
+Note: To build this handler so that it can read format files when files are
+named with date strings (e.g., those used at Remote Sensing Systems) define
+'RSS' in Makefile.am by adding '-DRSS' to AM_CLFAGS near the top of the file.
+Here's a brief description of the file naming convensions this switch
+enables:
+
+    File naming convention: <data source> + '_' + <date_string> + <version> +
+    (optional)< _d3d > When <date_string> includes YYYYMMDDVV ('DD') the file
+    contains 'daily' data. When <date_string> only includes YYYYMMVV ( no
+    'DD'), or includes ('DD') and optional '_d3d' then the file contains
+    averaged data.
+
 Building from Our SVN Repository
 
   If you are building from a SVN checkout, run 'autoreconf --verbose' before
