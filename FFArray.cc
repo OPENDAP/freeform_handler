@@ -264,7 +264,14 @@ FFArray::read()
     string output_format =
       makeND_output_format(name(), var()->type(), var()->width(),
 			   ndims, start, edge, stride, dname);
-
+#if 0
+    // See my comments in ffdds.cc. 10/30/08 jhrg
+#ifdef RSS
+    string input_format_file = find_ancillary_rss_formats(dataset());
+#else
+    string input_format_file = find_ancillary_formats(dataset());
+#endif
+#endif
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
     //     Store the (possibly constrained) data

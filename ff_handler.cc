@@ -39,6 +39,8 @@ static char not_used rcsid[] =
 #include "ObjectType.h"
 #include "cgi_util.h"
 #include "ff_ce_functions.h"
+#include "util_ff.h"
+#include "debug.h"
 
 long BufPtr = 0;                // cache pointer
 long BufSiz = 0;                // Cache size
@@ -56,9 +58,20 @@ int main(int argc, char *argv[])
         switch (df.get_response()) {
         case DODSFilter::DAS_Response:{
                 DAS das;
-
                 ff_get_attributes(das, df.get_dataset_name());
+#ifdef RSS
+		string name = find_ancillary_rss_das(df.get_dataset_name());
+		FILE *in = fopen(name.c_str(), "r");
+		if (in) {
+		  das.parse(in);
+		  int res = fclose(in) ;
+		  if (res) {
+		    DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
+		  }
+		}
+#else
                 df.read_ancillary_das(das);
+#endif
                 df.send_das(das);
                 break;
             }
@@ -71,12 +84,21 @@ int main(int argc, char *argv[])
                 ff_register_functions(ce);
                 dds.filename(df.get_dataset_name());
                 ff_read_descriptors(dds, df.get_dataset_name());
-
                 ff_get_attributes(das, df.get_dataset_name());
+#ifdef RSS
+		string name = find_ancillary_rss_das(df.get_dataset_name());
+		FILE *in = fopen(name.c_str(), "r");
+		if (in) {
+		  das.parse(in);
+		  int res = fclose(in) ;
+		  if (res) {
+		    DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
+		  }
+		}
+#else
                 df.read_ancillary_das(das);
-
+#endif
                 dds.transfer_attributes(&das);
-
                 df.send_dds(dds, ce, true);
                 break;
             }
@@ -91,7 +113,19 @@ int main(int argc, char *argv[])
                 ff_read_descriptors(dds, df.get_dataset_name());
 
                 ff_get_attributes(das, df.get_dataset_name());
+#ifdef RSS
+		string name = find_ancillary_rss_das(df.get_dataset_name());
+		FILE *in = fopen(name.c_str(), "r");
+		if (in) {
+		  das.parse(in);
+		  int res = fclose(in) ;
+		  if (res) {
+		    DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
+		  }
+		}
+#else
                 df.read_ancillary_das(das);
+#endif
 
                 dds.transfer_attributes(&das);
 
@@ -109,7 +143,19 @@ int main(int argc, char *argv[])
                 ff_read_descriptors(dds, df.get_dataset_name());
 
                 ff_get_attributes(das, df.get_dataset_name());
+#ifdef RSS
+		string name = find_ancillary_rss_das(df.get_dataset_name());
+		FILE *in = fopen(name.c_str(), "r");
+		if (in) {
+		  das.parse(in);
+		  int res = fclose(in) ;
+		  if (res) {
+		    DBG(cerr << "DODSFilter::read_ancillary_das - Failed to close file " << (void *)in << endl ;) ;
+		  }
+		}
+#else
                 df.read_ancillary_das(das);
+#endif
 
                 dds.transfer_attributes(&das);
 

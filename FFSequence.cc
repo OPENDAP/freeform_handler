@@ -94,7 +94,22 @@ static long Records(const string &filename)
 
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
-    SetUps->input_file = FileName;
+    SetUps->input_file = FileName; 
+
+#if 0
+    // See my comments in ffdds.cc 10/30/08 jhrg
+#ifdef RSS 
+    string iff = find_ancillary_rss_formats(filename);
+#else
+    string iff = find_ancillary_formats(filename);
+#endif
+    char *if_f = new char[iff.length() + 1];
+    iff.copy(if_f, iff.length());
+    if_f[iff.length()]='\0';
+
+    SetUps->input_format_file = if_f;
+#endif
+
     SetUps->output_file = NULL;
 
     error = SetDodsDB(SetUps, &dbin, Msgt);
@@ -168,9 +183,20 @@ bool FFSequence::read()
         str.str().copy(o_fmt, str.str().length());
         o_fmt[str.str().length()] = '\0';
 
-        // num_rec could come from DDS if sequence length was known...
-        long num_rec = Records(ds_str);
+#if 0
+	// See my comments in ffdds.cc 10/30/08 jhrg
+#ifdef RSS
+	string input_format_file = find_ancillary_rss_formats(ds_str);
+#else
+	string input_format_file = find_ancillary_formats(ds_str);
+#endif
+	char *if_fmt = new char[input_format_file.length() + 1];
+        input_format_file.copy(if_fmt, input_format_file.length());
+        if_fmt[input_format_file.length()]='\0';
+#endif
 
+	// num_rec could come from DDS if sequence length was known...
+	long num_rec = Records(ds_str); 
         if (num_rec == -1) {
             delete[] o_fmt;
             return false;

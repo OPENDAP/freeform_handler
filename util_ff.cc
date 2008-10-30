@@ -308,6 +308,191 @@ bool file_exist(const char *filename)
     return access(filename, F_OK) == 0;
 }
 
+/** Find the RSS (Remote Sensing Systems) format file using their naming
+    convention.
+
+    File naming convention: <data source> + '_' + <date_string> + <version> +
+    (optional)< _d3d > When <date_string> includes YYYYMMDDVV ('DD') the file
+    contains 'daily' data. When <date_string> only includes YYYYMMVV ( no
+    'DD'), or includes ('DD') and optional '_d3d' then the file contains
+    averaged data.
+
+    Different format files are required for 'daily' and 'averaged' data.
+
+    @return A const string object which contains the format file name. */
+const string
+find_ancillary_rss_formats(const string & dataset, const string & delimiter,
+			   const string & extension)
+{
+    string FormatFile;
+    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
+    string FormatPath = FREEFORM_HANDLER_FORMATS;
+    string BaseName;
+    string FileName;
+
+    size_t delim = dataset.rfind("#");
+    if ( delim != string::npos ) 
+      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    else {
+      	delim = dataset.rfind("/");
+	if ( delim != string::npos ) 
+	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+	else
+	  FileName = dataset;
+    }
+
+    delim = FileName.find("_");
+    if ( delim != string::npos ) {
+      BaseName = FileName.substr(0,delim+1);
+    }
+    else {
+      string msg = "Could not find input format for: ";
+      msg += dataset;
+      throw InternalErr(msg);
+    }
+
+    string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
+    
+    if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
+        FormatFile = FormatPath + BaseName + "averaged.fmt";
+    else
+        FormatFile = FormatPath + BaseName + "daily.fmt";
+
+    return string(FormatFile);
+}
+
+/** Find the RSS (Remote Sensing Systems) format file using their naming
+    convention.
+
+    File naming convention: <data source> + '_' + <date_string> + <version> +
+    (optional)< _d3d > When <date_string> includes YYYYMMDDVV ('DD') the file
+    contains 'daily' data. When <date_string> only includes YYYYMMVV ( no
+    'DD'), or includes ('DD') and optional '_d3d' then the file contains
+    averaged data.
+
+    Different format files are required for 'daily' and 'averaged' data.
+
+    @return A const string object which contains the format file name. */
+const string
+find_ancillary_rss_das(const string & dataset, const string & delimiter,
+		       const string & extension)
+{
+    string FormatFile;
+    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
+    string FormatPath = FREEFORM_HANDLER_FORMATS;
+    string BaseName;
+    string FileName;
+
+    size_t delim = dataset.rfind("#");
+    if ( delim != string::npos ) 
+      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    else {
+      	delim = dataset.rfind("/");
+	if ( delim != string::npos ) 
+	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+	else
+	  FileName = dataset;
+    }
+
+    delim = FileName.find("_");
+    if ( delim != string::npos ) {
+        BaseName = FileName.substr(0,delim+1);
+    }
+    else {
+        string msg = "Could not find input format for: ";
+        msg += dataset;
+        throw InternalErr(msg);
+    }
+
+    string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
+    
+    if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
+        FormatFile = FormatPath + BaseName + "averaged.das";
+    else
+        FormatFile = FormatPath + BaseName + "daily.das";
+
+    return string(FormatFile);
+}
+
+// *** Cruft from a --reintegrate merge from 3.7.9? 
+#if 0
+/** Find the format file using a delimiter character.
+    Given a special sequence of one or more characters, use that to determine
+    the format file name. Assume that the format file ends with EXTENSION.
+
+    NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
+    utility functions format_delimiter() and format_extension().
+
+    @return A const string object which contains the format file name. */
+const string
+find_ancillary_formats(const string & dataset, const string & delimiter,
+		       const string & extension)
+{
+    size_t delim = dataset.find(delimiter);
+    string basename = dataset.substr(0, delim);
+
+        // 
+        // Use the FreeForm setdbin:find_format_files() to locate
+        // the input format description file.
+        //
+        // find_format_files() requires a valid DATA_BIN_PTR and DATA_BIN.
+        //  - to create one, populate SetUps and call SetDodsDB().
+        //
+        // find_format_files() will return the input format_file name
+        // in the char** formats parameter, if num_formats > 0, then
+        // it returns the first valid format_file name in formats[0].
+        //
+
+        DATA_BIN_PTR dbin = NULL;
+        FF_STD_ARGS_PTR SetUps = NULL;
+        static char Msgt[255];
+        char **formats;
+        int error = 0;
+
+        char *FileName = new char[dataset.length() + 1];
+        dataset.copy(FileName, dataset.length() + 1);
+        FileName[dataset.length()]='\0';
+
+        SetUps = ff_create_std_args();
+        if (!SetUps) {
+            delete [] FileName;
+            throw InternalErr(__FILE__, __LINE__,
+            		"Could not create interface record for FreeForm");
+        }
+        
+        /** set the structure values to create the FreeForm DB**/
+        SetUps->input_file = FileName;
+        SetUps->output_file = NULL;
+
+        error = SetDodsDB(SetUps, &dbin, Msgt);
+        if (error && error < ERR_WARNING_ONLY) {
+            delete [] FileName;
+            db_destroy(dbin);
+            throw InternalErr(__FILE__, __LINE__,
+            		string("Could not set up FreeForm DB structure.\n")
+            		+ string(Msgt));
+        }
+
+        if (dods_find_format_files(dbin, FileName, extension.c_str(),
+                                   &formats)) {
+            string FormatFile = formats[0];
+            free(formats[0]);
+            return string(FormatFile);
+        } else if (dods_find_format_compressed_files(dbin, FileName,
+                                                     &formats)) {
+            string FormatFile = formats[0];
+            free(formats[0]);
+            return string(FormatFile);
+        } else {
+        	delete [] FileName;
+            db_destroy(dbin);
+            throw InternalErr(__FILE__, __LINE__,
+            				  string("Could not find an input format for ")
+            				  + string(FileName));
+        }
+}
+#endif
+
 // These functions are used by the Date/Time Factory classes but they might
 // be generally useful in writing server-side functions. 1/21/2002 jhrg
 

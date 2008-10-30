@@ -108,6 +108,22 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
     filename.copy(SetUps->input_file, filename.length());
     SetUps->input_file[filename.length()] = '\0';
 
+    // Setting the input format file here causes db_set (called by SetDodsDB)
+    // to not set that field of SetUps. In the original modification for the
+    // RSS-hosted data, the server also called this code in FFArray.cc and
+    // FFSequence. However, in a later version of the handler I moved the 
+    // format finding code here and recorded the results in the various 
+    // objects (including FFArray, ...). So I think the RSS format-specific
+    // code in those classes is not needed anymore. I'm going to #if 0 #endif
+    // them out and check in the result. 10/30/08 jhrg 
+#ifdef RSS
+    string iff = find_ancillary_rss_formats(filename);
+    SetUps->input_format_file = new char[iff.length() + 1];
+    iff.copy(SetUps->input_format_file, iff.length);
+    SetUps->input_format_file[iff.length] = '\0';
+    // strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+#endif
+
     SetUps->output_file = NULL;
 
     char Msgt[Msgt_size];

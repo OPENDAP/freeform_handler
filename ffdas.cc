@@ -249,8 +249,8 @@ void read_attributes(string filename, AttrTable *at)
     filename.copy(SetUps->input_file, filename.length() + 1);
     SetUps->input_file[filename.length()] = '\0';
 
-#ifdef TEST
-    string iff = find_ancillary_file(filename);
+#ifdef RSS
+    string iff = find_ancillary_rss_formats(filename);
     SetUps->input_format_file = new char[iff.length() + 1];
     strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
 #endif
@@ -299,6 +299,12 @@ static void add_variable_containers(DAS &das, const string &filename)
     SetUps->input_file = new char[filename.length() + 1];
     filename.copy(SetUps->input_file, filename.length() + 1);
     SetUps->input_file[filename.length()] = '\0';
+
+#ifdef RSS
+    string iff = find_ancillary_rss_formats(filename);
+    SetUps->input_format_file = new char[iff.length() + 1];
+    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+#endif
 
     SetUps->output_file = NULL;
 

@@ -52,7 +52,7 @@ private:
     long Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
 			bool *has_stride);
 
-    /** Read an array of simple types into this objects #_buf# memeber. */
+    /** Read an array of simple types into this objects _buf field. */
     template <class T> bool extract_array(const string &ds,
                                           const string &if_fmt,
 					  const string &o_fmt);

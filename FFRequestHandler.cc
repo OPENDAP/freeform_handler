@@ -29,6 +29,7 @@
 
 #include "config_ff.h"
 #include "ff_ce_functions.h"
+#include "util_ff.h"
 
 #include "BESDASResponse.h"
 #include "BESDDSResponse.h"
@@ -84,7 +85,13 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 
 	string accessed = dhi.container->access() ;
         ff_get_attributes(*das, accessed);
-	Ancillary::read_ancillary_das( *das, accessed ) ;
+#ifdef RSS
+	string name = find_ancillary_rss_das(accessed);
+#else
+        string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
+#endif
+        if (!name.empty())
+            das->parse(name);
 
 	bdas->clear_container() ;
     }
@@ -123,7 +130,6 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 	string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
-	Ancillary::read_ancillary_dds( *dds, accessed ) ;
 
         DAS *das = new DAS ;
 	BESDASResponse bdas( das ) ;
