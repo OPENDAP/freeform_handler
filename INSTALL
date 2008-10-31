@@ -8,6 +8,7 @@ Updated for version 3.7.9
 ---------------------------------------------------------------------------
 
 BUILDING THE SOFTWARE
+Notes about the RSS build options
 REQUIREMENTS
 NOTES
 
@@ -39,7 +40,9 @@ BUILDING THE SOFTWARE
    editing /etc/ld.so.conf. Different operating systems handle this in
    different ways.
 
-Note: To build this handler so that it can read format files when files are
+RSS Build option Note: 
+
+To build this handler so that it can read format files when files are
 named with date strings (e.g., those used at Remote Sensing Systems) define
 'RSS' in Makefile.am by adding '-DRSS' to AM_CXXLFAGS near the top of the file.
 Here's a brief description of the file naming convensions this switch
@@ -50,6 +53,23 @@ enables:
     contains 'daily' data. When <date_string> only includes YYYYMMVV ( no
     'DD'), or includes ('DD') and optional '_d3d' then the file contains
     averaged data.
+
+Testing:
+
+    To test the RSS option, do two things. First, soft link RSS_test_data/RSS
+    to /usr/local/RSS. Here's how I did it: 
+
+        [jimg@zoe freeform_handler]$ ln -s /home/jimg/trunk/freeform_handler/RSS_test_data/RSS /usr/local/RSS
+
+    Then use the standalone version of the handler to get a DDS:
+
+        [jimg@zoe freeform_handler]$ ./dap_ff_handler -o DDS RSS_test_data/tmi_20040601v4
+
+    And then get some data using the getdap tool to filter the binary output 
+
+        [jimg@zoe freeform_handler]$ ./dap_ff_handler -e time_a -o DataDDS RSS_test_data/tmi_20040601v4  | getdap -
+
+    Note that the argument to the -o option is 'DataDDS' in this case.
 
 Building from Our SVN Repository
 
