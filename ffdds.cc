@@ -51,7 +51,7 @@ static char rcsid[]not_used = {
 #include <cgi_util.h>
 #include <util.h>
 
-#include "FreeForm.h"
+#include "FreeFormCPP.h"
 
 #include <DDS.h>
 

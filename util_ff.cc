@@ -55,7 +55,7 @@ static char rcsid[] not_used =
 #include <debug.h>
 
 #include "util_ff.h"
-#include "FreeForm.h"
+// #include "FreeForm.h" Included by the util_ff header.
 
 using namespace std;
 

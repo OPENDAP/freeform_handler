@@ -32,7 +32,7 @@
 #ifndef _util_ff_h
 #define _util_ff_h
 
-#include "FreeForm.h"
+#include "FreeFormCPP.h"
 
 #include "BaseType.h"
 #include "Error.h"
