@@ -45,6 +45,7 @@ static char rcsid[]not_used = {
 #include <cstring>
 
 #include <iostream>
+#include <string>
 
 #include <Error.h>
 #include <InternalErr.h>
@@ -119,9 +120,12 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
 #ifdef RSS
     string iff = find_ancillary_rss_formats(filename);
     SetUps->input_format_file = new char[iff.length() + 1];
+#if 0
+    // Huh??
     iff.copy(SetUps->input_format_file, iff.length);
     SetUps->input_format_file[iff.length] = '\0';
-    // strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+#endif
+    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
 #endif
 
     SetUps->output_file = NULL;
