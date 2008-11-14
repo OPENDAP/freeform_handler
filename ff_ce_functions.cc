@@ -187,64 +187,64 @@ type (e.g., a structure, sequence, ...).");
     dds.mark(name, true);       // Don't just call set_send_p()!
 }
 
-static bool func_date(int argc, BaseType * argv[], DDS & dds)
+static void func_date(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Date, DODS_Date_Factory > (argc, argv, dds);
+    *result = comparison < DODS_Date, DODS_Date_Factory > (argc, argv, dds);
 }
 
-static bool func_startdate(int argc, BaseType * argv[], DDS & dds)
+static void func_startdate(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Date, DODS_StartDate_Factory > (argc, argv,
+    *result = comparison < DODS_Date, DODS_StartDate_Factory > (argc, argv,
                                                              dds);
 }
 
-static bool func_enddate(int argc, BaseType * argv[], DDS & dds)
+static void func_enddate(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Date, DODS_EndDate_Factory > (argc, argv,
+    *result = comparison < DODS_Date, DODS_EndDate_Factory > (argc, argv,
                                                            dds);
 }
 
-static bool func_date_range(int argc, BaseType * argv[], DDS & dds)
+static void func_date_range(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return range_comparison < DODS_Date, DODS_StartDate_Factory, DODS_Date,
+    *result = range_comparison < DODS_Date, DODS_StartDate_Factory, DODS_Date,
         DODS_EndDate_Factory > (argc, argv, dds);
 }
 
-static bool func_time(int argc, BaseType * argv[], DDS & dds)
+static void func_time(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Time, DODS_Time_Factory > (argc, argv, dds);
+    *result = comparison < DODS_Time, DODS_Time_Factory > (argc, argv, dds);
 }
 
-static bool func_starttime(int argc, BaseType * argv[], DDS & dds)
+static void func_starttime(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Time, DODS_StartTime_Factory > (argc, argv,
+    *result = comparison < DODS_Time, DODS_StartTime_Factory > (argc, argv,
                                                              dds);
 }
 
-static bool func_endtime(int argc, BaseType * argv[], DDS & dds)
+static void func_endtime(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Time, DODS_EndTime_Factory > (argc, argv,
+    *result = comparison < DODS_Time, DODS_EndTime_Factory > (argc, argv,
                                                            dds);
 }
 
 // This comparision function should be used for decimal dates. 5/29/99 jhrg
 
-static bool func_date_time(int argc, BaseType * argv[], DDS & dds)
+static void func_date_time(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Date_Time, DODS_Date_Time_Factory > (argc,
+    *result = comparison < DODS_Date_Time, DODS_Date_Time_Factory > (argc,
                                                                   argv,
                                                                   dds);
 }
 
-static bool func_startdate_time(int argc, BaseType * argv[], DDS & dds)
+static void func_startdate_time(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Date_Time,
+    *result = comparison < DODS_Date_Time,
         DODS_StartDate_Time_Factory > (argc, argv, dds);
 }
 
-static bool func_enddate_time(int argc, BaseType * argv[], DDS & dds)
+static void func_enddate_time(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
-    return comparison < DODS_Date_Time, DODS_EndDate_Time_Factory > (argc,
+    *result = comparison < DODS_Date_Time, DODS_EndDate_Time_Factory > (argc,
                                                                      argv,
                                                                      dds);
 }
@@ -255,7 +255,7 @@ static bool func_enddate_time(int argc, BaseType * argv[], DDS & dds)
 // The date and date_time functions should now recognize decimal format years
 // and date-times. 5/30/99 jhrg
 
-static bool sel_dods_jdate(int argc, BaseType *[], DDS & dds)
+static void sel_dods_jdate(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -272,7 +272,7 @@ Please report this error.");
     string s = current.get(yd).c_str();
     dods_jdate->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges
@@ -296,7 +296,7 @@ Expected zero or one arguments.");
 
 // Same as the above function, but for ymd dates.
 
-static bool sel_dods_date(int argc, BaseType *[], DDS & dds)
+static void sel_dods_date(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -313,7 +313,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_date->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 static void
@@ -335,7 +335,7 @@ Expected zero or one arguments.");
 /************************ DODS_Time functions *************************/
 
 
-static bool sel_dods_time(int argc, BaseType *[], DDS & dds)
+static void sel_dods_time(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -350,7 +350,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_time->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 static void
@@ -376,7 +376,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run.
 
-static bool sel_dods_date_time(int argc, BaseType *[], DDS & dds)
+static void sel_dods_date_time(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -390,7 +390,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_date_time->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges
@@ -419,7 +419,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run.
 
-static bool sel_dods_decimal_year(int argc, BaseType *[], DDS & dds)
+static void sel_dods_decimal_year(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -434,7 +434,7 @@ Please report this error.");
     string s = current.get(decimal);
     dods_decimal_year->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges
@@ -464,7 +464,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run.
 
-static bool sel_dods_startdecimal_year(int argc, BaseType *[], DDS & dds)
+static void sel_dods_startdecimal_year(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -480,7 +480,7 @@ Please report this error.");
     string s = current.get(decimal);
     dods_decimal_year->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges
@@ -510,7 +510,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run.
 
-static bool sel_dods_enddecimal_year(int argc, BaseType *[], DDS & dds)
+static void sel_dods_enddecimal_year(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -525,7 +525,7 @@ Please report this error.");
     string s = current.get(decimal);
     dods_decimal_year->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges
@@ -552,7 +552,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_StartDate functions *************************/
 
-static bool sel_dods_startdate(int argc, BaseType *[], DDS & dds)
+static void sel_dods_startdate(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -569,7 +569,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_date->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 static void
@@ -590,7 +590,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_StartTime functions *************************/
 
-static bool sel_dods_starttime(int argc, BaseType *[], DDS & dds)
+static void sel_dods_starttime(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -605,7 +605,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_time->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 static void
@@ -631,7 +631,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run.
 
-static bool sel_dods_startdate_time(int argc, BaseType *[], DDS & dds)
+static void sel_dods_startdate_time(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -646,7 +646,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_date_time->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges
@@ -673,7 +673,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_EndDate functions *************************/
 
-static bool sel_dods_enddate(int argc, BaseType *[], DDS & dds)
+static void sel_dods_enddate(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -690,7 +690,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_date->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 static void
@@ -711,7 +711,7 @@ Expected zero or one arguments.");
 
 /************************ DODS_EndTime functions *************************/
 
-static bool sel_dods_endtime(int argc, BaseType *[], DDS & dds)
+static void sel_dods_endtime(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -726,7 +726,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_time->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 static void
@@ -752,7 +752,7 @@ Expected zero or one arguments.");
 // This function is added to the selection part of the CE when the matching
 // `projection function' is run.
 
-static bool sel_dods_enddate_time(int argc, BaseType *[], DDS & dds)
+static void sel_dods_enddate_time(int argc, BaseType *[], DDS & dds, bool *result)
 {
     if (argc != 0)
         throw Error(malformed_expr,
@@ -766,7 +766,7 @@ Please report this error.");
     string s = current.get().c_str();
     dods_date_time->val2buf(&s);
 
-    return true;
+    *result = true;
 }
 
 // A projection function: This adds a new variable to the DDS and arranges

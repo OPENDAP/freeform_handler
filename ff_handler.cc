@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
                 dds.transfer_attributes(&das);
 
-                df.send_data(dds, ce, stdout);
+                df.send_data(dds, ce, cout);
                 break;
             }
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
                 dds.transfer_attributes(&das);
 
-                df.send_ddx(dds, ce, stdout);
+                df.send_ddx(dds, ce, cout);
                 break;
             }
 
