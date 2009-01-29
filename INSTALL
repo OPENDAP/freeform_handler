@@ -3,7 +3,7 @@
 
 Installing the FreeForm server for the OPeNDAP server.
 
-Updated for version 3.7.9
+Updated for version 3.7.10
 
 ---------------------------------------------------------------------------
 
@@ -81,17 +81,16 @@ Building from Our SVN Repository
 
 REQUIREMENTS
 
-  o You need the libdap library version 3.7.10 to build and install this
+  o You need the libdap library version 3.9.0 to build and install this
     software. If you're using Linux, this means either building form source
     or using the libdap and libdap-devel RPM packages.
     
   o If you're planning on using this with the OPeNDAP 4 Data Server (Hyrax),
-    you'll need version 3.5.3 of the BES software. Make sure to build that 
+    you'll need version 3.7.0 of the BES software. Make sure to build that 
     first.
 
-  o To use this software with our cgi-based data server, you will need the 
-    OPeNDAP dap-server software package, version 3.8.3 (although for this
-    release, operation with Server3 has not been tested).
+  o To use this software with our cgi-based data server, ... Please stop
+  using the CGI-based server!
 
   o The README file has some information about writing the format files used
     to describe data so that it can be served by the software. More complete

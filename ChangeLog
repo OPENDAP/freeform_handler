@@ -1,7 +1,195 @@
+2008-11-14  James Gallagher <jgallagher@opendap.org>
+
+	Merged the smlrequest branch to the trunk.
+
+	_M   .
+	_M   FreeFormCPP.h
+	M    ff_ce_functions.cc
+	M    bes-testsuite/ff/avhrr.dat.0.bescmd
+	M    bes-testsuite/ff/avhrr.dat.1.bescmd
+	M    bes-testsuite/ff/avhrr.dat.2.bescmd
+	M    bes-testsuite/ff/avhrr.dat.3.bescmd
+	M    ff_handler.cc
+
+2008-11-13  James Gallagher <jgallagher@opendap.org>
+
+	Hmmm....
+
+	_M   .
+
+2008-11-06  James Gallagher <jgallagher@opendap.org>
+
+	Fixed bad string ops in RSS-specific code.
+
+	M    ffdds.cc
+
+2008-11-03  James Gallagher <jgallagher@opendap.org>
+
+	The header 'FreeForm.h' had a name clash with the FFND/freeform.h
+	header on OS/X where the default filesystem is case preserving but
+	case insensitive. I changed the name of it to FreeFormCPP.h.
+
+	D    FreeForm.h
+	AM + FreeFormCPP.h
+	M    ffdas.cc
+	M    ffdds.cc
+	M    util_ff.h
+	M    util_ff.cc
+
+2008-10-31  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff about the RSS modifications.
+
+	M INSTALL
+
+2008-10-30  James Gallagher <jgallagher@opendap.org>
+
+	Merged (reintegrate) with the head of the tags/freeform/3.7.9 code
+	to which I checked in Dan's mods for the RSS modifications. There
+	have been some changes to the way the input format file is found
+	and those required some logic changes to the FFArray and
+	FFSequence classes. There's a comment in ffdds.cc that explains
+	more.
+
+	_M   .
+	M    FFArray.cc
+	M    FFRequestHandler.cc
+	M    ffdas.cc
+	M    ffdds.cc
+	M    util_ff.h
+	M    FFArray.h
+	M    INSTALL
+	M    ff_handler.cc
+	M    util_ff.cc
+	M    FFSequence.cc
+
+2008-10-09  James Gallagher <jgallagher@opendap.org>
+
+	Header cleanliness via a patch from Patrice Dumas.
+
+	M    DODS_StartDecimal_Year_Factory.cc
+	M    freeform_handler.spec
+	M    FreeForm.h
+	M    DODS_Decimal_Year_Factory.cc
+	M    FFArray.cc
+	M    FFFloat64.cc
+	M    FFUInt32.cc
+	M    FFUInt16.cc
+	M    FFRequestHandler.cc
+	M    DODS_Date_Time.cc
+	M    DODS_EndDecimal_Year_Factory.cc
+	M    DODS_EndDate_Time_Factory.cc
+	M    ffdas.cc
+	M    ffdds.cc
+	M    DODS_Date.cc
+	M    DODS_Date_Time_Factory.cc
+	M    date_proc.cc
+	M    DODS_Time.cc
+	M    FFInt32.cc
+	M    DODS_Date_Factory.cc
+	M    FFInt16.cc
+	M    FFFloat32.cc
+	M    util_ff.cc
+	M    DODS_StartDate_Time_Factory.cc
+	M    FFStr.cc
+	M    DODS_Decimal_Year.cc
+
+2008-10-08  James Gallagher <jgallagher@opendap.org>
+
+	Ticket 1188: can not --> cannot. This was for the a handful
+	of error messages, but I wound up changing it everywhere since
+	that was easier.
+
+2008-10-08  James Gallagher <jgallagher@opendap.org>
+
+	Removed some unused *.cc files. Modified the Makefile.am.
+
+2008-10-08  James Gallagher <jgallagher@opendap.org>
+
+	More reformatting...
+
+	DODS_Time_Factory.cc
+
+2008-10-08  James Gallagher <jgallagher@opendap.org>
+
+	removed code that has been commented out. Reformatted some files
+	that were looking esp. ragged.
+
+2008-10-08  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for ticket #985. The function find_ancillary_file() was
+	poorly named since that name was already taken by another function
+	in libdap and since that's not what this function did at all! I
+	found that the same information could be stored in the FFArray and
+	FFSequence variables when they are built and then used later to
+	read data values. Thus the function is no longer used and is
+	commented out. I'll remove it in a subsequent check in.
+
+2008-10-08  James Gallagher <jgallagher@opendap.org>
+
+	Added note to README regarding a neat FreeForm feature unearthed
+	by Denis Nadeau. (Ticket 919)
+
+2008-09-17  James Gallagher <jgallagher@opendap.org>
+
+	Merged multifile branch
+
+2008-08-28  Patrick West <pwest@ucar.edu>
+
+	Added bes standalone tests
+	M    configure.ac
+	A    bes-testsuite
+	A    bes-testsuite/bes.conf.in
+	A    bes-testsuite/common_tests.exp
+	A    bes-testsuite/config
+	A    bes-testsuite/config/unix.exp
+	A    bes-testsuite/Makefile.am
+	A    bes-testsuite/ff
+	A    bes-testsuite/ff/avhrr.dat.0.bescmd
+	A    bes-testsuite/ff/avhrr.dat.0.bescmd.baseline
+	A    bes-testsuite/ff/avhrr.dat.1.bescmd
+	A    bes-testsuite/ff/avhrr.dat.1.bescmd.baseline
+	A    bes-testsuite/ff/avhrr.dat.2.bescmd
+	A    bes-testsuite/ff/avhrr.dat.2.bescmd.baseline
+	A    bes-testsuite/ff/avhrr.dat.3.bescmd
+	A    bes-testsuite/ff/avhrr.dat.3.bescmd.baseline
+	A    bes-testsuite/besstandalone.ff
+	A    bes-testsuite/besstandalone.ff/avhrr.dat.0.exp
+	A    bes-testsuite/besstandalone.ff/avhrr.dat.1.exp
+	A    bes-testsuite/besstandalone.ff/avhrr.dat.2.exp
+	A    bes-testsuite/besstandalone.ff/avhrr.dat.3.exp
+	M    Makefile.am
+
+2008-08-22  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for the DAS tests to match the new quoting behavior.
+
+	M    ff-test/test4_das.txt
+	M    ff-test/test5_das.txt
+	M    ff-test/test9_das.txt
+	M    ff-test/avhrr_das.txt
+	M    ff-test/jplpath_das.txt
+	M    ffdas.cc
+
+2008-07-16  Patrick West <pwest@ucar.edu>
+
+	Checking result of dynamic casts and throwing cast error if fail.
+	M    FFRequestHandler.cc
+
+2008-06-27  Patrick West <pwest@ucar.edu>
+
+	3.7.9 release
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    INSTALL
+
 2008-05-30  Patrick West <pwest@ucar.edu>
 
-	Module checking to see if catalog already added. RequestHandler now
-	adding ancillary information to the das and dds.
+	Module checking to see if catalog already added. RequestHandler
+	now adding ancillary information to the das and dds.
+	
 	M    FFModule.cc
 	M    FFRequestHandler.cc
 
@@ -9,6 +197,7 @@
 
 	No longer need individual bes.conf files for testing. Using main one
 	in <prefix>/etc/bes/bes.conf.
+	
 	D    bes.conf
 
 2008-03-07  Nathan Potter <ndp@coas.oregonstate.edu>
