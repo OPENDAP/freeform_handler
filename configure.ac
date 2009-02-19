@@ -5,6 +5,7 @@ AC_PREREQ(2.59)
 AC_INIT(freeform_handler, 3.7.10, opendap-tech@opendap.org)
 AC_CONFIG_AUX_DIR([conf])
 AM_INIT_AUTOMAKE
+AC_CONFIG_TESTDIR(bes-testsuite, [.])
 
 AC_CONFIG_SRCDIR([DODS_Date_Time.h])
 AC_CONFIG_HEADER([config.h])
@@ -75,9 +76,10 @@ case "$host" in
 	     echo "the configure script needs to be fixed" ;;
 esac
 
-AC_CONFIG_FILES([FFND/Makefile
-                 bes-testsuite/Makefile
-                 Makefile])
+AC_CONFIG_FILES([Makefile
+		 bes-testsuite/Makefile
+                 bes-testsuite/atlocal
+                 FFND/Makefile])
 
 # Build this using the Makefile.am as per the automake 1.10 manual, p.79
 # AC_CONFIG_FILES([install-in-bes-conf.sh], [chmod +x install-in-bes-conf.sh])
