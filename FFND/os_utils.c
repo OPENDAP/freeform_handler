@@ -1265,7 +1265,10 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
   }
 
   if (filename)
-		strcat(temppath, filename);
+  {
+	strncat(temppath, filename, MAX_PATH-1);
+	temppath[MAX_PATH-1] = '\0';
+  }
 
 	if (ok_strlen(fileext))
 	{
@@ -1281,8 +1284,9 @@ char *os_path_put_parts(char *fullpath, char *dirpath, char *filename, char *fil
 		while (*fileext == '.')
 			fileext++;
 
-		strcat(temppath, ".");
-		strcat(temppath, fileext);
+		strncat(temppath, ".", MAX_PATH-1);
+		strncat(temppath, fileext, MAX_PATH-1);
+		temppath[MAX_PATH-1] = '\0';
 	}
 
 	strcpy(fullpath, temppath);

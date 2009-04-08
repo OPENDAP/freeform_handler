@@ -172,19 +172,23 @@ new_string_variable(const string & name, DDS & dds, BaseType * position = 0)
             }
 
         default:
+            delete new_variable;
             throw Error(malformed_expr,
                         "You asked me to insert the synthesized variable in \n\
 something that did not exist or was not a constructor \n\
 type (e.g., a structure, sequence, ...).");
             break;
         }
-    } else {
+    } 
+    else {
         dds.add_var(new_variable);
     }
 
     // Mark the variable as part of the current projection.
 
     dds.mark(name, true);       // Don't just call set_send_p()!
+    
+    delete new_variable;
 }
 
 static void func_date(int argc, BaseType * argv[], DDS & dds, bool *result)

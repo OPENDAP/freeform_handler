@@ -267,13 +267,13 @@ DODS_Date::parse_fractional_time(string dec_year)
     if ((d_sec_day - i_sec_day) >= .5) i_sec_day++;
 
     if ( i_sec_day == 60 ) {
-	i_sec_day = 0;
+	// i_sec_day = 0;
 	i_min_day++;
 	if ( i_min_day == 60 ) {
-	    i_min_day = 0;
+	    // i_min_day = 0;
 	    i_hr_day++;
 	    if ( i_hr_day == 24 ) {
-		i_hr_day = 0;
+		// i_hr_day = 0;
 		i_year_day++;
 		if ( i_year_day == (days_in_year(_year) + 1)) {
 		    i_year_day = 1;

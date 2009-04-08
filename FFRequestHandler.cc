@@ -31,25 +31,29 @@
 #include "ff_ce_functions.h"
 #include "util_ff.h"
 
-#include "BESDASResponse.h"
-#include "BESDDSResponse.h"
-#include "BESDataDDSResponse.h"
-#include "BESInfo.h"
-#include "BESResponseNames.h"
-#include "BESContainer.h"
-#include "BESResponseHandler.h"
-#include "BESVersionInfo.h"
-#include "BESDataNames.h"
+#include <BESDASResponse.h>
+#include <BESDDSResponse.h>
+#include <BESDataDDSResponse.h>
+#include <BESInfo.h>
+#include <BESResponseNames.h>
+#include <BESContainer.h>
+#include <BESResponseHandler.h>
+#include <BESVersionInfo.h>
+#include <BESDataNames.h>
+#include <BESServiceRegistry.h>
+#include <BESUtil.h>
 
-#include "BESDapError.h"
-#include "BESInternalFatalError.h"
-#include "InternalErr.h"
+#include <BESDapError.h>
+#include <BESInternalFatalError.h>
+#include <InternalErr.h>
 
 #include <DDS.h>
 #include <Ancillary.h>
 #include <Error.h>
 #include <escaping.h>
 #include <cgi_util.h>
+
+#define FF_NAME "ff"
 
 long BufPtr = 0;                // cache pointer
 long BufSiz = 0;                // Cache size
@@ -139,7 +143,7 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         
         dds->transfer_attributes( das ) ;
 
-        dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
+	bdds->set_constraint( dhi ) ;
 
 	bdds->clear_container() ;
     }
@@ -192,7 +196,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         
         dds->transfer_attributes( das ) ;
 
-        dhi.data[POST_CONSTRAINT] = dhi.container->get_constraint();
+	bdds->set_constraint( dhi ) ;
 
 	bdds->clear_container() ;
     }
@@ -222,13 +226,18 @@ bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)
     if( !info )
 	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
 
-    info->begin_tag("Handler");
-    info->add_tag("name", PACKAGE_NAME);
-    string handles = (string) DAS_RESPONSE + "," + DDS_RESPONSE
-        + "," + DATA_RESPONSE + "," + HELP_RESPONSE + "," + VERS_RESPONSE;
-    info->add_tag("handles", handles);
-    info->add_tag("version", PACKAGE_STRING);
-    info->end_tag("Handler");
+    map<string,string> attrs ;
+    attrs["name"] = PACKAGE_NAME ;
+    attrs["version"] = PACKAGE_VERSION ;
+    list<string> services ;
+    BESServiceRegistry::TheRegistry()->services_handled( FF_NAME, services );
+    if( services.size() > 0 )
+    {
+	string handles = BESUtil::implode( services, ',' ) ;
+	attrs["handles"] = handles ;
+    }
+    info->begin_tag( "module", &attrs ) ;
+    info->end_tag( "module" ) ;
 
     return true;
 }
@@ -240,6 +249,7 @@ bool FFRequestHandler::ff_build_version(BESDataHandlerInterface & dhi)
     if( !info )
 	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
   
-    info->addHandlerVersion(PACKAGE_NAME, PACKAGE_VERSION);
-    return true;
+    info->add_module( PACKAGE_NAME, PACKAGE_VERSION ) ;
+
+    return true ;
 }

@@ -23,7 +23,7 @@
 // You can contact University Corporation for Atmospheric Research at
 // 3080 Center Green Drive, Boulder, CO 80301
  
-// (c) COPYRIGHT University Corporation for Atmostpheric Research 2004-2005
+// (c) COPYRIGHT University Corporation for Atmospheric Research 2004-2005
 // Please read the full copyright statement in the file COPYRIGHT_UCAR.
 //
 // Authors:
@@ -34,13 +34,14 @@
 using std::endl ;
 
 #include "FFModule.h"
-#include "BESRequestHandlerList.h"
+#include <BESRequestHandlerList.h>
 #include "FFRequestHandler.h"
-#include "BESContainerStorageList.h"
-#include "BESContainerStorageCatalog.h"
-#include "BESCatalogDirectory.h"
-#include "BESCatalogList.h"
-#include "BESDebug.h"
+#include <BESDapService.h>
+#include <BESContainerStorageList.h>
+#include <BESContainerStorageCatalog.h>
+#include <BESCatalogDirectory.h>
+#include <BESCatalogList.h>
+#include <BESDebug.h>
 
 #define FF_CATALOG "catalog"
 
@@ -53,8 +54,11 @@ FFModule::initialize( const string &modname )
     BESRequestHandler *handler = new FFRequestHandler( modname ) ;
     BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
 
+    BESDEBUG( "ff", modname << " handles dap services" << endl )
+    BESDapService::handle_dap_service( modname ) ;
+
     BESDEBUG( "ff", "    adding " << FF_CATALOG << " catalog" << endl )
-    if( !BESCatalogList::TheCatalogList()->find_catalog( FF_CATALOG ) )
+    if( !BESCatalogList::TheCatalogList()->ref_catalog( FF_CATALOG ) )
     {
 	BESCatalogList::TheCatalogList()->
 	    add_catalog( new BESCatalogDirectory( FF_CATALOG ) ) ;
@@ -65,7 +69,7 @@ FFModule::initialize( const string &modname )
     }
 
     BESDEBUG( "ff", "    adding catalog container storage" << FF_CATALOG << endl )
-    if( !BESContainerStorageList::TheList()->find_persistence( FF_CATALOG ) )
+    if( !BESContainerStorageList::TheList()->ref_persistence( FF_CATALOG ) )
     {
 	BESContainerStorageCatalog *csc =
 	    new BESContainerStorageCatalog( FF_CATALOG ) ;
@@ -92,10 +96,10 @@ FFModule::terminate( const string &modname )
     if( rh ) delete rh ;
 
     BESDEBUG( "ff", "    removing catalog container storage" << FF_CATALOG << endl )
-    BESContainerStorageList::TheList()->del_persistence( FF_CATALOG ) ;
+    BESContainerStorageList::TheList()->deref_persistence( FF_CATALOG ) ;
 
     BESDEBUG( "ff", "    removing " << FF_CATALOG << " catalog" << endl )
-    BESCatalogList::TheCatalogList()->del_catalog( FF_CATALOG ) ;
+    BESCatalogList::TheCatalogList()->deref_catalog( FF_CATALOG ) ;
 
     BESDEBUG( "ff", "Done Cleaning FF module " << modname << endl )
 }

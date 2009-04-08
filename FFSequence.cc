@@ -85,12 +85,14 @@ static long Records(const string &filename)
     static char Msgt[255];
 
     char * FileName = new char[filename.length() + 1];
-    filename.copy(FileName, filename.length());
+    (void)filename.copy(FileName, filename.length());
     FileName[filename.length()] = '\0';
 
     SetUps = ff_create_std_args();
-    if (!SetUps)
+    if (!SetUps) {
+    	delete[] FileName;
         return -1;
+    }
 
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
@@ -180,7 +182,7 @@ bool FFSequence::read()
         DBG(cerr << str.str());
 
         char *o_fmt = new char[str.str().length() + 1];
-        str.str().copy(o_fmt, str.str().length());
+        (void)str.str().copy(o_fmt, str.str().length());
         o_fmt[str.str().length()] = '\0';
 
 #if 0
@@ -205,7 +207,7 @@ bool FFSequence::read()
         BufSiz = num_rec * (stbyte - 1);
         BufVal = new char[BufSiz];
         char *ds = new char[ds_str.length() + 1];
-        ds_str.copy(ds, ds_str.length());
+        (void)ds_str.copy(ds, ds_str.length());
         ds[ds_str.length()] = '\0';
 
         long bytes = read_ff(ds, d_input_format_file.c_str(), o_fmt, BufVal,

@@ -1,5 +1,12 @@
 
  $Id$
+
+Version 3.7.11 (16 March 2009)
+
+Constraint fixes.
+
+Support for the service interface.
+
 version 3.7.10 (29 Jan 2009)
 
 Bug fixes and updates for the new libdap and bes code.

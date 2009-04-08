@@ -90,13 +90,13 @@ static unsigned int ff_file_to_buffer(char *file_name, char *buffer)
 	num_read = fread(buffer, sizeof(char), num_to_read, input_file);
 	fclose(input_file);
 
-	*(buffer + num_read) = STR_END;
-
 	if (num_read != num_to_read)
 	{
 		err_push(ERR_READ_FILE,"Input File To Buffer");
 		return(0);
 	}
+
+	*(buffer + num_read) = STR_END;
 
 	/* Remove any EOFs */
 	cp = strchr(buffer, '\x1a');

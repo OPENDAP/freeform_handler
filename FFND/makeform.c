@@ -776,8 +776,10 @@ static int add_to_variable_list(char *text_line, FORMAT_PTR format)
 	{
 		var = ff_create_variable(token);
 		if (var == NULL)
+			return ERR_MEM_LACK;
+#if 0
 			error = ERR_MEM_LACK;
-
+#endif
 		if (var->name[0] == '"' && var->name[strlen(var->name) - 1] == '"')
 		{
 			memmove(var->name, var->name + 1, strlen(var->name) - 2);

@@ -1,3 +1,79 @@
+2009-03-16  James Gallagher <jgallagher@opendap.org>
+
+	Code review and Version 3.7.11
+
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    FFND/file2buf.c
+	M    FFND/os_utils.c
+	M    FFND/makeform.c
+	M    FFArray.cc
+	M    FFModule.cc
+	M    ChangeLog
+	M    ffdas.cc
+	M    DODS_Date.cc
+	M    ffdds.cc
+	M    ff_ce_functions.cc
+	M    INSTALL
+	M    FFModule.h
+	M    README
+	M    FFSequence.cc
+	M    Makefile.am
+
+2009-03-08  Patrick West <pwest@ucar.edu>
+
+	POST_CONSTRAINT issues with multiple containers. Call set_constraint on
+	BESDapResponse in order to properly have the post constraint set.
+
+	M    FFRequestHandler.cc
+
+2009-03-08  Patrick West <pwest@ucar.edu>
+
+	Added handles attribute in help response
+	
+	M    FFRequestHandler.cc
+
+2009-03-04  Patrick West <pwest@ucar.edu>
+
+	container storage and catalog list reference changes
+	
+	M    freeform_handler-3.7.10/FFModule.cc
+
+2009-02-20  James Gallagher <jgallagher@opendap.org>
+
+	Merged the xmlresponse branch to the hyrax 1.5 release branch
+
+	_M   .
+	M    FFModule.cc
+	M    FFRequestHandler.cc
+	_M   FreeFormCPP.h
+
+2009-01-30  James Gallagher <jgallagher@opendap.org>
+
+	Moved here to coalesce branches
+
+2009-01-29  James Gallagher <jgallagher@opendap.org>
+
+	FreeForm.h --> FreeFormCPP.h in Makefile.am
+
+2009-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.5 release
+
+	A    http://scm.opendap.org/svn/branch/freeform_handler/3.7.10
+
+2009-01-29  James Gallagher <jgallagher@opendap.org>
+
+	Updated for 3.7.10
+
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    INSTALL
+	M    README
+
 2008-11-14  James Gallagher <jgallagher@opendap.org>
 
 	Merged the smlrequest branch to the trunk.

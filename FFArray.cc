@@ -339,15 +339,15 @@ FFArray::extract_array(const string &ds, const string &if_fmt,
                          (char *)d, width());
 
     if (bytes == -1) {
-      throw Error(unknown_error, "Could not read values from the dataset.");
+    	delete[] d;
+        throw Error(unknown_error, "Could not read values from the dataset.");
     }
     else {
-	set_read_p(true);
-	val2buf((void *) d);
+	    set_read_p(true);
+	    val2buf((void *) d);
     }
 
-    if (d)
-	delete[] (d);
+    delete[] (d);
 
     return true;
 }

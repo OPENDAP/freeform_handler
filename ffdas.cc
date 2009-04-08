@@ -246,7 +246,7 @@ void read_attributes(string filename, AttrTable *at)
 
     SetUps->input_file = new char[filename.length() + 1];
 
-    filename.copy(SetUps->input_file, filename.length() + 1);
+    (void)filename.copy(SetUps->input_file, filename.length() + 1);
     SetUps->input_file[filename.length()] = '\0';
 
 #ifdef RSS
@@ -297,7 +297,7 @@ static void add_variable_containers(DAS &das, const string &filename)
     SetUps->user.is_stdin_redirected = 0;
 
     SetUps->input_file = new char[filename.length() + 1];
-    filename.copy(SetUps->input_file, filename.length() + 1);
+    (void)filename.copy(SetUps->input_file, filename.length() + 1);
     SetUps->input_file[filename.length()] = '\0';
 
 #ifdef RSS
