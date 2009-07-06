@@ -77,7 +77,7 @@ DEJATOOL = dap_ff_handler
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir ff-test
 
 EXTRA_DIST = ff-test data COPYRIGHT COPYING freeform_handler.spec \
-	OSX_Resources
+	OSX_Resources common_tests.exp
 
 CLEANFILES = *~ *.sum *.log
 

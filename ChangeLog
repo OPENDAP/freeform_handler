@@ -1,3 +1,15 @@
+2009-05-21  James Gallagher <jgallagher@opendap.org>
+
+	Added tests' config directory to Makefile.am
+
+2009-04-08  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	freeform_handler: Tagging 3.7.11
+
+2009-04-08  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	freeform_handler: Updated change log
+
 2009-03-16  James Gallagher <jgallagher@opendap.org>
 
 	Code review and Version 3.7.11

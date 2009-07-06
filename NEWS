@@ -1,6 +1,11 @@
 
  $Id$
 
+version 3.7.12 (9 June 2009)
+
+Minor fix - fixed broken dejagnu tests, soon to be replaced with autotest
+tests. 
+
 Version 3.7.11 (16 March 2009)
 
 Constraint fixes.
