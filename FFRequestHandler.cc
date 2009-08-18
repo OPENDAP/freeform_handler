@@ -35,11 +35,11 @@
 #include <BESDDSResponse.h>
 #include <BESDataDDSResponse.h>
 #include <BESInfo.h>
+#include <BESDapNames.h>
 #include <BESResponseNames.h>
 #include <BESContainer.h>
 #include <BESResponseHandler.h>
 #include <BESVersionInfo.h>
-#include <BESDataNames.h>
 #include <BESServiceRegistry.h>
 #include <BESUtil.h>
 
