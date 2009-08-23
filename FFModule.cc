@@ -48,16 +48,16 @@ using std::endl ;
 void
 FFModule::initialize( const string &modname )
 {
-    BESDEBUG( "ff", "Initializing FF module " << modname << endl )
+    BESDEBUG( "ff", "Initializing FF module " << modname << endl ) ;
 
-    BESDEBUG( "ff", "    adding " << modname << " request handler" << endl )
+    BESDEBUG( "ff", "    adding " << modname << " request handler" << endl ) ;
     BESRequestHandler *handler = new FFRequestHandler( modname ) ;
     BESRequestHandlerList::TheList()->add_handler( modname, handler ) ;
 
-    BESDEBUG( "ff", modname << " handles dap services" << endl )
+    BESDEBUG( "ff", modname << " handles dap services" << endl ) ;
     BESDapService::handle_dap_service( modname ) ;
 
-    BESDEBUG( "ff", "    adding " << FF_CATALOG << " catalog" << endl )
+    BESDEBUG( "ff", "    adding " << FF_CATALOG << " catalog" << endl ) ;
     if( !BESCatalogList::TheCatalogList()->ref_catalog( FF_CATALOG ) )
     {
 	BESCatalogList::TheCatalogList()->
@@ -65,10 +65,11 @@ FFModule::initialize( const string &modname )
     }
     else
     {
-	BESDEBUG( "ff", "    catalog already exists, skipping" << endl )
+	BESDEBUG( "ff", "    catalog already exists, skipping" << endl ) ;
     }
 
-    BESDEBUG( "ff", "    adding catalog container storage" << FF_CATALOG << endl )
+    BESDEBUG( "ff", "    adding catalog container storage"
+		    << FF_CATALOG << endl ) ;
     if( !BESContainerStorageList::TheList()->ref_persistence( FF_CATALOG ) )
     {
 	BESContainerStorageCatalog *csc =
@@ -77,31 +78,32 @@ FFModule::initialize( const string &modname )
     }
     else
     {
-	BESDEBUG( "ff", "    storage already exists, skipping" << endl )
+	BESDEBUG( "ff", "    storage already exists, skipping" << endl ) ;
     }
 
-    BESDEBUG( "ff", "    adding ff debug context" << endl )
+    BESDEBUG( "ff", "    adding ff debug context" << endl ) ;
     BESDebug::Register( "ff" ) ;
 
-    BESDEBUG( "ff", "Done Initializing FF module " << modname << endl )
+    BESDEBUG( "ff", "Done Initializing FF module " << modname << endl ) ;
 }
 
 void
 FFModule::terminate( const string &modname )
 {
-    BESDEBUG( "ff", "Cleaning FF module " << modname << endl )
+    BESDEBUG( "ff", "Cleaning FF module " << modname << endl ) ;
 
-    BESDEBUG( "ff", "    removing FF Handler" << modname << endl )
+    BESDEBUG( "ff", "    removing FF Handler" << modname << endl ) ;
     BESRequestHandler *rh = BESRequestHandlerList::TheList()->remove_handler( modname ) ;
     if( rh ) delete rh ;
 
-    BESDEBUG( "ff", "    removing catalog container storage" << FF_CATALOG << endl )
+    BESDEBUG( "ff", "    removing catalog container storage"
+		    << FF_CATALOG << endl ) ;
     BESContainerStorageList::TheList()->deref_persistence( FF_CATALOG ) ;
 
-    BESDEBUG( "ff", "    removing " << FF_CATALOG << " catalog" << endl )
+    BESDEBUG( "ff", "    removing " << FF_CATALOG << " catalog" << endl) ;
     BESCatalogList::TheCatalogList()->deref_catalog( FF_CATALOG ) ;
 
-    BESDEBUG( "ff", "Done Cleaning FF module " << modname << endl )
+    BESDEBUG( "ff", "Done Cleaning FF module " << modname << endl ) ;
 }
 
 /** @brief dumps information about this object
