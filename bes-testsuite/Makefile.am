@@ -1,8 +1,6 @@
 
 AUTOMAKE_OPTIONS = foreign 
 
-#DEJATOOL=besstandalone
-
 AM_CPPFLAGS = -I$(top_srcdir)
 
 # AM_CPPFLAGS =
@@ -20,9 +18,9 @@ noinst_DATA = bes.conf
 CLEANFILES = *.log *.sum site.exp
 
 #EXTRA_DIST = ff besstandalone.ff common_tests.exp bes.conf.in
-EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4 $(DIRS_EXTRA)
+EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4 ff bes.conf.in
 
-DISTCLEANFILES = bes.conf
+DISTCLEANFILES = bes.conf $(srcdir)/package.m4 freeform_handlerTest
 
 bes.conf: bes.conf.in ../config.status
 	sed -e "s%[@]pkgdatadir[@]%${pkgdatadir}%" \
@@ -36,7 +34,6 @@ bes.conf: bes.conf.in ../config.status
 ############## Autotest follows #####################
 
 AUTOM4TE = autom4te
-DIRS_EXTRA = bes-testsuite ff besstandalone.ff common_tests.exp bes.conf.in
  
 TESTSUITE = $(srcdir)/freeform_handlerTest
 

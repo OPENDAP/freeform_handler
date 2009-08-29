@@ -4,43 +4,26 @@
 #
 # $Id$
 
-AUTOMAKE_OPTIONS = foreign check-news dejagnu
+AUTOMAKE_OPTIONS = foreign check-news
 
 ACLOCAL_AMFLAGS = -I conf
 
-SUBDIRS = FFND
+SUBDIRS = FFND bes-testsuite
 
 # There are some defines which must be set with you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
 AM_CXXFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 
-bin_PROGRAMS = dap_ff_handler
-
-lib_LTLIBRARIES = libff_handler.la
-
-if OPENDAPSERVER
-
-SUBDIRS += bes-testsuite
-
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
 dist_bin_SCRIPTS = bes-ff-data.sh
-
-endif
-
-libff_handler_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
-	$(HANDLER_HDR)
-libff_handler_la_LIBADD = FFND/libfreeform.la
 
 libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR) $(SERVER_SRC) $(SERVER_HDR)
 libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libff_module_la_LDFLAGS = -avoid-version -module 
 libff_module_la_LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
-
-dap_ff_handler_SOURCES = ff_handler.cc
-dap_ff_handler_LDADD = libff_handler.la FFND/libfreeform.la 
 
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
@@ -72,19 +55,10 @@ SERVER_SRC = FFRequestHandler.cc FFModule.cc
 
 SERVER_HDR = FFRequestHandler.h FFModule.h
 
-DEJATOOL = dap_ff_handler
+EXTRA_DIST = data COPYRIGHT COPYING freeform_handler.spec \
+	OSX_Resources bes-ff-data.sh.in
 
-RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir ff-test
-
-EXTRA_DIST = ff-test data COPYRIGHT COPYING freeform_handler.spec \
-	OSX_Resources common_tests.exp
-
-CLEANFILES = *~ *.sum *.log
-
-if OPENDAPSERVER
-
-EXTRA_DIST += bes-ff-data.sh.in
-CLEANFILES += bes-ff-data.sh
+CLEANFILES = bes-ff-data.sh
 
 sample_datadir = $(datadir)/hyrax/data/ff
 sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
@@ -109,8 +83,6 @@ bes-conf: bes-ff-data.sh
 	else \
 	    ./bes-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
 	fi)
-
-endif
 
 ###########################################################################
 

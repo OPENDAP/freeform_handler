@@ -41,9 +41,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/dap_ff_handler
 %{_bindir}/bes-ff-data.sh
-%{_libdir}/libff_handler.so.*
 %{_libdir}/libfreeform.so.*
 %{_libdir}/bes/libff_module.so
 %{_datadir}/hyrax/

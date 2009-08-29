@@ -12,35 +12,122 @@ AT_INIT([bes.conf besstandalone getdap])
 # Usage: _AT_TEST_*(<bescmd source>, <baseline file>)
 
 m4_define([_AT_BESCMD_TEST],   
-[AT_BANNER([Test $1 $2])
-AT_SETUP([BESCMD $1])
+[AT_SETUP([BESCMD $1])
 AT_KEYWORDS([bescmd])
 AT_CHECK([besstandalone -c $srcdir/bes.conf -i $1 || true], [], [stdout], [stderr])
 AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
 AT_CLEANUP])
 
 m4_define([_AT_BESCMD_BINARYDATA_TEST],   
-[AT_BANNER([Test $1 $2])
-AT_SETUP([BESCMD $1])
+[AT_SETUP([BESCMD $1])
 AT_KEYWORDS([bescmd])
-AT_CHECK([besstandalone -c $srcdir/bes.conf -i $1 | getdap -M - || true], [], [stdout], [stderr])
+AT_CHECK([besstandalone -c $srcdir/bes.conf -i $1 | getdap -s -M - || true], [], [stdout], [stderr])
 AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
+AT_XFAIL_IF([test "$3" = "xfail"])
 AT_CLEANUP])
 
 m4_define([AT_BESCMD_RESPONSE_TEST],
-[AT_BANNER([BESCMD response for $1.])
-_AT_BESCMD_TEST([$srcdir/ff/$1], [$srcdir/ff/$1.baseline])
+[_AT_BESCMD_TEST([$srcdir/ff/$1], [$srcdir/ff/$1.baseline])
 ])
 
 m4_define([AT_BESCMD_BINARYDATA_RESPONSE_TEST],
-[AT_BANNER([BESCMD response for $1.])
-_AT_BESCMD_BINARYDATA_TEST([$srcdir/ff/$1], [$srcdir/ff/$1.baseline])
+[_AT_BESCMD_BINARYDATA_TEST([$srcdir/ff/$1], [$srcdir/ff/$1.baseline], [$2])
 ])
 
 AT_BESCMD_RESPONSE_TEST([avhrr.dat.0.bescmd])
 AT_BESCMD_RESPONSE_TEST([avhrr.dat.1.bescmd])
 AT_BESCMD_RESPONSE_TEST([avhrr.dat.2.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([avhrr.dat.3.bescmd], [pass])
 
-AT_BESCMD_BINARYDATA_RESPONSE_TEST([avhrr.dat.3.bescmd])
+AT_BESCMD_RESPONSE_TEST([jplpath.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([jplpath.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([jplpath.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([jplpath.dat.data.bescmd], [pass])
 
+AT_BESCMD_RESPONSE_TEST([test0.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test0.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test0.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test0.dat.data.bescmd], [pass])
 
+AT_BESCMD_RESPONSE_TEST([test1.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test1.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test1.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test1.dat.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([test4.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test4.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test4.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test4.dat.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([test5.dab.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test5.dab.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test5.dab.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test5.dab.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([test6.dab.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test6.dab.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test6.dab.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test6.dab.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([test7.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test7.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test7.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test7.dat.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([test8.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test8.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test8.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test8.dat.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([test9.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([test9.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([test9.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([test9.dat.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([t3.dat.das.bescmd])
+AT_BESCMD_RESPONSE_TEST([t3.dat.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([t3.dat.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([t3.dat.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([dbl_data.bin.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([dbl_data.bin.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([dbl_data.bin.data.bescmd], [pass])
+
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([dbl_data2.bin.data.bescmd], [pass])
+
+AT_BESCMD_RESPONSE_TEST([dbl_data3.bin.dds.bescmd])
+AT_BESCMD_RESPONSE_TEST([dbl_data3.bin.ddx.bescmd])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([dbl_data3.bin.data.bescmd], [pass])
+
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([int_data.bin.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([int_data2.bin.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([int_data3.bin.data.bescmd], [pass])
+
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date01.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date02.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date03.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date04.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date05.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date06.data.bescmd], [pass])
+
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time01.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time02.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time03.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time04.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time05.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time06.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time07.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time08.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time09.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time10.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time11.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([date_time12.data.bescmd], [xfail])
+
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time01.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time02.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time03.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time04.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time05.data.bescmd], [pass])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time06.data.bescmd], [xfail])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time07.data.bescmd], [xfail])
+AT_BESCMD_BINARYDATA_RESPONSE_TEST([time08.data.bescmd], [xfail])
