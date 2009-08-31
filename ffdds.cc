@@ -49,7 +49,7 @@ static char rcsid[]not_used = {
 
 #include <Error.h>
 #include <InternalErr.h>
-#include <cgi_util.h>
+#include <mime_util.h>
 #include <util.h>
 
 #include "FreeFormCPP.h"

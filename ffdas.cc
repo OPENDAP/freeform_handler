@@ -45,7 +45,6 @@ static char rcsid[]not_used = {
 #include <iostream>
 #include <string>
 
-#include <cgi_util.h>
 #include <util.h>
 #include <DAS.h>
 #include <Error.h>

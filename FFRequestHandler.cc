@@ -51,7 +51,6 @@
 #include <Ancillary.h>
 #include <Error.h>
 #include <escaping.h>
-#include <cgi_util.h>
 
 #define FF_NAME "ff"
 
