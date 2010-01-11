@@ -17,7 +17,6 @@ AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
-dist_bin_SCRIPTS = bes-ff-data.sh
 
 libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR) $(SERVER_SRC) $(SERVER_HDR)
@@ -56,33 +55,27 @@ SERVER_SRC = FFRequestHandler.cc FFModule.cc
 SERVER_HDR = FFRequestHandler.h FFModule.h
 
 EXTRA_DIST = data COPYRIGHT COPYING freeform_handler.spec \
-	OSX_Resources bes-ff-data.sh.in
+	OSX_Resources ff.conf.in
 
-CLEANFILES = bes-ff-data.sh
+CLEANFILES = ff.conf
 
 sample_datadir = $(datadir)/hyrax/data/ff
 sample_data_DATA = data/1998-6-avhrr.dat data/avhrr.dat data/gsodock.dat \
 	data/1998-6-avhrr.fmt data/avhrr.fmt data/gsodock.fmt \
 	data/1998-6-avhrr.dat.das data/avhrr.dat.das
 
-do_subst = sed -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
-	-e 's,[@]libdir[@],$(libdir),g' \
-	-e 's,[@]datadir[@],$(datadir),g'
+install-data-local: ff.conf
+	@currdate=`date +"%y%m%d%H%M"`; \
+	test -d $(DESTDIR)$(sysconfdir)/bes || $(MKDIR_P) $(DESTDIR)$(sysconfdir)/bes; \
+	test -d $(DESTDIR)$(sysconfdir)/bes/modules || $(MKDIR_P) $(DESTDIR)$(sysconfdir)/bes/modules; \
+	test -f $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf && mv -f $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf.$$currdate; \
+	$(INSTALL_DATA) ff.conf $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf
 
-bes-ff-data.sh: bes-ff-data.sh.in Makefile
-	$(do_subst) < $(srcdir)/bes-ff-data.sh.in > bes-ff-data.sh
-	chmod +x bes-ff-data.sh
+uninstall-local:
+	rm -f $(sysconfdir)/bes/modules/ff.conf
 
-# This makes sure that the handler modifies the bes
-# even with distcheck is run.
-bes-conf: bes-ff-data.sh
-	(bes_prefix=`bes-config --prefix` ; \
-	if test "$$bes_prefix" = "/usr" ; \
-	then \
-	    ./bes-ff-data.sh /etc/bes/bes.conf /usr/lib/bes ;\
-	else \
-	    ./bes-ff-data.sh $$bes_prefix/etc/bes/bes.conf $$bes_prefix/lib/bes ; \
-	fi)
+ff.conf: ff.conf.in config.status
+	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > ff.conf
 
 C4_DIR=./cccc
 .PHONY: cccc

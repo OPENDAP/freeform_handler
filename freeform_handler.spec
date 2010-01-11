@@ -41,7 +41,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/bes-ff-data.sh
+%dir %{_sysconfdir}/bes/modules
+%config(noreplace) %{_sysconfdir}/bes/modules/ff.conf
 %{_libdir}/libfreeform.so.*
 %{_libdir}/bes/libff_module.so
 %{_datadir}/hyrax/
