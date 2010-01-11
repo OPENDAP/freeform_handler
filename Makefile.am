@@ -72,7 +72,7 @@ install-data-local: ff.conf
 	$(INSTALL_DATA) ff.conf $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf
 
 uninstall-local:
-	rm -f $(sysconfdir)/bes/modules/ff.conf
+	rm -f $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf
 
 ff.conf: ff.conf.in config.status
 	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > ff.conf
