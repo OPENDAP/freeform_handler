@@ -893,7 +893,10 @@ static void change_param_name
 
 	assert(!strcmp(inuser_name + strlen(inuser_name) - strlen("_\bname"), "_\bname"));
 
-	inuser_name[strlen(inuser_name) - strlen("_\bname")] = STR_END;
+	int str_end = strlen(inuser_name) - strlen("_\bname");
+	if (str_end < 0 || str_end-1 > MAX_PV_LENGTH)
+		return;
+	inuser_name[str_end] = STR_END;
 
 	os_str_trim_whitespace(inuser_name, inuser_name);
 
@@ -952,6 +955,9 @@ static void update_variable_precision
 
 	if (!strcmp(od_varname + strlen(od_varname) - 4, "_min") || !strcmp(od_varname + strlen(od_varname) - 4, "_max"))
 	{
+		int str_end = strlen(od_varname) -4;
+		if (str_end < 0 || str_end-1 > MAX_PV_LENGTH)
+			return;
 		od_varname[strlen(od_varname) - 4] = STR_END;
 
 		od_var = ff_find_variable(od_varname, od->format);

@@ -89,13 +89,13 @@ cccc:
 .PHONY: fortify
 fortify:
 	(cd FFND && $(MAKE) fortify)
-	sourceanalyzer -b @PACKAGE@ $(MAKE) libff_handler.la
+	sourceanalyzer -b @PACKAGE@ $(MAKE) libff_module.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 .PHONY: fortify-lite
 fortify-lite:
 	(cd FFND && $(MAKE))
-	sourceanalyzer -b @PACKAGE@ $(MAKE) libff_handler.la
+	sourceanalyzer -b @PACKAGE@ $(MAKE) libff_module.la
 	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
 
 # Use this to clean the fortify project.
