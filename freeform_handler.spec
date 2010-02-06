@@ -28,8 +28,8 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install INSTALL="install -p"
-rm $RPM_BUILD_ROOT%{_libdir}/*.la
-rm $RPM_BUILD_ROOT%{_libdir}/*.so
+rm $RPM_BUILD_ROOT%{_libdir}/libfreeform.la
+rm $RPM_BUILD_ROOT%{_libdir}/libfreeform.so
 rm $RPM_BUILD_ROOT%{_libdir}/bes/libff_module.la
 
 %clean
