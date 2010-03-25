@@ -43,10 +43,13 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %dir %{_sysconfdir}/bes/modules
 %config(noreplace) %{_sysconfdir}/bes/modules/ff.conf
-%{_libdir}/libfreeform.so.*
 %{_libdir}/bes/libff_module.so
 %{_datadir}/hyrax/
 %doc COPYING COPYRIGHT NEWS README
+
+# %{_libdir}/libfreeform.so.*
+# I made this a 'convenience' library, in part, to solve problems with 
+# distcheck on OS/X. jhrg 3/24/10
 
 %changelog
 * Thu Jan 29 2009 James Gallagher <jimg@zoe.opendap.org> - 3.7.10-1
