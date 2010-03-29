@@ -6,7 +6,7 @@
 # modules to load, includes data modules and command modules            #
 #-----------------------------------------------------------------------#
 
-BES.modules=ff
+BES.modules+=ff
 BES.module.ff=@bes_modules_dir@/libff_module.so
 
 #-----------------------------------------------------------------------#
