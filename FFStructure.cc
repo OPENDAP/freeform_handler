@@ -61,6 +61,12 @@ FFStructure::~FFStructure()
 bool
 FFStructure::read()
 {
-    throw InternalErr(__FILE__, __LINE__, "Unimplemented read methods called.");
+    throw InternalErr(__FILE__, __LINE__, "Unimplemented read method called.");
 }
+
+void FFStructure::transfer_attributes(AttrTable *at)
+{
+    throw InternalErr(__FILE__, __LINE__, "Unimplemented transfer_attribute() method called.");
+}
+
 

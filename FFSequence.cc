@@ -233,3 +233,15 @@ bool FFSequence::read()
 
     return true;
 }
+
+void FFSequence::transfer_attributes(AttrTable *at)
+{
+    if (at) {
+	Vars_iter var = var_begin();
+	while (var != var_end()) {
+	    (*var)->transfer_attributes(at);
+	    var++;
+	}
+    }
+}
+

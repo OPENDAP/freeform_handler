@@ -52,6 +52,8 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read();
+
+    virtual void transfer_attributes(AttrTable *at);
 };
 
 // $Log: FFStructure.h,v $
