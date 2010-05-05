@@ -1,5 +1,12 @@
  $Id$
 
+Version 3.8.1 (5 May 2010)
+
+The handler now implements its own transfer_attributes code to merge
+attributes from its DAS response into the DDS.
+
+There are also handful of build improvements.
+
 version 3.8.0 (2 Feb 2010)
 
 Removed Dejagnu tests and added autotest tests. 

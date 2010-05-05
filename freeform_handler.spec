@@ -1,24 +1,23 @@
 Summary:         FreeForm data handler for the OPeNDAP Data server
 Name:            freeform_handler
-Version:         3.8.0
+Version:         3.8.1
 Release:         1
 License:         LGPLv2+
 Group:           System Environment/Daemons 
 Source0:         http://www.opendap.org/pub/source/%{name}-%{version}.tar.gz
 URL:             http://www.opendap.org/
-Requires:        libdap >= 3.10.0
-Requires:        bes >= 3.8.0
+Requires:        libdap >= 3.10.2
+Requires:        bes >= 3.8.3
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.10.0
-BuildRequires:   bes-devel >= 3.8.0
+BuildRequires:   libdap-devel >= 3.10.2
+BuildRequires:   bes-devel >= 3.8.3
 
 %description 
 This is the freeform data handler for our data server. It reads ASCII,
 binary and DB4 files which have been described using FreeForm and returns DAP
 responses that are compatible with DAP2 and the dap-server software. This
-package contains both the OPeNDAP CGI server 'handlers' and the new OPeNDAP 4
-Data Server (aka Hyrax) modules.
+package contains the OPeNDAP 4 Data Server (aka Hyrax) modules.
 
 %prep 
 %setup -q
