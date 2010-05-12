@@ -79,6 +79,23 @@ FFGrid::read()
     return false;
 }
 
+/**
+ * @see FFStructure
+ * @param at
+ */
+void FFGrid::transfer_attributes(AttrTable *at)
+{
+    if (at) {
+	array_var()->transfer_attributes(at);
+
+	Map_iter map = map_begin();
+	while (map != map_end()) {
+	    (*map)->transfer_attributes(at);
+	    map++;
+	}
+    }
+}
+
 // $Log: FFGrid.cc,v $
 // Revision 1.9  2003/02/10 23:01:52  jimg
 // Merged with 3.2.5

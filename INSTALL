@@ -3,7 +3,7 @@
 
 Installing the FreeForm server for the OPeNDAP server.
 
-Updated for version 3.7.12
+Updated for version 3.8.1
 
 ---------------------------------------------------------------------------
 
@@ -25,16 +25,19 @@ BUILDING THE SOFTWARE
 2a) Type `make' to build the three server programs
 
 2b) Optionally, run the tests by typing `make check' to run the test suite.
-    You must have the DejaGNU test software installed on your computer to run
+    You must have the autoconf test software installed on your computer to run
     the tests.
 
-3) Install the server components in $prefix by running `make install.'
+3) Install the server components in $prefix by running `make install'.
+   This will also add the new ff.conf file to the $prefix/etc/bes/ 
+   modules directory. The BES configuration file bes.conf will automatically
+   load any module configuration files in that directory. The ff.conf
+   file contains freeform_handler specific configurations for use with  
+   the BES Framework. This includes some parameters that used to be in the
+   bes.conf file, such as the TypeMatch parameter for finding your
+   files.
 
-4) Type 'make bes-conf' to run the bes-nc-data.sh script which inserts the
-   handler in the bes.conf file and adds test data to 
-   $prefix/share/hyrax/data.
-
-5) For many installations, you must arrange for your operating system to find
+4) For many installations, you must arrange for your operating system to find
    the shared libraries installed by default in $prefix/lib. Do this by
    either setting an environment variable such as LD_LIBRARY_PATH or by
    editing /etc/ld.so.conf. Different operating systems handle this in
@@ -81,12 +84,12 @@ Building from Our SVN Repository
 
 REQUIREMENTS
 
-  o You need the libdap library version 3.9.0 to build and install this
+  o You need the libdap library version 3.10.0 to build and install this
     software. If you're using Linux, this means either building form source
     or using the libdap and libdap-devel RPM packages.
     
   o If you're planning on using this with the OPeNDAP 4 Data Server (Hyrax),
-    you'll need version 3.7.0 of the BES software. Make sure to build that 
+    you'll need version 3.8.0 of the BES software. Make sure to build that 
     first.
 
   o To use this software with our cgi-based data server, ... Please stop

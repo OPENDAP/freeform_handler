@@ -1,22 +1,23 @@
 Summary:         FreeForm data handler for the OPeNDAP Data server
 Name:            freeform_handler
-Version:         3.7.12
+Version:         3.8.1
 Release:         1
 License:         LGPLv2+
 Group:           System Environment/Daemons 
 Source0:         http://www.opendap.org/pub/source/%{name}-%{version}.tar.gz
 URL:             http://www.opendap.org/
+Requires:        libdap >= 3.10.2
+Requires:        bes >= 3.8.3
 
 BuildRoot:       %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libdap-devel >= 3.9.0
-BuildRequires:   bes-devel >= 3.7.0
+BuildRequires:   libdap-devel >= 3.10.2
+BuildRequires:   bes-devel >= 3.8.3
 
 %description 
 This is the freeform data handler for our data server. It reads ASCII,
 binary and DB4 files which have been described using FreeForm and returns DAP
 responses that are compatible with DAP2 and the dap-server software. This
-package contains both the OPeNDAP CGI server 'handlers' and the new OPeNDAP 4
-Data Server (aka Hyrax) modules.
+package contains the OPeNDAP 4 Data Server (aka Hyrax) modules.
 
 %prep 
 %setup -q
@@ -28,9 +29,11 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install INSTALL="install -p"
-rm $RPM_BUILD_ROOT%{_libdir}/*.la
-rm $RPM_BUILD_ROOT%{_libdir}/*.so
 rm $RPM_BUILD_ROOT%{_libdir}/bes/libff_module.la
+
+# I made this a convenience library. jhrg 3/25/10
+# rm $RPM_BUILD_ROOT%{_libdir}/libfreeform.la
+# rm $RPM_BUILD_ROOT%{_libdir}/libfreeform.so
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -43,10 +46,13 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %dir %{_sysconfdir}/bes/modules
 %config(noreplace) %{_sysconfdir}/bes/modules/ff.conf
-%{_libdir}/libfreeform.so.*
 %{_libdir}/bes/libff_module.so
 %{_datadir}/hyrax/
 %doc COPYING COPYRIGHT NEWS README
+
+# %{_libdir}/libfreeform.so.*
+# I made this a 'convenience' library, in part, to solve problems with 
+# distcheck on OS/X. jhrg 3/24/10
 
 %changelog
 * Thu Jan 29 2009 James Gallagher <jimg@zoe.opendap.org> - 3.7.10-1

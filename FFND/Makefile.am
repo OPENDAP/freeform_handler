@@ -13,7 +13,7 @@ AM_CPPFLAGS = -DFREEFORM
 CXXFLAGS_DEBUG = -g3 -O0 -fno-defer-pop -Wall -W -Wcast-align -Werror
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
-lib_LTLIBRARIES = libfreeform.la
+noinst_LTLIBRARIES = libfreeform.la
 
 noinst_PROGRAMS = readfile newform chkform bufform checkvar
 

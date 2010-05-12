@@ -23,12 +23,13 @@ EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m
 DISTCLEANFILES = bes.conf $(srcdir)/package.m4 freeform_handlerTest
 
 bes.conf: bes.conf.in ../config.status
+	@my_topdir=`echo ${abs_top_srcdir} | sed 's/\(.*\)\/\(.[^\/]*\)\/\.\./\1/g'`; \
 	sed -e "s%[@]pkgdatadir[@]%${pkgdatadir}%" \
 		-e "s%[@]modulesdir[@]%${BES_MODULE_DIR}%" \
 		-e "s%[@]sysconfdir[@]%${sysconfdir}%" \
 		-e "s%[@]libdir[@]%${libdir}%" \
 		-e "s%[@]datadir[@]%${datadir}%" \
-		-e "s%[@]abs_top_srcdir[@]%${abs_top_srcdir}%" \
+		-e "s%[@]abs_top_srcdir[@]%$$my_topdir%" \
 		-e "s%[@]abs_top_builddir[@]%${abs_top_builddir}%" \
 		-e "s%[@]bindir[@]%${bindir}%" $< > bes.conf
 
