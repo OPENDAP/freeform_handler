@@ -21,23 +21,23 @@ libfreeform_la_SOURCES = $(FF_SRCS) $(FF_HDRS)
 
 readfile_SOURCES = readfile.c
 readfile_CPPFLAGS = -DFREEFORM
-readfile_LDADD = libfreeform.la
+readfile_LDADD = libfreeform.la -lm
 
 newform_SOURCES = newform.c
 newform_CPPFLAGS = -DFREEFORM
-newform_LDADD = libfreeform.la
+newform_LDADD = libfreeform.la -lm
 
 chkform_SOURCES = chkform.c
 chkform_CPPFLAGS = -DFF_MAIN -DFREEFORM
-chkform_LDADD = libfreeform.la
+chkform_LDADD = libfreeform.la -lm
 
 bufform_SORUCES = bufform.c
 bufform_CPPFLAGS = -DFF_MAIN -DFREEFORM
-bufform_LDADD = libfreeform.la
+bufform_LDADD = libfreeform.la -lm
 
 checkvar_SOURCES = checkvar.c
 checkvar_CPPFLAGS = -DFREEFORM
-checkvar_LDADD = libfreeform.la
+checkvar_LDADD = libfreeform.la -lm
 
 EXTRA_DIST = 
 
