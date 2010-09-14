@@ -1,3 +1,34 @@
+2010-07-16  James Gallagher <jgallagher@opendap.org>
+
+	Added libm to the link of the freeform tools.
+
+2010-07-15  Patrick West <pwest@ucar.edu>
+
+	Added include of dependent dap.conf
+
+2010-05-12  James Gallagher <jgallagher@opendap.org>
+
+	Merged hyrax 1.6.1
+
+	_M   .
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    FFND/Makefile.am
+	M    FFGrid.cc
+	M    ChangeLog
+	_M   FreeFormCPP.h
+	M    conf/libdap.m4
+	M    bes-testsuite/Makefile.am
+	M    FFStructure.h
+	M    INSTALL
+	M    FFSequence.h
+	M    FFGrid.h
+	M    README
+	M    FFStructure.cc
+	M    FFSequence.cc
+	M    Makefile.am
+
 2010-04-22  Patrick West <pwest@ucar.edu>
 
 	Fixed issue with dap-config --version with b at end (for beta)
