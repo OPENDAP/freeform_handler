@@ -1,5 +1,9 @@
  $Id$
 
+Version 3.8.2 (14 Sept 2010)
+
+Build fix for the freeform tools.
+
 Version 3.8.1 (5 May 2010)
 
 The handler now implements its own transfer_attributes code to merge
