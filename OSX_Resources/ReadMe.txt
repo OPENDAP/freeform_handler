@@ -2,27 +2,19 @@
 
 	$Id$
 
+Updated for version 3.8.2
+
 For information about building the FreeForm data handler, see theINSTALL file.
 
 This file provides basic information about the FreeForm handler and itsconfiguration. For more detailed information, see the ServerInstallation Guide at http://www.opendap.org. Also note that there isalso a special manual for the FreeForm server that covers writingformat description files in detail available at the OPeNDAP web site.
 
 For general information about configuration of the base software forthe OPeNDAP server, see the README that comes with that server and/orthe Server Installation Guide that can be found at www.opendap.org.
 
-A configuration edition helper script, `bes-ff-data.sh' is provided inthis package for easy configuration of the Hyrax BES server, designedto edit bes.conf. The script is called using:
-
-   bes-ff-data.sh [<bes.conf file to modify> [<bes modules dir>]]
-
-
-The `bes-conf' make target runs the script while trying to select pathscleverly, and should be called using:
-
-   make bes-conf
-
-
 Test data are also installed, so after installing this handler, Hyraxwill have data to serve providing an easy way to test your newinstallation and to see how a working bes.conf should look. To usethis, make sure that you first install the bes, and that dap-servergets installed too.  Finally, every time you install or reinstallhandlers, make sure to restart the BES and OLFS.
 
 --------------------------------------------------------------------------
 
-dap_ff_handler is a data handler which uses National Geophysical DataCenter's FreeForm/FFND to serve data. The handler requires the OPeNDAPdap-server software above version 3.7.5. To use with the BES, you'llneed BES 3.4.1 or greater.
+dap_ff_handler is a data handler which uses National Geophysical DataCenter's FreeForm/FFND to serve data. To use with the Hyrax, you'llneed BES 3.8.0 or greater.
 
 The handler can read binary, ASCII, and dBASE data files usingFreeForm/FFND format descriptions. It can return both array andsequence data types. The data in the data file is read then servedusing the appropriate type according to the format description in therequired accompanying format file.
 
@@ -93,7 +85,16 @@ Any data file served must be accompanied by a format description file(<file_name
 	} test0;
 
 
-For more examples see the test files in the ff-test subdirectory.         
+4) The FreeForm library contains a useful data processing/transformation library. Here's an example of how to tweak data written on a big-endianmachine so it can be served from a little-endian one - include the followingat the start of the format file:
+
+input_eqv begin constant
+    data_byte_order text big_endian
+end constant 
+
+
+Thanks to Denis Nadeau for this information.
+
+For more examples see the test files in the ff-test subdirectory. There isa manual that describes FreeForm and handler on our web page - opendap.org -in the User Documentation section.      
 
 --------------------------------------------------------------------------
 
