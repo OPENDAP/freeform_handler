@@ -79,32 +79,4 @@
 
 #define DODS_SERVER_VERSION "ff-dods/3.4.2"
 
-
-/*
- * $Log: config_ff.h,v $
- * Revision 1.2  2004/07/09 17:54:25  jimg
- * Merged with release-3-4-3FCS.
- *
- * Revision 1.1.2.1  2004/03/07 22:06:44  rmorris
- * Tools added to build the freeform server under win32.
- *
- * Revision 1.3  2001/09/28 23:19:43  jimg
- * Merged with 3.2.3.
- *
- * Revision 1.2.14.2  2001/09/17 06:41:29  reza
- * Fixed error reporting bugs.
- *
- * Revision 1.2.14.1  2001/06/09 00:25:20  jimg
- * Changed the way the DODSFilter is used to support the new version request
- * which returns information about the server's version (name and number)
- * along with information about the core software's version.
- *
- * Revision 1.2  1999/05/04 02:55:37  jimg
- * Merge with no-gnu
- *
- * Revision 1.1  1998/04/21 17:32:00  jimg
- * Fixes for warnings, etc
- *
- */
-
 #endif /* _config_ff_h_ */
