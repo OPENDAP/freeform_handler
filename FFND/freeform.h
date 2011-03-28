@@ -235,9 +235,9 @@ cc command line, or within your project settings.
 
 #ifdef IRIX
 
-#ifndef IRIX
-#define IRIX
-#endif
+// #ifndef IRIX
+// #define IRIX
+// #endif
 
 #ifdef GOT_MACHINE
 #define TOO_MANY_MACHINES

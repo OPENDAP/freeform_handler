@@ -100,11 +100,14 @@ int mn_index_remove(char *filename, char *outfilename)
 	if(!(outfile = fopen(outfilename, MENU_FOPEN_W))){
 		sprintf(scratch, "Can't open '%s' for writing.\n", outfilename);
 		MENU_ERR_PUSH(ROUTINE_NAME, ERR_GENERAL, scratch);
+		fclose(infile); // jhrg 3/18/11
 		return(0);
 	}
 	if(!(file_eol_str = mn_get_file_eol_str(filename))){
 		sprintf(scratch, "Could not determine EOL characters for '%s'.\n", filename);
 		MENU_ERR_PUSH(ROUTINE_NAME, ERR_GENERAL, scratch);
+		fclose(infile); // jhrg 3/18/11
+		fclose(outfile);
 		return(0);
 	}
 	
@@ -1408,6 +1411,7 @@ char *mn_get_file_eol_str(char *filename)
 		return(NULL);
 	}
 	if(!(file_eol_str = (char *)mAlloc((size_t)3))){
+	    fclose(infile); 	// jhrg 3/18/11
 		return(NULL);
 	}
 	

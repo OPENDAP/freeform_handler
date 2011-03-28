@@ -1613,8 +1613,9 @@ static int make_middle_format
 				assert(strlen(out_var->name) + strlen("_eqn") < sizeof(try_name) - 1);
 
 				strncpy(try_name, out_var->name, sizeof(try_name) - 1);
+				try_name[sizeof(try_name) - 1] = '\0'; // Added jhrg 3/18/11
 				strncat(try_name, "_eqn", sizeof(try_name) - strlen(try_name) - 1);
-
+				try_name[sizeof(try_name) - 1] = '\0'; // jhrg 3/18/11
 				in_var = ff_find_variable(try_name, input->format);
 			}
 		}
@@ -1802,17 +1803,21 @@ int initialize_middle_data
 			if (initial_file == NULL)
 				return(err_push(ERR_OPEN_FILE,"Unable to open file given by INITIAL variable %s", out_var->name));
 
-			if (FF_VAR_LENGTH(out_var) > middle->data->total_bytes - out_var->start_pos)
-				return(err_push(ERR_GENERAL, "Length of \"%s\" exceeds internal buffer", out_var->name));
+			if (FF_VAR_LENGTH(out_var) > middle->data->total_bytes - out_var->start_pos) {
+			    fclose(initial_file); 	// jhrg 3/18/11
+			    return(err_push(ERR_GENERAL, "Length of \"%s\" exceeds internal buffer", out_var->name));
+			}
 
 			if (fread(middle->data->buffer + max(1, out_var->start_pos) - 1,
 				      sizeof(char),
 			          FF_VAR_LENGTH(out_var),
 			          initial_file
 			        ) != (size_t)FF_VAR_LENGTH(out_var)
-			   )
-				return(err_push(ERR_READ_FILE,"Unable to load file given by INITIAL variable %s", out_var->name));
+			   ) {
 
+			    fclose(initial_file);	// jhrg 3/18/11
+			    return(err_push(ERR_READ_FILE,"Unable to load file given by INITIAL variable %s", out_var->name));
+			}
 			fclose(initial_file);
 		}
 		else if (IS_CONSTANT(out_var))

@@ -724,13 +724,13 @@ int err_disp(FF_STD_ARGS_PTR std_args)
 
 		if (!next_error && user_interactive && !is_a_warning(error))
 		{
-			fflush(stdin);
+			// fflush(stdin); Undefined jhrg 3/18/11
 			fprintf(stderr, "\nPress Enter to Acknowledge...");
 			fgets(reply, 2, stdin);
 		}
 		else if (next_error && user_interactive && !is_a_warning(error))
 		{
-			fflush(stdin);
+			// fflush(stdin);
 			fprintf(stderr, "\nDisplay next message? (Y/N) : Y\b");
 			fgets(reply, 2, stdin);
 			if (toupper(reply[0]) != 'Y' && reply[0] != '\n')

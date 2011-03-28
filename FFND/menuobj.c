@@ -855,7 +855,8 @@ int mn_help_sec_get(MENU_INDEX_PTR mindex, char *lookup, ROW_SIZES_PTR rowsize, 
 			if(pos)
 				pos[0] = '\0';
 			retval = mn_index_get_offset(mindex, position, &lrowsize);
-			pos[0] = mindex->file_eol_str[0];
+			if (pos)	// jhrg 3/18/11
+			    pos[0] = mindex->file_eol_str[0];
 			if(retval){ /* section not found or error */
 				*(buf_filled) = scratch;
 				return(retval);
@@ -938,6 +939,7 @@ int mn_help_sec_get(MENU_INDEX_PTR mindex, char *lookup, ROW_SIZES_PTR rowsize, 
 					if(length < 1){
 						MENU_ERR_PUSH(ROUTINE_NAME, ERR_UNKNOWN, "Determining file length");
 						fRee(path);
+						fcloase(infile);	// jhrg 3/18/11
 						return(ERR_UNKNOWN);
 					}
 					if(length > mindex->max_buffer_size - 5){
@@ -945,6 +947,7 @@ int mn_help_sec_get(MENU_INDEX_PTR mindex, char *lookup, ROW_SIZES_PTR rowsize, 
 					}
 					if(!(scratch = (char *)mAlloc((size_t)(length + 5)))){
 						MENU_ERR_PUSH(ROUTINE_NAME, ERR_MEM_LACK, "for help section");
+						fcloase(infile);	// jhrg 3/18/11
 						fRee(path);
 						return(ERR_MEM_LACK);
 					}
