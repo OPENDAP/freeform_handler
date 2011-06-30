@@ -1,3 +1,54 @@
+2011-04-20  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.7 release
+
+2011-03-28  James Gallagher <jgallagher@opendap.org>
+
+	1.7RC1
+
+2011-03-17  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	freeform_handler: Added automated version numbers to OSX Package builds
+
+2011-03-10  James Gallagher <jgallagher@opendap.org>
+
+	C++ comments in C code (config_ff.h)
+
+2011-03-08  James Gallagher <jgallagher@opendap.org>
+
+	Merge for hyrax	1.7 from the hyrax_1.6.2_release branch	of shrew to the	trunk
+
+	_M   .
+	_M   FreeFormCPP.h
+	D    OSX_Resources/InstallationCheck
+	A  + OSX_Resources/InstallationCheck.proto
+	D    OSX_Resources/Info.plist
+	A  + OSX_Resources/Info.plist.proto
+	M    Makefile.am
+
+2011-02-08  James Gallagher <jgallagher@opendap.org>
+
+	removed unneeded mime_util.h and util.h includes; added comments about sending mime headers in our handlers (which may not be needed).
+
+2010-10-29  mjohnson
+
+	MERGE from Hyrax 1.6.2 Release Shrew Branch.
+
+2010-09-14  James Gallagher <jgallagher@opendap.org>
+
+	Version 3.8.2
+
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    INSTALL
+	M    README
+
+2010-07-16  James Gallagher <jgallagher@opendap.org>
+
+	Added libm to the link of the freeform tools.
+
 2010-07-16  James Gallagher <jgallagher@opendap.org>
 
 	Added libm to the link of the freeform tools.
