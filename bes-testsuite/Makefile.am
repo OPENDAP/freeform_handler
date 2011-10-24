@@ -2,8 +2,6 @@
 AUTOMAKE_OPTIONS = foreign 
 
 AM_CPPFLAGS = -I$(top_srcdir)
-
-# AM_CPPFLAGS =
 AM_CXXFLAGS =
 
 # These are not used by automake but are often useful for certain types of
@@ -15,14 +13,13 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 noinst_DATA = bes.conf
 
-CLEANFILES = *.log *.sum site.exp
+CLEANFILES = *.log *.sum
 
-#EXTRA_DIST = ff besstandalone.ff common_tests.exp bes.conf.in
-EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in $(srcdir)/package.m4 ff bes.conf.in
+EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in package.m4 ff bes.conf.in
 
-DISTCLEANFILES = bes.conf $(srcdir)/package.m4 freeform_handlerTest
+DISTCLEANFILES = bes.conf package.m4 freeform_handlerTest
 
-bes.conf: bes.conf.in ../config.status
+bes.conf: $(srcdir)/bes.conf.in $(top_srcdir)/config.status
 	@my_topdir=`echo ${abs_top_srcdir} | sed 's/\(.*\)\/\(.[^\/]*\)\/\.\./\1/g'`; \
 	sed -e "s%[@]pkgdatadir[@]%${pkgdatadir}%" \
 		-e "s%[@]modulesdir[@]%${BES_MODULE_DIR}%" \
@@ -33,15 +30,17 @@ bes.conf: bes.conf.in ../config.status
 		-e "s%[@]abs_top_builddir[@]%${abs_top_builddir}%" \
 		-e "s%[@]bindir[@]%${bindir}%" $< > bes.conf
 
+TESTSUITE = $(builddir)/freeform_handlerTest
+# TESTS_ENVIRONMENT = 
+TESTS = freeform_handlerTest
+
+#check-local: atconfig atlocal $(TESTSUITE)
+#   $(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+
 ############## Autotest follows #####################
 
 AUTOM4TE = autom4te
  
-TESTSUITE = $(srcdir)/freeform_handlerTest
-
-check-local: atconfig atlocal $(TESTSUITE)
-	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
-
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
 
@@ -49,7 +48,7 @@ distclean-local:
 	-rm atconfig
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/freeform_handlerTest.at $(srcdir)/package.m4
+$(TESTSUITE): $(srcdir)/freeform_handlerTest.at $(srcdir)/package.m4 atconfig atlocal
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
