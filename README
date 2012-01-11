@@ -1,7 +1,5 @@
 
-	$Id$
-
-Updated for version 3.8.3
+Updated for version 3.8.4
 
 For information about building the FreeForm data handler, see the
 INSTALL file.
@@ -25,8 +23,8 @@ handlers, make sure to restart the BES and OLFS.
 
 --------------------------------------------------------------------------
 
-dap_ff_handler is a data handler which uses National Geophysical Data
-Center's FreeForm/FFND to serve data. To use with the Hyrax, you'll
+freeform_handler is a data handler which uses National Geophysical Data
+Center's FreeForm/FFND API to serve data. To use with the Hyrax, you'll
 need BES 3.9.0 or greater.
 
 The handler can read binary, ASCII, and dBASE data files using
