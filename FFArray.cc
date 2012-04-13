@@ -58,7 +58,7 @@ FFArray::ptr_duplicate()
 }
 
 FFArray::FFArray(const string &n, const string &d, BaseType *v, const string &iff)
-    : d_input_format_file(iff), Array(n, d, v)
+    : Array(n, d, v), d_input_format_file(iff)
 {
 }
 

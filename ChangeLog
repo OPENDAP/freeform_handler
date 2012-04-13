@@ -1,3 +1,34 @@
+2012-01-09  James Gallagher <jgallagher@opendap.org>
+
+	Code review.
+
+2011-10-24  Patrick West <pwest@ucar.edu>
+
+	Corrected ddx test results due to new libxml writing
+	M    bes-testsuite/ff/dbl_data.bin.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test5.dab.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test6.dab.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test0.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test1.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test4.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test7.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test8.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test9.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/t3.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/jplpath.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/dbl_data3.bin.ddx.bescmd.baseline
+	M    bes-testsuite/ff/avhrr.dat.2.bescmd.baseline
+
+2011-10-23  James Gallagher <jgallagher@opendap.org>
+
+2011-09-21  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.8
+
+2011-06-30  Patrick West <pwest@ucar.edu>
+
+	Merge hyrax 1.7 branch to trunk
+
 2011-04-20  James Gallagher <jgallagher@opendap.org>
 
 	Hyrax 1.7 release

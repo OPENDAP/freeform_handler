@@ -834,7 +834,15 @@ int ff_get_double
 				assert(FF_VAR_LENGTH(var) <= sizeof(*dbl_dest));
 
 				memcpy((void *)dbl_dest, data_src, bytes_to_copy);
+#if 0
+				// I think this code is an error. dbl_dest is a double*, so
+				// dbl_dest[i] will access the ith element in a double array.
+				// Probably what's intended here is to tack a null byte onto
+				// the end of the _bytes_ written into the 8-byte double
+				// referenced by the pointer. But there's no need to do that
+				// since this is a binary type. jhrg 1/9/12
 				dbl_dest[bytes_to_copy] = STR_END;
+#endif
 			}
 			else
 			{
