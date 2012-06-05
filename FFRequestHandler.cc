@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of ff_handler, a data handler for the OPeNDAP data
@@ -54,15 +53,15 @@
 
 #define FF_NAME "ff"
 
-long BufPtr = 0;                // cache pointer
-long BufSiz = 0;                // Cache size
-char *BufVal = NULL;            // cache buffer
+long BufPtr = 0; // cache pointer
+long BufSiz = 0; // Cache size
+char *BufVal = NULL; // cache buffer
 
 extern void ff_read_descriptors(DDS & dds, const string & filename);
 extern void ff_get_attributes(DAS & das, string filename);
 
-FFRequestHandler::FFRequestHandler(const string &name)
-:  BESRequestHandler(name)
+FFRequestHandler::FFRequestHandler(const string &name) :
+        BESRequestHandler(name)
 {
     add_handler(DAS_RESPONSE, FFRequestHandler::ff_build_das);
     add_handler(DDS_RESPONSE, FFRequestHandler::ff_build_dds);
@@ -77,38 +76,33 @@ FFRequestHandler::~FFRequestHandler()
 
 bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 {
-    BESResponseObject *response = dhi.response_handler->get_response_object() ;
-    BESDASResponse *bdas = dynamic_cast < BESDASResponse * >(response) ;
-    if( !bdas )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
+    BESResponseObject *response = dhi.response_handler->get_response_object();
+    BESDASResponse *bdas = dynamic_cast<BESDASResponse *>(response);
+    if (!bdas)
+        throw BESInternalError("cast error", __FILE__, __LINE__);
 
     try {
-	bdas->set_container( dhi.container->get_symbolic_name() ) ;
-	DAS *das = bdas->get_das();
+        bdas->set_container(dhi.container->get_symbolic_name());
+        DAS *das = bdas->get_das();
 
-	string accessed = dhi.container->access() ;
+        string accessed = dhi.container->access();
         ff_get_attributes(*das, accessed);
 #ifdef RSS
-	string name = find_ancillary_rss_das(accessed);
+        string name = find_ancillary_rss_das(accessed);
 #else
         string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
 #endif
         if (!name.empty())
             das->parse(name);
 
-	bdas->clear_container() ;
-    }
-    catch(InternalErr & e) {
-        BESDapError ex( e.get_error_message(), true, e.get_error_code(),
-	                __FILE__, __LINE__ ) ;
+        bdas->clear_container();
+    } catch (InternalErr & e) {
+        BESDapError ex(e.get_error_message(), true, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
-    }
-    catch(Error & e) {
-        BESDapError ex( e.get_error_message(), false, e.get_error_code(),
-	                __FILE__, __LINE__ ) ;
+    } catch (Error & e) {
+        BESDapError ex(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
-    }
-    catch(...) {
+    } catch (...) {
         string s = "unknown exception caught building Freeform DAS";
         BESInternalFatalError ex(s, __FILE__, __LINE__);
         throw ex;
@@ -120,43 +114,38 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 {
     BESResponseObject *response = dhi.response_handler->get_response_object();
-    BESDDSResponse *bdds = dynamic_cast < BESDDSResponse * >(response);
-    if( !bdds )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
-  
+    BESDDSResponse *bdds = dynamic_cast<BESDDSResponse *>(response);
+    if (!bdds)
+        throw BESInternalError("cast error", __FILE__, __LINE__);
+
     try {
-	bdds->set_container( dhi.container->get_symbolic_name() ) ;
-	DDS *dds = bdds->get_dds();
-	ConstraintEvaluator & ce = bdds->get_ce();
+        bdds->set_container(dhi.container->get_symbolic_name());
+        DDS *dds = bdds->get_dds();
+        ConstraintEvaluator & ce = bdds->get_ce();
 
         ff_register_functions(ce);
-	string accessed = dhi.container->access();
+        string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
 
-        DAS *das = new DAS ;
-	BESDASResponse bdas( das ) ;
-	bdas.set_container( dhi.container->get_symbolic_name() ) ;
-        ff_get_attributes( *das, accessed ) ;
-	Ancillary::read_ancillary_das( *das, accessed ) ;
-        
-        dds->transfer_attributes( das ) ;
+        DAS *das = new DAS;
+        BESDASResponse bdas(das);
+        bdas.set_container(dhi.container->get_symbolic_name());
+        ff_get_attributes(*das, accessed);
+        Ancillary::read_ancillary_das(*das, accessed);
 
-	bdds->set_constraint( dhi ) ;
+        dds->transfer_attributes(das);
 
-	bdds->clear_container() ;
-    }
-    catch(InternalErr & e) {
-        BESDapError ex( e.get_error_message(), true, e.get_error_code(),
-			__FILE__, __LINE__ ) ;
+        bdds->set_constraint(dhi);
+
+        bdds->clear_container();
+    } catch (InternalErr & e) {
+        BESDapError ex(e.get_error_message(), true, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
-    }
-    catch(Error & e) {
-        BESDapError ex( e.get_error_message(), false, e.get_error_code(),
-			__FILE__, __LINE__ ) ;
+    } catch (Error & e) {
+        BESDapError ex(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
-    }
-    catch(...) {
+    } catch (...) {
         string s = "unknown exception caught building Freeform DDS";
         BESInternalFatalError ex(s, __FILE__, __LINE__);
         throw ex;
@@ -167,49 +156,45 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
 
 bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 {
-    BufPtr = 0;                 // cache pointer
-    BufSiz = 0;                 // Cache size
-    BufVal = NULL;              // cache buffer
+    BufPtr = 0; // cache pointer
+    BufSiz = 0; // Cache size
+    BufVal = NULL; // cache buffer
 
     BESResponseObject *response = dhi.response_handler->get_response_object();
-    BESDataDDSResponse *bdds = dynamic_cast < BESDataDDSResponse * >(response);
-    if( !bdds )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
-  
+    BESDataDDSResponse *bdds = dynamic_cast<BESDataDDSResponse *>(response);
+    if (!bdds)
+        throw BESInternalError("cast error", __FILE__, __LINE__);
+
     try {
-	bdds->set_container( dhi.container->get_symbolic_name() ) ;
-	DataDDS *dds = bdds->get_dds();
-	ConstraintEvaluator & ce = bdds->get_ce();
+        bdds->set_container(dhi.container->get_symbolic_name());
+        DataDDS *dds = bdds->get_dds();
+        ConstraintEvaluator & ce = bdds->get_ce();
 
         ff_register_functions(ce);
+
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
-	Ancillary::read_ancillary_dds( *dds, accessed ) ;
+        Ancillary::read_ancillary_dds(*dds, accessed);
 
-        DAS *das = new DAS ;
-	BESDASResponse bdas( das ) ;
-	bdas.set_container( dhi.container->get_symbolic_name() ) ;
-        ff_get_attributes( *das, accessed ) ;
-	Ancillary::read_ancillary_das( *das, accessed ) ;
-        
-        dds->transfer_attributes( das ) ;
+        DAS *das = new DAS;
+        BESDASResponse bdas(das);
+        bdas.set_container(dhi.container->get_symbolic_name());
+        ff_get_attributes(*das, accessed);
+        Ancillary::read_ancillary_das(*das, accessed);
 
-	bdds->set_constraint( dhi ) ;
+        dds->transfer_attributes(das);
 
-	bdds->clear_container() ;
-    }
-    catch(InternalErr & e) {
-        BESDapError ex( e.get_error_message(), true, e.get_error_code(),
-			__FILE__, __LINE__ ) ;
+        bdds->set_constraint(dhi);
+
+        bdds->clear_container();
+    } catch (InternalErr & e) {
+        BESDapError ex(e.get_error_message(), true, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
-    }
-    catch(Error & e) {
-        BESDapError ex( e.get_error_message(), false, e.get_error_code(),
-			__FILE__, __LINE__ ) ;
+    } catch (Error & e) {
+        BESDapError ex(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
-    }
-    catch(...) {
+    } catch (...) {
         string s = "unknown exception caught building Freeform DataDDS";
         BESInternalFatalError ex(s, __FILE__, __LINE__);
         throw ex;
@@ -222,21 +207,20 @@ bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)
 {
     BESResponseObject *response = dhi.response_handler->get_response_object();
     BESInfo *info = dynamic_cast<BESInfo *>(response);
-    if( !info )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
+    if (!info)
+        throw BESInternalError("cast error", __FILE__, __LINE__);
 
-    map<string,string> attrs ;
-    attrs["name"] = PACKAGE_NAME ;
-    attrs["version"] = PACKAGE_VERSION ;
-    list<string> services ;
-    BESServiceRegistry::TheRegistry()->services_handled( FF_NAME, services );
-    if( services.size() > 0 )
-    {
-	string handles = BESUtil::implode( services, ',' ) ;
-	attrs["handles"] = handles ;
+    map < string, string > attrs;
+    attrs["name"] = PACKAGE_NAME;
+    attrs["version"] = PACKAGE_VERSION;
+    list < string > services;
+    BESServiceRegistry::TheRegistry()->services_handled(FF_NAME, services);
+    if (services.size() > 0) {
+        string handles = BESUtil::implode(services, ',');
+        attrs["handles"] = handles;
     }
-    info->begin_tag( "module", &attrs ) ;
-    info->end_tag( "module" ) ;
+    info->begin_tag("module", &attrs);
+    info->end_tag("module");
 
     return true;
 }
@@ -244,11 +228,11 @@ bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)
 bool FFRequestHandler::ff_build_version(BESDataHandlerInterface & dhi)
 {
     BESResponseObject *response = dhi.response_handler->get_response_object();
-    BESVersionInfo *info = dynamic_cast < BESVersionInfo * >(response);
-    if( !info )
-	throw BESInternalError( "cast error", __FILE__, __LINE__ ) ;
-  
-    info->add_module( PACKAGE_NAME, PACKAGE_VERSION ) ;
+    BESVersionInfo *info = dynamic_cast<BESVersionInfo *>(response);
+    if (!info)
+        throw BESInternalError("cast error", __FILE__, __LINE__);
 
-    return true ;
+    info->add_module(PACKAGE_NAME, PACKAGE_VERSION);
+
+    return true;
 }

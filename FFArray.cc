@@ -327,7 +327,7 @@ FFArray::read()
 }
 
 // This template reads arrays of simple types into the Array object's _buf
-// memeber. It returns true if successful, false otherwise.
+// member. It returns true if successful, false otherwise.
 
 template <class T>
 bool
