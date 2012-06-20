@@ -276,7 +276,7 @@ void read_attributes(string filename, AttrTable *at)
             "\"DODS FreeFrom based on FFND release " + FFND_LIB_VER + "\"");
 #else
     at->append_attr("Server", "STRING",
-            "DODS FreeFrom based on FFND release " + FFND_LIB_VER);
+	    string("DODS FreeFrom based on FFND release ") + FFND_LIB_VER);
 #endif
     header_to_attributes(at, dbin); // throws Error
 }
