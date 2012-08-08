@@ -6,9 +6,6 @@
 
 #include "config_ff.h"
 
-static char rcsid[]not_used = {
-        "$Id$" };
-
 #include <freeform.h>
 
 #include "debug.h"

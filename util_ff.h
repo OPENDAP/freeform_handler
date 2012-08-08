@@ -42,7 +42,7 @@
 using namespace libdap ;
 
 #define MaxStr 100
-#define FREEFORM_HANDLER_FORMATS "/usr/local/RSS/"
+// #define FREEFORM_HANDLER_FORMATS "/usr/local/RSS/"
 
 const int Msgt_size = 255;
 

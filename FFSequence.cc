@@ -67,7 +67,7 @@ FFSequence::ptr_duplicate()
 // public
 
 FFSequence::FFSequence(const string &n, const string &d, const string &iff) :
-    d_input_format_file(iff), Sequence(n, d)
+        Sequence(n, d), d_input_format_file(iff)
 {
 }
 

@@ -51,6 +51,7 @@ static char rcsid[]not_used = {
 #include <InternalErr.h>
 
 #include "FreeFormCPP.h"
+#include "FFRequestHandler.h"
 #include "util_ff.h"
 #include "freeform.h"
 
@@ -248,11 +249,17 @@ void read_attributes(string filename, AttrTable *at)
     (void)filename.copy(SetUps->input_file, filename.length() + 1);
     SetUps->input_file[filename.length()] = '\0';
 
-#ifdef RSS
-    string iff = find_ancillary_rss_formats(filename);
-    SetUps->input_format_file = new char[iff.length() + 1];
-    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
-#endif
+//#ifdef RSS
+    if (FFRequestHandler::get_RSS_format_support()) {
+        string iff = find_ancillary_rss_formats(filename);
+
+        SetUps->input_format_file = (char *) malloc(sizeof(char) * (iff.length() + 1));
+        if (!SetUps->input_format_file)
+            throw Error("Insufficient memory");
+
+        strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+    }
+//#endif
 
     SetUps->output_file = NULL;
 
@@ -299,11 +306,17 @@ static void add_variable_containers(DAS &das, const string &filename)
     (void)filename.copy(SetUps->input_file, filename.length() + 1);
     SetUps->input_file[filename.length()] = '\0';
 
-#ifdef RSS
-    string iff = find_ancillary_rss_formats(filename);
-    SetUps->input_format_file = new char[iff.length() + 1];
-    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
-#endif
+//#ifdef RSS
+    if (FFRequestHandler::get_RSS_format_support()) {
+        string iff = find_ancillary_rss_formats(filename);
+
+        SetUps->input_format_file = (char *) malloc(sizeof(char) * (iff.length() + 1));
+        if (!SetUps->input_format_file)
+            throw Error("Insufficient memory");
+
+        strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+    }
+//#endif
 
     SetUps->output_file = NULL;
 

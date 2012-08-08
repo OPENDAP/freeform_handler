@@ -31,15 +31,21 @@
 #include "BESRequestHandler.h"
 
 class FFRequestHandler : public BESRequestHandler {
+private:
+    static bool d_RSS_format_support;
+    static string d_RSS_format_files;
 public:
-			FFRequestHandler( const string &name ) ;
-    virtual		~FFRequestHandler( void ) ;
+	FFRequestHandler( const string &name ) ;
+    virtual	~FFRequestHandler( void ) ;
 
-    static bool		ff_build_das( BESDataHandlerInterface &dhi ) ;
-    static bool		ff_build_dds( BESDataHandlerInterface &dhi ) ;
-    static bool		ff_build_data( BESDataHandlerInterface &dhi ) ;
-    static bool		ff_build_help( BESDataHandlerInterface &dhi ) ;
-    static bool		ff_build_version( BESDataHandlerInterface &dhi ) ;
+    static bool ff_build_das(BESDataHandlerInterface &dhi);
+    static bool ff_build_dds(BESDataHandlerInterface &dhi);
+    static bool ff_build_data(BESDataHandlerInterface &dhi);
+    static bool ff_build_help(BESDataHandlerInterface &dhi);
+    static bool ff_build_version(BESDataHandlerInterface &dhi);
+
+    static bool get_RSS_format_support() { return d_RSS_format_support; }
+    static string get_RSS_format_files() { return d_RSS_format_files; }
 };
 
 #endif

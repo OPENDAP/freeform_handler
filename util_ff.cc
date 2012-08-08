@@ -54,8 +54,8 @@ static char rcsid[] not_used =
 #include <dods-limits.h>
 #include <debug.h>
 
+#include "FFRequestHandler.h"
 #include "util_ff.h"
-// #include "FreeForm.h" Included by the util_ff header.
 
 using namespace std;
 
@@ -199,7 +199,7 @@ const string & format_extension(const string & new_extension)
     return extension;
 }
 
-/** FreeForm data and format initializattion calls (input format only) */
+/** FreeForm data and format initialization calls (input format only) */
 
 static bool
 cmp_array_conduit(FF_ARRAY_CONDUIT_PTR src_conduit,
@@ -321,38 +321,46 @@ bool file_exist(const char *filename)
 
     @return A const string object which contains the format file name. */
 const string
-find_ancillary_rss_formats(const string & dataset, const string & delimiter,
-			   const string & extension)
+find_ancillary_rss_formats(const string & dataset, const string & /* delimiter */,
+			   const string & /* extension */)
 {
     string FormatFile;
     //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
+#if 0
     string FormatPath = FREEFORM_HANDLER_FORMATS;
+#endif
+    string FormatPath = FFRequestHandler::get_RSS_format_files();
     string BaseName;
     string FileName;
 
+    // Separate the filename from the pathname, for both plain files
+    // and cached decompressed files (ones with '#' in their names).
     size_t delim = dataset.rfind("#");
-    if ( delim != string::npos ) 
-      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    if (delim != string::npos)
+        FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
     else {
-      	delim = dataset.rfind("/");
-	if ( delim != string::npos ) 
-	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
-	else
-	  FileName = dataset;
+        delim = dataset.rfind("/");
+        if (delim != string::npos)
+            FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
+        else
+            FileName = dataset;
     }
 
+    // The file/dataset name has to have an underscore...
     delim = FileName.find("_");
     if ( delim != string::npos ) {
       BaseName = FileName.substr(0,delim+1);
     }
     else {
-      string msg = "Could not find input format for: ";
-      msg += dataset;
-      throw InternalErr(msg);
+      throw Error("Could not find input format for: " + dataset);
     }
 
+    // Now determine if this is files holds averaged or daily data.
     string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
     
+    if (FormatPath[FormatPath.length()-1] != '/')
+        FormatPath.append("/");
+
     if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
         FormatFile = FormatPath + BaseName + "averaged.fmt";
     else
@@ -374,24 +382,27 @@ find_ancillary_rss_formats(const string & dataset, const string & delimiter,
 
     @return A const string object which contains the format file name. */
 const string
-find_ancillary_rss_das(const string & dataset, const string & delimiter,
-		       const string & extension)
+find_ancillary_rss_das(const string & dataset, const string & /* delimiter */,
+		       const string & /* extension */)
 {
     string FormatFile;
     //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
+#if 0
     string FormatPath = FREEFORM_HANDLER_FORMATS;
+#endif
+    string FormatPath = FFRequestHandler::get_RSS_format_files();
     string BaseName;
     string FileName;
 
     size_t delim = dataset.rfind("#");
-    if ( delim != string::npos ) 
-      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    if (delim != string::npos)
+        FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
     else {
-      	delim = dataset.rfind("/");
-	if ( delim != string::npos ) 
-	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
-	else
-	  FileName = dataset;
+        delim = dataset.rfind("/");
+        if (delim != string::npos)
+            FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
+        else
+            FileName = dataset;
     }
 
     delim = FileName.find("_");
@@ -405,6 +416,9 @@ find_ancillary_rss_das(const string & dataset, const string & delimiter,
     }
 
     string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
+
+    if (FormatPath[FormatPath.length()-1] != '/')
+        FormatPath.append("/");
     
     if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
         FormatFile = FormatPath + BaseName + "averaged.das";

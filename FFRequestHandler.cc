@@ -24,32 +24,41 @@
 
 // FFRequestHandler.cc
 
-#include "FFRequestHandler.h"
-
 #include "config_ff.h"
-#include "ff_ce_functions.h"
-#include "util_ff.h"
 
-#include <BESDASResponse.h>
-#include <BESDDSResponse.h>
-#include <BESDataDDSResponse.h>
-#include <BESInfo.h>
-#include <BESDapNames.h>
-#include <BESResponseNames.h>
-#include <BESContainer.h>
-#include <BESResponseHandler.h>
-#include <BESVersionInfo.h>
-#include <BESServiceRegistry.h>
-#include <BESUtil.h>
-
-#include <BESDapError.h>
-#include <BESInternalFatalError.h>
-#include <InternalErr.h>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <exception>
 
 #include <DDS.h>
 #include <Ancillary.h>
 #include <Error.h>
+#include <InternalErr.h>
 #include <escaping.h>
+
+#include <BESResponseHandler.h>
+#include <BESResponseNames.h>
+#include <BESDapNames.h>
+#include <BESDASResponse.h>
+#include <BESDDSResponse.h>
+#include <BESDataDDSResponse.h>
+#include <BESVersionInfo.h>
+
+#include <BESDapError.h>
+#include <BESInternalFatalError.h>
+#include <BESDataNames.h>
+#include <TheBESKeys.h>
+#include <BESServiceRegistry.h>
+#include <BESUtil.h>
+#include <BESDebug.h>
+#include <BESContextManager.h>
+
+#include "FFRequestHandler.h"
+#include "ff_ce_functions.h"
+#include "util_ff.h"
+
+using namespace std;
 
 #define FF_NAME "ff"
 
@@ -60,6 +69,9 @@ char *BufVal = NULL; // cache buffer
 extern void ff_read_descriptors(DDS & dds, const string & filename);
 extern void ff_get_attributes(DAS & das, string filename);
 
+bool FFRequestHandler::d_RSS_format_support = false;
+string FFRequestHandler::d_RSS_format_files = "";
+
 FFRequestHandler::FFRequestHandler(const string &name) :
         BESRequestHandler(name)
 {
@@ -68,6 +80,30 @@ FFRequestHandler::FFRequestHandler(const string &name) :
     add_handler(DATA_RESPONSE, FFRequestHandler::ff_build_data);
     add_handler(HELP_RESPONSE, FFRequestHandler::ff_build_help);
     add_handler(VERS_RESPONSE, FFRequestHandler::ff_build_version);
+
+    bool key_found = false;
+    string doset;
+    TheBESKeys::TheKeys()->get_value("FF.RSSFormatSupport", doset, key_found);
+    if (key_found) {
+        doset = BESUtil::lowercase(doset);
+        if (doset == "true" || doset == "yes")
+            FFRequestHandler::d_RSS_format_support = true;
+        else
+            FFRequestHandler::d_RSS_format_support = false;
+    }
+    else
+        FFRequestHandler::d_RSS_format_support = false;
+
+    key_found = false;
+    string path;
+    TheBESKeys::TheKeys()->get_value("FF.RSSFormatFiles", path, key_found);
+    if (key_found)
+        FFRequestHandler::d_RSS_format_files = path;
+    else
+        FFRequestHandler::d_RSS_format_files = "";
+
+    BESDEBUG("ff", "d_RSS_format_support: " << d_RSS_format_support << endl);
+    BESDEBUG("ff", "d_RSS_format_files: " << d_RSS_format_files << endl);
 }
 
 FFRequestHandler::~FFRequestHandler()
@@ -87,13 +123,25 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 
         string accessed = dhi.container->access();
         ff_get_attributes(*das, accessed);
+#if 0
 #ifdef RSS
         string name = find_ancillary_rss_das(accessed);
 #else
         string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
 #endif
-        if (!name.empty())
+#endif
+        string name;
+        if (FFRequestHandler::get_RSS_format_support()) {
+            name = find_ancillary_rss_das(accessed);
+        }
+        else {
+            name = Ancillary::find_ancillary_file(accessed, "das", "", "");
+        }
+
+        struct stat st;
+        if (!name.empty() && (stat(name.c_str(), &st) == 0)) {
             das->parse(name);
+        }
 
         bdas->clear_container();
     } catch (InternalErr & e) {

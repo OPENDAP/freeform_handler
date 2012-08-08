@@ -69,36 +69,30 @@ static char rcsid[]not_used = {
 #include "FFStr.h"
 #include "util_ff.h"
 
+#include "FFRequestHandler.h"
+
 extern int StrLens[MaxStr]; // List of string lengths
 
 void ff_read_descriptors(DDS &dds_table, const string &filename)
 {
     if (!file_exist(filename.c_str()))
-        throw Error((string) "Could not open file " + path_to_filename(
-                filename) + string("."));
+        throw Error((string) "Could not open file " + path_to_filename(filename) + string("."));
 
     // Set dataset name
     dds_table.set_dataset_name(name_path(filename));
 
     FF_STD_ARGS_PTR SetUps = NULL;
     SetUps = ff_create_std_args();
-    if (!SetUps) {
-        string msg = (string) "Insufficient memory";
-        throw Error(msg);
-    }
+    if (!SetUps)
+        throw Error("Insufficient memory");
 
     // Set the structure values to create the FreeForm DB
     SetUps->user.is_stdin_redirected = 0;
-#if  0
-    SetUps->input_file = new char[filename.length() + 1];
-#endif
-    SetUps->input_file = (char *)malloc(sizeof(char) * (filename.length() + 1));
-     if (!SetUps->input_file) {
-        string msg = (string) "Insufficient memory";
-        throw Error(msg);
-    }
+    SetUps->input_file = (char *) malloc(sizeof(char) * (filename.length() + 1));
+    if (!SetUps->input_file)
+        throw Error("Insufficient memory");
 
-    (void)filename.copy(SetUps->input_file, filename.length());
+    (void) filename.copy(SetUps->input_file, filename.length());
     SetUps->input_file[filename.length()] = '\0';
 
     // Setting the input format file here causes db_set (called by SetDodsDB)
@@ -109,19 +103,17 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
     // objects (including FFArray, ...). So I think the RSS format-specific
     // code in those classes is not needed anymore. I'm going to #if 0 #endif
     // them out and check in the result. 10/30/08 jhrg
-#ifdef RSS
-    string iff = find_ancillary_rss_formats(filename);
-#if 0
-    SetUps->input_format_file = new char[iff.length() + 1];
-#endif
-    SetUps->input_format_file = (char *)malloc(sizeof(char) * (iff.length() + 1));
-     if (!SetUps->input_format_file) {
-        string msg = (string) "Insufficient memory";
-        throw Error(msg);
-    }
+//#ifdef RSS
+    if (FFRequestHandler::get_RSS_format_support()) {
+        string iff = find_ancillary_rss_formats(filename);
 
-    strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
-#endif
+        SetUps->input_format_file = (char *) malloc(sizeof(char) * (iff.length() + 1));
+        if (!SetUps->input_format_file)
+            throw Error("Insufficient memory");
+
+        strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+    }
+//#endif
 
     SetUps->output_file = NULL;
 
