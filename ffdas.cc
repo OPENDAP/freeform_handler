@@ -66,8 +66,7 @@ static void header_to_attributes(AttrTable *at, DATA_BIN_PTR dbin)
 
     char text[256];
 
-    int error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_FILE
-            | FFF_HEADER, &pinfo_list);
+    int error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_FILE | FFF_HEADER, &pinfo_list);
     // A general error indicates that the dataset does not have a header.
     // Anything else is bad news. 1/29/2001 jhrg
     if (error) {
@@ -99,119 +98,106 @@ static void header_to_attributes(AttrTable *at, DATA_BIN_PTR dbin)
             }
 
             switch (FFV_DATA_TYPE(var)) {
-                case FFV_TEXT:
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_TEXT,
-                            text);
+            case FFV_TEXT:
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_TEXT, text);
 #ifndef ATTR_STRING_QUOTE_FIX
-                    // Multiple word strings must be quoted.
-                    if (strpbrk(text, " \r\t")) {// Any whitespace?
-                        string quoted_text;
-                        quoted_text = (string)"\"" + text + "\"";
-                        at->append_attr(var->name, "STRING",
-                                quoted_text.c_str());
-                    }
-                    else {
-                        at->append_attr(var->name, "STRING", text);
-                    }
-#else
-                    // The new version of libdap provides the quotes when
-                    // printing the DAS. The DDX does not need quotes. jhrg
-                    // 7/30/08
+                // Multiple word strings must be quoted.
+                if (strpbrk(text, " \r\t")) { // Any whitespace?
+                    string quoted_text;
+                    quoted_text = (string)"\"" + text + "\"";
+                    at->append_attr(var->name, "STRING",
+                            quoted_text.c_str());
+                }
+                else {
                     at->append_attr(var->name, "STRING", text);
+                }
+#else
+                // The new version of libdap provides the quotes when
+                // printing the DAS. The DDX does not need quotes. jhrg
+                // 7/30/08
+                at->append_attr(var->name, "STRING", text);
 #endif
-                    break;
+                break;
 
-                case FFV_INT8:
-                    unsigned char int8;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT8,
-                            &int8);
-                    snprintf(text, sizeof(text), "%d", int8);
-                    at->append_attr(var->name, "BYTE", text);
-                    break;
+            case FFV_INT8:
+                unsigned char int8;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT8, &int8);
+                snprintf(text, sizeof(text), "%d", int8);
+                at->append_attr(var->name, "BYTE", text);
+                break;
 
-                case FFV_INT16:
-                    short int16;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT16,
-                            &int16);
-                    snprintf(text, sizeof(text), "%d", int16);
-                    at->append_attr(var->name, "INT16", text);
-                    break;
+            case FFV_INT16:
+                short int16;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT16, &int16);
+                snprintf(text, sizeof(text), "%d", int16);
+                at->append_attr(var->name, "INT16", text);
+                break;
 
-                case FFV_INT32:
-                    int int32;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT32,
-                            &int32);
-                    snprintf(text, sizeof(text), "%d", int32);
-                    at->append_attr(var->name, "INT32", text);
-                    break;
+            case FFV_INT32:
+                int int32;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT32, &int32);
+                snprintf(text, sizeof(text), "%d", int32);
+                at->append_attr(var->name, "INT32", text);
+                break;
 
-                case FFV_INT64:
-                    long int64;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT64,
-                            &int64);
-                    snprintf(text, sizeof(text), "%ld", int64);
-                    at->append_attr(var->name, "INT32", text);
-                    break;
+            case FFV_INT64:
+                long int64;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_INT64, &int64);
+                snprintf(text, sizeof(text), "%ld", int64);
+                at->append_attr(var->name, "INT32", text);
+                break;
 
-                case FFV_UINT8:
-                    unsigned char uint8;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT8,
-                            &uint8);
-                    snprintf(text, sizeof(text), "%d", uint8);
-                    at->append_attr(var->name, "BYTE", text);
-                    break;
+            case FFV_UINT8:
+                unsigned char uint8;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT8, &uint8);
+                snprintf(text, sizeof(text), "%d", uint8);
+                at->append_attr(var->name, "BYTE", text);
+                break;
 
-                case FFV_UINT16:
-                    unsigned short uint16;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name,
-                            FFV_UINT16, &uint16);
-                    snprintf(text, sizeof(text), "%d", uint16);
-                    at->append_attr(var->name, "UINT16", text);
-                    break;
+            case FFV_UINT16:
+                unsigned short uint16;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT16, &uint16);
+                snprintf(text, sizeof(text), "%d", uint16);
+                at->append_attr(var->name, "UINT16", text);
+                break;
 
-                case FFV_UINT32:
-                    unsigned int uint32;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name,
-                            FFV_UINT32, &uint32);
-                    snprintf(text, sizeof(text), "%u", uint32);
-                    at->append_attr(var->name, "UINT32", text);
-                    break;
+            case FFV_UINT32:
+                unsigned int uint32;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT32, &uint32);
+                snprintf(text, sizeof(text), "%u", uint32);
+                at->append_attr(var->name, "UINT32", text);
+                break;
 
-                case FFV_UINT64:
-                    unsigned long uint64;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name,
-                            FFV_UINT64, &uint64);
-                    snprintf(text, sizeof(text), "%lu", uint64);
-                    at->append_attr(var->name, "UINT32", text);
-                    break;
+            case FFV_UINT64:
+                unsigned long uint64;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_UINT64, &uint64);
+                snprintf(text, sizeof(text), "%lu", uint64);
+                at->append_attr(var->name, "UINT32", text);
+                break;
 
-                case FFV_FLOAT32:
-                    float float32;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name,
-                            FFV_FLOAT32, &float32);
-                    snprintf(text, sizeof(text), "%f", float32);
-                    at->append_attr(var->name, "FLOAT32", text);
-                    break;
+            case FFV_FLOAT32:
+                float float32;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_FLOAT32, &float32);
+                snprintf(text, sizeof(text), "%f", float32);
+                at->append_attr(var->name, "FLOAT32", text);
+                break;
 
-                case FFV_FLOAT64:
-                    double float64;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name,
-                            FFV_FLOAT64, &float64);
-                    snprintf(text, sizeof(text), "%f", float64);
-                    at->append_attr(var->name, "FLOAT64", text);
-                    break;
+            case FFV_FLOAT64:
+                double float64;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_FLOAT64, &float64);
+                snprintf(text, sizeof(text), "%f", float64);
+                at->append_attr(var->name, "FLOAT64", text);
+                break;
 
-                case FFV_ENOTE:
-                    double enote;
-                    nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_ENOTE,
-                            &enote);
-                    snprintf(text, sizeof(text), "%e", enote);
-                    at->append_attr(var->name, "FLOAT64", text);
-                    break;
+            case FFV_ENOTE:
+                double enote;
+                nt_ask(dbin, FFF_FILE | FFF_HEADER, var->name, FFV_ENOTE, &enote);
+                snprintf(text, sizeof(text), "%e", enote);
+                at->append_attr(var->name, "FLOAT64", text);
+                break;
 
-                default:
-                    throw InternalErr(__FILE__, __LINE__,
-                            "Unknown FreeForm type!");
+            default:
+                throw InternalErr(__FILE__, __LINE__, "Unknown FreeForm type!");
             }
             vlist = (vlist)->next;
             var = ((VARIABLE_PTR) (vlist)->data.u.var);
@@ -257,39 +243,48 @@ void read_attributes(string filename, AttrTable *at)
     char Msgt[255];
     error = SetDodsDB(SetUps, &dbin, Msgt);
     if (error && error < ERR_WARNING_ONLY) {
-        db_destroy(dbin);
+        if (dbin)
+            db_destroy(dbin);
+        ff_destroy_std_args(SetUps);
         throw Error(Msgt);
     }
 
     ff_destroy_std_args(SetUps);
 
-    error = db_ask(dbin, DBASK_FORMAT_SUMMARY, FFF_INPUT, &bufsize);
-    if (error) {
-        string msg = "Cannot get Format Summary. FreeForm error code: ";
-        append_long_to_string((long) error, 10, msg);
-        throw Error(msg);
-    }
+    try {
+        error = db_ask(dbin, DBASK_FORMAT_SUMMARY, FFF_INPUT, &bufsize);
+        if (error) {
+            string msg = "Cannot get Format Summary. FreeForm error code: ";
+            append_long_to_string((long) error, 10, msg);
+            throw Error(msg);
+        }
 
 #ifndef ATTR_STRING_QUOTE_FIX
-    at->append_attr("Server", "STRING",
-            "\"DODS FreeFrom based on FFND release " + FFND_LIB_VER + "\"");
+        at->append_attr("Server", "STRING",
+                "\"DODS FreeFrom based on FFND release " + FFND_LIB_VER + "\"");
 #else
-    at->append_attr("Server", "STRING",
-	    string("DODS FreeFrom based on FFND release ") + FFND_LIB_VER);
+        at->append_attr("Server", "STRING", string("DODS FreeFrom based on FFND release ") + FFND_LIB_VER);
 #endif
 
-    header_to_attributes(at, dbin); // throws Error
+        header_to_attributes(at, dbin); // throws Error
+    }
+    catch (...) {
+        if (bufsize)
+            ff_destroy_bufsize(bufsize);
+        if (dbin)
+            db_destroy(dbin);
+
+        throw;
+    }
 
     ff_destroy_bufsize(bufsize);
     db_destroy(dbin);
 }
 
-static void add_variable_containers(DAS &das, const string &filename)
-        throw(Error)
+static void add_variable_containers(DAS &das, const string &filename) throw (Error)
 {
     if (!file_exist(filename.c_str()))
-        throw Error(string("ff_dds: Could not open file ")
-                + path_to_filename(filename) + string("."));
+        throw Error(string("ff_dds: Could not open file ") + path_to_filename(filename) + string("."));
 
     // Setup the DB access.
     FF_STD_ARGS_PTR SetUps = ff_create_std_args();
@@ -312,82 +307,95 @@ static void add_variable_containers(DAS &das, const string &filename)
     DATA_BIN_PTR dbin = NULL;
     int error = SetDodsDB(SetUps, &dbin, Msgt);
     if (error && error < ERR_WARNING_ONLY) {
-        db_destroy(dbin);
-        string msg;
-        msg = string(Msgt) + string(" FreeForm error code: ");
+        if (dbin)
+            db_destroy(dbin);
+        ff_destroy_std_args(SetUps);
+        string msg = string(Msgt) + " FreeForm error code: ";
         append_long_to_string((long) error, 10, msg);
         throw Error(msg);
     }
 
     ff_destroy_std_args(SetUps);
 
-    // Get the names of all the variables.
-    int num_names = 0;
+    // These are defined here so that they can be freed in the catch(...)
+    // block below
     char **var_names_vector = NULL;
-    error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names,
-            &var_names_vector);
-    if (error) {
-        string msg = "Could not get varible list from the input file. FreeForm error code: ";
-        append_long_to_string((long) error, 10, msg);
-        throw Error(msg);
-    }
-
-    // I don't understand why this has to happen here, but maybe it's moved
-    // outside the loop because FreeForm is designed so that the pinfo list
-    // only needs to be accessed once and can be used when working with
-    // any/all of the variables. 4/4/2002 jhrg
     PROCESS_INFO_LIST pinfo_list = NULL;
-    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA,
-            &pinfo_list);
-    if (error) {
-        string msg = "Could not get process info for the input file. FreeForm error code: ";
-        append_long_to_string((long) error, 10, msg);
-        throw Error(msg);
-    }
+    char **dim_names_vector = NULL;
 
-    // For each variable, figure out what its name really is (arrays have
-    // funny names).
-    for (int i = 0; i < num_names; i++) {
-        int num_dim_names = 0;
-        char **dim_names_vector = NULL;
-        error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i],
-                &num_dim_names, &dim_names_vector);
+    try {
+        // Get the names of all the variables.
+        int num_names = 0;
+        error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names, &var_names_vector);
         if (error) {
-            string msg = "Could not get array dimension names for variable: "
-                    + string(var_names_vector[i]) + string(", FreeForm error code: ");
+            string msg = "Could not get varible list from the input file. FreeForm error code: ";
             append_long_to_string((long) error, 10, msg);
             throw Error(msg);
         }
 
-        // Note: FreeForm array names are returned appended to their format
-        // name with '::'.
-        char *cp = NULL;
-        if (num_dim_names == 0) // sequence names
-            cp = var_names_vector[i];
-        else {
-            cp = strstr(var_names_vector[i], "::");
-            // If cp is not null, advance past the "::"
-            if (cp)
-                cp += 2;
+        // I don't understand why this has to happen here, but maybe it's moved
+        // outside the loop because FreeForm is designed so that the pinfo list
+        // only needs to be accessed once and can be used when working with
+        // any/all of the variables. 4/4/2002 jhrg
+        error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &pinfo_list);
+        if (error) {
+            string msg = "Could not get process info for the input file. FreeForm error code: ";
+            append_long_to_string((long) error, 10, msg);
+            throw Error(msg);
         }
 
-        // We need this to figure out if this variable is the/a EOL
-        // variable. We read the pinfo_list just before starting this
-        // for-loop.
-        pinfo_list = dll_first(pinfo_list);
-        PROCESS_INFO_PTR pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
-        FORMAT_PTR iformat = PINFO_FORMAT(pinfo);
-        VARIABLE_PTR var = ff_find_variable(cp, iformat);
+        // For each variable, figure out what its name really is (arrays have
+        // funny names).
+        for (int i = 0; i < num_names; i++) {
+            int num_dim_names = 0;
+            error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i], &num_dim_names, &dim_names_vector);
+            if (error) {
+                string msg = "Could not get array dimension names for variable: " + string(var_names_vector[i])
+                        + string(", FreeForm error code: ");
+                append_long_to_string((long) error, 10, msg);
+                throw Error(msg);
+            }
 
-        // For some formats: Freefrom sends an extra EOL variable at the end of
-        // the list. Add an attribute container for all the other variables.
-        if (!IS_EOL(var))
-            das.add_table(cp, new AttrTable);
+            // Note: FreeForm array names are returned appended to their format
+            // name with '::'.
+            char *cp = NULL;
+            if (num_dim_names == 0) // sequence names
+                cp = var_names_vector[i];
+            else {
+                cp = strstr(var_names_vector[i], "::");
+                // If cp is not null, advance past the "::"
+                if (cp)
+                    cp += 2;
+            }
 
-        // FIXME This is wrong, but it's the right idea - we need to free these things
-        // free_ff_char_vector(dim_names_vector, num_dim_names);
-        memFree(dim_names_vector, "**dim_names_vector");
-        dim_names_vector = NULL;
+            // We need this to figure out if this variable is the/a EOL
+            // variable. We read the pinfo_list just before starting this
+            // for-loop.
+            pinfo_list = dll_first(pinfo_list);
+            PROCESS_INFO_PTR pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
+            FORMAT_PTR iformat = PINFO_FORMAT(pinfo);
+            VARIABLE_PTR var = ff_find_variable(cp, iformat);
+
+            // For some formats: Freefrom sends an extra EOL variable at the end of
+            // the list. Add an attribute container for all the other variables.
+            if (!IS_EOL(var))
+                das.add_table(cp, new AttrTable);
+
+            memFree(dim_names_vector, "**dim_names_vector");
+            dim_names_vector = NULL;
+        }
+    }
+    catch (...) {
+        if (var_names_vector)
+            memFree(var_names_vector, "**var_names_vector");
+        if (pinfo_list)
+            ff_destroy_process_info_list(pinfo_list);
+        if (dim_names_vector)
+            memFree(dim_names_vector, "**dim_names_vector");
+        if (dbin)
+            db_destroy(dbin);
+
+        throw;
     }
 
     memFree(var_names_vector, "**var_names_vector");
@@ -404,7 +412,7 @@ static void add_variable_containers(DAS &das, const string &filename)
 // Returns: false if an error accessing the file was detected, true
 // otherwise.
 
-void ff_get_attributes(DAS &das, string filename) throw(Error)
+void ff_get_attributes(DAS &das, string filename) throw (Error)
 {
     AttrTable *attr_table_p = new AttrTable;
 

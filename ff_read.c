@@ -24,6 +24,7 @@ long read_ff(const char *dataset, const char *if_file, const char *o_format,
     FF_BUFSIZE_PTR newform_log = NULL;
     FF_BUFSIZE_PTR bufsz = NULL;
     FF_STD_ARGS_PTR std_args = NULL;
+    long bytes_read = 0;
 
     std_args = ff_create_std_args();
     if (!std_args) {
@@ -34,10 +35,10 @@ long read_ff(const char *dataset, const char *if_file, const char *o_format,
      * and o_format.*/
     std_args->error_prompt = FALSE;
     std_args->user.is_stdin_redirected = 0;
-    std_args->input_file = (char*) (dataset);
-    std_args->input_format_file = (char*) (if_file);
+    std_args->input_file = (char*)(dataset);
+    std_args->input_format_file = (char*)(if_file);
     std_args->output_file = NULL;
-    std_args->output_format_buffer = (char*) (o_format);
+    std_args->output_format_buffer = (char*)(o_format);
     std_args->log_file = "/dev/null";
     /* Define DBG (as per dap/debug.h) to get a log file from FreeForm. 9/8/98
      jhrg */
@@ -52,14 +53,38 @@ long read_ff(const char *dataset, const char *if_file, const char *o_format,
     bufsz->buffer = o_buffer;
     bufsz->total_bytes = (FF_BSS_t) bsize;
     bufsz->bytes_used = (FF_BSS_t) 0;
+
     std_args->output_bufsize = bufsz;
 
     newform_log = ff_create_bufsize(SCRATCH_QUANTA);
     if (!newform_log) {
         goto main_exit;
     }
+
     newform(std_args, newform_log, stderr);
 
+    ff_destroy_bufsize(newform_log);
+
+    main_exit:
+
+    err_disp(std_args);
+
+    if (std_args)
+        ff_destroy_std_args(std_args);
+
+    bytes_read = bufsz ? bufsz->bytes_used : 0;
+
+    if (bufsz)
+        memFree(bufsz, "bufsz");
+
+    return bytes_read;
+}
+
+#ifdef TEST
+
+/* This 'TEST_LOGGING' code was part of the above code. Moved here to
+ * reduce clutter. jhrg 8/10/12
+ */
 #ifdef TEST_LOGGING
     char log_file_write_mode[4];
     /* Is user asking for both error logging and a log file? */
@@ -94,21 +119,7 @@ long read_ff(const char *dataset, const char *if_file, const char *o_format,
     ff_destroy_bufsize(std_args->input_bufsize);
 #endif /* TEST_LOGGING */
 
-    ff_destroy_bufsize(newform_log);
-
-    main_exit:
-
-    err_disp(std_args);
-
-    if (std_args)
-        ff_destroy_std_args(std_args);
-
-    return bufsz ? bufsz->bytes_used : 0;
-}
-
-#ifdef TEST
-
-#define OUTPUT_FMT_STR "binary_output_data \"output\"\n\
+    #define OUTPUT_FMT_STR "binary_output_data \"output\"\n\
 year 1 4 int32 0\n\
 day 5 8 int32 0\n\
 time 9 9 text 0\n\

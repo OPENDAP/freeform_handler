@@ -84,14 +84,22 @@ int mm_make(VARIABLE_PTR var)
 
 		if (byte_size)
 		{
-			max_min->minimum = (void *)memCalloc(1, byte_size, "max_min->minimum");
-			max_min->maximum = (void *)memCalloc(1, byte_size, "max_min->maximum");
+		    /* fprintf(stderr, "byte_size: %li; FFV_DATA_TYPE: %li\n", byte_size, var->type);
+		     * This seems suspect - on test data with six int32 variables, I get six memory
+		     * errors, not twelve... jhrg 8/10/12
+		     *
+		     * This patch might only be needed with 64-bit machines or might be limited to
+		     * OS/X. Not sure. Including it removes an "invalid write of 8 bytes to a block
+		     * of 4 allocated with calloc" error from valgrind.
+		     */
+			max_min->minimum = (void *)memCalloc(1, byte_size+4, "max_min->minimum");
+			max_min->maximum = (void *)memCalloc(1, byte_size+4, "max_min->maximum");
 			if (!max_min->maximum || !max_min->minimum)
 				return err_push(ERR_MEM_LACK, "Setting missing data");
 		}
 		else
 			assert(byte_size);
-	
+
 		switch (FFV_DATA_TYPE(var))
 		{
 			case FFV_INT8:

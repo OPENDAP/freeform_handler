@@ -84,19 +84,15 @@ static long Records(const string &filename)
     PROCESS_INFO_PTR pinfo = NULL;
     static char Msgt[255];
 
-    char * FileName = new char[filename.length() + 1];
-    (void)filename.copy(FileName, filename.length());
-    FileName[filename.length()] = '\0';
-
     SetUps = ff_create_std_args();
     if (!SetUps) {
-    	delete[] FileName;
+    	// delete[] FileName;
         return -1;
     }
 
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
-    SetUps->input_file = FileName; 
+    SetUps->input_file = const_cast<char*>(filename.c_str());
 
     SetUps->output_file = NULL;
 
@@ -106,6 +102,8 @@ static long Records(const string &filename)
         return -1;
     }
 
+    ff_destroy_std_args(SetUps);
+
     error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA,
             &pinfo_list);
     if (error)
@@ -113,11 +111,12 @@ static long Records(const string &filename)
 
     pinfo_list = dll_first(pinfo_list);
 
-    //    pinfo = FF_PI(pinfo_list);
     pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
 
     long num_records = PINFO_SUPER_ARRAY_ELS(pinfo);
+
     ff_destroy_process_info_list(pinfo_list);
+    db_destroy(dbin);
 
     return num_records;
 }
@@ -142,12 +141,11 @@ bool FFSequence::read()
 
     if (!BufVal) { // Make the cache (BufVal is global)
         // Create the output Sequence format
-        ostringstream str;
+        ostringstream o_fmt;
         int endbyte = 0;
         int stbyte = 1;
-        string ds_str = dataset();
 
-        str << "binary_output_data \"DODS binary output data\"" << endl;
+        o_fmt << "binary_output_data \"DODS binary output data\"" << endl;
         StrCnt = 0;
         for (Vars_iter p = var_begin(); p != var_end(); ++p) {
             if ((*p)->synthesized_p())
@@ -159,36 +157,23 @@ bool FFSequence::read()
             else
                 endbyte += (*p)->width();
 
-            str << (*p)->name() << " " << stbyte << " " << endbyte << " " << ff_types((*p)->type()) << " "
+            o_fmt << (*p)->name() << " " << stbyte << " " << endbyte << " " << ff_types((*p)->type()) << " "
                     << ff_prec((*p)->type()) << endl;
             stbyte = endbyte + 1;
         }
 
-        DBG(cerr << str.str());
-
-        char *o_fmt = new char[str.str().length() + 1];
-        (void) str.str().copy(o_fmt, str.str().length());
-        o_fmt[str.str().length()] = '\0';
+        DBG(cerr << o_fmt.str());
 
         // num_rec could come from DDS if sequence length was known...
-        long num_rec = Records(ds_str);
+        long num_rec = Records(dataset());
         if (num_rec == -1) {
-            delete[] o_fmt;
             return false;
         }
 
         BufSiz = num_rec * (stbyte - 1);
         BufVal = new char[BufSiz];
-        char *ds = new char[ds_str.length() + 1];
-        (void) ds_str.copy(ds, ds_str.length());
-        ds[ds_str.length()] = '\0';
 
-        long bytes = read_ff(ds, d_input_format_file.c_str(), o_fmt, BufVal, BufSiz);
-
-        // clean up; we should use auto_ptr, but it doesn't work for
-        // arrays... 08/29/03 jhrg
-        delete[] ds;
-        delete[] o_fmt;
+        long bytes = read_ff(dataset().c_str(), d_input_format_file.c_str(), o_fmt.str().c_str(), BufVal, BufSiz);
 
         if (bytes == -1)
             throw Error("Could not read requested data from the dataset.");
