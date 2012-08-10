@@ -1,5 +1,5 @@
 
-Updated for version 3.8.4
+Updated for version 3.8.5
 
 For information about building the FreeForm data handler, see the
 INSTALL file.
@@ -38,6 +38,21 @@ Basic information about the input file is given as Global Attributes as
 is any header information. The file's data variables are mapped into
 the closest DAP variable type using the FreeForm/FFND external format
 file.
+
+Customizations for Remote Sensing Systems (RSS) Data files
+
+Two parameters in the configuration file control features that enable
+using data from RSS. The parameter FF.RSSFormatSupport is used to 
+activate parsing the RSS-format-specific .fmt files. The parameter
+FF.RSSFormatFiles is used to specify a directory other than the data 
+where the .fmt (and optional ancillary .das files) will be found. If 
+this is not given or is the empty string, the handler will look in the
+same directory as the data. If it is given, the handler will look _only_
+in the specified directory.
+
+FF.RSSFormatSupport = yes
+FF.RSSFormatFiles = /usr/local/RSS
+
 
 WRITING FORMAT DESCRIPTION FILES
 

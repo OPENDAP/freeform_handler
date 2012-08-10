@@ -36,9 +36,6 @@
 
 #include "config_ff.h"
 
-static char rcsid[]not_used = {
-        "$Id$" };
-
 #include <cstdio>
 #include <cstring>
 
@@ -234,9 +231,10 @@ void read_attributes(string filename, AttrTable *at)
     FF_STD_ARGS_PTR SetUps = NULL;
 
     if (!file_exist(filename.c_str()))
-        throw Error((string) "ff_das: Could not open file "
-                + path_to_filename(filename) + ".");
+        throw Error((string) "Could not open file " + path_to_filename(filename) + ".");
 
+    // ff_create_std_args uses calloc so the struct's pointers are all initialized
+    // to null.
     SetUps = ff_create_std_args();
     if (!SetUps)
         throw Error("ff_das: Insufficient memory");
@@ -244,22 +242,15 @@ void read_attributes(string filename, AttrTable *at)
     /** set the structure values to create the FreeForm DB**/
     SetUps->user.is_stdin_redirected = 0;
 
-    SetUps->input_file = new char[filename.length() + 1];
+    // Use const_cast because FF only copies the referenced data; the older
+    // version of this handler allocated memory, copied values, leaked the
+    // memory...
+    SetUps->input_file = const_cast<char*>(filename.c_str());
 
-    (void)filename.copy(SetUps->input_file, filename.length() + 1);
-    SetUps->input_file[filename.length()] = '\0';
-
-//#ifdef RSS
     if (FFRequestHandler::get_RSS_format_support()) {
         string iff = find_ancillary_rss_formats(filename);
-
-        SetUps->input_format_file = (char *) malloc(sizeof(char) * (iff.length() + 1));
-        if (!SetUps->input_format_file)
-            throw Error("Insufficient memory");
-
-        strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+        SetUps->input_format_file = const_cast<char*>(iff.c_str());
     }
-//#endif
 
     SetUps->output_file = NULL;
 
@@ -270,10 +261,11 @@ void read_attributes(string filename, AttrTable *at)
         throw Error(Msgt);
     }
 
+    ff_destroy_std_args(SetUps);
+
     error = db_ask(dbin, DBASK_FORMAT_SUMMARY, FFF_INPUT, &bufsize);
     if (error) {
-        string msg =
-                (string) "Cannot get Format Summary. FreeForm error code: ";
+        string msg = "Cannot get Format Summary. FreeForm error code: ";
         append_long_to_string((long) error, 10, msg);
         throw Error(msg);
     }
@@ -285,7 +277,11 @@ void read_attributes(string filename, AttrTable *at)
     at->append_attr("Server", "STRING",
 	    string("DODS FreeFrom based on FFND release ") + FFND_LIB_VER);
 #endif
+
     header_to_attributes(at, dbin); // throws Error
+
+    ff_destroy_bufsize(bufsize);
+    db_destroy(dbin);
 }
 
 static void add_variable_containers(DAS &das, const string &filename)
@@ -302,21 +298,12 @@ static void add_variable_containers(DAS &das, const string &filename)
 
     SetUps->user.is_stdin_redirected = 0;
 
-    SetUps->input_file = new char[filename.length() + 1];
-    (void)filename.copy(SetUps->input_file, filename.length() + 1);
-    SetUps->input_file[filename.length()] = '\0';
+    SetUps->input_file = const_cast<char*>(filename.c_str());
 
-//#ifdef RSS
     if (FFRequestHandler::get_RSS_format_support()) {
         string iff = find_ancillary_rss_formats(filename);
-
-        SetUps->input_format_file = (char *) malloc(sizeof(char) * (iff.length() + 1));
-        if (!SetUps->input_format_file)
-            throw Error("Insufficient memory");
-
-        strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+        SetUps->input_format_file = const_cast<char*>(iff.c_str());
     }
-//#endif
 
     SetUps->output_file = NULL;
 
@@ -332,15 +319,15 @@ static void add_variable_containers(DAS &das, const string &filename)
         throw Error(msg);
     }
 
+    ff_destroy_std_args(SetUps);
+
     // Get the names of all the variables.
     int num_names = 0;
     char **var_names_vector = NULL;
     error = db_ask(dbin, DBASK_VAR_NAMES, FFF_INPUT | FFF_DATA, &num_names,
             &var_names_vector);
     if (error) {
-        string msg;
-        msg = string("Could not get varible list from the input file.\n")
-                + string(" FreeForm error code: ");
+        string msg = "Could not get varible list from the input file. FreeForm error code: ";
         append_long_to_string((long) error, 10, msg);
         throw Error(msg);
     }
@@ -353,9 +340,7 @@ static void add_variable_containers(DAS &das, const string &filename)
     error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA,
             &pinfo_list);
     if (error) {
-        string msg =
-                (string) "Could not get process info for the input file."
-                        + " FreeForm error code: ";
+        string msg = "Could not get process info for the input file. FreeForm error code: ";
         append_long_to_string((long) error, 10, msg);
         throw Error(msg);
     }
@@ -368,17 +353,13 @@ static void add_variable_containers(DAS &das, const string &filename)
         error = db_ask(dbin, DBASK_ARRAY_DIM_NAMES, var_names_vector[i],
                 &num_dim_names, &dim_names_vector);
         if (error) {
-            string msg;
-            msg
-                    = string(
-                            "Could not get array dimension names for variable: ")
-                            + string(var_names_vector[i]) + string(
-                            ", FreeForm error code: ");
+            string msg = "Could not get array dimension names for variable: "
+                    + string(var_names_vector[i]) + string(", FreeForm error code: ");
             append_long_to_string((long) error, 10, msg);
             throw Error(msg);
         }
 
-        // Note: FreeForm array names are returned appened to their format
+        // Note: FreeForm array names are returned appended to their format
         // name with '::'.
         char *cp = NULL;
         if (num_dim_names == 0) // sequence names
@@ -391,7 +372,7 @@ static void add_variable_containers(DAS &das, const string &filename)
         }
 
         // We need this to figure out if this variable is the/a EOL
-        // valriable. We read the pinfo_list just before starting this
+        // variable. We read the pinfo_list just before starting this
         // for-loop.
         pinfo_list = dll_first(pinfo_list);
         PROCESS_INFO_PTR pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
@@ -402,7 +383,18 @@ static void add_variable_containers(DAS &das, const string &filename)
         // the list. Add an attribute container for all the other variables.
         if (!IS_EOL(var))
             das.add_table(cp, new AttrTable);
+
+        // FIXME This is wrong, but it's the right idea - we need to free these things
+        // free_ff_char_vector(dim_names_vector, num_dim_names);
+        memFree(dim_names_vector, "**dim_names_vector");
+        dim_names_vector = NULL;
     }
+
+    memFree(var_names_vector, "**var_names_vector");
+    var_names_vector = NULL;
+
+    ff_destroy_process_info_list(pinfo_list);
+    db_destroy(dbin);
 }
 
 // Given a reference to an instance of class DAS and a filename that refers
@@ -424,24 +416,3 @@ void ff_get_attributes(DAS &das, string filename) throw(Error)
     // variables. 4/4/2002 jhrg
     add_variable_containers(das, filename);
 }
-
-#ifdef TEST
-
-int
-main(int argc, char *argv[])
-{
-    DAS das;
-
-    try {
-        ff_get_attributes(&das, (string)argv[1]);
-        das.print();
-    }
-    catch (Error &e) {
-        e.display_message();
-        return 1;
-    }
-
-    return 0;
-}
-
-#endif

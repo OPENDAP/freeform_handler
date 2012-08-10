@@ -123,13 +123,7 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
 
         string accessed = dhi.container->access();
         ff_get_attributes(*das, accessed);
-#if 0
-#ifdef RSS
-        string name = find_ancillary_rss_das(accessed);
-#else
-        string name = Ancillary::find_ancillary_file(accessed, "das", "", "");
-#endif
-#endif
+
         string name;
         if (FFRequestHandler::get_RSS_format_support()) {
             name = find_ancillary_rss_das(accessed);

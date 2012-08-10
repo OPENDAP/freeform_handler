@@ -66,6 +66,21 @@ extern "C" int dods_find_format_compressed_files(DATA_BIN_PTR, char *,
 
 #define DODS_DATA_PRX "dods-"   // prefix for temp format file names
 
+/**
+ * Free a char ** vector that db_ask() allocates. This code uses free()
+ * to do the delete.
+ *
+ * @note There maybe code in FreeForm to do this, but I can't find it.
+ */
+void free_ff_char_vector(char **v, int len)
+{
+    for (int i = 0; i < len; ++i)
+        if (v && v[i])
+            free (v[i]);
+    if (v && len > 0)
+        free (v);
+}
+
 // Given the name of a DODS data type, return the name of the corresponding
 // FreeForm data type.
 //
@@ -223,6 +238,14 @@ static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
     return (error);
 }
 
+/**
+ * Given a set of standard arguments (input filenames), allocate a DATA-BIN_HANDLE
+ * and return an error code. Once called, the caller should free the std_args
+ * parameter.
+ *
+ * @param std_args A pointer to a structure that holds a number of input
+ * and out file names.
+ */
 int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
 {
     FORMAT_DATA_LIST format_data_list = NULL;
@@ -244,7 +267,7 @@ int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
         }
     }
 
-    /* Now set the formats and the auxillary files */
+    /* Now set the formats and the auxiliary files */
 
     if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file)) {
         snprintf(Msgt, Msgt_size, "Error making name table for %s",
@@ -325,10 +348,6 @@ find_ancillary_rss_formats(const string & dataset, const string & /* delimiter *
 			   const string & /* extension */)
 {
     string FormatFile;
-    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
-#if 0
-    string FormatPath = FREEFORM_HANDLER_FORMATS;
-#endif
     string FormatPath = FFRequestHandler::get_RSS_format_files();
     string BaseName;
     string FileName;
@@ -386,10 +405,6 @@ find_ancillary_rss_das(const string & dataset, const string & /* delimiter */,
 		       const string & /* extension */)
 {
     string FormatFile;
-    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
-#if 0
-    string FormatPath = FREEFORM_HANDLER_FORMATS;
-#endif
     string FormatPath = FFRequestHandler::get_RSS_format_files();
     string BaseName;
     string FileName;

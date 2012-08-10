@@ -98,20 +98,6 @@ static long Records(const string &filename)
     SetUps->user.is_stdin_redirected = 0;
     SetUps->input_file = FileName; 
 
-#if 0
-    // See my comments in ffdds.cc 10/30/08 jhrg
-#ifdef RSS 
-    string iff = find_ancillary_rss_formats(filename);
-#else
-    string iff = find_ancillary_formats(filename);
-#endif
-    char *if_f = new char[iff.length() + 1];
-    iff.copy(if_f, iff.length());
-    if_f[iff.length()]='\0';
-
-    SetUps->input_format_file = if_f;
-#endif
-
     SetUps->output_file = NULL;
 
     error = SetDodsDB(SetUps, &dbin, Msgt);
@@ -173,32 +159,19 @@ bool FFSequence::read()
             else
                 endbyte += (*p)->width();
 
-            str << (*p)->name() << " " << stbyte << " " << endbyte << " "
-                    << ff_types((*p)->type()) << " " << ff_prec((*p)->type())
-                    << endl;
+            str << (*p)->name() << " " << stbyte << " " << endbyte << " " << ff_types((*p)->type()) << " "
+                    << ff_prec((*p)->type()) << endl;
             stbyte = endbyte + 1;
         }
 
         DBG(cerr << str.str());
 
         char *o_fmt = new char[str.str().length() + 1];
-        (void)str.str().copy(o_fmt, str.str().length());
+        (void) str.str().copy(o_fmt, str.str().length());
         o_fmt[str.str().length()] = '\0';
 
-#if 0
-	// See my comments in ffdds.cc 10/30/08 jhrg
-#ifdef RSS
-	string input_format_file = find_ancillary_rss_formats(ds_str);
-#else
-	string input_format_file = find_ancillary_formats(ds_str);
-#endif
-	char *if_fmt = new char[input_format_file.length() + 1];
-        input_format_file.copy(if_fmt, input_format_file.length());
-        if_fmt[input_format_file.length()]='\0';
-#endif
-
-	// num_rec could come from DDS if sequence length was known...
-	long num_rec = Records(ds_str); 
+        // num_rec could come from DDS if sequence length was known...
+        long num_rec = Records(ds_str);
         if (num_rec == -1) {
             delete[] o_fmt;
             return false;
@@ -207,11 +180,10 @@ bool FFSequence::read()
         BufSiz = num_rec * (stbyte - 1);
         BufVal = new char[BufSiz];
         char *ds = new char[ds_str.length() + 1];
-        (void)ds_str.copy(ds, ds_str.length());
+        (void) ds_str.copy(ds, ds_str.length());
         ds[ds_str.length()] = '\0';
 
-        long bytes = read_ff(ds, d_input_format_file.c_str(), o_fmt, BufVal,
-                BufSiz);
+        long bytes = read_ff(ds, d_input_format_file.c_str(), o_fmt, BufVal, BufSiz);
 
         // clean up; we should use auto_ptr, but it doesn't work for
         // arrays... 08/29/03 jhrg
@@ -237,11 +209,11 @@ bool FFSequence::read()
 void FFSequence::transfer_attributes(AttrTable *at)
 {
     if (at) {
-	Vars_iter var = var_begin();
-	while (var != var_end()) {
-	    (*var)->transfer_attributes(at);
-	    var++;
-	}
+        Vars_iter var = var_begin();
+        while (var != var_end()) {
+            (*var)->transfer_attributes(at);
+            var++;
+        }
     }
 }
 

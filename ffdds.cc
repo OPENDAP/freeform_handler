@@ -88,12 +88,8 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
 
     // Set the structure values to create the FreeForm DB
     SetUps->user.is_stdin_redirected = 0;
-    SetUps->input_file = (char *) malloc(sizeof(char) * (filename.length() + 1));
-    if (!SetUps->input_file)
-        throw Error("Insufficient memory");
 
-    (void) filename.copy(SetUps->input_file, filename.length());
-    SetUps->input_file[filename.length()] = '\0';
+    SetUps->input_file = const_cast<char*>(filename.c_str());
 
     // Setting the input format file here causes db_set (called by SetDodsDB)
     // to not set that field of SetUps. In the original modification for the
@@ -103,17 +99,10 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
     // objects (including FFArray, ...). So I think the RSS format-specific
     // code in those classes is not needed anymore. I'm going to #if 0 #endif
     // them out and check in the result. 10/30/08 jhrg
-//#ifdef RSS
     if (FFRequestHandler::get_RSS_format_support()) {
         string iff = find_ancillary_rss_formats(filename);
-
-        SetUps->input_format_file = (char *) malloc(sizeof(char) * (iff.length() + 1));
-        if (!SetUps->input_format_file)
-            throw Error("Insufficient memory");
-
-        strcpy(SetUps->input_format_file, iff.c_str()); // strcpy needs the /0
+        SetUps->input_format_file = const_cast<char*>(iff.c_str());
     }
-//#endif
 
     SetUps->output_file = NULL;
 
@@ -126,6 +115,8 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
         append_long_to_string((long) error, 10, msg);
         throw Error(msg);
     }
+
+    ff_destroy_std_args(SetUps);
 
     int num_names = 0;
     char **var_names_vector = NULL;
@@ -186,8 +177,10 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
 
         // For some formats Freefrom sends an extra EOL variable at the end of
         // the list.
-        if (IS_EOL(var))
+        if (IS_EOL(var)) {
+            memFree(dim_names_vector, "**dim_names_vector");
             break;
+        }
 
         while (!var) { // search formats in the format list for the variable
             pinfo_list = (pinfo_list)->next;
@@ -263,8 +256,7 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
             default:
                 delete seq;
                 delete ar;
-                throw InternalErr(__FILE__, __LINE__,
-                        "Unknown FreeForm type!");
+                throw InternalErr(__FILE__, __LINE__, "Unknown FreeForm type!");
         }
 
         if (num_dim_names == 0) {
@@ -273,11 +265,12 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
                 // The format name cannot contain spaces! 8/12/98 jhrg
                 seq = new FFSequence(iformat->name, filename, input_format_file);
             }
-            seq->add_var(bt);
+            seq->add_var_nocopy(bt);
             is_array = false;
         }
         else {
             ar = new FFArray(cp, filename, bt, input_format_file);
+            delete bt;
             newseq = true; // An array terminates the old sequence
             is_array = true;
             //} The follow loop was separate from this else clause but the
@@ -310,18 +303,21 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
             }
         }
 
-        memFree(dim_names_vector, "");
+        memFree(dim_names_vector, "**dim_names_vector");
         dim_names_vector = NULL;
 
         if (is_array)
-            dds_table.add_var(ar);
+            dds_table.add_var_nocopy(ar);
         else if (newseq)
-            dds_table.add_var(seq);
+            dds_table.add_var_nocopy(seq);
     } // End of the for num_names.
 
     if (!is_array)
-        dds_table.add_var(seq);
+        dds_table.add_var_nocopy(seq);
 
-    memFree(var_names_vector, "");
+    memFree(var_names_vector, "**var_names_vector");
     var_names_vector = NULL;
+
+    ff_destroy_process_info_list(pinfo_list);
+    db_destroy(dbin);
 }
