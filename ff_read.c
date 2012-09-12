@@ -8,7 +8,7 @@
 
 #include <freeform.h>
 
-#include "debug.h"
+#include <debug.h>
 
 /** Read from a file/database using the FreeForm API. Data values are read
  using an input file descriptor and written using an output format
@@ -42,7 +42,7 @@ long read_ff(const char *dataset, const char *if_file, const char *o_format,
     std_args->log_file = "/dev/null";
     /* Define DBG (as per dap/debug.h) to get a log file from FreeForm. 9/8/98
      jhrg */
-    DBG(std_args->log_file = "/tmp/ffdods.log");
+    std_args->log_file = "/tmp/ffdods.log";
 
     bufsz = (FF_BUFSIZE_PTR) memMalloc(sizeof(FF_BUFSIZE), "bufsz");
     if (!bufsz) {

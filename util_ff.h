@@ -79,7 +79,7 @@ int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
 
 bool file_exist(const char * filename);
 
-extern "C" long read_ff(const char *dataset, const char *if_file, const char *o_format,
+/*extern "C" */long read_ff(const char *dataset, const char *if_file, const char *o_format,
                         char *o_buffer, unsigned long size);
 
 bool is_integer_type(BaseType *btp);

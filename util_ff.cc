@@ -47,7 +47,10 @@ static char rcsid[] not_used =
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <cstdlib>
+
+#include <BESDebug.h>
 
 #include <BaseType.h>
 #include <InternalErr.h>
@@ -59,12 +62,139 @@ static char rcsid[] not_used =
 
 using namespace std;
 
+#if 0
 extern "C" int dods_find_format_files(DATA_BIN_PTR, char *, const char *,
                                       ...);
 extern "C" int dods_find_format_compressed_files(DATA_BIN_PTR, char *,
                                                  char ***, ...);
+#endif
 
-#define DODS_DATA_PRX "dods-"   // prefix for temp format file names
+//#define DODS_DATA_PRX "dods-"   // prefix for temp format file names
+
+static string &remove_paths(string &src)
+{
+    size_t p1 = src.find_first_of('/');
+    if (p1 == string::npos)
+        return src;
+    size_t p2 = src.find_last_of('/');
+    // The string has one '/', not a big deal
+    if (p2 == p1)
+        return src;
+
+    src.erase(p1, p2-p1+1);
+    return src;
+}
+
+// These two functions are defined in FFND/error.c. They were originally
+// static functions. I used them to read error strings since FreeForm
+// did not have a good way to get the error text. jhrg 9/11/12
+extern "C" FF_ERROR_PTR pull_error(void);
+extern "C" BOOLEAN is_a_warning(FF_ERROR_PTR error);
+static string freeform_error_message()
+{
+    FF_ERROR_PTR error = pull_error();
+    if (!error)
+        throw BESInternalError("Called the FreeForm error message code, but there was no error.", __FILE__, __LINE__);
+
+    ostringstream oss;
+    do {
+        if (is_a_warning(error))
+            oss << "Warning: ";
+        else
+            oss << "Error: ";
+
+        // if either of these contain a pathname, remove it
+        string problem = error->problem;
+        string message = error->message;
+        oss << remove_paths(problem) << ": " << remove_paths(message) << endl;
+
+        ff_destroy_error (error);
+        error = pull_error();
+    } while (error);
+
+    return oss.str();
+}
+
+/** Read from a file/database using the FreeForm API. Data values are read
+ using an input file descriptor and written using an output format
+ description.
+
+ @note I moved this function from ff_read.c (C code) here so I could use
+ exceptions to report errors found while using the FreeForm API. That was
+ not completely necessary, however. jhrg 9/11/12
+
+ @param dataset The name of the file/database to read from
+ @param if_file The input format descriptor
+ @param o_format The output format description
+ @param o_buffer Value-result parameter for the data
+ @param bsize Size of the buffer in bytes */
+long read_ff(const char *dataset, const char *if_file, const char *o_format, char *o_buffer, unsigned long bsize)
+{
+    FF_BUFSIZE_PTR newform_log = NULL;
+    FF_BUFSIZE_PTR bufsz = NULL;
+    FF_STD_ARGS_PTR std_args = NULL;
+
+    try {
+        std_args = ff_create_std_args();
+        if (!std_args)
+            throw BESInternalError("FreeForm could not allocate a 'stdargs' object.", __FILE__, __LINE__);
+
+        // set the std_arg structure values - cast away const for dataset, if_file,
+        // and o_format.
+        std_args->error_prompt = FALSE;
+        std_args->user.is_stdin_redirected = 0;
+        std_args->input_file = (char*) (dataset);
+        std_args->input_format_file = (char*) (if_file);
+        std_args->output_file = NULL;
+        std_args->output_format_buffer = (char*) (o_format);
+        std_args->log_file = (char *) "/dev/null";
+#if 0
+        // This just doesn't seem to work within the BES framework. jhrg 9/11/12
+        std_args->log_file = (char *)"/tmp/ffdods.log";
+#endif
+
+        // memory freed automatically on exit
+        vector<char> l_bufsz(sizeof(FF_BUFSIZE));
+        bufsz = (FF_BUFSIZE *)&l_bufsz[0];
+
+        bufsz->usage = 1;
+        bufsz->buffer = o_buffer;
+        bufsz->total_bytes = (FF_BSS_t) bsize;
+        bufsz->bytes_used = (FF_BSS_t) 0;
+
+        std_args->output_bufsize = bufsz;
+
+        newform_log = ff_create_bufsize(SCRATCH_QUANTA);
+        if (!newform_log)
+            throw BESInternalError("FreeForm could not allocate a 'newform_log' object.", __FILE__, __LINE__);
+
+        // passing 0 for the FILE* param is a wash since a non-null
+        // value for newform_log selects that as the 'logging' sink.
+        // jhrg 9/11/12
+        int status = newform(std_args, newform_log, 0 /*stderr*/);
+
+        BESDEBUG("ff", "FreeForm: newform returns " << status << endl);
+
+        if (err_count()) {
+            string message = freeform_error_message();
+            BESDEBUG("ff", "FreeForm: error message " << message << endl);
+            throw BESError(message, BES_SYNTAX_USER_ERROR, __FILE__, __LINE__);
+        }
+
+        ff_destroy_bufsize(newform_log);
+        ff_destroy_std_args(std_args);
+    }
+    catch (...) {
+        if (newform_log)
+            ff_destroy_bufsize(newform_log);
+        if (std_args)
+            ff_destroy_std_args(std_args);
+
+        throw;
+    }
+
+    return bufsz ? bufsz->bytes_used : 0;
+}
 
 /**
  * Free a char ** vector that db_ask() allocates. This code uses free()

@@ -219,7 +219,8 @@ void ff_destroy_error(FF_ERROR_PTR error)
 	memFree(error, "error");
 }
 
-static BOOLEAN is_a_warning
+/*static jhrg 9/1/12*/
+BOOLEAN is_a_warning
 	(
 	 FF_ERROR_PTR error
 	)
@@ -314,7 +315,8 @@ static FF_ERROR_PTR pop_error(void)
 	return(error);
 }
 
-static FF_ERROR_PTR pull_error(void)
+/*static jhrg 9/11/12 */
+FF_ERROR_PTR pull_error(void)
 {
 	FF_ERROR_PTR error = NULL;
 

@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of ff_handler a FreeForm API handler for the OPeNDAP
@@ -37,25 +36,21 @@
 #ifndef _ffarray_h
 #define _ffarray_h 1
 
-
 #include <string>
 
 #include "Array.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 class FFArray: public Array {
 private:
     string d_input_format_file;
 
     long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
-    long Arr_constraint(long *cor, long *step, long *edg, string *dim_nms,
-			bool *has_stride);
+    long Arr_constraint(long *cor, long *step, long *edg, string *dim_nms, bool *has_stride);
 
     /** Read an array of simple types into this objects _buf field. */
-    template <class T> bool extract_array(const string &ds,
-                                          const string &if_fmt,
-					  const string &o_fmt);
+    template<class T> bool extract_array(const string &ds, const string &if_fmt, const string &o_fmt);
 
 public:
     FFArray(const string &n, const string &d, BaseType *v, const string &iff);
