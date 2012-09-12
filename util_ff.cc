@@ -62,15 +62,19 @@ static char rcsid[] not_used =
 
 using namespace std;
 
-#if 0
-extern "C" int dods_find_format_files(DATA_BIN_PTR, char *, const char *,
-                                      ...);
-extern "C" int dods_find_format_compressed_files(DATA_BIN_PTR, char *,
-                                                 char ***, ...);
-#endif
-
-//#define DODS_DATA_PRX "dods-"   // prefix for temp format file names
-
+/**
+ * Given a reference to a string object, look for occurrences of '/
+ * and remove the text they bracket. This has the affect of removing
+ * pathnames from the strings. This function modifies its argument.
+ * If zero or one '/' is found, the string is not modified.
+ *
+ * @note this is used to sanitize error messages from the FreeForm
+ * API so pathnames are not leaked back to clients in those messages.
+ *
+ * @param src The reference to a string
+ * @return A reference to the original argument which has likely been
+ * modified.
+ */
 static string &remove_paths(string &src)
 {
     size_t p1 = src.find_first_of('/');
@@ -90,6 +94,20 @@ static string &remove_paths(string &src)
 // did not have a good way to get the error text. jhrg 9/11/12
 extern "C" FF_ERROR_PTR pull_error(void);
 extern "C" BOOLEAN is_a_warning(FF_ERROR_PTR error);
+
+/**
+ * Build a string that contains message text read from the FreeForm API.
+ * This function uses internal methods of the FreeForm API to build up an
+ * error message. Because the API only provided a way to write these
+ * messages to stderr or a file, I modified the library, making two functions
+ * public that were originally static.
+ *
+ * @note Test for errors from the most recent FrreForm operations using
+ * the err_count() function. Calling this function when there is no
+ * error is itself an error that results in an exception.
+ *
+ * @return The error string read from the FreeForm Library.
+ */
 static string freeform_error_message()
 {
     FF_ERROR_PTR error = pull_error();
@@ -120,8 +138,7 @@ static string freeform_error_message()
  description.
 
  @note I moved this function from ff_read.c (C code) here so I could use
- exceptions to report errors found while using the FreeForm API. That was
- not completely necessary, however. jhrg 9/11/12
+ exceptions to report errors found while using the FreeForm API. jhrg 9/11/12
 
  @param dataset The name of the file/database to read from
  @param if_file The input format descriptor
@@ -329,7 +346,7 @@ const string & format_delimiter(const string & new_delimiter)
 }
 
 /** Set or get the format file extension.
-    If given no argument, retrun the format file extension. If given a string
+    If given no argument, return the format file extension. If given a string
     argument, set the format file extension to that string.
 
     @return A reference to the format file extension. */
@@ -708,8 +725,10 @@ bool is_float_type(BaseType * btp)
 }
 
 /** Get the value of the BaseType Variable. If it's not something that we can
-    convert to an interger, throw InternalErr. */
+    convert to an integer, throw InternalErr.
 
+    @todo Could replace buf2val() with value().
+    @param var The variable */
 dods_uint32 get_integer_value(BaseType * var) throw(InternalErr)
 {
     if (!var)
@@ -798,7 +817,7 @@ dods_float64 get_float_value(BaseType * var) throw(InternalErr)
 
     default:
         throw InternalErr(__FILE__, __LINE__,
-                          "Tried to get an integer value for a non-integer datatype!");
+                          "Tried to get an float value for a non-numeric datatype!");
     }
 }
 
