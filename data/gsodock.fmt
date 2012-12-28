@@ -6,7 +6,7 @@ Time 1 10 double 4
 Depth  13 16 float 2
 Sea_Temp 19 23 float 2
 Salinity 26 30 float 2
-DO% 33 37 float 1
+DO_percent 33 37 float 1
 pH 40 44 float 3
 Turbidity 47 50 float 1
 Air_Temp 53 56 float 1
@@ -20,7 +20,7 @@ Time 1 10 double 4
 Depth  13 16 float 2
 Sea_Temp 19 23 float 2
 Salinity 26 30 float 2
-DO% 33 37 float 1
+DO_percent 33 37 float 1
 pH 40 44 float 3
 Turbidity 47 50 float 1
 Air_Temp 53 56 float 1
