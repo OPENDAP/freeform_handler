@@ -899,7 +899,7 @@ void ff_destroy_bufsize(FF_BUFSIZE_PTR bufsize)
 size_t ffv_type_size(FF_TYPES_t var_type)
 {
 	size_t byte_size = 0;
-	
+
 	switch (FFV_DATA_TYPE_TYPE(var_type))
 	{
 		case FFV_TEXT:

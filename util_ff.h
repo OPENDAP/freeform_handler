@@ -42,9 +42,10 @@
 using namespace libdap ;
 
 #define MaxStr 100
-#define FREEFORM_HANDLER_FORMATS "/usr/local/RSS/"
 
 const int Msgt_size = 255;
+
+void free_ff_char_vector(char **v, int len);
 
 const string ff_types(Type dods_type);
 int ff_prec(Type dods_type);
@@ -78,7 +79,7 @@ int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
 
 bool file_exist(const char * filename);
 
-extern "C" long read_ff(const char *dataset, const char *if_file, const char *o_format,
+/*extern "C" */long read_ff(const char *dataset, const char *if_file, const char *o_format,
                         char *o_buffer, unsigned long size);
 
 bool is_integer_type(BaseType *btp);

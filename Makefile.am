@@ -42,13 +42,14 @@ HANDLER_HDR = ff_ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h   \
 	DODS_EndTime_Factory.h DODS_StartDate_Factory.h			      \
 	DODS_StartTime_Factory.h
 
-HANDLER_SRC = util_ff.cc ff_read.c ffdds.cc ffdas.cc		\
+HANDLER_SRC = util_ff.cc ffdds.cc ffdas.cc		\
 	ff_ce_functions.cc date_proc.cc DODS_Date.cc		\
 	DODS_Time.cc DODS_Time_Factory.cc DODS_Date_Factory.cc	\
 	DODS_Date_Time.cc DODS_Date_Time_Factory.cc		\
 	DODS_StartDate_Time_Factory.cc				\
 	DODS_EndDate_Time_Factory.cc
 
+# ff_read.c 
 
 SERVER_SRC = FFRequestHandler.cc FFModule.cc
 

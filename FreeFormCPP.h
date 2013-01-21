@@ -70,6 +70,8 @@
 #ifndef FREEFORM_H__
 #define FREEFORM_H__
 
+extern "C" {
+
 #define FFND_LIB_VER "4.2.3"
 
 #ifndef FREEFORM
@@ -770,6 +772,8 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #define FF_DBG_LOG "ff_debug.log"
 #define FF_DBG_LOG_SIZE 10240
 
+} // extern C
+
 #include <cassert>
 
 #if defined(DEBUG) || defined(_DEBUG) && !defined(FF_DBG)
@@ -815,6 +819,8 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 
 #endif /* FF_CC == FF_CC_MSVC1 || FF_CC == FF_CC_MSVC4 */
 
+extern "C" {
+
 #include <dl_lists.h>
 #include <os_utils.h>
 #include <memtrack.h>
@@ -830,6 +836,8 @@ extern FFF_LOOKUP format_types[NUM_FORMAT_TYPES];
 #else
 #define HUGE
 #endif /* (ELSE) FF_CC == FF_CC_MSVC1 */
+
+
 
 typedef char HUGE *FF_DATA_BUFFER;
 typedef void HUGE *FF_DATA_PTR;
@@ -887,12 +895,15 @@ struct struct_ff_bufsize {
         FF_BSS_t total_bytes;
 };
 
+}  // extern C
+
 #ifndef INT_MAX
 #include <limits.h>
 #endif /* INT_MAX */
 
 #define BUFSIZE_TOTAL_BYTES_UNKNOWN INT_MAX
 
+extern "C" {
 /*
  * FF_STD_ARGS
  */
@@ -1217,9 +1228,6 @@ typedef struct struct_ff_data_flag {
         char value_exists;
 } FF_DATA_FLAG, *FF_DATA_FLAG_PTR;
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 #ifdef FF_DBG
 VARIABLE_PTR FF_VARIABLE(VARIABLE_LIST);
 FORMAT_PTR FF_FORMAT(FORMAT_LIST);
@@ -1248,9 +1256,6 @@ DLL_NODE_PTR dll_previous(DLL_NODE_PTR node);
 
 DLL_NODE_PTR dll_first(DLL_NODE_PTR node);
 DLL_NODE_PTR dll_last(DLL_NODE_PTR node);
-#if defined(__cplusplus)
-}
-#endif
 
 typedef enum enum_ff_dll_data_types {
     DLL_VAR = 1,
@@ -1484,9 +1489,6 @@ typedef struct struct_ff_array_dim_info {
 #define PINFO_MATE_ARRAY_MAP(pi)     PINFO_ARRAY_MAP(PINFO_MATE(pi))
 #define PINFO_MATE_ID(pi)            PINFO_ID(PINFO_MATE(pi))
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 void dll_assign(void *data, FF_DLL_DATA_TYPES type, DLL_NODE_PTR node);
 
 typedef BOOLEAN (*pgenobj_cmp_t)(void *, void *); /* pointer to generic object comparison function */
@@ -1627,9 +1629,6 @@ void update_format_var(FF_TYPES_t data_type, FF_NDX_t bytes_per_pixel,
 
 int update_following_offsets_or_size(PROCESS_INFO_PTR updater,
         PROCESS_INFO_LIST updater_list, long adjustment);
-#if defined(__cplusplus)
-}
-#endif
 
 /* Define MAX_MIN Attributes/messages */
 #define MM_MAX_MIN		101
@@ -1698,6 +1697,7 @@ FF_DATA_BUFFER ff_strnstr(char *pcPattern, FF_DATA_BUFFER pcText,
 
 int get_output_delims(DATA_BIN_PTR dbin, char *delim_item, short *distance,
         char *delim_value);
+}  // extern C
 
 #endif  /* (NOT) FREEFORM_H__ */
 

@@ -47,24 +47,186 @@ static char rcsid[] not_used =
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <cstdlib>
+
+#include <BESDebug.h>
 
 #include <BaseType.h>
 #include <InternalErr.h>
 #include <dods-limits.h>
 #include <debug.h>
 
+#include "FFRequestHandler.h"
 #include "util_ff.h"
-// #include "FreeForm.h" Included by the util_ff header.
 
 using namespace std;
 
-extern "C" int dods_find_format_files(DATA_BIN_PTR, char *, const char *,
-                                      ...);
-extern "C" int dods_find_format_compressed_files(DATA_BIN_PTR, char *,
-                                                 char ***, ...);
+/**
+ * Given a reference to a string object, look for occurrences of '/
+ * and remove the text they bracket. This has the affect of removing
+ * pathnames from the strings. This function modifies its argument.
+ * If zero or one '/' is found, the string is not modified.
+ *
+ * @note this is used to sanitize error messages from the FreeForm
+ * API so pathnames are not leaked back to clients in those messages.
+ *
+ * @param src The reference to a string
+ * @return A reference to the original argument which has likely been
+ * modified.
+ */
+static string &remove_paths(string &src)
+{
+    size_t p1 = src.find_first_of('/');
+    if (p1 == string::npos)
+        return src;
+    size_t p2 = src.find_last_of('/');
+    // The string has one '/', not a big deal
+    if (p2 == p1)
+        return src;
 
-#define DODS_DATA_PRX "dods-"   // prefix for temp format file names
+    src.erase(p1, p2-p1+1);
+    return src;
+}
+
+// These two functions are defined in FFND/error.c. They were originally
+// static functions. I used them to read error strings since FreeForm
+// did not have a good way to get the error text. jhrg 9/11/12
+extern "C" FF_ERROR_PTR pull_error(void);
+extern "C" BOOLEAN is_a_warning(FF_ERROR_PTR error);
+
+/**
+ * Build a string that contains message text read from the FreeForm API.
+ * This function uses internal methods of the FreeForm API to build up an
+ * error message. Because the API only provided a way to write these
+ * messages to stderr or a file, I modified the library, making two functions
+ * public that were originally static.
+ *
+ * @note Test for errors from the most recent FrreForm operations using
+ * the err_count() function. Calling this function when there is no
+ * error is itself an error that results in an exception.
+ *
+ * @return The error string read from the FreeForm Library.
+ */
+static string freeform_error_message()
+{
+    FF_ERROR_PTR error = pull_error();
+    if (!error)
+        throw BESInternalError("Called the FreeForm error message code, but there was no error.", __FILE__, __LINE__);
+
+    ostringstream oss;
+    do {
+        if (is_a_warning(error))
+            oss << "Warning: ";
+        else
+            oss << "Error: ";
+
+        // if either of these contain a pathname, remove it
+        string problem = error->problem;
+        string message = error->message;
+        oss << remove_paths(problem) << ": " << remove_paths(message) << endl;
+
+        ff_destroy_error (error);
+        error = pull_error();
+    } while (error);
+
+    return oss.str();
+}
+
+/** Read from a file/database using the FreeForm API. Data values are read
+ using an input file descriptor and written using an output format
+ description.
+
+ @note I moved this function from ff_read.c (C code) here so I could use
+ exceptions to report errors found while using the FreeForm API. jhrg 9/11/12
+
+ @param dataset The name of the file/database to read from
+ @param if_file The input format descriptor
+ @param o_format The output format description
+ @param o_buffer Value-result parameter for the data
+ @param bsize Size of the buffer in bytes */
+long read_ff(const char *dataset, const char *if_file, const char *o_format, char *o_buffer, unsigned long bsize)
+{
+    FF_BUFSIZE_PTR newform_log = NULL;
+    FF_BUFSIZE_PTR bufsz = NULL;
+    FF_STD_ARGS_PTR std_args = NULL;
+
+    try {
+        std_args = ff_create_std_args();
+        if (!std_args)
+            throw BESInternalError("FreeForm could not allocate a 'stdargs' object.", __FILE__, __LINE__);
+
+        // set the std_arg structure values - cast away const for dataset, if_file,
+        // and o_format.
+        std_args->error_prompt = FALSE;
+        std_args->user.is_stdin_redirected = 0;
+        std_args->input_file = (char*) (dataset);
+        std_args->input_format_file = (char*) (if_file);
+        std_args->output_file = NULL;
+        std_args->output_format_buffer = (char*) (o_format);
+        std_args->log_file = (char *) "/dev/null";
+#if 0
+        // This just doesn't seem to work within the BES framework. jhrg 9/11/12
+        std_args->log_file = (char *)"/tmp/ffdods.log";
+#endif
+
+        // memory freed automatically on exit
+        vector<char> l_bufsz(sizeof(FF_BUFSIZE));
+        bufsz = (FF_BUFSIZE *)&l_bufsz[0];
+
+        bufsz->usage = 1;
+        bufsz->buffer = o_buffer;
+        bufsz->total_bytes = (FF_BSS_t) bsize;
+        bufsz->bytes_used = (FF_BSS_t) 0;
+
+        std_args->output_bufsize = bufsz;
+
+        newform_log = ff_create_bufsize(SCRATCH_QUANTA);
+        if (!newform_log)
+            throw BESInternalError("FreeForm could not allocate a 'newform_log' object.", __FILE__, __LINE__);
+
+        // passing 0 for the FILE* param is a wash since a non-null
+        // value for newform_log selects that as the 'logging' sink.
+        // jhrg 9/11/12
+        int status = newform(std_args, newform_log, 0 /*stderr*/);
+
+        BESDEBUG("ff", "FreeForm: newform returns " << status << endl);
+
+        if (err_count()) {
+            string message = freeform_error_message();
+            BESDEBUG("ff", "FreeForm: error message " << message << endl);
+            throw BESError(message, BES_SYNTAX_USER_ERROR, __FILE__, __LINE__);
+        }
+
+        ff_destroy_bufsize(newform_log);
+        ff_destroy_std_args(std_args);
+    }
+    catch (...) {
+        if (newform_log)
+            ff_destroy_bufsize(newform_log);
+        if (std_args)
+            ff_destroy_std_args(std_args);
+
+        throw;
+    }
+
+    return bufsz ? bufsz->bytes_used : 0;
+}
+
+/**
+ * Free a char ** vector that db_ask() allocates. This code uses free()
+ * to do the delete.
+ *
+ * @note There maybe code in FreeForm to do this, but I can't find it.
+ */
+void free_ff_char_vector(char **v, int len)
+{
+    for (int i = 0; i < len; ++i)
+        if (v && v[i])
+            free (v[i]);
+    if (v && len > 0)
+        free (v);
+}
 
 // Given the name of a DODS data type, return the name of the corresponding
 // FreeForm data type.
@@ -184,7 +346,7 @@ const string & format_delimiter(const string & new_delimiter)
 }
 
 /** Set or get the format file extension.
-    If given no argument, retrun the format file extension. If given a string
+    If given no argument, return the format file extension. If given a string
     argument, set the format file extension to that string.
 
     @return A reference to the format file extension. */
@@ -199,7 +361,7 @@ const string & format_extension(const string & new_extension)
     return extension;
 }
 
-/** FreeForm data and format initializattion calls (input format only) */
+/** FreeForm data and format initialization calls (input format only) */
 
 static bool
 cmp_array_conduit(FF_ARRAY_CONDUIT_PTR src_conduit,
@@ -223,6 +385,14 @@ static int merge_redundant_conduits(FF_ARRAY_CONDUIT_LIST conduit_list)
     return (error);
 }
 
+/**
+ * Given a set of standard arguments (input filenames), allocate a DATA-BIN_HANDLE
+ * and return an error code. Once called, the caller should free the std_args
+ * parameter.
+ *
+ * @param std_args A pointer to a structure that holds a number of input
+ * and out file names.
+ */
 int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
 {
     FORMAT_DATA_LIST format_data_list = NULL;
@@ -244,7 +414,7 @@ int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
         }
     }
 
-    /* Now set the formats and the auxillary files */
+    /* Now set the formats and the auxiliary files */
 
     if (db_set(*dbin_h, DBSET_READ_EQV, std_args->input_file)) {
         snprintf(Msgt, Msgt_size, "Error making name table for %s",
@@ -321,38 +491,42 @@ bool file_exist(const char *filename)
 
     @return A const string object which contains the format file name. */
 const string
-find_ancillary_rss_formats(const string & dataset, const string & delimiter,
-			   const string & extension)
+find_ancillary_rss_formats(const string & dataset, const string & /* delimiter */,
+			   const string & /* extension */)
 {
     string FormatFile;
-    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
-    string FormatPath = FREEFORM_HANDLER_FORMATS;
+    string FormatPath = FFRequestHandler::get_RSS_format_files();
     string BaseName;
     string FileName;
 
+    // Separate the filename from the pathname, for both plain files
+    // and cached decompressed files (ones with '#' in their names).
     size_t delim = dataset.rfind("#");
-    if ( delim != string::npos ) 
-      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    if (delim != string::npos)
+        FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
     else {
-      	delim = dataset.rfind("/");
-	if ( delim != string::npos ) 
-	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
-	else
-	  FileName = dataset;
+        delim = dataset.rfind("/");
+        if (delim != string::npos)
+            FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
+        else
+            FileName = dataset;
     }
 
+    // The file/dataset name has to have an underscore...
     delim = FileName.find("_");
     if ( delim != string::npos ) {
       BaseName = FileName.substr(0,delim+1);
     }
     else {
-      string msg = "Could not find input format for: ";
-      msg += dataset;
-      throw InternalErr(msg);
+      throw Error("Could not find input format for: " + dataset);
     }
 
+    // Now determine if this is files holds averaged or daily data.
     string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
     
+    if (FormatPath[FormatPath.length()-1] != '/')
+        FormatPath.append("/");
+
     if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
         FormatFile = FormatPath + BaseName + "averaged.fmt";
     else
@@ -374,24 +548,23 @@ find_ancillary_rss_formats(const string & dataset, const string & delimiter,
 
     @return A const string object which contains the format file name. */
 const string
-find_ancillary_rss_das(const string & dataset, const string & delimiter,
-		       const string & extension)
+find_ancillary_rss_das(const string & dataset, const string & /* delimiter */,
+		       const string & /* extension */)
 {
     string FormatFile;
-    //string FormatPath = getenv("FREEFORM_HANDLER_FORMATS");
-    string FormatPath = FREEFORM_HANDLER_FORMATS;
+    string FormatPath = FFRequestHandler::get_RSS_format_files();
     string BaseName;
     string FileName;
 
     size_t delim = dataset.rfind("#");
-    if ( delim != string::npos ) 
-      FileName = dataset.substr(delim+1,dataset.length()-delim+1);
+    if (delim != string::npos)
+        FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
     else {
-      	delim = dataset.rfind("/");
-	if ( delim != string::npos ) 
-	  FileName = dataset.substr(delim+1,dataset.length()-delim+1);
-	else
-	  FileName = dataset;
+        delim = dataset.rfind("/");
+        if (delim != string::npos)
+            FileName = dataset.substr(delim + 1, dataset.length() - delim + 1);
+        else
+            FileName = dataset;
     }
 
     delim = FileName.find("_");
@@ -405,6 +578,9 @@ find_ancillary_rss_das(const string & dataset, const string & delimiter,
     }
 
     string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
+
+    if (FormatPath[FormatPath.length()-1] != '/')
+        FormatPath.append("/");
     
     if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
         FormatFile = FormatPath + BaseName + "averaged.das";
@@ -549,8 +725,10 @@ bool is_float_type(BaseType * btp)
 }
 
 /** Get the value of the BaseType Variable. If it's not something that we can
-    convert to an interger, throw InternalErr. */
+    convert to an integer, throw InternalErr.
 
+    @todo Could replace buf2val() with value().
+    @param var The variable */
 dods_uint32 get_integer_value(BaseType * var) throw(InternalErr)
 {
     if (!var)
@@ -639,7 +817,7 @@ dods_float64 get_float_value(BaseType * var) throw(InternalErr)
 
     default:
         throw InternalErr(__FILE__, __LINE__,
-                          "Tried to get an integer value for a non-integer datatype!");
+                          "Tried to get an float value for a non-numeric datatype!");
     }
 }
 

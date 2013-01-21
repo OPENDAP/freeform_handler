@@ -1633,13 +1633,7 @@ int newform
 {
 	char *greeting = 
 {
-#ifdef FF_ALPHA
-"\nWelcome to Newform alpha "FFND_LIB_VER" "__DATE__" -- an NGDC FreeForm ND application\n\n"
-#elif defined(FF_BETA)
-"\nWelcome to Newform beta "FFND_LIB_VER" "__DATE__" -- an NGDC FreeForm ND application\n\n"
-#else
 "\nWelcome to Newform release "FFND_LIB_VER" -- an NGDC FreeForm ND application\n\n"
-#endif
 };
 
 	char *command_line_usage = {
