@@ -81,6 +81,8 @@ FFRequestHandler::FFRequestHandler(const string &name) :
     add_handler(HELP_RESPONSE, FFRequestHandler::ff_build_help);
     add_handler(VERS_RESPONSE, FFRequestHandler::ff_build_version);
 
+    ff_register_functions();
+
     bool key_found = false;
     string doset;
     TheBESKeys::TheKeys()->get_value("FF.RSSFormatSupport", doset, key_found);
@@ -164,8 +166,9 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
         ConstraintEvaluator & ce = bdds->get_ce();
-
+#if 0
         ff_register_functions(ce);
+#endif
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
@@ -211,9 +214,9 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         bdds->set_container(dhi.container->get_symbolic_name());
         DataDDS *dds = bdds->get_dds();
         ConstraintEvaluator & ce = bdds->get_ce();
-
+#if 0
         ff_register_functions(ce);
-
+#endif
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);

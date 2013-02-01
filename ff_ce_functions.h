@@ -37,7 +37,8 @@
 
 using namespace libdap ;
 
-void ff_register_functions(ConstraintEvaluator &ce) ;
+// void ff_register_functions(ConstraintEvaluator &ce) ;
+void ff_register_functions() ;
 
 #endif // _ff_ce_functions_h
 
