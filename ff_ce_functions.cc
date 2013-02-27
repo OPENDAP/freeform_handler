@@ -830,6 +830,278 @@ void ff_register_functions(ConstraintEvaluator & ce)
 
 void ff_register_functions()
 {
+    libdap:ServerFunction *ff_dap_function;
+
+    ff_dap_function = new libdap::ServerFunction(
+        // The name of the function as it will appear in a constraint expression
+        "date",
+        // The version of the function
+        "1.0",
+        // A brief description of the function
+        string("Compares the current variable to the date parameters. If only one parameter is passed then ") +
+        " this returns true if they're the same date. If two parameters are passed they are considered to be the beginning "+
+        "and end of a date range and the function returns true if the current variable falls in the range.",
+        // A usage/syntax statement
+        "date(date_1[, date_2])",
+        // A URL that points two a web page describing the function
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        // A URI that defines the role of the function
+        "http://services.opendap.org/dap4/freeform-function/date",
+        // A pointer to the helloWorld() function
+        func_date
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "date_range",
+        "1.0",
+        string("Compares the current variable with the passed time range. Return true if variable is within the range. ")+
+        "If only single date parameter is used as a start date to now.",
+        "date_range(startDate, endDate)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/date_range",
+        func_date_range
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "start_date",
+        "1.0",
+        string("The current variable is compared, as a start date, to the single passed parameter. Returns true if they're the same date. ")+
+        "If two parameters are passed they are considered a date range. True is returned if the current variable falls into the range.",
+        "start_date(date[, endDate])",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/start_date",
+        func_startdate
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "end_date",
+        "1.0",
+        string("The current variable is compared, as an end date, to the single passed parameter. Returns true if they're the same date. ") +
+        "If two parameters are passed they are considered a date range. True is returned if the current variable falls into the range.",
+        "end_date(date[, endDate])",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/end_date",
+        func_enddate
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_JDate",
+        "1.0",
+        string("The current variable is compared, as an end date, to the single passed parameter. Returns true if they're the same date. ") +
+        "If two parameters are passed they are considered a date range. True is returned if the current variable falls into the range.",
+        "DODS_JDate(date[, endDate])",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_JDATE",
+        proj_dods_jdate
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_Date",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_Date( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_Date",
+        proj_dods_date
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_StartDate",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_StartDate( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_StartDate",
+        proj_dods_startdate
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_EndDate",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_EndDate( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_EndDate",
+        proj_dods_enddate
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/time",
+        func_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "start_time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "start_time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/start_time",
+        func_starttime
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "end_time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "end_time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/end_time",
+        func_endtime
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_Time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_Time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_Time",
+        proj_dods_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_StartTime",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_StartTime( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_StartTime",
+        proj_dods_starttime
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_EndTime",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_EndTime( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_EndTime",
+        proj_dods_endtime
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "date_time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "date_time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/date_time",
+        func_date_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "start_date_time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "start_date_time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/start_date_time",
+        func_startdate_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "end_date_time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "end_date_time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/end_date_time",
+        func_enddate_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_Date_Time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_Date_Time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_Date_Time",
+        proj_dods_date_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_StartDate_Time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_StartDate_Time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_StartDate_Time",
+        proj_dods_startdate_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_EndDate_Time",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_EndDate_Time( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_EndDate_Time",
+        proj_dods_enddate_time
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_Decimal_Year",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_Decimal_Year( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_Decimal_Year",
+        proj_dods_decimal_year
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_StartDecimal_Year",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_StartDecimal_Year( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_StartDecimal_Year",
+        proj_dods_startdecimal_year
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+    ff_dap_function = new libdap::ServerFunction(
+        "DODS_EndDecimal_Year",
+        "1.0",
+        "@TODO ############################## NEED DESCRIPTION TEXT  ##############################",
+        "DODS_EndDecimal_Year( @TODO ############# NEED SYTNTAX TEXT ##################)",
+        "http://docs.opendap.org/index.php/Hyrax:_FreeForm_Functions",
+        "http://services.opendap.org/dap4/freeform-function/DODS_EndDecimal_Year",
+        proj_dods_enddecimal_year
+    );
+    libdap::ServerFunctionsList::TheList()->add_function(ff_dap_function);
+
+
+
+
+#if 0
     libdap::ServerFunctionsList::TheList()->add_function("date", func_date);
     libdap::ServerFunctionsList::TheList()->add_function("date_range", func_date_range);
     libdap::ServerFunctionsList::TheList()->add_function("start_date", func_startdate);
@@ -857,4 +1129,6 @@ void ff_register_functions()
     libdap::ServerFunctionsList::TheList()->add_function("DODS_Decimal_Year", proj_dods_decimal_year);
     libdap::ServerFunctionsList::TheList()->add_function("DODS_StartDecimal_Year", proj_dods_startdecimal_year);
     libdap::ServerFunctionsList::TheList()->add_function("DODS_EndDecimal_Year", proj_dods_enddecimal_year);
+
+#endif
 }
