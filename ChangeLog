@@ -1,3 +1,78 @@
+2013-03-01  James Gallagher <jgallagher@opendap.org>
+
+	Added documentaion to the ce_functions.cc file.
+
+2013-02-27  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	freeform_handler: Updated the ff_ce_functions to utilize the new ServerFunction class.
+
+2013-01-31  James Gallagher <jgallagher@opendap.org>
+
+	Fixed check and distcheck
+
+	M    FFRequestHandler.cc
+	M    ff_ce_functions.cc
+	M    ff_ce_functions.h
+
+2013-01-20  James Gallagher <jgallagher@opendap.org>
+
+	Merge of the hyrax 1.8 branch.
+
+	_M   .
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    FFND/freeform.c
+	M    FFND/mm_make.c
+	M    FFND/ff_utils.c
+	M    FFND/error.c
+	M    FFArray.cc
+	M    FFRequestHandler.cc
+	MM   FreeFormCPP.h
+	M    ff_read.c
+	M    ffdas.cc
+	M    ffdds.cc
+	M    util_ff.h
+	M    FFArray.h
+	M    FFRequestHandler.h
+	M    data/gsodock.fmt
+	M    util_ff.cc
+	M    README
+	M    FFStructure.cc
+	M    FFSequence.cc
+	M    Makefile.am
+
+2012-04-13  James Gallagher <jgallagher@opendap.org>
+
+	After merge with hyrax 1.8 release branch and full build w/o test failures.
+
+	_M   .
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    FFND/proclist.c
+	M    FFArray.cc
+	M    ChangeLog
+	_M   FreeFormCPP.h
+	_M   OSX_Resources/InstallationCheck.proto
+	_M   OSX_Resources/Info.plist.proto
+	M    bes-testsuite/Makefile.am
+	M    bes-testsuite/ff/dbl_data.bin.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test5.dab.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test6.dab.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test0.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test1.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test4.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test7.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test8.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/test9.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/t3.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/jplpath.dat.ddx.bescmd.baseline
+	M    bes-testsuite/ff/dbl_data3.bin.ddx.bescmd.baseline
+	M    bes-testsuite/ff/avhrr.dat.2.bescmd.baseline
+	M    INSTALL
+	M    README
+
 2012-01-09  James Gallagher <jgallagher@opendap.org>
 
 	Code review.
