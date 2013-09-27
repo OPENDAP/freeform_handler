@@ -139,6 +139,7 @@ long FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
     return nels;
 }
 
+#if 0
 static int hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index, const int dimsz[],
                      const long start[], const long edge[])
 {
@@ -171,12 +172,14 @@ static int hyper_get(void *dest, void *src, unsigned szof, const int dim_num, in
         return (edge[index] * szof);
     }
 }
-
+#endif
 // Store the contents of the buffer returned from read_ff() in the FFArray
 // object ARRAY.
 //
 // Returns: void
 
+// Never used
+#if 1
 template<class T>
 static void seq2vects(T * t, FFArray & array)
 {
@@ -217,7 +220,7 @@ static void seq2vects(T * t, FFArray & array)
     delete[] stride;
     delete[] edge;
 }
-
+#endif
 // Read cardinal types and ctor types separately. Cardinal types are
 // stored in arrays of the C++ data type while ctor types are stored
 // in arrays of the DODS classes used to store those types.
@@ -314,20 +317,21 @@ bool FFArray::read()
 template<class T>
 bool FFArray::extract_array(const string &ds, const string &if_fmt, const string &o_fmt)
 {
-    T *d = (T *) new char[width()];
-    long bytes = read_ff(ds.c_str(), if_fmt.c_str(), o_fmt.c_str(), (char *) d, width());
+    // T *d = (T *) new char[width()]; jhrg 9/26/13
+    vector<T> d(length());
+    long bytes = read_ff(ds.c_str(), if_fmt.c_str(), o_fmt.c_str(), (char *) &d[0], width());
     BESDEBUG("ff", "FFArray::extract_array: Read " << bytes << " bytes." << endl);
 
     if (bytes == -1) {
-        delete[] d;
+        //delete[] d;
         throw Error(unknown_error, "Could not read values from the dataset.");
     }
     else {
         set_read_p(true);
-        val2buf((void *) d);
+        val2buf((void *) &d[0]);
     }
 
-    delete[] (d);
+    //delete[] (d);
 
     return true;
 }

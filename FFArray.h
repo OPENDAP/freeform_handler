@@ -46,7 +46,7 @@ class FFArray: public Array {
 private:
     string d_input_format_file;
 
-    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
+
     long Arr_constraint(long *cor, long *step, long *edg, string *dim_nms, bool *has_stride);
 
     /** Read an array of simple types into this objects _buf field. */
@@ -59,6 +59,8 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read();
+
+    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
 };
 
 #endif

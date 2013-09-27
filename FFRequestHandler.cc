@@ -165,8 +165,8 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
-        ConstraintEvaluator & ce = bdds->get_ce();
 #if 0
+        ConstraintEvaluator & ce = bdds->get_ce();
         ff_register_functions(ce);
 #endif
         string accessed = dhi.container->access();
@@ -213,8 +213,8 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
         DataDDS *dds = bdds->get_dds();
-        ConstraintEvaluator & ce = bdds->get_ce();
 #if 0
+        ConstraintEvaluator & ce = bdds->get_ce();
         ff_register_functions(ce);
 #endif
         string accessed = dhi.container->access();
