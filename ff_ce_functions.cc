@@ -36,6 +36,8 @@
 #include <string>
 #include <algorithm>
 
+//#define DODS_DEBUG
+
 #include <BaseType.h>
 #include <Str.h>
 #include <Structure.h>
@@ -89,11 +91,13 @@ inline static T get_instance(DDS & dds)
     two arguments given. */
 
 template < class T, class T_Factory >
-    static bool comparison(int argc, BaseType * argv[], DDS & dds)
+static bool comparison(int argc, BaseType * argv[], DDS & dds)
 {
     if (argc < 1 || argc > 2)
         throw Error(malformed_expr,
                     "Wrong number of arguments to a constraint expression function.");
+
+    DBG(cerr << "comparision: argc: " << argc << endl);
 
     T t1(argv[0]);
     T t2;
@@ -101,6 +105,13 @@ template < class T, class T_Factory >
         t2.set(argv[1]);
 
     T current = get_instance < T, T_Factory > (dds);
+
+    DBG(cerr << "t1: " << t1.get(iso8601) << endl);
+    if (argc == 2) {
+    	DBG(cerr << "t2 (1): " << t2.get(iso8601) << endl);
+    }
+    DBG(cerr << "current: " << current.get(iso8601) << endl);
+
     if (argc == 2)
         return ((t1 <= current) && (t2 >= current));
     else
@@ -193,17 +204,21 @@ type (e.g., a structure, sequence, ...).");
 
 static void func_date(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
+	DBG(cerr << "calling func_date" << endl);
     *result = comparison < DODS_Date, DODS_Date_Factory > (argc, argv, dds);
+    DBG(cerr << "result: " << *result << endl << endl);
 }
 
 static void func_startdate(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
+	DBG(cerr << "calling func_startdate" << endl);
     *result = comparison < DODS_Date, DODS_StartDate_Factory > (argc, argv,
                                                              dds);
 }
 
 static void func_enddate(int argc, BaseType * argv[], DDS & dds, bool *result)
 {
+	DBG(cerr << "calling func_enddate" << endl);
     *result = comparison < DODS_Date, DODS_EndDate_Factory > (argc, argv,
                                                            dds);
 }
@@ -797,7 +812,7 @@ Expected zero or one arguments.");
 
 void ff_register_functions()
 {
-    libdap:ServerFunction *ff_dap_function;
+    libdap::ServerFunction *ff_dap_function;
 
     // The first set of functions all are 'Selection functions.' They are used
     // in the selection part of a CE to choose which instances of a sequence
