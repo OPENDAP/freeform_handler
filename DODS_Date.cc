@@ -18,7 +18,7 @@
 // 
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
@@ -87,13 +87,13 @@ static string extract_argument(BaseType *arg)
 
 bool DODS_Date::OK() const
 {
-	return _year > 0 && _month > 0 && _day > 0 && _julian_day > 0 && _day_number > 0;
+	return _year > 0 && _month > 0 && _day > 0 && _julian_day > 0 && _day_number > 0 && _format != unknown_format;
 }
 
 // Public member functions.
 
 DODS_Date::DODS_Date() :
-		_julian_day(0), _year(0), _month(0), _day(0), _day_number(0)
+    _julian_day(0), _year(0), _month(0), _day(0), _day_number(0), _format(unknown_format)
 {
 }
 
@@ -157,6 +157,7 @@ void DODS_Date::parse_integer_time(string date)
 		// Convert to julian day number and record year, month, ...
 		_julian_day = ::julian_day(_year, _month, _day);
 		_day_number = month_day_to_days(_year, _month, _day);
+		_format = ymd; // jhrg 10/1/13
 	}
 	else {
 		// Note that when a `yyyy/ddd' date is read in, the day-number winds
@@ -164,6 +165,7 @@ void DODS_Date::parse_integer_time(string date)
 		_day_number = _month;
 		days_to_month_day(_year, _day_number, &_month, &_day);
 		_julian_day = ::julian_day(_year, _month, _day);
+		_format = yd; // jhrg 10/1/13
 	}
 }
 
@@ -314,6 +316,8 @@ void DODS_Date::set(int year, int day_num)
 	days_to_month_day(_year, _day_number, &_month, &_day);
 	_julian_day = ::julian_day(_year, _month, _day);
 
+	_format = yd; // jhrg 10/1/13
+
 	assert(OK());
 }
 
@@ -324,6 +328,8 @@ void DODS_Date::set(int year, int month, int day)
 	_day = day;
 	_day_number = month_day_to_days(_year, _month, _day);
 	_julian_day = ::julian_day(_year, _month, _day);
+
+	_format = ymd; // jhrg 10/1/13
 
 	assert(OK());
 }
