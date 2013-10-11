@@ -57,7 +57,7 @@ bool
 FFUInt32::read()
 {
     if (read_p()) // nothing to do
-		return false;
+		return true;
 
     // *** I don't know why no error is signaled when there's no data in
     // BufVal. 10/11/2000 jhrg
@@ -75,6 +75,8 @@ FFUInt32::read()
 		set_read_p(true);
 	
 		BufPtr += width();
+
+		return true;
     }
         
 	return false;

@@ -134,10 +134,10 @@ bool FFSequence::read()
     int StrCnt = 0;
 
     if (read_p()) // Nothing to do
-        return false;
+        return true;
 
     if ((BufPtr >= BufSiz) && (BufSiz != 0))
-        return false; // End of sequence
+        return true; // End of sequence
 
     if (!BufVal) { // Make the cache (BufVal is global)
         // Create the output Sequence format
@@ -167,7 +167,7 @@ bool FFSequence::read()
         // num_rec could come from DDS if sequence length was known...
         long num_rec = Records(dataset());
         if (num_rec == -1) {
-            return false;
+            return true;
         }
 
         BufSiz = num_rec * (stbyte - 1);
@@ -188,7 +188,7 @@ bool FFSequence::read()
         (*p)->read();
     }
 
-    return true;
+    return false;
 }
 
 void FFSequence::transfer_attributes(AttrTable *at)

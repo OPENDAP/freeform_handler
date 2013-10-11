@@ -235,7 +235,7 @@ static void seq2vects(T * t, FFArray & array)
 bool FFArray::read()
 {
     if (read_p()) // Nothing to do
-        return false;
+        return true;
 
     bool has_stride;
     int ndims = dimensions();
@@ -308,7 +308,7 @@ bool FFArray::read()
     delete[] stride;
     delete[] edge;
 
-    return false;
+    return true;
 }
 
 // This template reads arrays of simple types into the Array object's _buf

@@ -62,7 +62,7 @@ bool
 FFInt32::read()
 {
     if (read_p()) // nothing to do
-		return false;
+		return true;
 
     if (BufVal) { // data in cache
 		char * ptr = BufVal+BufPtr;
@@ -83,6 +83,8 @@ FFInt32::read()
 	#endif 
 	
 		BufPtr += width();
+
+		return true;
     }
     
 	return false;

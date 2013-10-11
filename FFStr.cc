@@ -67,50 +67,44 @@ FFStr::ptr_duplicate()
 bool
 FFStr::read()
 {
-    if (read_p())			// nothing to do
-	return false;
+	if (read_p())			// nothing to do
+		return true;
 
-    if (BufVal){ // Data in cache
-	char * ptr = BufVal+BufPtr;
+	if (BufVal) { // Data in cache
+		char * ptr = BufVal + BufPtr;
 
-	char *TmpBuf = new char[StrLength+1];
-#if 1
-	// This code prunes both trailing and leading spaces from strings.
-	// Spaces are often added to URLs in file server data sets since the
-	// URL length can vary but in FF a field is a fixed size. However, if
-	// you want the FF handler to return _exactly_ the string data, this
-	// should be turned off. Once the subject of much debate... jhrg
+		char *TmpBuf = new char[StrLength + 1];
 
-	int i,j;
+		// This code prunes both trailing and leading spaces from strings.
+		// Spaces are often added to URLs in file server data sets since the
+		// URL length can vary but in FF a field is a fixed size. However, if
+		// you want the FF handler to return _exactly_ the string data, this
+		// should be turned off. Once the subject of much debate... jhrg
 
-	//remove trailing white space
-	for(i=StrLength-1; i>=0; i--)
-	    if(!isspace(*(ptr+i)))
-		break;
+		int i, j;
 
-	//remove leading white space
-	for(j=0; j<i; j++)
-	    if(!isspace(*(ptr+j)))
-		break;
-#else
-	int i=StrLength-1;;
-	int j=0;
-#endif
+		//remove trailing white space
+		for (i = StrLength - 1; i >= 0; i--)
+			if (!isspace(*(ptr + i))) break;
 
-	strncpy(TmpBuf, ptr+j,i-j+1);
-	TmpBuf[i-j+1]='\0';
+		//remove leading white space
+		for (j = 0; j < i; j++)
+			if (!isspace(*(ptr + j))) break;
 
-	string *Nstr = new string((const char *)TmpBuf);
-	delete [] TmpBuf;
+		strncpy(TmpBuf, ptr + j, i - j + 1);
+		TmpBuf[i - j + 1] = '\0';
 
-	val2buf(Nstr);
-	delete Nstr;
-	
-	set_read_p(true);
+		string *Nstr = new string((const char *) TmpBuf);
+		delete[] TmpBuf;
 
-	BufPtr += StrLength;
-	return false;
-    }
-    else 
+		val2buf(Nstr);
+		delete Nstr;
+
+		set_read_p(true);
+
+		BufPtr += StrLength;
+		return true;
+	}
+
 	return false;
 }
