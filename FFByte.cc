@@ -74,24 +74,21 @@ FFByte::ptr_duplicate()
     return new FFByte(*this);
 }
 
-bool
-FFByte::read()
+bool FFByte::read()
 {
-    if (read_p()) // nothing to do
-	return false;
+	if (read_p()) // nothing to do
+		return true;
 
-    if (BufVal){ // Data in cache
-	char * ptr = BufVal+BufPtr;
-	val2buf((void *) ptr);
-	set_read_p(true);
+	if (BufVal) { // Data in cache
+		char * ptr = BufVal + BufPtr;
+		val2buf((void *) ptr);
+		set_read_p(true);
 
-	BufPtr += width();
-	return false;
-    }
-    else {
+		BufPtr += width();
+		return true;
+	}
 
 	return false;
-    }
 }
 
 // $Log: FFByte.cc,v $

@@ -1,3 +1,9 @@
+Version 3.8.7
+
+Fixed the behavior of BaseType::read() to match libdap 3.12.1
+
+Fixed some of the date() server functions WRT the clang 5 compiler on OSX.
+
 Version 3.8.6
 
 Build fixes.

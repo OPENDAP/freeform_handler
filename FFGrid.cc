@@ -64,7 +64,7 @@ bool
 FFGrid::read()
 {
     if (read_p()) // nothing to do
-        return false;
+        return true;
 
     // read array elements
     array_var()->read();
@@ -76,7 +76,7 @@ FFGrid::read()
 
     set_read_p(true);
 
-    return false;
+    return true;
 }
 
 /**

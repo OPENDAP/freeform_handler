@@ -55,7 +55,7 @@ bool
 FFFloat32::read()
 {
     if (read_p()) // nothing to do
-		return false;
+		return true;
   
     if(BufVal) { // data in cache
 		char *ptr = BufVal+BufPtr;
@@ -69,6 +69,8 @@ FFFloat32::read()
 		set_read_p(true);
 	
 		BufPtr += width();
+
+		return true;
     }
     
 	return false;

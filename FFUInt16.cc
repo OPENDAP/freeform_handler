@@ -55,7 +55,7 @@ BaseType *FFUInt16::ptr_duplicate()
 bool FFUInt16::read()
 {
     if (read_p())               // nothing to do
-        return false;
+        return true;
 
     if (BufVal) {               // data in cache
         char *ptr = BufVal + BufPtr;
@@ -70,6 +70,8 @@ bool FFUInt16::read()
         set_read_p(true);
 
         BufPtr += width();
+
+        return true;
     }
 
     return false;
