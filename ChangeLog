@@ -1,3 +1,47 @@
+2013-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Edits to match the new, sane, semantics for BaseType::read(). True
+	now means done/eof and flase means more data to read (more
+	instances for a sequence). All the tests pass.
+
+2013-10-01  James Gallagher <jgallagher@opendap.org>
+
+	Updated the FSF address in the copyright headers
+
+2013-10-01  James Gallagher <jgallagher@opendap.org>
+
+	Fixed an error in DODS_Date where the _format member was not set
+	correctly. This caused a fail when the code was built with the
+	clang 5 compiler and (independently) also with certain versions of
+	the bes.
+
+	M    DODS_Date.cc
+	M    DODS_Date.h
+
+2013-09-28  James Gallagher <jgallagher@opendap.org>
+
+	Added stuff to svn:ignore
+
+2013-09-27  James Gallagher <jgallagher@opendap.org>
+
+	Fixes for the clang 5 compiler; the date() and date_time()
+	functions still fail tests, however.
+
+2013-09-26  James Gallagher <jgallagher@opendap.org>
+
+	removed -fno-defer-pop from all copies of Makefile.am since the
+	new OSX compiler prints warnings about it and it seems to not make
+	a difference with newer g++ versions.
+
+2013-08-28  Nathan Potter <ndp@coas.oregonstate.edu>
+
+	freeform_handler: Updating version number, changelog, etc. for
+	pending Hyrax 1.9 release
+
+2013-03-01  James Gallagher <jgallagher@opendap.org>
+
+	Added documentaion to the ce_functions.cc file.
+
 2013-03-01  James Gallagher <jgallagher@opendap.org>
 
 	Added documentaion to the ce_functions.cc file.
