@@ -1,3 +1,21 @@
+2013-10-18  James Gallagher <jgallagher@opendap.org>
+
+	Hyrax 1.9
+
+	M    freeform_handler.spec
+	M    configure.ac
+	M    NEWS
+	M    ChangeLog
+	M    INSTALL
+	M    README
+
+2013-10-11  James Gallagher <jgallagher@opendap.org>
+
+	Edits to match the new, sane, semantics for BaseType::read(). True now means done/eof and flase means more data to read (more instances for a sequence). All the tests pass.
+
+;; Local Variables:
+;; coding: utf-8
+;; End:
 2013-10-11  James Gallagher <jgallagher@opendap.org>
 
 	Edits to match the new, sane, semantics for BaseType::read(). True
