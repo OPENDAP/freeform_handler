@@ -26,6 +26,14 @@ AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
 AT_XFAIL_IF([test "$3" = "xfail"])
 AT_CLEANUP])
 
+m4_define([_AT_BESCMD_DAP4DATA_TEST],   
+[AT_SETUP([BESCMD $1])
+AT_KEYWORDS([bescmd])
+AT_CHECK([besstandalone -c $abs_builddir/bes.conf -i $1 | getdap4 -s -D -M - || true], [], [stdout], [stderr])
+AT_CHECK([diff -b -B $2 stdout || diff -b -B $2 stderr], [], [ignore],[],[])
+AT_XFAIL_IF([test "$3" = "xfail"])
+AT_CLEANUP])
+
 m4_define([AT_BESCMD_RESPONSE_TEST],
 [_AT_BESCMD_TEST([$abs_srcdir/ff/$1], [$abs_srcdir/ff/$1.baseline])
 ])
@@ -34,30 +42,40 @@ m4_define([AT_BESCMD_BINARYDATA_RESPONSE_TEST],
 [_AT_BESCMD_BINARYDATA_TEST([$abs_srcdir/ff/$1], [$abs_srcdir/ff/$1.baseline], [$2])
 ])
 
+m4_define([AT_BESCMD_DAP4DATA_RESPONSE_TEST],
+[_AT_BESCMD_BINARYDATA_TEST([$abs_srcdir/ff/$1], [$abs_srcdir/ff/$1.baseline], [$2])
+])
+
 AT_BESCMD_RESPONSE_TEST([avhrr.dat.0.bescmd])
 AT_BESCMD_RESPONSE_TEST([avhrr.dat.1.bescmd])
 AT_BESCMD_RESPONSE_TEST([avhrr.dat.2.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([avhrr.dat.3.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([avhrr.dat.dmr.bescmd])
+# AT_BESCMD_DAP4DATA_RESPONSE_TEST([avhrr.dat.dap.bescmd], [pass])
 
 AT_BESCMD_RESPONSE_TEST([jplpath.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([jplpath.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([jplpath.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([jplpath.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([jplpath.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([test0.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test0.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([test0.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([test0.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([test0.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([test1.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test1.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([test1.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([test1.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([test1.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([test4.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test4.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([test4.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([test4.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([test4.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([test5.dab.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test5.dab.dds.bescmd])
@@ -73,16 +91,19 @@ AT_BESCMD_RESPONSE_TEST([test7.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test7.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([test7.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([test7.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([test7.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([test8.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test8.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([test8.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([test8.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([test8.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([test9.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([test9.dat.dds.bescmd])
 AT_BESCMD_RESPONSE_TEST([test9.dat.ddx.bescmd])
 AT_BESCMD_BINARYDATA_RESPONSE_TEST([test9.dat.data.bescmd], [pass])
+AT_BESCMD_RESPONSE_TEST([test9.dat.dmr.bescmd])
 
 AT_BESCMD_RESPONSE_TEST([t3.dat.das.bescmd])
 AT_BESCMD_RESPONSE_TEST([t3.dat.dds.bescmd])

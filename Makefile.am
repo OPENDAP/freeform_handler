@@ -26,12 +26,12 @@ libff_module_la_LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
 
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
-	FFFloat32.cc FFInt16.cc FFStr.cc FFUInt32.cc
+	FFFloat32.cc FFInt16.cc FFStr.cc FFUInt32.cc FFD4Sequence.cc
 
 
 FFTYPE_HDR = FFArray.h FFFloat32.h FFInt16.h FFStr.h FFUInt32.h	\
 	FFByte.h FFFloat64.h FFInt32.h FFStructure.h FFUrl.h	\
-	FFGrid.h FFSequence.h FFUInt16.h
+	FFGrid.h FFSequence.h FFUInt16.h FFD4Sequence.h
 
 HANDLER_HDR = ff_ce_functions.h date_proc.h DODS_Date_Factory.h DODS_Date.h   \
 	DODS_Date_Time_Factory.h DODS_Date_Time.h DODS_Decimal_Year_Factory.h \

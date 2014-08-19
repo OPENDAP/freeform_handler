@@ -1,7 +1,7 @@
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of ff_handler, a data handler for the OPeNDAP data
-// server. 
+// server.
 
 // Copyright (c) 2002,2003 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
@@ -10,12 +10,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -32,9 +32,12 @@
 #include <exception>
 
 #include <DDS.h>
+#include <DMR.h>
+#include <D4BaseTypeFactory.h>
 #include <Ancillary.h>
 #include <Error.h>
 #include <InternalErr.h>
+#include <mime_util.h>
 #include <escaping.h>
 
 #include <BESResponseHandler.h>
@@ -43,6 +46,7 @@
 #include <BESDASResponse.h>
 #include <BESDDSResponse.h>
 #include <BESDataDDSResponse.h>
+#include <BESDMRResponse.h>
 #include <BESVersionInfo.h>
 
 #include <BESDapError.h>
@@ -55,6 +59,7 @@
 #include <BESContextManager.h>
 
 #include "FFRequestHandler.h"
+//#include "D4FFTypeFactory.h"
 #include "ff_ce_functions.h"
 #include "util_ff.h"
 
@@ -65,6 +70,16 @@ using namespace std;
 long BufPtr = 0; // cache pointer
 long BufSiz = 0; // Cache size
 char *BufVal = NULL; // cache buffer
+
+// The FFSequence and FFD4Sequence classes record the lengths of
+// any strings they find in the fields of their sequences in this
+// array.
+int StrLens[MaxStr];
+
+// Later on, when reading Strings, this global variable is used
+// to pass the length of the string from a loop in FF{D4}Sequence
+// back to FFStr::read().
+int StrLength = 0;
 
 extern void ff_read_descriptors(DDS & dds, const string & filename);
 extern void ff_get_attributes(DAS & das, string filename);
@@ -78,6 +93,10 @@ FFRequestHandler::FFRequestHandler(const string &name) :
     add_handler(DAS_RESPONSE, FFRequestHandler::ff_build_das);
     add_handler(DDS_RESPONSE, FFRequestHandler::ff_build_dds);
     add_handler(DATA_RESPONSE, FFRequestHandler::ff_build_data);
+
+    add_handler(DMR_RESPONSE, FFRequestHandler::ff_build_dmr);
+    add_handler(DAP4DATA_RESPONSE, FFRequestHandler::ff_build_dmr);
+
     add_handler(HELP_RESPONSE, FFRequestHandler::ff_build_help);
     add_handler(VERS_RESPONSE, FFRequestHandler::ff_build_version);
 
@@ -147,8 +166,7 @@ bool FFRequestHandler::ff_build_das(BESDataHandlerInterface & dhi)
         BESDapError ex(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
     } catch (...) {
-        string s = "unknown exception caught building Freeform DAS";
-        BESInternalFatalError ex(s, __FILE__, __LINE__);
+        BESInternalFatalError ex("unknown exception caught building Freeform DAS", __FILE__, __LINE__);
         throw ex;
     }
 
@@ -165,10 +183,6 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
         DDS *dds = bdds->get_dds();
-#if 0
-        ConstraintEvaluator & ce = bdds->get_ce();
-        ff_register_functions(ce);
-#endif
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
@@ -191,8 +205,7 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         BESDapError ex(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
     } catch (...) {
-        string s = "unknown exception caught building Freeform DDS";
-        BESInternalFatalError ex(s, __FILE__, __LINE__);
+        BESInternalFatalError ex("unknown exception caught building Freeform DDS", __FILE__, __LINE__);
         throw ex;
     }
 
@@ -213,10 +226,6 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
         DataDDS *dds = bdds->get_dds();
-#if 0
-        ConstraintEvaluator & ce = bdds->get_ce();
-        ff_register_functions(ce);
-#endif
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
@@ -240,12 +249,81 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
         BESDapError ex(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
     } catch (...) {
-        string s = "unknown exception caught building Freeform DataDDS";
-        BESInternalFatalError ex(s, __FILE__, __LINE__);
+        BESInternalFatalError ex("unknown exception caught building Freeform DataDDS", __FILE__, __LINE__);
         throw ex;
     }
 
     return true;
+}
+
+/**
+ * Build the DMR object.
+ *
+ * This is used for both the DAP4 DMR and Data responses. This version of the
+ * method uses the DMR's 'DDS constructor'.
+ *
+ * @param dhi
+ * @return True on success or throw an exception on error.
+ */
+bool FFRequestHandler::ff_build_dmr(BESDataHandlerInterface &dhi)
+{
+    BufPtr = 0; // cache pointer
+    BufSiz = 0; // Cache size
+    BufVal = NULL; // cache buffer
+
+	// Because this code does not yet know how to build a DMR directly, use
+	// the DMR ctor that builds a DMR using a 'full DDS' (a DDS with attributes).
+	// First step, build the 'full DDS'
+	string data_path = dhi.container->access();
+
+	BaseTypeFactory factory;
+	DDS dds(&factory, name_path(data_path), "3.2");
+	dds.filename(data_path);
+
+	try {
+		ff_read_descriptors(dds, data_path);
+		// ancillary DDS objects never took off - this does nothing. jhrg 8/12/14
+		// Ancillary::read_ancillary_dds(*dds, data_path);
+
+		DAS das;
+		ff_get_attributes(das, data_path);
+		Ancillary::read_ancillary_das(das, data_path);
+		dds.transfer_attributes(&das);
+	}
+	catch (InternalErr &e) {
+		throw BESDapError(e.get_error_message(), true, e.get_error_code(), __FILE__, __LINE__);
+	}
+	catch (Error &e) {
+		throw BESDapError(e.get_error_message(), false, e.get_error_code(), __FILE__, __LINE__);
+	}
+	catch (...) {
+		throw BESDapError("Caught unknown error build FF DMR response", true, unknown_error, __FILE__, __LINE__);
+	}
+
+	// Second step, make a DMR using the DDS
+	DMR *built_dmr = new DMR(new D4BaseTypeFactory, dds);
+
+	// Extract the DMR Response object - this holds the DMR used by the
+	// other parts of the framework.
+	BESResponseObject *response = dhi.response_handler->get_response_object();
+	BESDMRResponse &bdmr = dynamic_cast<BESDMRResponse &>(*response);
+
+	// Remove the existing DMR and set the newly made one
+	DMR *dmr = bdmr.get_dmr();
+	delete dmr->factory();
+	delete dmr;
+	bdmr.set_dmr(built_dmr);	// BESDMRResponse will delete this object
+
+	// Instead of fiddling with the internal storage of the DHI object,
+	// (by setting dhi.data[DAP4_CONSTRAINT], etc., directly) use these
+	// methods to set the constraints. But, why? Maybe setting data[]
+	// directly is better? jhrg 8/14/14
+	bdmr.set_dap4_constraint(dhi);
+	bdmr.set_dap4_function(dhi);
+
+	// What about async and store_result? See BESDapTransmit::send_dap4_data()
+
+	return true;
 }
 
 bool FFRequestHandler::ff_build_help(BESDataHandlerInterface & dhi)

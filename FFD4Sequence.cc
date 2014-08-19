@@ -1,37 +1,26 @@
 // -*- mode: c++; c-basic-offset:4 -*-
 
-// This file is part of ff_handler a FreeForm API handler for the OPeNDAP
-// DAP2 data server.
+// This file is part of freeform_handler; a FreeForm API handler for the OPeNDAP
+// data server.
 
-// Copyright (c) 2005 OPeNDAP, Inc.
+// Copyright (c) 2014 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
-// This is free software; you can redistribute it and/or modify it under the
-// terms of the GNU Lesser General Public License as published by the Free
-// Software Foundation; either version 2.1 of the License, or (at your
-// option) any later version.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
 //
-// This software is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-// License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
-
-// (c) COPYRIGHT URI/MIT 1997-99
-// Please read the full copyright statement in the file COPYRIGHT.
-//
-// Authors: reza (Reza Nekovei)
-
-// FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples
-// Test<type>.c,h files.
-//
-// ReZa 6/16/97
 
 #include "config_ff.h"
 
@@ -42,13 +31,12 @@ using std::ostringstream;
 
 #define DODS_DEBUG
 
-#include <D4Attributes.h>
-#include <Error.h>
-#include <debug.h>
+#include "Error.h"
+#include "debug.h"
 
-#include "FFSequence.h"
-#include "util_ff.h"
+#include "FFStr.h"
 #include "FFD4Sequence.h"
+#include "util_ff.h"
 
 extern long BufPtr;
 extern char *BufVal;
@@ -56,25 +44,6 @@ extern long BufSiz;
 
 extern int StrLength; // = 0; // Sets string length before reading it
 extern int StrLens[MaxStr]; // List of string length in this sequence
-
-// protected
-
-BaseType *
-FFSequence::ptr_duplicate()
-{
-    return new FFSequence(*this);
-}
-
-// public
-
-FFSequence::FFSequence(const string &n, const string &d, const string &iff) :
-        Sequence(n, d), d_input_format_file(iff)
-{
-}
-
-FFSequence::~FFSequence()
-{
-}
 
 static long Records(const string &filename)
 {
@@ -130,9 +99,9 @@ static long Records(const string &filename)
 
  @exception Error if the size of the returned data is zero.
  @return Always returns false. */
-bool FFSequence::read()
+bool FFD4Sequence::read()
 {
-	DBG(cerr << "Entering FFSequence::read..." << endl);
+	DBG(cerr << "Entering FFD4Sequence::read..." << endl);
     int StrCnt = 0;
 
     if (read_p()) // Nothing to do
@@ -187,13 +156,18 @@ bool FFSequence::read()
             StrLength = StrLens[StrCnt];
             StrCnt++;
         }
+        DBG(cerr << "Reading " << (*p)->name() << endl);
         (*p)->read();
+        if ((*p)->type() == dods_str_c) {
+        	string value = static_cast<FFStr&>(**p).value();
+        	DBG(cerr << "Value: " << value << endl);
+        }
     }
 
     return false;
 }
 
-void FFSequence::transfer_attributes(AttrTable *at)
+void FFD4Sequence::transfer_attributes(AttrTable *at)
 {
     if (at) {
         Vars_iter var = var_begin();
@@ -202,37 +176,5 @@ void FFSequence::transfer_attributes(AttrTable *at)
             var++;
         }
     }
-}
-
-BaseType *FFSequence::transform_to_dap4(D4BaseTypeFactory *factory, D4Group *root, Constructor *container)
-{
-	// For this class, ptr_duplicate() calls the const ctor which calls
-	// Constructor's const ctor which calls Constructor::m_duplicate().
-	// Here we replicate some of that functionality, but instead call
-	// transform_to_dap4() on the contained variables.
-
-	FFD4Sequence *dest = new FFD4Sequence(name(), dataset(), d_input_format_file);
-	// D4Sequence *dest = factory->NewD4Sequence(name());
-
-    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(factory, root, dest);
-		if (new_var) {
-			new_var->set_parent(dest);
-			dest->add_var_nocopy(new_var);
-		}
-		else {
-			throw InternalErr(__FILE__, __LINE__, "transform_to_dap4() returned null, but no Grid could be here.");
-		}
-	}
-
-    // Add attributes
-	dest->attributes()->transform_to_dap4(get_attr_table());
-
-    dest->set_is_dap4(true);
-	dest->set_parent(container);
-
-    dest->set_length(-1);
-
-    return dest;
 }
 

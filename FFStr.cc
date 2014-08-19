@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,15 +29,12 @@
 // Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples 
+// The files are patterned after the subcalssing examples
 // Test<type>.c,h files.
 //
 // ReZa 6/18/97
 
 #include "config_ff.h"
-
-static char rcsid[] not_used = {"$Id$"};
-
 
 #ifndef WIN32
 #include <strings.h>
@@ -52,7 +49,7 @@ static char rcsid[] not_used = {"$Id$"};
 
 extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
-extern int StrLength; // Set by sequence before String read 
+extern int StrLength; // Set by {D4}Sequence before String read
 
 FFStr::FFStr(const string &n, const string &d) : Str(n, d)
 {
