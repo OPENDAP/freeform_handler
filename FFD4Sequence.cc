@@ -29,7 +29,7 @@
 using std::endl;
 using std::ostringstream;
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "Error.h"
 #include "debug.h"
@@ -42,9 +42,7 @@ extern long BufPtr;
 extern char *BufVal;
 extern long BufSiz;
 
-extern int StrLength; // = 0; // Sets string length before reading it
-extern int StrLens[MaxStr]; // List of string length in this sequence
-
+#if 0
 static long Records(const string &filename)
 {
     int error = 0;
@@ -56,7 +54,6 @@ static long Records(const string &filename)
 
     SetUps = ff_create_std_args();
     if (!SetUps) {
-    	// delete[] FileName;
         return -1;
     }
 
@@ -90,6 +87,7 @@ static long Records(const string &filename)
 
     return num_records;
 }
+#endif
 
 /** Read a row from the Sequence.
 
@@ -102,7 +100,6 @@ static long Records(const string &filename)
 bool FFD4Sequence::read()
 {
 	DBG(cerr << "Entering FFD4Sequence::read..." << endl);
-    int StrCnt = 0;
 
     if (read_p()) // Nothing to do
         return true;
@@ -117,14 +114,11 @@ bool FFD4Sequence::read()
         int stbyte = 1;
 
         o_fmt << "binary_output_data \"DODS binary output data\"" << endl;
-        StrCnt = 0;
         for (Vars_iter p = var_begin(); p != var_end(); ++p) {
             if ((*p)->synthesized_p())
                 continue;
-            if ((*p)->type() == dods_str_c) {
-                endbyte += StrLens[StrCnt];
-                StrCnt++;
-            }
+            if ((*p)->type() == dods_str_c)
+                endbyte += static_cast<FFStr&>(**p).length();
             else
                 endbyte += (*p)->width();
 
@@ -150,19 +144,10 @@ bool FFD4Sequence::read()
             throw Error("Could not read requested data from the dataset.");
     }
 
-    StrCnt = 0;
-    for (Vars_iter p = var_begin(); p != var_end(); ++p) {
-        if ((*p)->type() == dods_str_c) {
-            StrLength = StrLens[StrCnt];
-            StrCnt++;
-        }
-        DBG(cerr << "Reading " << (*p)->name() << endl);
+    for (Vars_iter p = var_begin(); p != var_end(); ++p)
         (*p)->read();
-        if ((*p)->type() == dods_str_c) {
-        	string value = static_cast<FFStr&>(**p).value();
-        	DBG(cerr << "Value: " << value << endl);
-        }
-    }
+
+    set_read_p(false);
 
     return false;
 }

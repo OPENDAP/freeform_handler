@@ -41,8 +41,6 @@
 
 using namespace libdap ;
 
-#define MaxStr 100
-
 const int Msgt_size = 255;
 
 void free_ff_char_vector(char **v, int len);
@@ -63,19 +61,20 @@ const string &format_delimiter(const string &new_delimiter = "");
 
 // *** Cruft? see .cc file
 #if 0
-const string find_ancillary_formats(const string &dataset, 
+const string find_ancillary_formats(const string &dataset,
 				    const string &delimiter = format_delimiter(),
 				    const string &extension = format_extension());
 #endif
-const string find_ancillary_rss_formats(const string &dataset, 
+const string find_ancillary_rss_formats(const string &dataset,
 					const string &delimiter = format_delimiter(),
 					const string &extension = format_extension());
 
-const string find_ancillary_rss_das(const string &dataset, 
+const string find_ancillary_rss_das(const string &dataset,
 					const string &delimiter = format_delimiter(),
 					const string &extension = format_extension());
 
 int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char * Msgt);
+long Records(const string &filename);
 
 bool file_exist(const char * filename);
 

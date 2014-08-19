@@ -71,16 +71,6 @@ long BufPtr = 0; // cache pointer
 long BufSiz = 0; // Cache size
 char *BufVal = NULL; // cache buffer
 
-// The FFSequence and FFD4Sequence classes record the lengths of
-// any strings they find in the fields of their sequences in this
-// array.
-int StrLens[MaxStr];
-
-// Later on, when reading Strings, this global variable is used
-// to pass the length of the string from a loop in FF{D4}Sequence
-// back to FFStr::read().
-int StrLength = 0;
-
 extern void ff_read_descriptors(DDS & dds, const string & filename);
 extern void ff_get_attributes(DAS & das, string filename);
 

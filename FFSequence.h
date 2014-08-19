@@ -56,7 +56,7 @@ public:
 
     virtual void transfer_attributes(AttrTable *at);
 
-    virtual BaseType *transform_to_dap4(D4BaseTypeFactory *factory, D4Group *root, Constructor *container);
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 };
 
 // $Log: FFSequence.h,v $

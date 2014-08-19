@@ -59,8 +59,6 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual bool read();
-
-    long Seq_constraint(long *cor, long *step, long *edg, bool *has_stride);
 };
 
 #endif

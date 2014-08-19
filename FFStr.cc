@@ -49,7 +49,6 @@
 
 extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
-extern int StrLength; // Set by {D4}Sequence before String read
 
 FFStr::FFStr(const string &n, const string &d) : Str(n, d)
 {
@@ -70,7 +69,8 @@ FFStr::read()
 	if (BufVal) { // Data in cache
 		char * ptr = BufVal + BufPtr;
 
-		char *TmpBuf = new char[StrLength + 1];
+		// TODO Use vector? jhrg 8/19/14
+		char *TmpBuf = new char[length() + 1];
 
 		// This code prunes both trailing and leading spaces from strings.
 		// Spaces are often added to URLs in file server data sets since the
@@ -81,7 +81,7 @@ FFStr::read()
 		int i, j;
 
 		//remove trailing white space
-		for (i = StrLength - 1; i >= 0; i--)
+		for (i = length() - 1; i >= 0; i--)
 			if (!isspace(*(ptr + i))) break;
 
 		//remove leading white space
@@ -91,15 +91,18 @@ FFStr::read()
 		strncpy(TmpBuf, ptr + j, i - j + 1);
 		TmpBuf[i - j + 1] = '\0';
 
+		// Use set_value() jhrg 8/19/14
+		set_value(TmpBuf);
+#if 0
 		string *Nstr = new string((const char *) TmpBuf);
 		delete[] TmpBuf;
 
 		val2buf(Nstr);
 		delete Nstr;
-
+#endif
 		set_read_p(true);
 
-		BufPtr += StrLength;
+		BufPtr += length();
 		return true;
 	}
 
