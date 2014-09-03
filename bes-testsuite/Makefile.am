@@ -32,7 +32,7 @@ bes.conf: $(srcdir)/bes.conf.in $(top_srcdir)/config.status
 
 TESTSUITE = $(builddir)/freeform_handlerTest
 # TESTS_ENVIRONMENT = 
-TESTS = freeform_handlerTest
+# TESTS = freeform_handlerTest
 
 #check-local: atconfig atlocal $(TESTSUITE)
 #   $(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
@@ -41,6 +41,9 @@ TESTS = freeform_handlerTest
 
 AUTOM4TE = autom4te
  
+check-local: atconfig atlocal $(TESTSUITE)
+	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS);
+
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
 

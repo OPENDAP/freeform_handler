@@ -203,6 +203,14 @@ BaseType *FFSequence::transform_to_dap4(D4Group *root, Constructor *container)
 
 	FFD4Sequence *dest = new FFD4Sequence(name(), dataset(), d_input_format_file);
 
+    Constructor::transform_to_dap4(root, dest);
+
+    dest->set_length(-1);
+    dest->set_parent(container);
+
+    return dest;
+
+#if 0
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
     	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
 		if (new_var) {
@@ -223,5 +231,6 @@ BaseType *FFSequence::transform_to_dap4(D4Group *root, Constructor *container)
     dest->set_length(-1);
 
     return dest;
+#endif
 }
 
