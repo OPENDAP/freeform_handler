@@ -4,7 +4,7 @@
 AUTOMAKE_OPTIONS = foreign 
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -DFREEFORM
+AM_CPPFLAGS = -DFREEFORM $(FF_CPPFLAGS)
 
 # These are not used by automake but are often useful for certain types of
 # debugging. The best way to use these is to run configure as:
@@ -20,23 +20,24 @@ noinst_PROGRAMS = readfile newform chkform bufform checkvar
 libfreeform_la_SOURCES = $(FF_SRCS) $(FF_HDRS)
 
 readfile_SOURCES = readfile.c
-readfile_CPPFLAGS = -DFREEFORM
+# Comment these *_CPPFLAGS lines if AM_CPPFLAGS can be used instead.
+# readfile_CPPFLAGS = -DFREEFORM
 readfile_LDADD = libfreeform.la -lm
 
 newform_SOURCES = newform.c
-newform_CPPFLAGS = -DFREEFORM
+# newform_CPPFLAGS = -DFREEFORM
 newform_LDADD = libfreeform.la -lm
 
 chkform_SOURCES = chkform.c
-chkform_CPPFLAGS = -DFF_MAIN -DFREEFORM
+chkform_CPPFLAGS = -DFF_MAIN -DFREEFORM $(FF_CPPFLAGS)
 chkform_LDADD = libfreeform.la -lm
 
 bufform_SORUCES = bufform.c
-bufform_CPPFLAGS = -DFF_MAIN -DFREEFORM
+bufform_CPPFLAGS = -DFF_MAIN -DFREEFORM $(FF_CPPFLAGS)
 bufform_LDADD = libfreeform.la -lm
 
 checkvar_SOURCES = checkvar.c
-checkvar_CPPFLAGS = -DFREEFORM
+# checkvar_CPPFLAGS = -DFREEFORM
 checkvar_LDADD = libfreeform.la -lm
 
 EXTRA_DIST = 

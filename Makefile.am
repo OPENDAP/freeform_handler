@@ -10,19 +10,28 @@ ACLOCAL_AMFLAGS = -I conf
 
 SUBDIRS = FFND bes-testsuite
 
-# There are some defines which must be set with you build code which uses
+# There are some defines which must be set when you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
+if DAP_MODULES
+AM_CXXFLAGS = -I$(top_srcdir)/modules/freeform_handler/FFND
+AM_CFLAGS = -I$(top_srcdir)/modules/freeform_handler/FFND
+AM_CPPFLAGS = -DFREEFORM  $(FF_CPPFLAGS) -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap $(DAP_CFLAGS)
+LIBADD = $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS) FFND/libfreeform.la
+else
 AM_CXXFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
 AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
+LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
+endif
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
 
 libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR) $(SERVER_SRC) $(SERVER_HDR)
-libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
+# libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libff_module_la_LDFLAGS = -avoid-version -module 
-libff_module_la_LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
+libff_module_la_LIBADD = $(LIBADD) 
+# $(BES_DAP_LIBS) 
 
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
