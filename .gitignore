@@ -54,7 +54,6 @@ FFND/checkvar
 FFND/chkform
 FFND/newform
 FFND/readfile
-bes-testsuite/bes.conf.modules.in
 bes-testsuite/freeform_handlerTest
 bes-testsuite/freeform_handlerTest.dir/
 
