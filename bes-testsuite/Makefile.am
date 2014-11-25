@@ -15,7 +15,8 @@ noinst_DATA = bes.conf
 
 CLEANFILES = *.log *.sum
 
-EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in package.m4 ff bes.conf.in
+EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in \
+package.m4 ff bes.conf.in bes.conf.modules.in 
 
 DISTCLEANFILES = bes.conf package.m4 freeform_handlerTest
 

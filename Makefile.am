@@ -84,7 +84,7 @@ install-data-local: ff.conf
 uninstall-local:
 	rm -f $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf
 
-ff.conf: ff.conf.in config.status
+ff.conf: ff.conf.in $(top_srcdir)/config.status
 	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > ff.conf
 
 # Not nearly as clean as it could be, but this removes .svn directories
