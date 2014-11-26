@@ -8,7 +8,7 @@ AUTOMAKE_OPTIONS = foreign check-news
 
 ACLOCAL_AMFLAGS = -I conf
 
-SUBDIRS = FFND bes-testsuite
+SUBDIRS = FFND . bes-testsuite
 
 # There are some defines which must be set when you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
