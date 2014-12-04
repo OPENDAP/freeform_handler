@@ -40,7 +40,7 @@ TESTS = freeform_handlerTest
 ############## Autotest follows #####################
 
 AUTOM4TE = autom4te
- 
+
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
 
