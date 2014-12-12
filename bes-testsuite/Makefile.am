@@ -15,20 +15,10 @@ noinst_DATA = bes.conf
 
 CLEANFILES = *.log *.sum
 
-EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in package.m4 ff bes.conf.in
+EXTRA_DIST = freeform_handlerTest.at $(TESTSUITE) atlocal.in \
+package.m4 ff bes.conf.in bes.conf.modules.in 
 
 DISTCLEANFILES = bes.conf package.m4 freeform_handlerTest
-
-bes.conf: $(srcdir)/bes.conf.in $(top_srcdir)/config.status
-	@my_topdir=`echo ${abs_top_srcdir} | sed 's/\(.*\)\/\(.[^\/]*\)\/\.\./\1/g'`; \
-	sed -e "s%[@]pkgdatadir[@]%${pkgdatadir}%" \
-		-e "s%[@]modulesdir[@]%${BES_MODULE_DIR}%" \
-		-e "s%[@]sysconfdir[@]%${sysconfdir}%" \
-		-e "s%[@]libdir[@]%${libdir}%" \
-		-e "s%[@]datadir[@]%${datadir}%" \
-		-e "s%[@]abs_top_srcdir[@]%$$my_topdir%" \
-		-e "s%[@]abs_top_builddir[@]%${abs_top_builddir}%" \
-		-e "s%[@]bindir[@]%${bindir}%" $< > bes.conf
 
 TESTSUITE = $(builddir)/freeform_handlerTest
 # TESTS_ENVIRONMENT = 

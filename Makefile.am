@@ -8,21 +8,38 @@ AUTOMAKE_OPTIONS = foreign check-news
 
 ACLOCAL_AMFLAGS = -I conf
 
-SUBDIRS = FFND bes-testsuite
+SUBDIRS = FFND . bes-testsuite
 
-# There are some defines which must be set with you build code which uses
+# Set the module version here, in the spec file and in configure.ac
+M_NAME=freeform_handler
+M_VER=3.3.8
+
+# There are some defines which must be set when you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
-AM_CXXFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
-AM_CFLAGS = -DFREEFORM -I$(top_srcdir)/FFND
+if DAP_MODULES
+# AM_CXXFLAGS = -I$(top_srcdir)/modules/freeform_handler/FFND
+# AM_CFLAGS = -I$(top_srcdir)/modules/freeform_handler/FFND
+AM_CPPFLAGS = -DFREEFORM  $(FF_CPPFLAGS) -I$(top_srcdir)/dispatch -I$(top_srcdir)/dap \
+-I$(top_srcdir)/modules/freeform_handler/FFND $(DAP_CFLAGS)
+LIBADD = $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS) FFND/libfreeform.la
+else
+# AM_CXXFLAGS = -I$(top_srcdir)/FFND
+# AM_CFLAGS = -I$(top_srcdir)/FFND
+AM_CPPFLAGS = -I$(top_srcdir)/FFND -DFREEFORM
+LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
+endif
+
+AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER)\"
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
 
 libff_module_la_SOURCES = $(FFTYPE_SRC) $(HANDLER_SRC) $(FFTYPE_HDR) \
 	$(HANDLER_HDR) $(SERVER_SRC) $(SERVER_HDR)
-libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
+# libff_module_la_CPPFLAGS = $(BES_CPPFLAGS)
 libff_module_la_LDFLAGS = -avoid-version -module 
-libff_module_la_LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
+libff_module_la_LIBADD = $(LIBADD) 
+# $(BES_DAP_LIBS) 
 
 FFTYPE_SRC = FFArray.cc FFFloat64.cc FFInt32.cc FFStructure.cc	\
 	FFUrl.cc FFByte.cc FFGrid.cc FFSequence.cc FFUInt16.cc	\
@@ -75,7 +92,7 @@ install-data-local: ff.conf
 uninstall-local:
 	rm -f $(DESTDIR)$(sysconfdir)/bes/modules/ff.conf
 
-ff.conf: ff.conf.in config.status
+ff.conf: ff.conf.in $(top_srcdir)/config.status
 	sed -e "s%[@]bes_modules_dir[@]%${lib_besdir}%" $< > ff.conf
 
 # Not nearly as clean as it could be, but this removes .svn directories

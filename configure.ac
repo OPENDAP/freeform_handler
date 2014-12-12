@@ -13,6 +13,8 @@ AM_INIT_AUTOMAKE
 # which can make running unit tests with valgrind far more pleasant. 
 AM_DISABLE_STATIC
 
+AM_CONDITIONAL([DAP_MODULES], [false])
+
 AC_CONFIG_TESTDIR(bes-testsuite, [.])
 
 
@@ -95,8 +97,9 @@ esac
 
 AC_CONFIG_FILES([Makefile
 		 bes-testsuite/Makefile
-                 bes-testsuite/atlocal
-                 FFND/Makefile])
+         bes-testsuite/atlocal
+         bes-testsuite/bes.conf
+         FFND/Makefile])
 
 # Build this using the Makefile.am as per the automake 1.10 manual, p.79
 # AC_CONFIG_FILES([install-in-bes-conf.sh], [chmod +x install-in-bes-conf.sh])
