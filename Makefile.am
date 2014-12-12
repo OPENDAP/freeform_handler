@@ -25,7 +25,7 @@ LIBADD = $(DAP_SERVER_LIBS) $(DAP_CLIENT_LIBS) FFND/libfreeform.la
 else
 # AM_CXXFLAGS = -I$(top_srcdir)/FFND
 # AM_CFLAGS = -I$(top_srcdir)/FFND
-AM_CPPFLAGS = -I$(top_srcdir)/FFND -DFREEFORM
+AM_CPPFLAGS = $(BES_CPPFLAGS) -I$(top_srcdir)/FFND -DFREEFORM
 LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
 endif
 
