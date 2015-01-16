@@ -35,26 +35,25 @@
 
 #include "config_ff.h"
 
-static char rcsid[]not_used = {
-        "$Id$" };
-
 #include <sstream>
 
 using std::endl;
 using std::ostringstream;
 
-#include "Error.h"
-#include "debug.h"
+// #define DODS_DEBUG
 
+#include <D4Attributes.h>
+#include <Error.h>
+#include <debug.h>
+
+#include "FFStr.h"
 #include "FFSequence.h"
+#include "FFD4Sequence.h"
 #include "util_ff.h"
 
 extern long BufPtr;
 extern char *BufVal;
 extern long BufSiz;
-
-int StrLength = 0; // Sets string length befor reading it
-int StrLens[MaxStr]; // List of string length in this sequence
 
 // protected
 
@@ -75,6 +74,7 @@ FFSequence::~FFSequence()
 {
 }
 
+#if 0
 static long Records(const string &filename)
 {
     int error = 0;
@@ -86,7 +86,6 @@ static long Records(const string &filename)
 
     SetUps = ff_create_std_args();
     if (!SetUps) {
-    	// delete[] FileName;
         return -1;
     }
 
@@ -120,6 +119,7 @@ static long Records(const string &filename)
 
     return num_records;
 }
+#endif
 
 /** Read a row from the Sequence.
 
@@ -131,7 +131,7 @@ static long Records(const string &filename)
  @return Always returns false. */
 bool FFSequence::read()
 {
-    int StrCnt = 0;
+	DBG(cerr << "Entering FFSequence::read..." << endl);
 
     if (read_p()) // Nothing to do
         return true;
@@ -146,14 +146,11 @@ bool FFSequence::read()
         int stbyte = 1;
 
         o_fmt << "binary_output_data \"DODS binary output data\"" << endl;
-        StrCnt = 0;
         for (Vars_iter p = var_begin(); p != var_end(); ++p) {
             if ((*p)->synthesized_p())
                 continue;
-            if ((*p)->type() == dods_str_c) {
-                endbyte += StrLens[StrCnt];
-                StrCnt++;
-            }
+            if ((*p)->type() == dods_str_c)
+                endbyte += static_cast<FFStr&>(**p).length();
             else
                 endbyte += (*p)->width();
 
@@ -179,12 +176,7 @@ bool FFSequence::read()
             throw Error("Could not read requested data from the dataset.");
     }
 
-    StrCnt = 0;
     for (Vars_iter p = var_begin(); p != var_end(); ++p) {
-        if ((*p)->type() == dods_str_c) {
-            StrLength = StrLens[StrCnt];
-            StrCnt++;
-        }
         (*p)->read();
     }
 
@@ -200,5 +192,45 @@ void FFSequence::transfer_attributes(AttrTable *at)
             var++;
         }
     }
+}
+
+BaseType *FFSequence::transform_to_dap4(D4Group *root, Constructor *container)
+{
+	// For this class, ptr_duplicate() calls the const ctor which calls
+	// Constructor's const ctor which calls Constructor::m_duplicate().
+	// Here we replicate some of that functionality, but instead call
+	// transform_to_dap4() on the contained variables.
+
+	FFD4Sequence *dest = new FFD4Sequence(name(), dataset(), d_input_format_file);
+
+    Constructor::transform_to_dap4(root, dest);
+
+    dest->set_length(-1);
+    dest->set_parent(container);
+
+    return dest;
+
+#if 0
+    for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
+		if (new_var) {
+			new_var->set_parent(dest);
+			dest->add_var_nocopy(new_var);
+		}
+		else {
+			throw InternalErr(__FILE__, __LINE__, "transform_to_dap4() returned null, but no Grid could be here.");
+		}
+	}
+
+    // Add attributes
+	dest->attributes()->transform_to_dap4(get_attr_table());
+
+    dest->set_is_dap4(true);
+	dest->set_parent(container);
+
+    dest->set_length(-1);
+
+    return dest;
+#endif
 }
 

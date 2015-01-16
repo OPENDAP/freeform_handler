@@ -22,7 +22,7 @@ DISTCLEANFILES = bes.conf package.m4 freeform_handlerTest
 
 TESTSUITE = $(builddir)/freeform_handlerTest
 # TESTS_ENVIRONMENT = 
-TESTS = freeform_handlerTest
+# TESTS = freeform_handlerTest
 
 #check-local: atconfig atlocal $(TESTSUITE)
 #   $(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)

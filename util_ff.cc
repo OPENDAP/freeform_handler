@@ -53,8 +53,16 @@ static char rcsid[] not_used =
 #include <BESDebug.h>
 
 #include <BaseType.h>
+#include <Byte.h>
+#include <Int16.h>
+#include <Int32.h>
+#include <UInt16.h>
+#include <UInt32.h>
+#include <Float32.h>
+#include <Float64.h>
 #include <InternalErr.h>
 #include <dods-limits.h>
+#include <util.h>
 #include <debug.h>
 
 #include "FFRequestHandler.h"
@@ -148,7 +156,6 @@ static string freeform_error_message()
 long read_ff(const char *dataset, const char *if_file, const char *o_format, char *o_buffer, unsigned long bsize)
 {
     FF_BUFSIZE_PTR newform_log = NULL;
-    //FF_BUFSIZE_PTR bufsz = NULL;
     FF_STD_ARGS_PTR std_args = NULL;
 
     try {
@@ -259,9 +266,7 @@ const string ff_types(Type dods_type)
     case dods_url_c:
         return "text";
     default:
-        cerr << "ff_types: DODS type " << dods_type
-            << " does not map to a FreeForm type." << endl;
-        return "";
+        throw Error("ff_types: DODS type " + D2type_name(dods_type) + " does not map to a FreeForm type.");
     }
 }
 
@@ -288,9 +293,7 @@ int ff_prec(Type dods_type)
     case dods_url_c:
         return 0;
     default:
-        cerr << "ff_types: DODS type " << dods_type
-            << " does not map to a FreeForm type." << endl;
-        return -1;
+    	throw Error("ff_prec: DODS type " + D2type_name(dods_type) + " does not map to a FreeForm type.");
     }
 }
 
@@ -476,6 +479,56 @@ int SetDodsDB(FF_STD_ARGS_PTR std_args, DATA_BIN_HANDLE dbin_h, char *Msgt)
     return (error);
 }
 
+/**
+ * Figure out how many records there are in the dataset.
+ *
+ * @param filename
+ */
+long Records(const string &filename)
+{
+    int error = 0;
+    DATA_BIN_PTR dbin = NULL;
+    FF_STD_ARGS_PTR SetUps = NULL;
+    PROCESS_INFO_LIST pinfo_list = NULL;
+    PROCESS_INFO_PTR pinfo = NULL;
+    static char Msgt[255];
+
+    SetUps = ff_create_std_args();
+    if (!SetUps) {
+        return -1;
+    }
+
+    /** set the structure values to create the FreeForm DB**/
+    SetUps->user.is_stdin_redirected = 0;
+    SetUps->input_file = const_cast<char*>(filename.c_str());
+
+    SetUps->output_file = NULL;
+
+    error = SetDodsDB(SetUps, &dbin, Msgt);
+    if (error && error < ERR_WARNING_ONLY) {
+        db_destroy(dbin);
+        return -1;
+    }
+
+    ff_destroy_std_args(SetUps);
+
+    error = db_ask(dbin, DBASK_PROCESS_INFO, FFF_INPUT | FFF_DATA, &pinfo_list);
+    if (error)
+        return (-1);
+
+    pinfo_list = dll_first(pinfo_list);
+
+    pinfo = ((PROCESS_INFO_PTR) (pinfo_list)->data.u.pi);
+
+    long num_records = PINFO_SUPER_ARRAY_ELS(pinfo);
+
+    ff_destroy_process_info_list(pinfo_list);
+    db_destroy(dbin);
+
+    return num_records;
+}
+
+
 bool file_exist(const char *filename)
 {
     return access(filename, F_OK) == 0;
@@ -526,7 +579,7 @@ find_ancillary_rss_formats(const string & dataset, const string & /* delimiter *
 
     // Now determine if this is files holds averaged or daily data.
     string DatePart = FileName.substr(delim+1, FileName.length()-delim+1);
-    
+
     if (FormatPath[FormatPath.length()-1] != '/')
         FormatPath.append("/");
 
@@ -584,7 +637,7 @@ find_ancillary_rss_das(const string & dataset, const string & /* delimiter */,
 
     if (FormatPath[FormatPath.length()-1] != '/')
         FormatPath.append("/");
-    
+
     if ( (DatePart.find("_") != string::npos) || (DatePart.length() < 10) )
         FormatFile = FormatPath + BaseName + "averaged.das";
     else
@@ -592,85 +645,6 @@ find_ancillary_rss_das(const string & dataset, const string & /* delimiter */,
 
     return string(FormatFile);
 }
-
-// *** Cruft from a --reintegrate merge from 3.7.9? 
-#if 0
-/** Find the format file using a delimiter character.
-    Given a special sequence of one or more characters, use that to determine
-    the format file name. Assume that the format file ends with EXTENSION.
-
-    NB: DELIMITER defaults to "." and EXTENSION defaults to ".fmt" using the
-    utility functions format_delimiter() and format_extension().
-
-    @return A const string object which contains the format file name. */
-const string
-find_ancillary_formats(const string & dataset, const string & delimiter,
-		       const string & extension)
-{
-    size_t delim = dataset.find(delimiter);
-    string basename = dataset.substr(0, delim);
-
-        // 
-        // Use the FreeForm setdbin:find_format_files() to locate
-        // the input format description file.
-        //
-        // find_format_files() requires a valid DATA_BIN_PTR and DATA_BIN.
-        //  - to create one, populate SetUps and call SetDodsDB().
-        //
-        // find_format_files() will return the input format_file name
-        // in the char** formats parameter, if num_formats > 0, then
-        // it returns the first valid format_file name in formats[0].
-        //
-
-        DATA_BIN_PTR dbin = NULL;
-        FF_STD_ARGS_PTR SetUps = NULL;
-        static char Msgt[255];
-        char **formats;
-        int error = 0;
-
-        char *FileName = new char[dataset.length() + 1];
-        dataset.copy(FileName, dataset.length() + 1);
-        FileName[dataset.length()]='\0';
-
-        SetUps = ff_create_std_args();
-        if (!SetUps) {
-            delete [] FileName;
-            throw InternalErr(__FILE__, __LINE__,
-            		"Could not create interface record for FreeForm");
-        }
-        
-        /** set the structure values to create the FreeForm DB**/
-        SetUps->input_file = FileName;
-        SetUps->output_file = NULL;
-
-        error = SetDodsDB(SetUps, &dbin, Msgt);
-        if (error && error < ERR_WARNING_ONLY) {
-            delete [] FileName;
-            db_destroy(dbin);
-            throw InternalErr(__FILE__, __LINE__,
-            		string("Could not set up FreeForm DB structure.\n")
-            		+ string(Msgt));
-        }
-
-        if (dods_find_format_files(dbin, FileName, extension.c_str(),
-                                   &formats)) {
-            string FormatFile = formats[0];
-            free(formats[0]);
-            return string(FormatFile);
-        } else if (dods_find_format_compressed_files(dbin, FileName,
-                                                     &formats)) {
-            string FormatFile = formats[0];
-            free(formats[0]);
-            return string(FormatFile);
-        } else {
-        	delete [] FileName;
-            db_destroy(dbin);
-            throw InternalErr(__FILE__, __LINE__,
-            				  string("Could not find an input format for ")
-            				  + string(FileName));
-        }
-}
-#endif
 
 // These functions are used by the Date/Time Factory classes but they might
 // be generally useful in writing server-side functions. 1/21/2002 jhrg
@@ -730,7 +704,6 @@ bool is_float_type(BaseType * btp)
 /** Get the value of the BaseType Variable. If it's not something that we can
     convert to an integer, throw InternalErr.
 
-    @todo Could replace buf2val() with value().
     @param var The variable */
 dods_uint32 get_integer_value(BaseType * var) throw(InternalErr)
 {
@@ -738,49 +711,20 @@ dods_uint32 get_integer_value(BaseType * var) throw(InternalErr)
         return 0;
 
     switch (var->type()) {
-    case dods_byte_c:{
-            dods_byte value = 0;
-            dods_byte *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
+    case dods_byte_c:
+    	return static_cast<Byte*>(var)->value();
 
-            return dods_uint32(value);
-        }
+    case dods_int16_c:
+    	return static_cast<Int16*>(var)->value();
 
-    case dods_int16_c:{
-            dods_int16 value = 0;
-            dods_int16 *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
+    case dods_int32_c:
+    	return static_cast<Int32*>(var)->value();
 
-            return dods_uint32(value);
-        }
+    case dods_uint16_c:
+    	return static_cast<UInt16*>(var)->value();
 
-    case dods_int32_c:{
-            dods_int32 value = 0;
-            dods_int32 *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
-
-            return dods_uint32(value);
-        }
-
-    case dods_uint16_c:{
-            dods_uint16 value = 0;
-            dods_uint16 *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
-
-            return dods_uint32(value);
-        }
-    case dods_uint32_c:{
-            dods_uint32 value = 0;
-            dods_uint32 *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
-
-            return value;
-        }
+    case dods_uint32_c:
+    	return static_cast<UInt32*>(var)->value();
 
     default:
         throw InternalErr(__FILE__, __LINE__,
@@ -800,23 +744,11 @@ dods_float64 get_float_value(BaseType * var) throw(InternalErr)
     case dods_uint32_c:
         return get_integer_value(var);
 
-    case dods_float32_c:{
-            dods_float32 value = 0;
-            dods_float32 *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
+    case dods_float32_c:
+    	return static_cast<Float32*>(var)->value();
 
-            return dods_float64(value);
-        }
-
-    case dods_float64_c:{
-            dods_float64 value = 0;
-            dods_float64 *value_p = &value;
-            if (var)
-                var->buf2val((void **) &value_p);
-
-            return value;
-        }
+    case dods_float64_c:
+    	return static_cast<Float64*>(var)->value();
 
     default:
         throw InternalErr(__FILE__, __LINE__,

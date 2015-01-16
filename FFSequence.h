@@ -42,8 +42,6 @@
 
 using namespace libdap ;
 
-//extern Sequence * NewSequence(const string &n);
-
 class FFSequence: public Sequence {
 private:
     string d_input_format_file;
@@ -57,6 +55,8 @@ public:
     virtual bool read();
 
     virtual void transfer_attributes(AttrTable *at);
+
+    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
 };
 
 // $Log: FFSequence.h,v $

@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,15 +29,12 @@
 // Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples 
+// The files are patterned after the subcalssing examples
 // Test<type>.c,h files.
 //
 // ReZa 6/18/97
 
 #include "config_ff.h"
-
-static char rcsid[] not_used = {"$Id$"};
-
 
 #ifndef WIN32
 #include <strings.h>
@@ -52,7 +49,6 @@ static char rcsid[] not_used = {"$Id$"};
 
 extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
-extern int StrLength; // Set by sequence before String read 
 
 FFStr::FFStr(const string &n, const string &d) : Str(n, d)
 {
@@ -73,7 +69,8 @@ FFStr::read()
 	if (BufVal) { // Data in cache
 		char * ptr = BufVal + BufPtr;
 
-		char *TmpBuf = new char[StrLength + 1];
+		// TODO Use vector? jhrg 8/19/14
+		char *TmpBuf = new char[length() + 1];
 
 		// This code prunes both trailing and leading spaces from strings.
 		// Spaces are often added to URLs in file server data sets since the
@@ -84,7 +81,7 @@ FFStr::read()
 		int i, j;
 
 		//remove trailing white space
-		for (i = StrLength - 1; i >= 0; i--)
+		for (i = length() - 1; i >= 0; i--)
 			if (!isspace(*(ptr + i))) break;
 
 		//remove leading white space
@@ -94,15 +91,18 @@ FFStr::read()
 		strncpy(TmpBuf, ptr + j, i - j + 1);
 		TmpBuf[i - j + 1] = '\0';
 
+		// Use set_value() jhrg 8/19/14
+		set_value(TmpBuf);
+#if 0
 		string *Nstr = new string((const char *) TmpBuf);
 		delete[] TmpBuf;
 
 		val2buf(Nstr);
 		delete Nstr;
-
+#endif
 		set_read_p(true);
 
-		BufPtr += StrLength;
+		BufPtr += length();
 		return true;
 	}
 

@@ -55,8 +55,6 @@
 // Added 7/30/08 as part of the fix for ticket #1163. jhrg
 #define ATTR_STRING_QUOTE_FIX
 
-extern int StrLens[MaxStr]; // List of string lengths, used by FFSequence.
-
 // Read header information and populate an AttrTable with the information.
 
 static void header_to_attributes(AttrTable *at, DATA_BIN_PTR dbin)

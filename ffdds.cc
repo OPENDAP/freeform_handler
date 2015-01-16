@@ -38,8 +38,6 @@
 
 #include "config_ff.h"
 
-static char rcsid[]not_used = { "$Id$" };
-
 #include <cstdio>
 #include <cstring>
 
@@ -69,8 +67,6 @@ static char rcsid[]not_used = { "$Id$" };
 #include "util_ff.h"
 
 #include "FFRequestHandler.h"
-
-extern int StrLens[MaxStr]; // List of string lengths
 
 void ff_read_descriptors(DDS &dds_table, const string &filename)
 {
@@ -146,7 +142,6 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
 
         bool newseq = true;
         bool is_array = true;
-        int StrNum = 0;
         for (int i = 0; i < num_names; i++) {
             int num_dim_names = 0;
 
@@ -200,12 +195,8 @@ void ff_read_descriptors(DDS &dds_table, const string &filename)
             BaseType *bt = NULL;
             switch (FFV_DATA_TYPE(var)) {
             case FFV_TEXT:
-                if (StrNum > MaxStr - 1)
-                    throw InternalErr(__FILE__, __LINE__, "String variable length.");
-
-                StrLens[StrNum] = var->end_pos - var->start_pos + 1;
-                StrNum++;
                 bt = new FFStr(cp, filename);
+                static_cast<FFStr&>(*bt).set_length(var->end_pos - var->start_pos + 1);
                 break;
 
             case FFV_INT8:

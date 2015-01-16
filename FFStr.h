@@ -11,12 +11,12 @@
 // terms of the GNU Lesser General Public License as published by the Free
 // Software Foundation; either version 2.1 of the License, or (at your
 // option) any later version.
-// 
+//
 // This software is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 // License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -24,12 +24,12 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 // (c) COPYRIGHT URI/MIT 1997-98
-// Please read the full copyright statement in the file COPYRIGHT.  
+// Please read the full copyright statement in the file COPYRIGHT.
 //
 // Authors: reza (Reza Nekovei)
 
 // FreeFrom sub-class implementation for FFByte,...FFGrid.
-// The files are patterned after the subcalssing examples 
+// The files are patterned after the subcalssing examples
 // Test<type>.c,h files.
 //
 // ReZa 6/18/97
@@ -40,18 +40,24 @@
 
 #include <limits.h>
 
-#include "Str.h"
+#include <Str.h>
 
 using namespace libdap ;
 
 class FFStr: public Str {
+private:
+	int d_length;
+
 public:
     FFStr(const string &n, const string &d);
     virtual ~FFStr() {}
 
     virtual BaseType *ptr_duplicate();
-    
+
     virtual bool read();
+
+    virtual void set_length(int len) { d_length = len; }
+    virtual int length() const { return d_length; }
 };
 
 // $Log: FFStr.h,v $

@@ -44,6 +44,8 @@ static char rcsid[] not_used = { "$Id$" };
 #include <BESDebug.h>
 
 #include <dods-datatypes.h>
+#include <D4Attributes.h>
+#include <D4Group.h>
 #include <Error.h>
 #include <InternalErr.h>
 
@@ -106,6 +108,7 @@ long FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms, 
     return nels;
 }
 
+#if 0
 // parse constraint expr. and make coordinate point location.
 // return number of elements to read.
 
@@ -138,6 +141,7 @@ long FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
     }
     return nels;
 }
+#endif
 
 #if 0
 static int hyper_get(void *dest, void *src, unsigned szof, const int dim_num, int index, const int dimsz[],
@@ -173,13 +177,8 @@ static int hyper_get(void *dest, void *src, unsigned szof, const int dim_num, in
     }
 }
 #endif
-// Store the contents of the buffer returned from read_ff() in the FFArray
-// object ARRAY.
-//
-// Returns: void
 
-// Never used
-#if 1
+#if 0
 template<class T>
 static void seq2vects(T * t, FFArray & array)
 {
@@ -221,6 +220,7 @@ static void seq2vects(T * t, FFArray & array)
     delete[] edge;
 }
 #endif
+
 // Read cardinal types and ctor types separately. Cardinal types are
 // stored in arrays of the C++ data type while ctor types are stored
 // in arrays of the DODS classes used to store those types.
@@ -239,24 +239,18 @@ bool FFArray::read()
 
     bool has_stride;
     int ndims = dimensions();
-    string *dname = new string[ndims];
-    long *start = new long[ndims];
-    long *stride = new long[ndims];
-    long *edge = new long[ndims];
-    long count = Arr_constraint(start, stride, edge, dname, &has_stride);
+    vector<string> dname(ndims);
+    vector<long> start(ndims);
+    vector<long> stride(ndims);
+    vector<long> edge(ndims);
+    long count = Arr_constraint(&start[0], &stride[0], &edge[0], &dname[0], &has_stride);
 
     if (!count) {
-        delete[] dname;
-
-        delete[] start;
-        delete[] stride;
-        delete[] edge;
-
         throw Error(unknown_error, "Constraint returned an empty dataset.");
     }
 
     string output_format = makeND_output_format(name(), var()->type(), var()->width(),
-            ndims, start, edge, stride, dname);
+            ndims, &start[0], &edge[0], &stride[0], &dname[0]);
 
     // For each cardinal-type variable, do the following:
     //     Use ff to read the data
@@ -293,20 +287,9 @@ bool FFArray::read()
         break;
 
     default:
-        delete[] dname;
-        delete[] start;
-        delete[] stride;
-        delete[] edge;
-
         throw InternalErr(__FILE__, __LINE__,
                 (string) "FFArray::read: Unsupported array type " + var()->type_name() + ".");
     }
-
-    // clean up
-    delete[] dname;
-    delete[] start;
-    delete[] stride;
-    delete[] edge;
 
     return true;
 }
@@ -317,85 +300,18 @@ bool FFArray::read()
 template<class T>
 bool FFArray::extract_array(const string &ds, const string &if_fmt, const string &o_fmt)
 {
-    // T *d = (T *) new char[width()]; jhrg 9/26/13
     vector<T> d(length());
     long bytes = read_ff(ds.c_str(), if_fmt.c_str(), o_fmt.c_str(), (char *) &d[0], width());
+
     BESDEBUG("ff", "FFArray::extract_array: Read " << bytes << " bytes." << endl);
 
     if (bytes == -1) {
-        //delete[] d;
         throw Error(unknown_error, "Could not read values from the dataset.");
     }
     else {
         set_read_p(true);
-        val2buf((void *) &d[0]);
+        set_value(d, d.size());
     }
-
-    //delete[] (d);
 
     return true;
 }
-
-// $Log: FFArray.cc,v $
-// Revision 1.13  2003/02/10 23:01:52  jimg
-// Merged with 3.2.5
-//
-// Revision 1.12.2.1  2002/12/18 23:30:42  pwest
-// gcc3.2 compile corrections, mainly regarding the using statement
-//
-// Revision 1.12  2000/10/11 19:37:56  jimg
-// Moved the CVS log entries to the end of files.
-// Changed the definition of the read method to match the dap library.
-// Added exception handling.
-// Added exceptions to the read methods.
-//
-// Revision 1.11  2000/08/31 22:16:55  jimg
-// Merged with 3.1.7
-//
-// Revision 1.10.2.2  2000/08/03 20:18:57  jimg
-// Removed config_dap.h and replaced it with config_ff.h (in *.cc files;
-// neither should be included in a header file).
-// Changed code that calculated leap year information so that it uses the
-// functions in date_proc.c/h.
-//
-// Revision 1.10.2.1  1999/08/28 01:18:53  jimg
-// Changed the extract_array declaration from `template <class t> bool
-// extract_array<T>(...)' to template <class t> bool extract_array(...).
-// I.E.: I removed the second <T> which was allowed by gcc 2.8.1 but was, in
-// fact, not legal C++.
-//
-// Revision 1.10  1999/07/22 21:28:09  jimg
-// Merged changes from the release-3-0-2 branch
-//
-// Revision 1.9.6.1  1999/06/07 17:32:18  edavis
-// Changed 'data()' to 'c_str()'.
-//
-// Revision 1.9  1999/05/04 02:55:36  jimg
-// Merge with no-gnu
-//
-// Revision 1.8  1999/03/26 20:03:31  jimg
-// Added support for the Int16, UInt16 and Float32 datatypes
-//
-// Revision 1.7.8.1  1999/05/01 04:40:29  brent
-// converted old String.h to the new std C++ <string> code
-//
-// Revision 1.7  1998/11/10 19:23:01  jimg
-// Minor formatting changes...
-//
-// Revision 1.6  1998/08/31 04:05:58  reza
-// Added String support.
-// Fixed data alignment problem (64-bit Architectures).
-// Removed Warnings and added a check for file existence.
-// Updated FFND to fix a bug in stride.
-//
-// Revision 1.5  1998/08/13 20:24:20  jimg
-// Fixed read mfunc semantics
-//
-// Revision 1.4  1998/08/12 21:20:49  jimg
-// Massive changes from Reza. Compatible with the new FFND library
-//
-// Revision 1.3  1998/04/21 17:13:41  jimg
-// Fixes for warnings, etc
-//
-// Revision 1.2  1998/04/16 18:10:58  jimg
-// Sequence support added by Reza
