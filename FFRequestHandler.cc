@@ -175,7 +175,12 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         dds->filename(accessed);
+
+        BESDEBUG("ff", "FFRequestHandler::ff_build_dds, accessed: " << accessed << endl);
+
         ff_read_descriptors(*dds, accessed);
+
+        BESDEBUG("ff", "FFRequestHandler::ff_build_dds, reading attributes" << endl);
 
         DAS *das = new DAS;
         BESDASResponse bdas(das);
@@ -183,11 +188,14 @@ bool FFRequestHandler::ff_build_dds(BESDataHandlerInterface & dhi)
         ff_get_attributes(*das, accessed);
         Ancillary::read_ancillary_das(*das, accessed);
 
+        BESDEBUG("ff", "FFRequestHandler::ff_build_dds, transferring attributes" << endl);
+
         dds->transfer_attributes(das);
 
         bdds->set_constraint(dhi);
 
         bdds->clear_container();
+
     } catch (InternalErr & e) {
         BESDapError ex(e.get_error_message(), true, e.get_error_code(), __FILE__, __LINE__);
         throw ex;
