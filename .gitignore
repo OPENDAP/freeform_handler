@@ -43,6 +43,7 @@ aclocal.m4
 libtool
 atconfig
 atlocal
+ff.conf
 
 ## freeform handler specific files
 
