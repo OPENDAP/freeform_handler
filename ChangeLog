@@ -1,3 +1,157 @@
+2015-03-31  James Gallagher  <jgallagher@opendap.org>
+
+	Added to gitignore
+
+2015-03-19  James Gallagher  <jgallagher@opendap.org>
+
+	Fix for distclean and the modules build.
+	I had to move the generation of the bes.conf file back to the
+	Makefile and use an automake conditional to build different
+	bes.conf files for the modules and standard builds.
+
+2015-02-03  James Gallagher  <jgallagher@opendap.org>
+
+	RequestHandler instrumentation.
+	Especially useful for multi-container debugging, but also
+	general in applicability.
+
+2015-01-16  James Gallagher  <jgallagher@opendap.org>
+
+	Removed dist-hook which as a hack for SVN
+
+	Merge remote-tracking branch 'origin/dap4'
+	Conflicts:
+		bes-testsuite/Makefile.am
+
+2014-12-12  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed Makefile.am and configure.ac after merging with the modules branch.
+
+	Merge remote-tracking branch 'origin/modules'
+
+2014-12-07  James Gallagher  <jgallagher@opendap.org>
+
+	Added module name and version info to Makefile.am
+	This change was made to support the modules build where the autoconf
+	symbols PACKAGE_NAME and _MODULE are defined by the bes configure
+	script. This meant that the version response from the bes was useless
+	since it listed every module as 'bes' and gave the bes' version
+	number.
+
+2014-12-04  James Gallagher  <jgallagher@opendap.org>
+
+	Updated	the spec file to release 2.
+
+2014-12-03  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed distcheck - again; Updated the spec file for 3.8.8
+
+2014-11-26  James Gallagher  <jgallagher@opendap.org>
+
+	Added . so that it appears first on SUBDDIRS
+
+2014-11-24  James Gallagher  <jgallagher@opendap.org>
+
+	Build changes.
+	Tweaked the config.status dep so that it includes $(top_srcdir).
+	Added the new bes.conf.modules.in to EXTRA_DIST   in Makefile.am.
+
+2014-11-23  James Gallagher  <jgallagher@opendap.org>
+
+	Removed bes.conf.modules.in from gitignore
+
+	Added bes.conf.modules.in - part of the modules build.
+
+2014-11-22  James Gallagher  <jgallagher@opendap.org>
+
+	Added support for the modules build.
+
+2014-09-03  James Gallagher  <jgallagher@opendap.org>
+
+	Modified the code in FFSequence so that it uses the transform_to_dap4() in Constructor.
+
+2014-08-20  James Gallagher  <jgallagher@opendap.org>
+
+	Added support for xml:base
+
+2014-08-19  James Gallagher  <jgallagher@opendap.org>
+
+	Added support for the DAP4 array type and did some general housekeeping.
+
+	More still more tests for DAP4 responses
+	A    bes-testsuite/ff/dbl_data.bin.dap.bescmd
+	A    bes-testsuite/ff/dbl_data.bin.dap.bescmd.baseline
+	A    bes-testsuite/ff/dbl_data2.bin.dap.bescmd
+	A    bes-testsuite/ff/dbl_data2.bin.dap.bescmd.baseline
+	A    bes-testsuite/ff/dbl_data3.bin.dap.bescmd
+	A    bes-testsuite/ff/dbl_data3.bin.dap.bescmd.baseline
+	A    bes-testsuite/ff/int3.bin.dap.bescmd.baseline
+	A    bes-testsuite/ff/int_data.bin.dap.bescmd
+	A    bes-testsuite/ff/int_data.bin.dap.bescmd.baseline
+	A    bes-testsuite/ff/int_data2.bin.dap.bescmd
+	A    bes-testsuite/ff/int_data2.bin.dap.bescmd.baseline
+	A    bes-testsuite/ff/int_data3.bin.dap.bescmd
+	A    bes-testsuite/ff/int_data3.bin.dap.bescmd.baseline
+	M    bes-testsuite/ff/t3.dat.dap.bescmd.baseline
+	M    bes-testsuite/freeform_handlerTest.at
+
+	Lots of tests for DAP4 - Arrays are still broken
+	A    bes-testsuite/ff/avhrr.dat.dap.bescmd
+	A    bes-testsuite/ff/avhrr.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/avhrr.dat.dmr.bescmd
+	A    bes-testsuite/ff/avhrr.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/jplpath.dat.dap.bescmd
+	A    bes-testsuite/ff/jplpath.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/jplpath.dat.dmr.bescmd
+	A    bes-testsuite/ff/jplpath.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/t3.dat.dap.bescmd
+	A    bes-testsuite/ff/t3.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/t3.dat.dmr.bescmd
+	A    bes-testsuite/ff/t3.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test0.dat.dap.bescmd
+	A    bes-testsuite/ff/test0.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/test0.dat.dmr.bescmd
+	A    bes-testsuite/ff/test0.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test1.dat.dap.bescmd
+	A    bes-testsuite/ff/test1.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/test1.dat.dmr.bescmd
+	A    bes-testsuite/ff/test1.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test4.dat.dap.bescmd
+	A    bes-testsuite/ff/test4.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/test4.dat.dmr.bescmd
+	A    bes-testsuite/ff/test4.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test5.dab.dap.bescmd
+	A    bes-testsuite/ff/test5.dab.dap.bescmd.baseline
+	A    bes-testsuite/ff/test5.dab.dmr.bescmd
+	A    bes-testsuite/ff/test5.dab.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test6.dab.dap.bescmd
+	A    bes-testsuite/ff/test6.dab.dap.bescmd.baseline
+	A    bes-testsuite/ff/test6.dab.dmr.bescmd
+	A    bes-testsuite/ff/test6.dab.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test7.dat.dap.bescmd
+	A    bes-testsuite/ff/test7.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/test7.dat.dmr.bescmd
+	A    bes-testsuite/ff/test7.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test8.dat.dap.bescmd
+	A    bes-testsuite/ff/test8.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/test8.dat.dmr.bescmd
+	A    bes-testsuite/ff/test8.dat.dmr.bescmd.baseline
+	A    bes-testsuite/ff/test9.dat.dap.bescmd
+	A    bes-testsuite/ff/test9.dat.dap.bescmd.baseline
+	A    bes-testsuite/ff/test9.dat.dmr.bescmd
+	A    bes-testsuite/ff/test9.dat.dmr.bescmd.baseline
+	M    bes-testsuite/freeform_handlerTest.at
+
+2014-08-18  James Gallagher  <jgallagher@opendap.org>
+
+	DMR responses work; DAP4 Data, not yet. The D4Sequence code is not advancing the Sequence. Not sure in Arrays work.
+
+	Added
+	A    https://scm.opendap.org/svn/branch/freeform_handler/dap4
+
+2014-04-23  Nathan Potter  <ndp@opendap.org>
+
+	freeform_handler: Checking software version update and associated release changes.
 2013-10-18  James Gallagher <jgallagher@opendap.org>
 
 	Hyrax 1.9
@@ -11,11 +165,10 @@
 
 2013-10-11  James Gallagher <jgallagher@opendap.org>
 
-	Edits to match the new, sane, semantics for BaseType::read(). True now means done/eof and flase means more data to read (more instances for a sequence). All the tests pass.
+	Edits to match the new, sane, semantics for BaseType::read(). True
+	now means done/eof and flase means more data to read (more
+	instances for a sequence). All the tests pass.
 
-;; Local Variables:
-;; coding: utf-8
-;; End:
 2013-10-11  James Gallagher <jgallagher@opendap.org>
 
 	Edits to match the new, sane, semantics for BaseType::read(). True
