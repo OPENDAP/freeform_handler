@@ -45,12 +45,13 @@ AUTOM4TE = autom4te
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
-
+	-rm $(srcdir)/package.m4
+	
 distclean-local:
 	-rm atconfig
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(TESTSUITE).at $(srcdir)/package.m4
+$(TESTSUITE): $(srcdir)/package.m4 $(TESTSUITE).at
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 
