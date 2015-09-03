@@ -15,12 +15,12 @@ noinst_DATA = bes.conf
 
 CLEANFILES = *.log *.sum
 
-EXTRA_DIST = $(TESTSUITE).at $(TESTSUITE) atlocal.in \
+EXTRA_DIST = ff $(TESTSUITE).at $(TESTSUITE) atlocal.in \
 package.m4 ff bes.conf.in bes.conf.modules.in 
 
 DISTCLEANFILES = bes.conf package.m4 freeform_handlerTest
 
-TESTSUITE = $(builddir)/freeform_handlerTest
+# TESTSUITE = $(builddir)/freeform_handlerTest
 # TESTS_ENVIRONMENT = 
 # TESTS = freeform_handlerTest
 
@@ -38,10 +38,18 @@ bes.conf: $(BES_CONF_IN) $(top_srcdir)/configure.ac
 	sed -e "s%[@]abs_top_srcdir[@]%$$clean_abs_top_srcdir%" \
 		-e "s%[@]abs_top_builddir[@]%${abs_top_builddir}%" $< > bes.conf
 
-
 ############## Autotest follows #####################
 
 AUTOM4TE = autom4te
+
+# The $(srcdir) prefix means that when distcheck is run, the script
+# is put in the source directory along with the *.at file used to
+# build it, which is important since these scripts are distributed
+# in the tar.gz distribution.
+TESTSUITE = $(srcdir)/freeform_handlerTest
+
+check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
+	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
