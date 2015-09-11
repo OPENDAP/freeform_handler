@@ -13,12 +13,12 @@ TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 noinst_DATA = bes.conf
 
-CLEANFILES = *.log *.sum
+CLEANFILES = *.log *.sum $(TESTSUITE) $(srcdir)/package.m4
 
 EXTRA_DIST = ff $(TESTSUITE).at $(TESTSUITE) atlocal.in \
-package.m4 ff bes.conf.in bes.conf.modules.in 
+$(srcdir)/package.m4 ff bes.conf.in bes.conf.modules.in 
 
-DISTCLEANFILES = bes.conf package.m4 freeform_handlerTest
+DISTCLEANFILES = bes.conf atconfig
 
 # TESTSUITE = $(builddir)/freeform_handlerTest
 # TESTS_ENVIRONMENT = 
@@ -53,10 +53,6 @@ check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
-	-rm $(srcdir)/package.m4
-	
-distclean-local:
-	-rm atconfig
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): $(srcdir)/package.m4 $(TESTSUITE).at
