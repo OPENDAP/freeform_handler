@@ -63,7 +63,7 @@ double days_in_year(int year)
 
 static inline int days(int year, int month)
 {
-    if (!(year > 0) && (month > 0 && month < 13))
+    if (!(year > 0) || !(month > 0 && month < 13))
         throw Error(malformed_expr, "Date year or month is bad.");
 
     if (month == 2 && is_leap(year))

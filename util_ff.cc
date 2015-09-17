@@ -506,6 +506,7 @@ long Records(const string &filename)
 
     error = SetDodsDB(SetUps, &dbin, Msgt);
     if (error && error < ERR_WARNING_ONLY) {
+        ff_destroy_std_args(SetUps);
         db_destroy(dbin);
         return -1;
     }
