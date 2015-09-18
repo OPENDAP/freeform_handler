@@ -12,7 +12,7 @@ SUBDIRS = FFND . bes-testsuite
 
 # Set the module version here, in the spec file and in configure.ac
 M_NAME=freeform_handler
-M_VER=3.9.0
+M_VER=3.9.1
 
 # There are some defines which must be set when you build code which uses
 # FreeForm.h. Add them here. 4/17/98 jhrg
@@ -29,7 +29,7 @@ AM_CPPFLAGS = $(BES_CPPFLAGS) -I$(top_srcdir)/FFND -DFREEFORM
 LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
 endif
 
-AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER)\"
+AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER=3.9.1
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la

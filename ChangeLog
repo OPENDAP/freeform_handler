@@ -1,3 +1,36 @@
+2015-09-17  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes for issues found by Coverity
+
+2015-09-16  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes for some memory issues
+
+2015-09-11  James Gallagher  <jgallagher@opendap.org>
+
+	Modified Makefile.am to support distcheck
+
+2015-09-09  James Gallagher  <jgallagher@opendap.org>
+
+	Formatting
+
+2015-09-03  James Gallagher  <jgallagher@opendap.org>
+
+	The Makefile.am was broken and thus not running the tests
+
+2015-08-04  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed package.m4 in the autoconf dirs Makefile.am files
+
+2015-04-09  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/freeform_handler
+
+	Modified Makefile.am to support bes distcheck
+
+2015-04-06  James Gallagher  <jgallagher@opendap.org>
+
+	Version 3.9.0
 2015-03-31  James Gallagher  <jgallagher@opendap.org>
 
 	Added to gitignore
