@@ -29,7 +29,7 @@ AM_CPPFLAGS = $(BES_CPPFLAGS) -I$(top_srcdir)/FFND -DFREEFORM
 LIBADD = $(BES_DAP_LIBS) FFND/libfreeform.la
 endif
 
-AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER=3.9.1
+AM_CPPFLAGS += -DMODULE_NAME=\"$(M_NAME)\" -DMODULE_VERSION=\"$(M_VER)\"
 
 lib_besdir=$(libdir)/bes
 lib_bes_LTLIBRARIES = libff_module.la
