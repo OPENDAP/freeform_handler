@@ -56,7 +56,7 @@ clean-local:
 	-rm -f $(TESTSUITE) $(srcdir)/package.m4 
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/package.m4 $(TESTSUITE).at
+$(TESTSUITE): $(srcdir)/package.m4 $(TESTSUITE).at handler_tests_macros.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
 

@@ -20,22 +20,22 @@
         <Attribute name="isc" type="String">
             <Value>3</Value>
         </Attribute>
-        <Attribute name="traj1" type="Float32">
+        <Attribute name="traj1" type="Float64">
             <Value>1356310000.000000</Value>
         </Attribute>
-        <Attribute name="traj2" type="Float32">
+        <Attribute name="traj2" type="Float64">
             <Value>637963000.000000</Value>
         </Attribute>
-        <Attribute name="traj3" type="Float32">
+        <Attribute name="traj3" type="Float64">
             <Value>1716290.000000</Value>
         </Attribute>
-        <Attribute name="traj4" type="Float32">
+        <Attribute name="traj4" type="Float64">
             <Value>0.000000</Value>
         </Attribute>
-        <Attribute name="traj5" type="Float32">
+        <Attribute name="traj5" type="Float64">
             <Value>0.000000</Value>
         </Attribute>
-        <Attribute name="traj6" type="Float32">
+        <Attribute name="traj6" type="Float64">
             <Value>0.000000</Value>
         </Attribute>
         <Attribute name="text" type="String">
