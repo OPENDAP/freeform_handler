@@ -16,7 +16,7 @@ noinst_DATA = bes.conf
 CLEANFILES = bes.conf
 
 EXTRA_DIST = ff $(TESTSUITE).at $(TESTSUITE) atlocal.in \
-$(srcdir)/package.m4 ff bes.conf.in bes.conf.modules.in 
+package.m4 ff bes.conf.in bes.conf.modules.in handler_tests_macros.m4
 
 DISTCLEANFILES = atconfig
 
@@ -48,17 +48,20 @@ AUTOM4TE = autom4te
 # in the tar.gz distribution.
 TESTSUITE = $(srcdir)/freeform_handlerTest
 
-check-local: atconfig atlocal $(srcdir)/package.m4 $(TESTSUITE)
+check-local: $(TESTSUITE) atconfig atlocal 
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+
+installcheck-local: $(TESTSUITE) atconfig atlocal 
+	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' $(TESTSUITEFLAGS)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
 	-rm -f $(TESTSUITE) $(srcdir)/package.m4 
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
-$(TESTSUITE): $(srcdir)/package.m4 $(TESTSUITE).at handler_tests_macros.m4
-	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
-	mv $@.tmp $@
+
+$(TESTSUITE): $(TESTSUITE).at $(srcdir)/package.m4 $(srcdir)/handler_tests_macros.m4
+	$(AUTOTEST) -I '$(srcdir)' -o $@ $@.at
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
