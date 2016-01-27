@@ -1,3 +1,15 @@
+2016-01-26  James Gallagher  <jgallagher@opendap.org>
+
+	Updated autotest tests, macros and Makefile.am files
+
+2015-12-17  James Gallagher  <jgallagher@opendap.org>
+
+	Updated tests for DMR fix in libdap.
+	Also, updated to use new autotest macros
+
+2015-10-27  James Gallagher  <jgallagher@opendap.org>
+
+	Update for bes 3.16.0 release
 2015-10-01  Nathan Potter  <ndp@opendap.org>
 
 	Committing changes (mostly to bes.conf.in files) in support of
