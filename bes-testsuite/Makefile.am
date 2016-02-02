@@ -16,7 +16,8 @@ noinst_DATA = bes.conf
 CLEANFILES = bes.conf
 
 EXTRA_DIST = ff $(TESTSUITE).at $(TESTSUITE) atlocal.in \
-package.m4 ff bes.conf.in bes.conf.modules.in handler_tests_macros.m4
+$(srcdir)/package.m4 ff bes.conf.in bes.conf.modules.in \
+handler_tests_macros.m4
 
 DISTCLEANFILES = atconfig
 
