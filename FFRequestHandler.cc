@@ -223,7 +223,7 @@ bool FFRequestHandler::ff_build_data(BESDataHandlerInterface & dhi)
 
     try {
         bdds->set_container(dhi.container->get_symbolic_name());
-        DataDDS *dds = bdds->get_dds();
+        DDS *dds = bdds->get_dds();
         string accessed = dhi.container->access();
         dds->filename(accessed);
         ff_read_descriptors(*dds, accessed);
