@@ -1,3 +1,20 @@
+2016-05-10  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed an issue where zero-length arrays were detected incorrectly.
+	This is rarely a real issue - libdap::Vector::serialize() would
+	never call read() under this condition, but other code (e.g., a
+	server function) might.
+
+2016-02-02  James Gallagher  <jgallagher@opendap.org>
+
+	Conflicts resolved
+
+2016-01-26  James Gallagher  <jgallagher@opendap.org>
+
+	Updated ChangeLog, etc., for the bes 3.17 release
+
+	Updated autotest tests, macros and Makefile.am files
+	
 2016-01-26  James Gallagher  <jgallagher@opendap.org>
 
 	Updated autotest tests, macros and Makefile.am files
@@ -10,6 +27,7 @@
 2015-10-27  James Gallagher  <jgallagher@opendap.org>
 
 	Update for bes 3.16.0 release
+	
 2015-10-01  Nathan Potter  <ndp@opendap.org>
 
 	Committing changes (mostly to bes.conf.in files) in support of
