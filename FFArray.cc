@@ -85,9 +85,15 @@ long FFArray::Arr_constraint(long *cor, long *step, long *edg, string *dim_nms, 
         stride = (long) dimension_stride(i, true);
         stop = (long) dimension_stop(i, true);
         string dimname = dimension_name(i);
-
+#if 0
         // Check for empty constraint
         if (start + stop + stride == 0)
+            return -1;
+#endif
+        // This code is a correct version of the above, but it _should_ never be called
+        // since libdap::Vector::serialize() will never call Array::read() when length is
+        // zero. Still, a server function might... jhrg 2/17/16
+        if (length() == 0)
             return -1;
 
         dim_nms[id] = dimname;
@@ -124,9 +130,12 @@ long FFArray::Seq_constraint(long *cor, long *step, long *edg, bool *has_stride)
         start = (long) dimension_start(i, true);
         stride = (long) dimension_stride(i, true);
         stop = (long) dimension_stop(i, true);
-
+#if 0
         // Check for empty constraint
         if (start + stop + stride == 0)
+            return -1;
+#endif
+        if (length() == 0)
             return -1;
 
         cor[id] = start;
