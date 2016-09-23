@@ -32,6 +32,7 @@
 #include <exception>
 
 #include <DDS.h>
+#include <DataDDS.h>
 #include <DMR.h>
 #include <D4BaseTypeFactory.h>
 #include <Ancillary.h>
@@ -63,6 +64,7 @@
 #include "ff_ce_functions.h"
 #include "util_ff.h"
 
+using namespace libdap;
 using namespace std;
 
 #define FF_NAME "ff"
