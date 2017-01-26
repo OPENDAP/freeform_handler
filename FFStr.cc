@@ -50,7 +50,7 @@
 extern long BufPtr;   // set by read functions
 extern char * BufVal; // set by first call to sequence
 
-FFStr::FFStr(const string &n, const string &d) : d_length(0), Str(n, d)
+FFStr::FFStr(const string &n, const string &d) : Str(n, d), d_length(0)
 {
 }
 

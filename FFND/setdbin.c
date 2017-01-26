@@ -7538,6 +7538,8 @@ int db_set(DATA_BIN_PTR dbin, int message, ...)
 			error = dbset_setup_stdin(dbin, std_args);
 		}
 
+		break;
+
 		case DBSET_VAR_MINMAX:
 		{
 			error = dbset_var_minmax(dbin);
